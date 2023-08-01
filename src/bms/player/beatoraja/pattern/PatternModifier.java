@@ -1,5 +1,6 @@
 package bms.player.beatoraja.pattern;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,9 @@ import bms.player.beatoraja.PlayerConfig;
  * @author exch
  */
 public abstract class PatternModifier {
+
+
+    private PlayerConfig player;
 
 	/**
 	 * 譜面変更のアシストレベル
@@ -44,7 +48,7 @@ public abstract class PatternModifier {
 		this.assist = AssistLevel.values()[assist];
 	}
 
-	public abstract List<PatternModifyLog> modify(BMSModel model);
+	public abstract List<PatternModifyLog> modify(BMSModel model, PlayerConfig config);
 
 	/**
 	 * 譜面変更ログの通りに譜面オプションをかける
@@ -220,7 +224,7 @@ public abstract class PatternModifier {
 		}
 	}
 
-	protected static int[] shuffle(int[] keys, long seed) {
+	protected static int[] shuffle(int[] keys, long seed, PlayerConfig config) {
 		java.util.Random rand = new java.util.Random(seed);
 		List<Integer> l = new ArrayList<Integer>(keys.length);
 		for (int key : keys) {
@@ -240,7 +244,27 @@ public abstract class PatternModifier {
 			l.remove(r);
 		}
 
-		return result;
+		StringBuilder sb1 = new StringBuilder();
+		for (int i = 0; i < result.length; i++) {
+			sb1.append(Integer.toString(result[i]+1));
+		}
+		String join_raja = sb1.toString();
+
+		System.out.println("RandomTrainer: Generated random for this seed: " + join_raja);
+
+		if (config.getTrainerActive()) {
+			StringBuilder sb2 = new StringBuilder();
+			for (int i = 0; i < result.length; i++) {
+				sb2.append(Integer.toString(config.getLaneOrder()[i]+1));
+			}
+			String join_trainer = sb2.toString();
+
+			System.out.println("RandomTrainer: Forced trainer random in use: " + join_trainer);
+
+			return config.getLaneOrder();
+		} else {
+			return result;
+		}
 	}
 
 	protected static int[] rotate(int[] keys, long seed) {
@@ -296,7 +320,7 @@ public abstract class PatternModifier {
 		}
 
 		@Override
-		public List<PatternModifyLog> modify(BMSModel model) {
+		public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 			return Collections.emptyList();
 		}
 

@@ -3,6 +3,7 @@ package bms.player.beatoraja.pattern;
 import java.util.List;
 
 import bms.model.*;
+import bms.player.beatoraja.PlayerConfig;
 
 /**
  * ロングノーツを除去/追加する譜面オプション
@@ -24,7 +25,7 @@ public class LongNoteModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 
 		if(mode == Mode.REMOVE) {
 			AssistLevel assist = AssistLevel.NONE;

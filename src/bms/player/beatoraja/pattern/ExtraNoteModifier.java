@@ -4,6 +4,7 @@ import bms.model.BMSModel;
 import bms.model.LongNote;
 import bms.model.Note;
 import bms.model.TimeLine;
+import bms.player.beatoraja.PlayerConfig;
 
 import java.util.List;
 
@@ -35,8 +36,7 @@ public class ExtraNoteModifier extends PatternModifier {
         this.scratch = scratch;
     }
 
-    @Override
-    public List<PatternModifyLog> modify(BMSModel model) {
+    public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
         AssistLevel assist = AssistLevel.NONE;
         TimeLine[] tls = model.getAllTimeLines();
         boolean[] ln = new boolean[model.getMode().key];

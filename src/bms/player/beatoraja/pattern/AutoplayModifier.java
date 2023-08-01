@@ -2,6 +2,7 @@ package bms.player.beatoraja.pattern;
 
 import java.util.List;
 import bms.model.*;
+import bms.player.beatoraja.PlayerConfig;
 
 /**
  * 指定のレーンを自動演奏にするオプション
@@ -27,7 +28,7 @@ public class AutoplayModifier extends PatternModifier {
 		this.margin = margin;
 	}
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		TimeLine[] tls = model.getAllTimeLines();
 		boolean[] ln = new boolean[model.getMode().key];
 		for (int i = 0, pos = 0;i < tls.length;i++) {

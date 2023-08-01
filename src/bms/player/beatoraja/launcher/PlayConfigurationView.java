@@ -250,6 +250,8 @@ public class PlayConfigurationView implements Initializable {
 	private TableEditorView tableController;
 	@FXML
     private StreamEditorView streamController;
+	@FXML
+	private TrainerView trainerController;
 
 	private Config config;
 	private PlayerConfig player;
@@ -463,6 +465,7 @@ public class PlayConfigurationView implements Initializable {
 
 		irController.update(player);
 		streamController.update(player);
+		trainerController.update(player);
 
 		txtTwitterPIN.setDisable(true);
 		twitterPINButton.setDisable(true);

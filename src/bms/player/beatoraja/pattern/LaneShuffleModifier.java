@@ -3,6 +3,7 @@ package bms.player.beatoraja.pattern;
 import bms.model.*;
 
 import java.util.*;
+import bms.player.beatoraja.PlayerConfig;
 import java.util.logging.Logger;
 
 /**
@@ -25,7 +26,7 @@ public class LaneShuffleModifier extends PatternModifier {
 		this.type = type;
 	}
 
-	private void makeRandom(BMSModel model) {
+	private void makeRandom(BMSModel model, PlayerConfig config) {
 		Mode mode = model.getMode();
 		int[] keys;
 		switch (type) {
@@ -39,7 +40,7 @@ public class LaneShuffleModifier extends PatternModifier {
 			break;
 		case RANDOM:
 			keys = getKeys(mode, false);
-			random = keys.length > 0 ? shuffle(keys, getSeed()) : keys;
+			random = keys.length > 0 ? shuffle(keys, getSeed(), config) : keys;
 			break;
 		case CROSS:
 			keys = getKeys(mode, false);
@@ -56,7 +57,7 @@ public class LaneShuffleModifier extends PatternModifier {
 			if(mode == Mode.POPN_9K) {
 				random = keys.length > 0 ? noMurioshiLaneShuffle(model) : keys;
 			} else {
-				random = keys.length > 0 ? shuffle(keys, getSeed()) : keys;
+				random = keys.length > 0 ? shuffle(keys, getSeed(), config) : keys;
 				setAssistLevel(AssistLevel.LIGHT_ASSIST);
 			}
 			break;
@@ -234,10 +235,9 @@ public class LaneShuffleModifier extends PatternModifier {
 		input[b] = tmp;
 	}
 
-	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		List<PatternModifyLog> log = new ArrayList();
-		makeRandom(model);
+		makeRandom(model, config);
 		int lanes = model.getMode().key;
 		TimeLine[] timelines = model.getAllTimeLines();
 		for (int index = 0; index < timelines.length; index++) {

@@ -37,7 +37,7 @@ public class ModeModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		List<PatternModifyLog> log = new ArrayList<PatternModifyLog>();
 		model.setMode(afterMode);
 		final Algorithm algorithm = Algorithm.get(beforeMode, afterMode);

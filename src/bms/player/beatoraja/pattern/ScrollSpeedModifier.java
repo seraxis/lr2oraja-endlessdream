@@ -2,6 +2,7 @@ package bms.player.beatoraja.pattern;
 
 import bms.model.BMSModel;
 import bms.model.TimeLine;
+import bms.player.beatoraja.PlayerConfig;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class ScrollSpeedModifier extends PatternModifier {
     }
 
     @Override
-    public List<PatternModifyLog> modify(BMSModel model) {
+    public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
         if(mode == Mode.REMOVE) {
             // スクロールスピード変更、ストップシーケンス無効化
             AssistLevel assist = AssistLevel.NONE;

@@ -3,6 +3,7 @@ package bms.player.beatoraja.pattern;
 import java.util.List;
 
 import bms.model.*;
+import bms.player.beatoraja.PlayerConfig;
 
 /**
  * プラクティス時に選択範囲以外の可視ノーツをBGノーツに移動するクラス
@@ -27,7 +28,7 @@ public class PracticeModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		int totalnotes = model.getTotalNotes();
 		final TimeLine[] tls = model.getAllTimeLines();
 		for (TimeLine tl : tls) {

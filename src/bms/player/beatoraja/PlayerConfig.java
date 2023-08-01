@@ -45,6 +45,11 @@ public class PlayerConfig {
 	 */
 	private int random2;
 	/**
+	 * Random Trainer lane ordering, accessed within calls to Shuffle for standard random
+	 */
+	private int[] laneorder;
+	private boolean active = false;
+	/**
 	 * DP用オプション
 	 */
 	private int doubleoption;
@@ -250,6 +255,22 @@ public class PlayerConfig {
 
 	public void setRandom(int random) {
 		this.random = random;
+	}
+
+	public int[] getLaneOrder() {
+		return laneorder;
+	}
+
+	public void setLaneOrder(int[] laneorder) {
+		this.laneorder = laneorder;
+	}
+
+	public boolean getTrainerActive() {
+		return active;
+	}
+
+	public void setTrainerActive(boolean active) {
+		this.active = active;
 	}
 
 	public int getJudgetiming() {

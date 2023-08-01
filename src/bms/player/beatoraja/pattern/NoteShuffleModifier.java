@@ -28,7 +28,7 @@ public class NoteShuffleModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		List<PatternModifyLog> log = new ArrayList<PatternModifyLog>();
 		randomizer.setRandomSeed(getSeed());
 		randomizer.setModifyLanes(getKeys(model.getMode(), isScratchLaneModify));

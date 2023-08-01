@@ -3,6 +3,7 @@ package bms.player.beatoraja.pattern;
 import java.util.List;
 
 import bms.model.*;
+import bms.player.beatoraja.PlayerConfig;
 
 import javax.print.DocFlavor;
 
@@ -23,7 +24,7 @@ public class MineNoteModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
 		if(mode == Mode.REMOVE) {
 			AssistLevel assist = AssistLevel.NONE;
 			for (TimeLine tl : model.getAllTimeLines()) {
