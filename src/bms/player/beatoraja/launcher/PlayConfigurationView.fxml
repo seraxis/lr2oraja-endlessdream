@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import bms.player.beatoraja.launcher.NumericSpinner?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory?>
+<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bms.player.beatoraja.launcher.PlayConfigurationView">
+   <Hyperlink fx:id="newversion" text="" />
+    <HBox fx:id="playerPanel" alignment="CENTER_LEFT" prefHeight="10.0" prefWidth="730.0">
+        <VBox.margin>
+            <Insets bottom="5.0" top="5.0" />
+        </VBox.margin>
+        <Label minWidth="100.0" text="%PLAYER_ID">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Label>
+        <ComboBox fx:id="players" onAction="#changePlayer" prefWidth="150.0" />
+        <TextField fx:id="playername" prefHeight="24.0" prefWidth="243.0">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </TextField>
+        <Button mnemonicParsing="false" onAction="#addPlayer" text="+">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Button>
+    </HBox>
+    <TabPane prefHeight="435.0" prefWidth="740.0" VBox.vgrow="ALWAYS">
+        <Tab fx:id="videoTab" closable="false" text="%TAB_VIDEO">
+            <fx:include fx:id="video" source="VideoConfigurationView.fxml" />
+        </Tab>
+        <Tab fx:id="audioTab" closable="false" text="%TAB_AUDIO">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="audio" source="AudioConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="inputTab" closable="false" text="%TAB_INPUT">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="input" source="InputConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="resourceTab" closable="false" text="%Resource">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="resource" source="ResourceConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="musicselectTab" closable="false" text="%TAB_MUSICSELECT">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="musicselect" source="MusicSelectConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="optionTab" closable="false" text="%Play_Option">
+         <content>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <VBox prefHeight="190.0" prefWidth="112.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                            <HBox prefHeight="18.0" prefWidth="703.0">
+                                <VBox.margin>
+                                    <Insets left="10.0" right="10.0" />
+                                </VBox.margin>
+                                <Label prefHeight="24.0" prefWidth="75.0" text="%MODE" />
+                                <ComboBox fx:id="playconfig" onAction="#updatePlayConfig" prefWidth="150.0" />
+                            </HBox>
+                        <ScrollPane fitToHeight="true" fitToWidth="true">
+                           <content>
+                                 <VBox prefHeight="2000.0" prefWidth="723.0" spacing="10.0">
+                                     <padding>
+                                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                     </padding>
+                                     <GridPane fx:id="lr2configuration" hgap="10.0" vgap="10.0">
+                                         <columnConstraints>
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="200.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="200.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="200.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="200.0" />
+                                       <ColumnConstraints maxWidth="423.0" minWidth="0.0" prefWidth="200.0" />
+                                         </columnConstraints>
+                                          <rowConstraints>
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                         </rowConstraints>
+                                         <Label prefHeight="18.0" prefWidth="78.0" text="%HI-SPEED" />
+                                         <NumericSpinner fx:id="hispeed" editable="true" GridPane.columnIndex="1">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.DoubleSpinnerValueFactory amountToStepBy="0.1" initialValue="1.0" max="9.9" min="1.0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%GVALUE" GridPane.columnIndex="2" />
+                                         <NumericSpinner fx:id="gvalue" editable="true" GridPane.columnIndex="3">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="500" max="5000" min="1" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <CheckBox fx:id="enableLanecover" mnemonicParsing="false" text="%ENABLE_LANECOVER" GridPane.rowIndex="1" />
+                                         <NumericSpinner fx:id="lanecover" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="100" max="1000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%LANECOVER_MARGIN_LOW" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                         <NumericSpinner fx:id="lanecovermarginlow" editable="true" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="1" max="1000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%LANECOVER_MARGIN_HIGH" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                         <NumericSpinner fx:id="lanecovermarginhigh" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="10" max="1000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%LANECOVER_SWITCH_DURATION" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                         <NumericSpinner fx:id="lanecoverswitchduration" editable="true" GridPane.columnIndex="3" GridPane.rowIndex="2">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="500" max="1000000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <CheckBox fx:id="enableLift" mnemonicParsing="false" text="%ENABLE_LIFT" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                         <NumericSpinner fx:id="lift" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="100" max="1000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <CheckBox fx:id="enableHidden" mnemonicParsing="false" text="%ENABLE_HIDDEN" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                         <NumericSpinner fx:id="hidden" editable="true" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="100" max="1000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%NOTESDISPLAYTIMING" GridPane.rowIndex="4" />
+                                         <NumericSpinner fx:id="notesdisplaytiming" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <CheckBox fx:id="notesdisplaytimingautoadjust" mnemonicParsing="false" text="%NOTESDISPLAYTIMING_AUTOADJUST" GridPane.columnIndex="2" GridPane.rowIndex="4" GridPane.columnSpan="2" />
+                                         <Label text="%HISPEED_FIX" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                         <ComboBox fx:id="fixhispeed" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                         <Label text="%HISPEED_MARGIN" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                                         <NumericSpinner fx:id="hispeedmargin" editable="true" GridPane.columnIndex="3" GridPane.rowIndex="5">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.DoubleSpinnerValueFactory amountToStepBy="0.01" initialValue="0.25" max="9.99" min="0.00" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <CheckBox fx:id="hispeedautoadjust" mnemonicParsing="false" text="%HISPEED_AUTO_ADJUST" GridPane.columnIndex="4" GridPane.rowIndex="5" GridPane.columnSpan="8">
+                                            <tooltip>
+                                                <Tooltip text="%HISPEED_AUTO_ADJUST_TOOLTIP" textAlignment="CENTER" />
+                                            </tooltip>
+                                         </CheckBox>
+                                         <Label text="%NOTE_MODIFIER" GridPane.rowIndex="6" />
+                                         <ComboBox fx:id="scoreop" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                         <Label layoutX="10.0" layoutY="84.0" text="%NOTE_MODIFIER2" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                                         <ComboBox fx:id="scoreop2" prefWidth="150.0" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                                         <Label layoutX="10.0" layoutY="84.0" text="%DOUBLE_OPTION" GridPane.rowIndex="7" />
+                                         <ComboBox fx:id="doubleop" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                         <Label text="%GAUGE_TYPE" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                                         <ComboBox fx:id="gaugeop" prefWidth="150.0" GridPane.columnIndex="3" GridPane.rowIndex="7" />
+                                         <Label text="%LNTYPE" GridPane.rowIndex="8" />
+                                         <ComboBox fx:id="lntype" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                         <CheckBox fx:id="customjudge" mnemonicParsing="false" text="%EXPAND_JUDGE" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                                         <HBox prefHeight="30.0" prefWidth="723.0" GridPane.columnIndex="1" GridPane.rowIndex="10" GridPane.columnSpan="3">
+                                         <Label text="KEY PG" prefWidth="60.0"/>
+                                         <NumericSpinner fx:id="njudgepg" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="25" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="KEY GR" prefWidth="60.0" />
+                                         <NumericSpinner fx:id="njudgegr" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="KEY GD" prefWidth="60.0" />
+                                         <NumericSpinner fx:id="njudgegd" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         </HBox>
+                                         <HBox prefHeight="30.0" prefWidth="723.0" GridPane.columnIndex="1" GridPane.rowIndex="11" GridPane.columnSpan="3">
+                                         <Label text="SCR PG" prefWidth="60.0" />
+                                         <NumericSpinner fx:id="sjudgepg" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="25" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="SCR GR" prefWidth="60.0" />
+                                         <NumericSpinner fx:id="sjudgegr" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="SCR GD" prefWidth="60.0" />
+                                         <NumericSpinner fx:id="sjudgegd" editable="true" prefWidth="100.0">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="25" initialValue="100" max="400" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         </HBox>
+                                         <Label text="%H_RANDOM_THRESHOLD_BPM" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                         <NumericSpinner fx:id="hranthresholdbpm" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="9">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="120" max="15000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                     </GridPane>
+                                     <GridPane fx:id="lr2configurationassist" hgap="10.0" prefHeight="48.0" prefWidth="632.0" vgap="10.0">
+                                         <columnConstraints>
+                                             <ColumnConstraints maxWidth="350.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="350.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="350.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="350.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="350.0" minWidth="0.0" prefWidth="160.0" />
+                                         </columnConstraints>
+                                         <rowConstraints>
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                         </rowConstraints>
+                                         <Label text="%ASSIST_OPTION" GridPane.rowIndex="0" />
+                                         <CheckBox fx:id="bpmguide" mnemonicParsing="false" text="%BPM_GUIDE" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                         <Label text="%OPTIONS_MISC" GridPane.rowIndex="1" />
+                                         <CheckBox fx:id="showhiddennote" mnemonicParsing="false" text="%SHOW_HIDDEN_NOTE" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                         <CheckBox fx:id="judgeregion" mnemonicParsing="false" text="%JUDGE_REGION" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                         <CheckBox fx:id="markprocessednote" mnemonicParsing="false" text="%MARK_PROCESSED_NOTE" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                         <CheckBox fx:id="guidese" mnemonicParsing="false" text="%GUIDE_SE" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                         <CheckBox fx:id="windowhold" mnemonicParsing="false" text="%WINDOW_HOLD" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                         <Label text="%EXTRA_NOTE" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                         <NumericSpinner fx:id="extranotedepth" editable="true" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="3" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                         <Label text="%MINE_MODE" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                         <ComboBox fx:id="minemode" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                                         <Label text="%SCROLL_MODE" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                         <ComboBox fx:id="scrollmode" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+                                         <Label text="%LONGNOTE_MODE" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                         <ComboBox fx:id="longnotemode" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                                         <Label text="%LONGNOTE_MODIFYRATE" GridPane.columnIndex="3" GridPane.rowIndex="6" />
+                                         <Slider fx:id="longnoterate" blockIncrement="0.1" majorTickUnit="0.1" max="1.0" minorTickCount="5" prefHeight="30.0" prefWidth="150.0" value="1.0" GridPane.columnIndex="4" GridPane.rowIndex="6" />
+                                     </GridPane>
+                                     <GridPane hgap="10.0" vgap="4.0">
+                                         <columnConstraints>
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="160.0" />
+                                             <ColumnConstraints maxWidth="450.0" minWidth="0.0" prefWidth="160.0" />
+                                         </columnConstraints>
+                                         <rowConstraints>
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                             <RowConstraints maxHeight="24.0" minHeight="24.0" prefHeight="24.0" />
+                                         </rowConstraints>
+                                         <Label text="%TARGET_SCORE" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                         <ComboBox fx:id="target" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                                         <Label prefHeight="18.0" prefWidth="127.0" text="%JUDGE_ALGORITHM" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                                         <ComboBox fx:id="judgealgorithm" prefWidth="150.0" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                                         <Label text="Gauge Auto Shift" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                         <ComboBox fx:id="gaugeautoshift" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                         <Label text="%BOTTOM_SHIFTABLE_GAUGE" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                         <ComboBox fx:id="bottomshiftablegauge" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                         <Label text="%AUTO_SAVE_REPLAY1" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                         <ComboBox fx:id="autosavereplay1" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                         <Label text="%AUTO_SAVE_REPLAY2" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                         <ComboBox fx:id="autosavereplay2" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                         <Label text="%AUTO_SAVE_REPLAY3" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                         <ComboBox fx:id="autosavereplay3" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                         <Label text="%AUTO_SAVE_REPLAY4" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                                         <ComboBox fx:id="autosavereplay4" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                                         <Label text="%SEVEN_TO_NINE_PATTERN" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                         <ComboBox fx:id="seventoninepattern" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                         <Label text="%SEVEN_TO_NINE_TYPE" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                                         <ComboBox fx:id="seventoninetype" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+                                         <Label text="%EXIT_PRESS_DURATION" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                         <NumericSpinner fx:id="exitpressduration" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="1000" max="2000" min="0" />
+                                             </valueFactory>
+                                         </NumericSpinner>
+                                     </GridPane>
+                                 </VBox>
+                           </content>
+                        </ScrollPane>
+                     </children>
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </AnchorPane>
+         </content>
+        </Tab>
+        <Tab fx:id="skinTab" closable="false" text="%Skin">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <VBox prefHeight="280.0" prefWidth="740.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <padding>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                    </padding>
+               <AnchorPane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                  <children>
+                          <fx:include fx:id="skin" source="SkinConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  </children>
+               </AnchorPane>
+                    <HBox prefHeight="30.0" prefWidth="723.0">
+                        <Label layoutX="10.0" layoutY="10.0" prefHeight="30.0" prefWidth="200.0" text="%BGM_Path(LR2)">
+                            <HBox.margin>
+                                <Insets left="10.0" right="10.0" top="10.0" />
+                            </HBox.margin>
+                        </Label>
+                        <TextField fx:id="bgmpath" prefHeight="28.0" prefWidth="480.0">
+                            <HBox.margin>
+                                <Insets top="10.0" />
+                            </HBox.margin>
+                        </TextField>
+                        <Button mnemonicParsing="false" onAction="#addBGMPath" prefHeight="28.0" prefWidth="29.0" text="...">
+                            <HBox.margin>
+                                <Insets left="10.0" top="10.0" />
+                            </HBox.margin>
+                        </Button>
+                    </HBox>
+                    <HBox prefHeight="30.0" prefWidth="723.0">
+                        <VBox.margin>
+                            <Insets />
+                        </VBox.margin>
+                        <Label layoutX="10.0" layoutY="10.0" prefHeight="30.0" prefWidth="200.0" text="%Sound_Path(LR2)">
+                            <HBox.margin>
+                                <Insets left="10.0" right="10.0" top="10.0" />
+                            </HBox.margin>
+                        </Label>
+                        <TextField fx:id="soundpath" prefHeight="28.0" prefWidth="480.0">
+                            <HBox.margin>
+                                <Insets top="10.0" />
+                            </HBox.margin>
+                        </TextField>
+                        <Button mnemonicParsing="false" onAction="#addSoundPath" prefHeight="28.0" prefWidth="29.0" text="...">
+                            <HBox.margin>
+                                <Insets left="10.0" top="10.0" />
+                            </HBox.margin>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="otherTab" closable="false" text="%Other">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <padding>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <CheckBox fx:id="usecim" mnemonicParsing="false" prefHeight="25.0" text="%CACHE_SKIN_IMAGE" />
+                    <CheckBox fx:id="discord" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC" />
+                    <Button mnemonicParsing="false" onAction="#importScoreDataFromLR2" text="%IMPORT_LR2_SCORE">
+                        <VBox.margin>
+                            <Insets top="10.0" />
+                        </VBox.margin>
+                    </Button>
+                    <CheckBox fx:id="enableIpfs" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_IPFS" />
+                    <HBox prefHeight="100.0" prefWidth="300.0">
+                        <children>
+                           <Label prefHeight="25.0" prefWidth="60.0" text="IPFS URL" />
+                           <TextField fx:id="ipfsurl" prefHeight="25.0" prefWidth="200.0" />
+                        </children>
+                     </HBox>
+               <VBox prefHeight="150.0" prefWidth="100.0" visible="false">
+                  <children>
+                     <HBox prefHeight="31.0" prefWidth="780.0">
+                        <children>
+                           <Label prefHeight="35.0" prefWidth="195.0" text="%TWITTER_CONNECTION" />
+                           <Label fx:id="txtTwitterAuthenticated" prefHeight="34.0" prefWidth="88.0" text="%TWITTER_AUTHENTICATED" />
+                        </children>
+                     </HBox>
+                     <HBox prefHeight="25.0" prefWidth="350.0">
+                        <children>
+                           <Label prefHeight="18.0" prefWidth="100.0" text="%TWITTER_CONSUMER_KEY" />
+                           <TextField fx:id="txtTwitterConsumerKey" prefHeight="25.0" prefWidth="200.0" />
+                        </children>
+                     </HBox>
+                     <HBox prefHeight="25.0" prefWidth="350.0">
+                        <children>
+                           <Label prefHeight="25.0" prefWidth="100.0" text="%TWITTER_CONSUMER_SECRET" />
+                           <PasswordField fx:id="txtTwitterConsumerSecret" prefHeight="25.0" prefWidth="200.0" />
+                        </children>
+                     </HBox>
+                     <Button fx:id="twitterAuthButton" mnemonicParsing="false" onAction="#startTwitterAuth" prefHeight="25.0" prefWidth="134.0" text="%TWITTER_AUTHENTICATION" />
+                     <HBox prefHeight="50.0" prefWidth="200.0">
+                        <children>
+                           <Label prefHeight="25.0" prefWidth="31.0" text="PIN" />
+                           <TextField fx:id="txtTwitterPIN" prefHeight="25.0" prefWidth="100.0" />
+                           <Button fx:id="twitterPINButton" mnemonicParsing="false" onAction="#startPINAuth" text="%TWITTER_AUTH_VERIFY" />
+                        </children>
+                     </HBox>
+                  </children>
+               </VBox>
+                </VBox>
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="irTab" closable="false" text="IR">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="ir" source="IRConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="tableTab" closable="false" text="Table">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="table" source="TableEditorView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <padding>
+               <Insets left="10.0" top="10.0" />
+            </padding>
+            </AnchorPane>
+        </Tab>
+        <Tab fx:id="streamTab" closable="false" text="Stream">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="stream" source="StreamConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
+    </TabPane>
+    <HBox fx:id="controlPanel" prefWidth="552.0">
+        <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="20.0" />
+        </VBox.margin>
+        <Button mnemonicParsing="false" onAction="#start" prefHeight="25.0" prefWidth="120.0" text="%START">
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+        </Button>
+        <Button mnemonicParsing="false" onAction="#loadDiffBMS" prefHeight="25.0" prefWidth="200.0" text="%UPDATE_DATABASE">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Button>
+        <Button alignment="CENTER" mnemonicParsing="false" onAction="#loadAllBMS" prefHeight="25.0" prefWidth="230.0" text="%REBUILD_DATABASE">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Button>
+        <Button mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="108.0" text="%EXIT">
+            <HBox.margin>
+                <Insets left="10.0" />
+            </HBox.margin>
+        </Button>
+    </HBox>
+</VBox>
