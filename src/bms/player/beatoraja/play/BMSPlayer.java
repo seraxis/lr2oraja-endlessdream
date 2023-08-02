@@ -346,6 +346,8 @@ public class BMSPlayer extends MainState {
 
 			// SP譜面オプション
 			PatternModifier pm = PatternModifier.create(playinfo.randomoption, PatternModifier.SIDE_1P, model.getMode(), config);
+			Logger.getGlobal().info("=====TEST===== playinfo.randomoptionseed: " + Long.toString(playinfo.randomoptionseed));
+			Logger.getGlobal().info("=====TEST===== pm.getSeed(): " + Long.toString(pm.getSeed()));
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {

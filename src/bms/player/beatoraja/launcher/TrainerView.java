@@ -72,8 +72,8 @@ public class TrainerView {
 			}
 		}
 
-		@TODO implement a mode check so you dont force on non 7k game modifyTargetSide
-		@TODO implement a reverse LUT for each random permutation 
+//		@TODO implement a mode check so you dont force on non 7k game modifyTargetSide
+//		@TODO implement a reverse LUT for each random permutation 
 		player.setLaneOrder(lanes);
 	}
 }
