@@ -25,7 +25,7 @@ public class LongNoteModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+	public List<PatternModifyLog> modify(BMSModel model) {
 
 		if(mode == Mode.REMOVE) {
 			AssistLevel assist = AssistLevel.NONE;

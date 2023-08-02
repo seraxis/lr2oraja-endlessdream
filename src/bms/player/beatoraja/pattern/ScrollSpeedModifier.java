@@ -35,7 +35,7 @@ public class ScrollSpeedModifier extends PatternModifier {
     }
 
     @Override
-    public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+    public List<PatternModifyLog> modify(BMSModel model) {
         if(mode == Mode.REMOVE) {
             // スクロールスピード変更、ストップシーケンス無効化
             AssistLevel assist = AssistLevel.NONE;

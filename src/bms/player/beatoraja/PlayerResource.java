@@ -2,6 +2,10 @@ package bms.player.beatoraja;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import com.badlogic.gdx.utils.*;
@@ -111,19 +115,31 @@ public class PlayerResource {
 	private int orgGaugeOption = 0;
 
 	private int assist = 0;
-
 	/**
 	 * 現在プレイしている楽曲を含む難易度表とレベル
 	 */
 	private String tablename = "";
 	private String tablelevel = "";
 	private String tablefull;
+	/**
+	 * Random trainer random to seed mapping
+	 */
+	private HashMap<Integer, Long> randomseedmap;
 
 	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig) {
 		this.config = config;
 		this.pconfig = pconfig;
 		this.bmsresource = new BMSResource(audio, config, pconfig);
 		this.orgGaugeOption = pconfig.getGauge();
+		try (FileInputStream input = new FileInputStream("randomtrainer.dat")) {
+            ObjectInputStream ois = new ObjectInputStream(input);
+
+            randomseedmap = (HashMap<Integer, Long>) ois.readObject();
+            ois.close();
+        } catch (ClassNotFoundException | IOException ex) {
+			Logger.getGlobal().severe("RandomTrainer: randomtrainer.dat corrupted or missing");
+		    ex.printStackTrace();
+        }
 	}
 
 	public void clear() {
@@ -490,6 +506,10 @@ public class PlayerResource {
 			tablefull = tablelevel + tablename;
 		}
 		return tablefull;
+	}
+
+    public HashMap<Integer, Long> getRandomSeedMap() {
+		return this.randomseedmap;
 	}
 
 	public PlayerData getPlayerData() {

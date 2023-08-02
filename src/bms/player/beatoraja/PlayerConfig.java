@@ -47,7 +47,7 @@ public class PlayerConfig {
 	/**
 	 * Random Trainer lane ordering, accessed within calls to Shuffle for standard random
 	 */
-	private int[] laneorder;
+	private String laneorder;
 	private boolean active = false;
 	/**
 	 * DP用オプション
@@ -257,11 +257,11 @@ public class PlayerConfig {
 		this.random = random;
 	}
 
-	public int[] getLaneOrder() {
+	public String getLaneOrder() {
 		return laneorder;
 	}
 
-	public void setLaneOrder(int[] laneorder) {
+	public void setLaneOrder(String laneorder) {
 		this.laneorder = laneorder;
 	}
 

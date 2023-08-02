@@ -26,7 +26,7 @@ public class LaneShuffleModifier extends PatternModifier {
 		this.type = type;
 	}
 
-	private void makeRandom(BMSModel model, PlayerConfig config) {
+	private void makeRandom(BMSModel model) {
 		Mode mode = model.getMode();
 		int[] keys;
 		switch (type) {
@@ -40,7 +40,7 @@ public class LaneShuffleModifier extends PatternModifier {
 			break;
 		case RANDOM:
 			keys = getKeys(mode, false);
-			random = keys.length > 0 ? shuffle(keys, getSeed(), config) : keys;
+			random = keys.length > 0 ? shuffle(keys, getSeed()) : keys;
 			break;
 		case CROSS:
 			keys = getKeys(mode, false);
@@ -57,7 +57,7 @@ public class LaneShuffleModifier extends PatternModifier {
 			if(mode == Mode.POPN_9K) {
 				random = keys.length > 0 ? noMurioshiLaneShuffle(model) : keys;
 			} else {
-				random = keys.length > 0 ? shuffle(keys, getSeed(), config) : keys;
+				random = keys.length > 0 ? shuffle(keys, getSeed()) : keys;
 				setAssistLevel(AssistLevel.LIGHT_ASSIST);
 			}
 			break;
@@ -235,9 +235,9 @@ public class LaneShuffleModifier extends PatternModifier {
 		input[b] = tmp;
 	}
 
-	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+	public List<PatternModifyLog> modify(BMSModel model) {
 		List<PatternModifyLog> log = new ArrayList();
-		makeRandom(model, config);
+		makeRandom(model);
 		int lanes = model.getMode().key;
 		TimeLine[] timelines = model.getAllTimeLines();
 		for (int index = 0; index < timelines.length; index++) {

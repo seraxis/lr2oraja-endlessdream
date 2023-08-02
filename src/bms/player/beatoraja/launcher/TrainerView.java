@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.awt.Desktop;
 import java.net.URI;
 import java.net.URL;
+import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -12,6 +13,7 @@ import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.launcher.PlayConfigurationView.OptionListCell;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
@@ -24,9 +26,13 @@ public class TrainerView {
 	private Button setbutton;
 	@FXML
 	private TextField laneorder;
+
+/* 	@FXML
+	private ListView<String> history; */
 	
 	
 	private PlayerConfig player;
+
 
 
     public void update(PlayerConfig player) {
@@ -34,11 +40,14 @@ public class TrainerView {
         if(this.player == null) {
             return;
         }
+		player.setTrainerActive(false);
         traineractive.setSelected(player.getTrainerActive());
 		laneorder.setPromptText("1234567");
-
-		System.out.println("laneorder updated");
-		this.player.setLaneOrder(new int[]{0, 1, 2, 3, 4, 5, 6});
+		if (this.player.getLaneOrder() != null) {
+			laneorder.setText(this.player.getLaneOrder());
+		} else {
+		    this.player.setLaneOrder("1234567");
+		}
     }
 
     @FXML
@@ -46,10 +55,15 @@ public class TrainerView {
 		player.setTrainerActive(traineractive.isSelected());
 	}
 
+/*     @FXML
+	public void fromHistory () {
+
+	} */
+
 	@FXML
 	public void setRandom() {
 		if (this.laneorder == null) {
-			System.out.println("RandomTrainer: Lane list null");
+			Logger.getGlobal().warning("RandomTrainer: Lane field empty");
 			return;
 		}
 
@@ -61,19 +75,17 @@ public class TrainerView {
 		Arrays.sort(l);
 
 		if (l.length != 7) {
-			System.out.println("RandomTrainer: Incorrect number of lanes specified");
+			Logger.getGlobal().warning("RandomTrainer: Incorrect number of lanes specified");
 			return;
 		}
 
 		for (int i = 0; i < has_all.length; i++) {
 			if (l[i] != has_all[i]) {
-				System.out.println("RandomTrainer: Lanes in incorrect format, falling back to nonran or last ran used");
+				Logger.getGlobal().warning("RandomTrainer: Lanes in incorrect format, falling back to nonran or last ran used");
 				return;
 			}
 		}
 
-//		@TODO implement a mode check so you dont force on non 7k game modifyTargetSide
-//		@TODO implement a reverse LUT for each random permutation 
-		player.setLaneOrder(lanes);
+		player.setLaneOrder(this.laneorder.getCharacters().toString());
 	}
 }

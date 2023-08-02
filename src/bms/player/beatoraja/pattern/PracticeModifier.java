@@ -28,7 +28,7 @@ public class PracticeModifier extends PatternModifier {
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+	public List<PatternModifyLog> modify(BMSModel model) {
 		int totalnotes = model.getTotalNotes();
 		final TimeLine[] tls = model.getAllTimeLines();
 		for (TimeLine tl : tls) {

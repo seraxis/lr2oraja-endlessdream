@@ -245,7 +245,7 @@ public class BMSPlayer extends MainState {
 			}
 
 			for(PatternModifier mod : mods) {
-				mod.modify(model, config);
+				mod.modify(model);
 				if(mod.getAssistLevel() != PatternModifier.AssistLevel.NONE) {
 					assist = Math.max(assist, mod.getAssistLevel() == PatternModifier.AssistLevel.ASSIST ? 2 : 1);
 					score = false;
@@ -267,10 +267,10 @@ public class BMSPlayer extends MainState {
 					}
 					LaneShuffleModifier mod = new LaneShuffleModifier(Random.BATTLE);
 					mod.setModifyTarget(PatternModifier.SIDE_1P);
-					mod.modify(model, config);
+					mod.modify(model);
 					if(playinfo.doubleoption == 3) {
 						PatternModifier as = new AutoplayModifier(model.getMode().scratchKey);
-						as.modify(model, config);
+						as.modify(model);
 					}
 					assist = Math.max(assist, 1);
 					score = false;
@@ -346,13 +346,53 @@ public class BMSPlayer extends MainState {
 
 			// SP譜面オプション
 			PatternModifier pm = PatternModifier.create(playinfo.randomoption, PatternModifier.SIDE_1P, model.getMode(), config);
-			Logger.getGlobal().info("=====TEST===== playinfo.randomoptionseed: " + Long.toString(playinfo.randomoptionseed));
-			Logger.getGlobal().info("=====TEST===== pm.getSeed(): " + Long.toString(pm.getSeed()));
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {
+				if (config.getTrainerActive() && model.getMode() == Mode.BEAT_7K && resource.getRandomSeedMap() != null) {
+					HashMap<Integer, Long> seedmap = resource.getRandomSeedMap();
+					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+					pm.setSeed(seedmap.get(Integer.parseInt(config.getLaneOrder())));
+				}
 				playinfo.randomoptionseed = pm.getSeed();
 			}
+
+/* 			if (model.getMode() == Mode.BEAT_7K) {	
+				int[] keys = {0,1,2,3,4,5,6};
+				long seed = pm.getSeed();
+
+				java.util.Random rand = new java.util.Random(seed);
+				List<Integer> l = new ArrayList<Integer>(keys.length);
+				for (int key : keys) {
+					l.add(key);
+				}
+				int max = 0;
+				for (int key : keys) {
+					max = Math.max(max, key);
+				}
+				int[] result = new int[max + 1];
+				for (int i = 0; i < result.length; i++) {
+					result[i] = i;
+				}
+				for (int lane = 0; lane < keys.length; lane++) {
+					int r = rand.nextInt(l.size());
+					result[keys[lane]] = l.get(r);
+					l.remove(r);
+				}
+
+				StringBuilder ransb = new StringBuilder();
+				for (int i = 0; i < result.length; i++) {
+					ransb.append(Integer.toString(result[i]+1));
+				}
+				String ranstring = ransb.toString();
+				if (config.getRanHistory().size < 20) {
+				    config.getRanHistory().push(ranstring);
+				} else {
+				    config.getRanHistory().pop();
+				    config.getRanHistory().push(ranstring);
+				} */
+
+			
 			mods.add(pm);
 			Logger.getGlobal().info("譜面オプション(1P) :  " + playinfo.randomoption + ", Seed : " + playinfo.randomoptionseed);
 
@@ -365,7 +405,7 @@ public class BMSPlayer extends MainState {
 
 			List<PatternModifyLog> pattern = new ArrayList<PatternModifyLog>();
 			for(PatternModifier mod : mods) {
-				pattern = PatternModifier.merge(pattern,mod.modify(model, config));
+				pattern = PatternModifier.merge(pattern,mod.modify(model));
 				if(mod.getAssistLevel() != PatternModifier.AssistLevel.NONE) {
 					Logger.getGlobal().info("アシスト譜面オプションが選択されました");
 					assist = Math.max(assist, mod.getAssistLevel() == PatternModifier.AssistLevel.ASSIST ? 2 : 1);
@@ -569,14 +609,14 @@ public class BMSPlayer extends MainState {
 				model.setTotal(property.total);
 				PracticeModifier pm = new PracticeModifier(property.starttime * 100 / property.freq,
 						property.endtime * 100 / property.freq);
-				pm.modify(model, config);
+				pm.modify(model);
 				if (model.getMode().player == 2) {
 					if (property.doubleop == 1) {
-						new LaneShuffleModifier(Random.FLIP).modify(model, config);
+						new LaneShuffleModifier(Random.FLIP).modify(model);
 					}
-					PatternModifier.create(property.random2, PatternModifier.SIDE_2P, model.getMode(), config).modify(model, config);
+					PatternModifier.create(property.random2, PatternModifier.SIDE_2P, model.getMode(), config).modify(model);
 				}
-				PatternModifier.create(property.random, PatternModifier.SIDE_1P, model.getMode(), config).modify(model, config);
+				PatternModifier.create(property.random, PatternModifier.SIDE_1P, model.getMode(), config).modify(model);
 
 				gauge = practice.getGauge(model);
 				model.setJudgerank(property.judgerank);

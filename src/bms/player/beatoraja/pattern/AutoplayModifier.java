@@ -28,7 +28,7 @@ public class AutoplayModifier extends PatternModifier {
 		this.margin = margin;
 	}
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+	public List<PatternModifyLog> modify(BMSModel model) {
 		TimeLine[] tls = model.getAllTimeLines();
 		boolean[] ln = new boolean[model.getMode().key];
 		for (int i = 0, pos = 0;i < tls.length;i++) {

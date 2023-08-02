@@ -36,7 +36,7 @@ public class ExtraNoteModifier extends PatternModifier {
         this.scratch = scratch;
     }
 
-    public List<PatternModifyLog> modify(BMSModel model, PlayerConfig config) {
+    public List<PatternModifyLog> modify(BMSModel model) {
         AssistLevel assist = AssistLevel.NONE;
         TimeLine[] tls = model.getAllTimeLines();
         boolean[] ln = new boolean[model.getMode().key];
