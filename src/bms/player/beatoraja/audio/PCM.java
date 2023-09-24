@@ -1,6 +1,7 @@
 package bms.player.beatoraja.audio;
 
 import java.io.*;
+import java.nio.ShortBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -174,6 +175,7 @@ public abstract class PCM<T> {
 			pcm = null;
 
 			final String name = p.toString().toLowerCase();
+			WAVFile wavfile = WAVFile.fromFile(p);
 			if (name.endsWith(".wav")) {
 				try (WavInputStream input = new WavInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
 					switch(input.type) {
@@ -195,6 +197,48 @@ public abstract class PCM<T> {
 						}
 						
 						break;					
+					}
+					case 2:
+					{
+						ByteBuffer wavinput = wavfile.getReadOnlyData();
+						channels = input.channels;
+						sampleRate = input.sampleRate;
+						bitsPerSample = input.bitsPerSample;
+						int blockSize = ADPCMUtil.computeBlockSize(channels, sampleRate);
+
+						OptimizedByteArrayOutputStream output2 = new OptimizedByteArrayOutputStream(input.dataRemaining);
+						StreamUtils.copyStream(input, output2);
+						ByteBuffer input_test = ByteBuffer.wrap(output2.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
+						pcm.limit(output2.size());
+						if (wavinput == input_test) {
+							Logger.getGlobal().info("They are the same");
+						} else {
+							Logger.getGlobal().info("They are the different");
+						}
+						OptimizedByteArrayOutputStream output = new OptimizedByteArrayOutputStream(input.dataRemaining);
+						StreamUtils.copyStream(input, output);
+						ByteBuffer temp = ByteBuffer.wrap(output.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
+						temp.limit(output.size());
+
+						ADPCMDecoderConfig cfg =
+						    ADPCMDecoder.configure()
+							.setChannels(channels)
+							.setBlockSize(blockSize)
+							.setSampleRate(sampleRate)
+							.end();
+
+						ByteBuffer pcmOutput = ByteBuffer.allocate(wavfile.getNumSamples() * wavfile.getChannels() * 2);
+						pcm = new ADPCMDecoder(cfg).decode(wavinput, pcmOutput);
+
+						// pcm =
+						//     new ADPCMDecoder(cfg)
+						// 	.decode(
+						// 		temp,
+						// 		ByteBuffer.allocate(input.dataRemaining)
+						// 	);
+						pcm.rewind();
+
+
 					}
 					case 85:
 						// mp3
