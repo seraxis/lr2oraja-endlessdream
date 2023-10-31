@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.jflac.FLACDecoder;
 import org.jflac.metadata.StreamInfo;
 
@@ -162,6 +163,7 @@ public abstract class PCM<T> {
 		int channels = 0;
 		int sampleRate = 0;
 		int bitsPerSample = 0;
+		int blockAlign = 0;
 		
 		private final AudioDriver driver;
 		
@@ -175,13 +177,12 @@ public abstract class PCM<T> {
 			pcm = null;
 
 			final String name = p.toString().toLowerCase();
-			WAVFile wavfile = WAVFile.fromFile(p);
+			//WAVFile wavfile = WAVFile.fromFile(p);
 			if (name.endsWith(".wav")) {
 				try (WavInputStream input = new WavInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
 					switch(input.type) {
 					case 1:
-					case 3:
-					{
+						{
 						channels = input.channels;
 						sampleRate = input.sampleRate;
 						bitsPerSample = input.bitsPerSample;
@@ -198,7 +199,38 @@ public abstract class PCM<T> {
 						
 						break;					
 					}
-					case 2:
+					case 2: 
+					    {
+						channels = input.channels;
+						sampleRate = input.sampleRate;
+						//bitsPerSample = input.bitsPerSample;
+						bitsPerSample = 16;
+						blockAlign = input.blockAlign;
+						Logger.getGlobal().info("channels: " + channels);
+						Logger.getGlobal().info("sample rate: " + sampleRate);
+						Logger.getGlobal().info("block align" + blockAlign);
+
+
+						OptimizedByteArrayOutputStream inputByteStream = new OptimizedByteArrayOutputStream(input.dataRemaining);
+						StreamUtils.copyStream(input, inputByteStream);
+						ByteBuffer inputByteBuffer = ByteBuffer.wrap(inputByteStream.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
+						//inputByteBuffer.flip();
+
+						Logger.getGlobal().info("buffer limit" + inputByteBuffer.limit());
+						Logger.getGlobal().info("buffer hasRemain" + inputByteBuffer.hasRemaining());
+						Logger.getGlobal().info("buffer remain" + inputByteBuffer.remaining());
+						ByteArrayOutputStream result = new ByteArrayOutputStream(channels * 2 * inputByteBuffer.limit());
+						MSADPCMDecoder decoder = new MSADPCMDecoder(channels, sampleRate, blockAlign);
+						decoder.decode(inputByteBuffer, result);
+
+						pcm = ByteBuffer.wrap(result.toByteArray());
+						//pcm.flip();
+
+						Logger.getGlobal().info("Filename: " + p );
+						break;
+					}
+					// IMA-ADPCM Decoder
+/* 					case 11:
 					{
 						ByteBuffer wavinput = wavfile.getReadOnlyData();
 						channels = input.channels;
@@ -238,8 +270,9 @@ public abstract class PCM<T> {
 						// 	);
 						pcm.rewind();
 
+						break;
 
-					}
+					} */
 					case 85:
 						// mp3
 					{
@@ -282,7 +315,7 @@ public abstract class PCM<T> {
 						throw new IOException(p.toString() + " unsupported WAV format ID : " + input.type);					
 					}
 				} catch (Throwable e) {
-					Logger.getGlobal().warning("WAV処理中の例外 - file : " + p + " error : "+ e.getMessage());
+					Logger.getGlobal().warning("WAV処理中の例外 - file : " + p + " error : "+ e.getMessage() + e);
 				}
 			} else if (name.endsWith(".ogg")) {
 				// ogg
@@ -410,6 +443,8 @@ public abstract class PCM<T> {
 		private final int type;
 		private final int channels;
 		private final int sampleRate;
+
+		private int blockAlign = -1;
 		/**
 		 * 1サンプル当たりのビット数
 		 */
@@ -434,7 +469,9 @@ public abstract class PCM<T> {
 
 				sampleRate = read() & 0xff | (read() & 0xff) << 8 | (read() & 0xff) << 16 | (read() & 0xff) << 24;
 
-				skipFully(6);
+				skipFully(4);
+
+				blockAlign = read() & 0xff | (read() & 0xff) <<8;
 
 				bitsPerSample = read() & 0xff | (read() & 0xff) << 8;
 

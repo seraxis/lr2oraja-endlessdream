@@ -131,13 +131,15 @@ public class PlayerResource {
 		this.pconfig = pconfig;
 		this.bmsresource = new BMSResource(audio, config, pconfig);
 		this.orgGaugeOption = pconfig.getGauge();
-		try (FileInputStream input = new FileInputStream("randomtrainer.dat")) {
-            ObjectInputStream ois = new ObjectInputStream(input);
+		
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		try {
+            ObjectInputStream ois = new ObjectInputStream(cl.getResourceAsStream("resources/randomtrainer.dat"));
 
             randomseedmap = (HashMap<Integer, Long>) ois.readObject();
             ois.close();
-        } catch (ClassNotFoundException | IOException ex) {
-			Logger.getGlobal().severe("RandomTrainer: randomtrainer.dat corrupted or missing");
+        } catch (ClassNotFoundException | NullPointerException | IOException ex) {
+			Logger.getGlobal().severe("RandomTrainer: randomtrainer.dat corrupted or missing from jar");
 		    ex.printStackTrace();
         }
 	}
