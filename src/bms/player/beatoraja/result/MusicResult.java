@@ -38,14 +38,14 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public void create() {
-		final PlayerResource resource = main.getPlayerResource();
 		for(int i = 0;i < REPLAY_SIZE;i++) {
 			saveReplay[i] = main.getPlayDataAccessor().existsReplayData(resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), i) ? ReplayStatus.EXIST : ReplayStatus.NOT_EXIST ;			
 		}
 
-		setSound(SOUND_CLEAR, "clear.wav", SoundType.SOUND, false);
-		setSound(SOUND_FAIL, "fail.wav", SoundType.SOUND, false);
+		final boolean isLoopSound = resource.getConfig().getAudioConfig().isLoopResultSound();
+		setSound(SOUND_CLEAR, "clear.wav", SoundType.SOUND, isLoopSound);
+		setSound(SOUND_FAIL, "fail.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_CLOSE, "resultclose.wav", SoundType.SOUND, false);
 
 		property = ResultKeyProperty.get(resource.getBMSModel().getMode());
@@ -76,7 +76,6 @@ public class MusicResult extends AbstractResult {
 	
 	public void prepare() {
 		state = STATE_OFFLINE;
-		final PlayerResource resource = main.getPlayerResource();
 		final ScoreData newscore = getNewScore();
 
 		ranking = resource.getRankingData() != null && resource.getCourseBMSModels() == null ? resource.getRankingData() : new RankingData();
@@ -114,7 +113,7 @@ public class MusicResult extends AbstractResult {
                 	
                 	for(IRSendStatus irc : irSendStatus) {
         				if(irsend == 0) {
-        					main.switchTimer(TIMER_IR_CONNECT_BEGIN, true);                					
+        					timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);                					
         				}
         				irsend++;
                         succeed &= irc.send();
@@ -125,7 +124,7 @@ public class MusicResult extends AbstractResult {
                 	irSendStatus.removeAll(removeIrSendStatus);
                 	                	
                 	if(irsend > 0) {
-                        main.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
+                		timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
                         
                         IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(resource.getSongdata()));
                         if(response.isSucceeded()) {
@@ -156,21 +155,19 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public void render() {
-		long time = main.getNowTime();
-		main.switchTimer(TIMER_RESULTGRAPH_BEGIN, true);
-		main.switchTimer(TIMER_RESULTGRAPH_END, true);
+		long time = timer.getNowTime();
+		timer.switchTimer(TIMER_RESULTGRAPH_BEGIN, true);
+		timer.switchTimer(TIMER_RESULTGRAPH_END, true);
 
 		if (((MusicResultSkin) getSkin()).getRankTime() == 0) {
-			main.switchTimer(TIMER_RESULT_UPDATESCORE, true);
+			timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
 		}
 		if (time > getSkin().getInput()) {
-			main.switchTimer(TIMER_STARTINPUT, true);
+			timer.switchTimer(TIMER_STARTINPUT, true);
 		}
 
-		final PlayerResource resource = main.getPlayerResource();
-
-		if (main.isTimerOn(TIMER_FADEOUT)) {
-			if (main.getNowTime(TIMER_FADEOUT) > getSkin().getFadeout()) {
+		if (timer.isTimerOn(TIMER_FADEOUT)) {
+			if (timer.getNowTime(TIMER_FADEOUT) > getSkin().getFadeout()) {
 				main.getAudioProcessor().stop((Note) null);
 
 				final BMSPlayerInputProcessor input = main.getInputProcessor();
@@ -211,7 +208,7 @@ public class MusicResult extends AbstractResult {
 						main.changeState(MainStateType.COURSERESULT);
 					}
 				} else {
-					main.getPlayerResource().getPlayerConfig().setGauge(main.getPlayerResource().getOrgGaugeOption());
+					resource.getPlayerConfig().setGauge(resource.getOrgGaugeOption());
 					ResultKeyProperty.ResultKey key = null;
 					for (int i = 0; i < property.getAssignLength(); i++) {
 						if (property.getAssign(i) == ResultKeyProperty.ResultKey.REPLAY_DIFFERENT && input.getKeyState(i)) {
@@ -248,7 +245,7 @@ public class MusicResult extends AbstractResult {
 			}
 		} else {
 			if (time > getSkin().getScene()) {
-				main.switchTimer(TIMER_FADEOUT, true);
+				timer.switchTimer(TIMER_FADEOUT, true);
 				if (getSound(SOUND_CLOSE) != null) {
 					stop(SOUND_CLEAR);
 					stop(SOUND_FAIL);
@@ -261,11 +258,10 @@ public class MusicResult extends AbstractResult {
 
 	public void input() {
 		super.input();
-		long time = main.getNowTime();
-		final PlayerResource resource = main.getPlayerResource();
+		long time = timer.getNowTime();
 		final BMSPlayerInputProcessor inputProcessor = main.getInputProcessor();
 
-		if (!main.isTimerOn(TIMER_FADEOUT) && main.isTimerOn(TIMER_STARTINPUT)) {
+		if (!timer.isTimerOn(TIMER_FADEOUT) && timer.isTimerOn(TIMER_STARTINPUT)) {
 			if (time > getSkin().getInput()) {
 				boolean ok = false;
 				for (int i = 0; i < property.getAssignLength(); i++) {
@@ -286,10 +282,10 @@ public class MusicResult extends AbstractResult {
 
 				if (resource.getScoreData() == null || ok) {
 					if (((MusicResultSkin) getSkin()).getRankTime() != 0
-							&& !main.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
-						main.switchTimer(TIMER_RESULT_UPDATESCORE, true);
+							&& !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
+						timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
 					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED) {
-						main.switchTimer(TIMER_FADEOUT, true);
+						timer.switchTimer(TIMER_FADEOUT, true);
 						if (getSound(SOUND_CLOSE) != null) {
 							stop(SOUND_CLEAR);
 							stop(SOUND_FAIL);
@@ -316,7 +312,6 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public void saveReplayData(int index) {
-		final PlayerResource resource = main.getPlayerResource();
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && resource.getCourseBMSModels() == null
 				&& resource.getScoreData() != null) {
 			if (saveReplay[index] != ReplayStatus.SAVED && resource.isUpdateScore()) {
@@ -329,7 +324,6 @@ public class MusicResult extends AbstractResult {
 	}
 
 	private void updateScoreDatabase() {
-		final PlayerResource resource = main.getPlayerResource();
 		ScoreData newscore = resource.getScoreData();
 		if (newscore == null) {
 			if (resource.getCourseScoreData() != null) {
@@ -453,7 +447,7 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public int getJudgeCount(int judge, boolean fast) {
-		ScoreData score = main.getPlayerResource().getScoreData();
+		ScoreData score = resource.getScoreData();
 		if (score != null) {
 			switch (judge) {
 			case 0:
@@ -479,12 +473,11 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public int getTotalNotes() {
-		final PlayerResource resource = main.getPlayerResource();
 		return resource.getBMSModel().getTotalNotes();
 	}
 
 	public ScoreData getNewScore() {
-		return main.getPlayerResource().getScoreData();
+		return resource.getScoreData();
 	}
 
 	static class IRSendStatus {

@@ -57,7 +57,8 @@ public class ScoreDataProperty {
 
         rivalscore = exscore;
         rivalscorerate = totalnotes == 0 ? 1.0f : ((float)exscore) / (totalnotes * 2);
-
+        rivalrateInt = (int)(rivalscorerate * 100);
+        rivalrateAfterDot = ((int)(rivalscorerate * 10000)) % 100;
     }
 
     public void update(ScoreData score, int notes) {
@@ -100,11 +101,11 @@ public class ScoreDataProperty {
         for(int i = 0;i < rank.length;i++) {
             rank[i] = totalnotes != 0 && rate >= 1f * i / rank.length;
             if(i % 3 == 0 && !rank[i] && nextrank == Integer.MIN_VALUE) {
-                nextrank = Math.round((i * (notes * 2) / rank.length) - rate * (notes * 2));
+                nextrank = (int)Math.ceil((i * (notes * 2) / (double)rank.length) - rate * (notes * 2));
             }
         }
         if(nextrank == Integer.MIN_VALUE) {
-            nextrank = Math.round((notes * 2) - rate * (notes * 2));
+            nextrank = (notes * 2) - exscore;
         }
         for(int i = 0;i < nowrank.length;i++) {
             nowrank[i] = totalnotes != 0 && nowrate >= 1f * i / nowrank.length;
@@ -142,7 +143,9 @@ public class ScoreDataProperty {
     
     public void updateTargetScore(int rivalscore) {
     	this.rivalscore = rivalscore;
-        rivalscorerate= ((float)rivalscore)  / (totalnotes * 2);
+        rivalscorerate = ((float)rivalscore)  / (totalnotes * 2);
+        rivalrateInt = (int)(rivalscorerate * 100);
+        rivalrateAfterDot = ((int)(rivalscorerate * 10000)) % 100;
     }
 
     public void setTargetScore(int bestscore, int rivalscore, int totalnotes) {

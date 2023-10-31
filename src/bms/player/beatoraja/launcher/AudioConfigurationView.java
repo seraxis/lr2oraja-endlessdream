@@ -16,6 +16,7 @@ import bms.player.beatoraja.audio.PortAudioDriver;
 import bms.player.beatoraja.launcher.PlayConfigurationView.OptionListCell;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
@@ -42,6 +43,10 @@ public class AudioConfigurationView implements Initializable {
 	private ComboBox<FrequencyType> audioFreqOption;
 	@FXML
 	private ComboBox<FrequencyType> audioFastForward;
+	@FXML
+	private CheckBox loopResultSound;
+	@FXML
+	private CheckBox loopCourseResultSound;
 	
 	private AudioConfig config;
 
@@ -51,7 +56,6 @@ public class AudioConfigurationView implements Initializable {
 
 		audioFreqOption.getItems().setAll(FrequencyType.UNPROCESSED , FrequencyType.FREQUENCY);
 		audioFastForward.getItems().setAll(FrequencyType.UNPROCESSED , FrequencyType.FREQUENCY);
-
 	}
 
 	public void update(AudioConfig config) {
@@ -66,6 +70,8 @@ public class AudioConfigurationView implements Initializable {
 		systemvolume.setValue((double)config.getSystemvolume());
 		keyvolume.setValue((double)config.getKeyvolume());
 		bgvolume.setValue((double)config.getBgvolume());
+		loopResultSound.setSelected(config.isLoopResultSound());
+		loopCourseResultSound.setSelected(config.isLoopCourseResultSound());
 
 		updateAudioDriver();
 	}
@@ -81,6 +87,8 @@ public class AudioConfigurationView implements Initializable {
 		config.setSystemvolume((float) systemvolume.getValue());
 		config.setKeyvolume((float) keyvolume.getValue());
 		config.setBgvolume((float) bgvolume.getValue());
+		config.setLoopResultSound(loopResultSound.isSelected());
+		config.setLoopCourseResultSound(loopCourseResultSound.isSelected());
 	}
 
     @FXML

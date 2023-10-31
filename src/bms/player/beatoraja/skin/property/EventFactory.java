@@ -5,6 +5,7 @@ import bms.player.beatoraja.PlayConfig;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.PlayerInformation;
+import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.MainState.MainStateType;
 import bms.player.beatoraja.ir.IRChartData;
 import bms.player.beatoraja.ir.IRConnection;
@@ -38,7 +39,7 @@ import java.util.function.*;
  * @author excln
  */
 public class EventFactory {
-
+	
 	/**
 	 * ID指定によるイベント取得(組み込みまたはカスタムイベントとして登録したもの)
 	 * 
@@ -81,7 +82,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final MusicSelector selector = (MusicSelector) state;
 				int mode = 0;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				for(;mode < MusicSelector.MODE.length && MusicSelector.MODE[mode] != config.getMode();mode++);
 				config.setMode(MusicSelector.MODE[(mode + (arg1 >= 0 ? 1 : MusicSelector.MODE.length - 1)) % MusicSelector.MODE.length]);
 				selector.getBarRender().updateBar();
@@ -162,7 +163,7 @@ public class EventFactory {
 	     */
 		gauge1p(40, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-	            PlayerConfig config = state.main.getPlayerConfig();
+	            PlayerConfig config = state.resource.getPlayerConfig();
 	            config.setGauge((config.getGauge() + (arg1 >= 0 ? 1 : 5)) % 6);
 	            state.play(SOUND_OPTIONCHANGE);				
 			}
@@ -172,7 +173,7 @@ public class EventFactory {
 	     */
 		option1p(42, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-	            PlayerConfig config = state.main.getPlayerConfig();
+	            PlayerConfig config = state.resource.getPlayerConfig();
 	            config.setRandom((config.getRandom() + (arg1 >= 0 ? 1 : 9)) % 10);
 	            state.play(SOUND_OPTIONCHANGE);				
 			}
@@ -182,7 +183,7 @@ public class EventFactory {
 	     */
 		option2p(43, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-	            PlayerConfig config = state.main.getPlayerConfig();
+	            PlayerConfig config = state.resource.getPlayerConfig();
 	            config.setRandom2((config.getRandom2() + (arg1 >= 0 ? 1 : 9)) % 10);
 	            state.play(SOUND_OPTIONCHANGE);
 			}
@@ -192,7 +193,7 @@ public class EventFactory {
 	     */
 		optiondp(54, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-	            PlayerConfig config = state.main.getPlayerConfig();
+	            PlayerConfig config = state.resource.getPlayerConfig();
 	            config.setDoubleoption((config.getDoubleoption() + (arg1 >= 0 ? 1 : 3)) % 4);
 	            state.play(SOUND_OPTIONCHANGE);
 			}
@@ -271,9 +272,9 @@ public class EventFactory {
 					url = ir.getCourseURL(new IRCourseData(((GradeBar) current).getCourseData()));
 				}
 			} else if(state instanceof MusicResult) {
-	            url = ir.getSongURL(new IRChartData(state.main.getPlayerResource().getSongdata()));
+	            url = ir.getSongURL(new IRChartData(state.resource.getSongdata()));
 			} else if(state instanceof CourseResult) {
-	            url = ir.getCourseURL(new IRCourseData(state.main.getPlayerResource().getCourseData()));
+	            url = ir.getCourseURL(new IRCourseData(state.resource.getCourseData()));
 			}
 			if (url != null) {
 				try {
@@ -286,18 +287,18 @@ public class EventFactory {
 		}),
 		bga(72, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-				state.main.getConfig().setBga((state.main.getConfig().getBga() + (arg1 >= 0 ? 1 : 2)) % 3);
+				state.main.getConfig().setBga((state.resource.getConfig().getBga() + (arg1 >= 0 ? 1 : 2)) % 3);
 				state.play(SOUND_OPTIONCHANGE);				
 			}
 		}),
 		bgaexpand(73, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-				state.main.getConfig().setBgaExpand((state.main.getConfig().getBgaExpand() + (arg1 >= 0 ? 1 : 2)) % 3);
+				state.main.getConfig().setBgaExpand((state.resource.getConfig().getBgaExpand() + (arg1 >= 0 ? 1 : 2)) % 3);
 				state.play(SOUND_OPTIONCHANGE);				
 			}
 		}),
 		notesdisplaytiming(74, (state, arg1) -> {
-	        final PlayerConfig config = state.main.getPlayerConfig();
+	        final PlayerConfig config = state.resource.getPlayerConfig();
 
 	        int inc = arg1 >= 0 ? (config.getJudgetiming() < PlayerConfig.JUDGETIMING_MAX ? 1 : 0)
 	        		: (config.getJudgetiming() > PlayerConfig.JUDGETIMING_MIN ? -1 : 0);
@@ -310,7 +311,7 @@ public class EventFactory {
 	        }
 		}),
 		notesdisplaytimingautoadjust(75, (state) -> {
-	        final PlayerConfig config = state.main.getPlayerConfig();
+	        final PlayerConfig config = state.resource.getPlayerConfig();
             config.setNotesDisplayTimingAutoAdjust(!config.isNotesDisplayTimingAutoAdjust());
 			if(state instanceof MusicSelector) {
                 state.play(SOUND_OPTIONCHANGE);		        	
@@ -318,7 +319,7 @@ public class EventFactory {
 		}),
 		target(77, (state, arg1) -> {
 			if(state instanceof MusicSelector) {
-		        final PlayerConfig config = state.main.getPlayerResource().getPlayerConfig();
+		        final PlayerConfig config = state.resource.getPlayerConfig();
 	            final String[] targets = TargetProperty.getTargets();
 	            int index = 0;
 	            for(;index < targets.length;index++) {
@@ -333,7 +334,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final MusicSelector selector = (MusicSelector) state;
 				final int gaslength = 5;
-	            selector.main.getPlayerConfig().setGaugeAutoShift((selector.main.getPlayerConfig().getGaugeAutoShift() + (arg1 >= 0 ?1 : gaslength - 1)) % gaslength);
+	            selector.resource.getPlayerConfig().setGaugeAutoShift((selector.resource.getPlayerConfig().getGaugeAutoShift() + (arg1 >= 0 ?1 : gaslength - 1)) % gaslength);
 	            selector.play(SOUND_OPTIONCHANGE);
 			}
 		}),
@@ -341,7 +342,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final MusicSelector selector = (MusicSelector) state;
 				final int gaugelength = 3;
-				selector.main.getPlayerConfig().setBottomShiftableGauge((selector.main.getPlayerConfig().getBottomShiftableGauge() + (arg1 >= 0 ? 1 : gaugelength - 1)) % gaugelength);
+				selector.resource.getPlayerConfig().setBottomShiftableGauge((selector.resource.getPlayerConfig().getBottomShiftableGauge() + (arg1 >= 0 ? 1 : gaugelength - 1)) % gaugelength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
 		}),
@@ -396,7 +397,7 @@ public class EventFactory {
 				if (selector.getSelectedBar() instanceof SongBar) {
 					final SongData sd = ((SongBar) selector.getSelectedBar()).getSongData();
 
-					if (sd != null) {
+					if (sd != null && sd.getPath() != null) {
 						String message = next ? "Added to Invisible Chart" : "Removed from Favorite Chart";
 						if ((sd.getFavorite() & (SongData.FAVORITE_CHART | SongData.INVISIBLE_CHART)) == 0) {
 							message = next ? "Added to Favorite Chart" : "Added to Invisible Chart";
@@ -413,7 +414,7 @@ public class EventFactory {
 				}
 			}
 			if(state instanceof MusicResult) {
-				final SongData sd = state.main.getPlayerResource().getSongdata();
+				final SongData sd = state.resource.getSongdata();
 				if(sd != null) {
 					changeFav.accept(sd);					
 				}
@@ -454,7 +455,7 @@ public class EventFactory {
 				final MusicSelector selector = (MusicSelector) state;
 				if(selector.getSelectedBar() instanceof SongBar) {
 					final SongData sd = ((SongBar) selector.getSelectedBar()).getSongData();
-					if(sd != null) {
+					if(sd != null && sd.getPath() != null) {
 						String message = next ? "Added to Invisible Song" : "Removed from Favorite Song";
 						if((sd.getFavorite() & (SongData.FAVORITE_SONG | SongData.INVISIBLE_SONG)) == 0) {
 							message = next ? "Added to Favorite Song" : "Added to Invisible Song";
@@ -469,12 +470,67 @@ public class EventFactory {
 				}
 			}
 			if(state instanceof MusicResult) {
-				final SongData sd = state.main.getPlayerResource().getSongdata();
+				final SongData sd = state.resource.getSongdata();
 				if(sd != null) {
 					changeFav.accept(sd);					
 				}
 			}
 		}),
+		keyassign1(101, changeKeyAssign(0)),
+		keyassign2(102, changeKeyAssign(1)),
+		keyassign3(103, changeKeyAssign(2)),
+		keyassign4(104, changeKeyAssign(3)),
+		keyassign5(105, changeKeyAssign(4)),
+		keyassign6(106, changeKeyAssign(5)),
+		keyassign7(107, changeKeyAssign(6)),
+		keyassign8(108, changeKeyAssign(7)),
+		keyassign9(109, changeKeyAssign(8)),
+		keyassign10(110, changeKeyAssign(9)),
+		keyassign11(111, changeKeyAssign(10)),
+		keyassign12(112, changeKeyAssign(11)),
+		keyassign13(113, changeKeyAssign(12)),
+		keyassign14(114, changeKeyAssign(13)),
+		keyassign15(115, changeKeyAssign(14)),
+		keyassign16(116, changeKeyAssign(15)),
+		keyassign17(117, changeKeyAssign(16)),
+		keyassign18(118, changeKeyAssign(17)),
+		keyassign19(119, changeKeyAssign(18)),
+		keyassign20(120, changeKeyAssign(19)),
+		keyassign21(121, changeKeyAssign(20)),
+		keyassign22(122, changeKeyAssign(21)),
+		keyassign23(123, changeKeyAssign(22)),
+		keyassign24(124, changeKeyAssign(23)),
+		keyassign25(125, changeKeyAssign(24)),
+		keyassign26(126, changeKeyAssign(25)),
+		keyassign27(127, changeKeyAssign(26)),
+		keyassign28(128, changeKeyAssign(27)),
+		keyassign29(129, changeKeyAssign(28)),
+		keyassign30(130, changeKeyAssign(29)),
+		keyassign31(131, changeKeyAssign(30)),
+		keyassign32(132, changeKeyAssign(31)),
+		keyassign33(133, changeKeyAssign(32)),
+		keyassign34(134, changeKeyAssign(33)),
+		keyassign35(135, changeKeyAssign(34)),
+		keyassign36(136, changeKeyAssign(35)),
+		keyassign37(137, changeKeyAssign(36)),
+		keyassign38(138, changeKeyAssign(37)),
+		keyassign39(139, changeKeyAssign(38)),
+		keyassign40(150, changeKeyAssign(39)),
+		keyassign41(151, changeKeyAssign(40)),
+		keyassign42(152, changeKeyAssign(41)),
+		keyassign43(153, changeKeyAssign(42)),
+		keyassign44(154, changeKeyAssign(43)),
+		keyassign45(155, changeKeyAssign(44)),
+		keyassign46(156, changeKeyAssign(45)),
+		keyassign47(157, changeKeyAssign(46)),
+		keyassign48(158, changeKeyAssign(47)),
+		keyassign49(159, changeKeyAssign(48)),
+		keyassign50(160, changeKeyAssign(49)),
+		keyassign51(161, changeKeyAssign(50)),
+		keyassign52(162, changeKeyAssign(51)),
+		keyassign53(163, changeKeyAssign(52)),
+		keyassign54(164, changeKeyAssign(53)),
+
 	    /**
 	     * LNモードの変更
 	     */
@@ -482,7 +538,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int lnmodelength = 3;
 				final MusicSelector selector = (MusicSelector) state;
-	            PlayerConfig config = selector.main.getPlayerConfig();
+	            PlayerConfig config = selector.resource.getPlayerConfig();
 	            config.setLnmode((config.getLnmode() + (arg1 >= 0 ? 1 : lnmodelength - 1)) % lnmodelength);
 	            selector.getBarRender().updateBar();
 	            selector.play(SOUND_OPTIONCHANGE);
@@ -539,7 +595,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int depthlength = 4;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setExtranoteDepth((config.getExtranoteDepth() + (arg1 >= 0 ? 1 : depthlength - 1)) % depthlength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -548,7 +604,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int modelength = 5;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setMineMode((config.getMineMode() + (arg1 >= 0 ? 1 : modelength - 1)) % modelength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -557,7 +613,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int modelength = 3;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setScrollMode((config.getScrollMode() + (arg1 >= 0 ? 1 : modelength - 1)) % modelength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -566,7 +622,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int modelength = 6;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setLongnoteMode((config.getLongnoteMode() + (arg1 >= 0 ? 1 : modelength - 1)) % modelength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -575,7 +631,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int patternlength = 7;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setSevenToNinePattern((config.getSevenToNinePattern() + (arg1 >= 0 ? 1 : patternlength - 1)) % patternlength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -584,7 +640,7 @@ public class EventFactory {
 			if(state instanceof MusicSelector) {
 				final int typelength = 3;
 				final MusicSelector selector = (MusicSelector) state;
-				PlayerConfig config = selector.main.getPlayerConfig();
+				PlayerConfig config = selector.resource.getPlayerConfig();
 				config.setSevenToNineType((config.getSevenToNineType() + (arg1 >= 0 ? 1 : typelength - 1)) % typelength);
 				selector.play(SOUND_OPTIONCHANGE);
 			}
@@ -615,15 +671,23 @@ public class EventFactory {
 			this.event = createTwoArgEvent(action, id);
 		}
 		
-	    private static BiConsumer<MainState, Integer> changeAutoSaveReplay(int index) {
+	    private static BiConsumer<MainState, Integer> changeAutoSaveReplay(final int index) {
 	    	return (state, arg1) -> {
 	    		if(state instanceof MusicSelector) {
 					final MusicSelector selector = (MusicSelector) state;
-	    	        int[] asr = selector.main.getPlayerConfig().getAutoSaveReplay();
+	    	        int[] asr = selector.resource.getPlayerConfig().getAutoSaveReplay();
 	    	        final int length = AbstractResult.ReplayAutoSaveConstraint.values().length;
 	    	        asr[index] = (asr[index] + (arg1 >= 0 ? 1 : length - 1)) % length;
-	    	        selector.main.getPlayerConfig().setAutoSaveReplay(asr);
+	    	        selector.resource.getPlayerConfig().setAutoSaveReplay(asr);
 	    	        selector.play(SOUND_OPTIONCHANGE);
+	    		}
+	    	};
+	    }
+	    
+	    private static Consumer<MainState> changeKeyAssign(final int index) {
+	    	return (state) -> {
+	    		if(state instanceof KeyConfiguration) {
+					final KeyConfiguration keyconfig = (KeyConfiguration) state;
 	    		}
 	    	};
 	    }

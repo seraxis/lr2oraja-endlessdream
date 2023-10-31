@@ -53,6 +53,16 @@ public class AudioConfig implements Validatable {
 	 */
 	private float bgvolume = 0.5f;
 
+	/**
+	 * リザルト画面のサウンドをループ再生するか
+	 */
+	private boolean isLoopResultSound = false;
+
+	/**
+	 * コースリザルト画面のサウンドをループ再生するか
+	 */
+	private boolean isLoopCourseResultSound = false;
+
 	public DriverType getDriver() {
 		return driver;
 	}
@@ -131,6 +141,22 @@ public class AudioConfig implements Validatable {
 
 	public void setBgvolume(float bgvolume) {
 		this.bgvolume = bgvolume;
+	}
+
+	public boolean isLoopResultSound() {
+		return isLoopResultSound;
+	}
+
+	public void setLoopResultSound(boolean loopResultSound) {
+		isLoopResultSound = loopResultSound;
+	}
+
+	public boolean isLoopCourseResultSound() {
+		return isLoopCourseResultSound;
+	}
+
+	public void setLoopCourseResultSound(boolean loopCourseResultSound) {
+		isLoopCourseResultSound = loopCourseResultSound;
 	}
 	
 	public boolean validate() {
