@@ -18,3 +18,9 @@ b.bat
 /*.dll
 *.cim
 .idea/
+
+
+assets/
+core/
+.gradle/
+.vscode/

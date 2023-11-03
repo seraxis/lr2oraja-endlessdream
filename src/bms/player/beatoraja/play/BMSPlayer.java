@@ -623,7 +623,13 @@ public class BMSPlayer extends MainState {
 					}
 					PatternModifier.create(property.random2, PatternModifier.SIDE_2P, model.getMode(), config).modify(model);
 				}
-				PatternModifier.create(property.random, PatternModifier.SIDE_1P, model.getMode(), config).modify(model);
+				PatternModifier pattern_mod = PatternModifier.create(property.random, PatternModifier.SIDE_1P, model.getMode(), config);
+				if (config.getTrainerActive() && model.getMode() == Mode.BEAT_7K && resource.getRandomSeedMap() != null) {
+					HashMap<Integer, Long> seedmap = resource.getRandomSeedMap();
+					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+					pattern_mod.setSeed(seedmap.get(Integer.parseInt(config.getLaneOrder())));
+				}
+				pattern_mod.modify(model);
 
 				gauge = practice.getGauge(model);
 				model.setJudgerank(property.judgerank);
