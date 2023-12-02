@@ -1,0 +1,6 @@
+[submodule "core/dependencies/jbms-parser"]
+	path = core/dependencies/jbms-parser
+	url = https://github.com/seraxis/jbms-parser
+[submodule "core/dependencies/jbmstable-parser"]
+	path = core/dependencies/jbmstable-parser
+	url = https://github.com/seraxis/jbmstable-parser
