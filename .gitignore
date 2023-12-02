@@ -261,3 +261,5 @@ gradle-app.setting
 core/bin
 
 /player/
+
+util/
