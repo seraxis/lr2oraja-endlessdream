@@ -14,7 +14,7 @@ repositories {
     }
 }
 
-version = "0.8.6-endlessdream"
+version = libs.versions.beatoraja.get()
 
 sourceSets {
     main {
@@ -30,9 +30,9 @@ application {
 tasks {
     // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
     shadowJar {
-        var classifierPlatform = when(hasProperty("platform"))  {
-            true -> property("platform").toString()
-            false -> ""
+        val classifierPlatform = when(hasProperty("platform"))  {
+            true -> property("platform").toString().plus("-").plus(libs.versions.endlessdream.get())
+            false -> "".plus(libs.versions.endlessdream.get())
         }
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
