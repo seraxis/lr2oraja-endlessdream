@@ -30,8 +30,13 @@ application {
 tasks {
     // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
     shadowJar {
+        var classifierPlatform = when(hasProperty("platform"))  {
+            true -> property("platform").toString()
+            false -> ""
+        }
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
+        archiveClassifier.set(classifierPlatform)
 	    mergeServiceFiles()
     }
 
