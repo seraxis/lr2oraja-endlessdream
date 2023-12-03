@@ -1,4 +1,4 @@
-# LR2oraja ~Endless Dream~
+# LR2oraja \~Endless Dream\~
 
 JDK 8 with javafx required to build and run. Consider using [liberica JDK](https://bell-sw.com/pages/downloads/#jdk-8-lts)
 
