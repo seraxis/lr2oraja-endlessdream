@@ -10,25 +10,31 @@ public interface IRConnection {
 	/**
 	 * IRに新規ユーザー登録する。
 	 * 
-	 * @param id
-	 *            ユーザーID
-	 * @param pass
-	 *            パスワード
-	 * @param name
-	 *            ユーザー名
+	 * @param accout
+	 *            アカウント情報
 	 * @return
 	 */
-	public IRResponse<IRPlayerData> register(String id, String pass, String name);
+	default public IRResponse<IRPlayerData> register(IRAccount account)  {
+		throw new IllegalArgumentException("Use of this function with this signature without providing an implementation is not permitted");
+	};
+
+	default public IRResponse<IRPlayerData> register(String id, String pass, String name)  {
+		throw new IllegalArgumentException("Use of this function with this signature without providing an implementation is not permitted");
+	};
 
 	/**
 	 * IRにログインする。起動時に呼び出される
 	 * 
-	 * @param id
-	 *            ユーザーID
-	 * @param pass
-	 *            パスワード
+	 * @param accout
+	 *            アカウント情報
+	 * @return
 	 */
-	public IRResponse<IRPlayerData> login(String id, String pass);
+	default public IRResponse<IRPlayerData> login(IRAccount account)  {
+		throw new IllegalArgumentException("Use of this function with this signature without providing an implementation is not permitted");
+	};
+	default public IRResponse<IRPlayerData> login(String id, String pass)  {
+		throw new IllegalArgumentException("Use of this function with this signature without providing an implementation is not permitted");
+	};
 
 	/**
 	 * ライバルデータを収録する
