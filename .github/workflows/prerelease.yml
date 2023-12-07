@@ -36,11 +36,12 @@ jobs:
       with:
         gradle-version: wrapper
 
-    - name: Execute Gradle build
-      run: ./gradlew shadowJar -Pplatform=windows
-    - name: Execute Gradle build
-      run: ./gradlew shadowJar -Pplatform=linux
+    - name: Execute Windows Gradle build
+      run: ./gradlew -Dplatform=windows shadowJar
+    - name: Execute Linux Gradle build
+      run: ./gradlew -Dplatform=linux shadowJar
 
+    - name: Make Github release with build artifacts
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"

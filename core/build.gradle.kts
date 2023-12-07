@@ -30,8 +30,9 @@ application {
 tasks {
     // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
     shadowJar {
-        val classifierPlatform = when(hasProperty("platform"))  {
-            true -> property("platform").toString().plus("-").plus(libs.versions.endlessdream.get())
+        val platformProp = System.getProperty("platform")
+        val classifierPlatform = when(platformProp != null)  {
+            true -> platformProp.plus("-").plus(libs.versions.endlessdream.get())
             false -> "".plus(libs.versions.endlessdream.get())
         }
         destinationDirectory.set(projectDir.resolveSibling("dist"))
