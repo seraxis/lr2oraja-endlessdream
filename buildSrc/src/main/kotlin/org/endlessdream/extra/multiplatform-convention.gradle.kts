@@ -4,13 +4,13 @@ plugins {
     `java-library`
 }
 
-// use `-Pplatform=[platform]` or change this value to set the target platform for the jar
+// use `-Dplatform=[platform]` or change this value to set the target platform for the jar
 // Available platforms:
 //    "windows", "linux", "macos"
-var platform = when(hasProperty("platform"))  {
-    true -> property("platform").toString()
+var platform = when(System.getProperty("platform") != null)  {
+    true -> System.getProperty("platform")
     false -> "windows"
-}
+}!!
 
 tasks {
     register<Copy>("resolveRuntimeClasspath") {
