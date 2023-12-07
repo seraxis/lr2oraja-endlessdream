@@ -5,6 +5,12 @@ on:
     branches:
       - "main"
 
+permissions:
+  id-token: "write"
+  contents: "write"
+  packages: "write"
+  pull-requests: "read"
+
 jobs:
   pre-release:
     name: "Pre Release"
