@@ -48,4 +48,4 @@ jobs:
         prerelease: true
         title: "Latest Development Build"
         files: |
-          *.jar
+          dist/*
