@@ -1023,19 +1023,56 @@ public class BarRenderer {
 									String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
 											+ key.substring(1);
 									try {
-										Object value = randomFolder.getFilter().get(key);
-										if (scoreData == null) {
-											if (value instanceof String && !"".equals((String) value)) {
-												return false;
-											}
-											if (value instanceof Integer && 0 != (Integer) value) {
-												return false;
-											}
-										} else {
-											Method getterMethod = ScoreData.class.getMethod(getterMethodName);
-											Object propertyValue = getterMethod.invoke(scoreData);
-											if (!propertyValue.equals(value)) {
-												return false;
+										Object valueArr[] = ((String)randomFolder.getFilter().get(key)).split("&&");
+										for (Object value : valueArr)
+										{
+											value = ((String)value).replaceAll("\\s","");
+											if (scoreData == null) {
+												{
+													if (value instanceof String && !((String)value).isEmpty() && !((String)value).substring(0,1).equals("<")) {
+														return false;
+													}
+													if (value instanceof Integer && 0 != (Integer) value) {
+														return false;
+													}
+												}
+											} else {
+												Method getterMethod = ScoreData.class.getMethod(getterMethodName);
+												Object propertyValue = getterMethod.invoke(scoreData);
+												if (value instanceof String && propertyValue instanceof Integer) {
+													if (((String)value).substring(0,1).equals(">"))
+													{
+														if (((String)value).substring(1,2).equals("="))
+														{
+
+															if (!((Integer)propertyValue >= Integer.parseInt(((String)value).substring(2,((String)value).length()))))
+															{
+																return false;
+															}
+														}
+														else if (!((Integer)propertyValue > Integer.parseInt(((String)value).substring(1,((String)value).length()))))
+														{
+															return false;
+														}
+													}
+													if (((String)value).substring(0,1).equals("<"))
+													{
+														if (((String)value).substring(1,2).equals("="))
+														{
+															if (!((Integer)propertyValue <= Integer.parseInt(((String)value).substring(2,((String)value).length()))))
+															{
+																return false;
+															}
+														}
+														else if (!((Integer)propertyValue < Integer.parseInt(((String)value).substring(1,((String)value).length()))))
+														{
+															return false;
+														}
+													}
+												}
+												else if (!propertyValue.equals(value)) {
+													return false;
+												}
 											}
 										}
 									} catch (Throwable e) {
