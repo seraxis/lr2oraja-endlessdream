@@ -407,6 +407,81 @@ public class BarRenderer {
 		public void setFilter(Map<String, Object> filter) {
 			this.filter = filter;
 		}
+
+		public Boolean filterSong(ScoreData scoreData) {
+			Set<String> filterKey = this.getFilter().keySet();
+			for (String key : filterKey) {
+				String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
+						+ key.substring(1);
+				try {
+					Object valueArr[] = ((String)this.getFilter().get(key)).split("&&");
+					for (Object value : valueArr)
+					{
+						value = ((String)value).replaceAll("\\s","");
+						if (scoreData == null) {
+							if (value instanceof String) {
+								String stringValue = (String)value;
+								if (!stringValue.isEmpty() && !stringValue.substring(0,1).equals("<")) {
+									return false;
+								}
+							}
+							if (value instanceof Integer && 0 != (Integer) value) {
+								return false;
+							}
+						} else {
+							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
+							Object propertyValue = getterMethod.invoke(scoreData);
+							if (value instanceof String && propertyValue instanceof Integer) {
+								String valueString = (String)value;
+								Integer propertyValueInt = (Integer)propertyValue;
+								Integer filterValueInt;
+								if (valueString.substring(1,2).equals("=")){
+									filterValueInt = Integer.parseInt(valueString.substring(2,valueString.length()));
+								}
+								else filterValueInt = Integer.parseInt(valueString.substring(1,valueString.length()));
+
+								if (valueString.substring(0,1).equals(">"))
+								{
+									if (valueString.substring(1,2).equals("="))
+									{
+										if (!(propertyValueInt >= filterValueInt))
+										{
+											return false;
+										}
+									}
+									else if (!(propertyValueInt > filterValueInt))
+									{
+										return false;
+									}
+								}
+								if (valueString.substring(0,1).equals("<"))
+								{
+									if (valueString.substring(1,2).equals("="))
+									{
+										if (!(propertyValueInt <= filterValueInt))
+										{
+											return false;
+										}
+									}
+									else if (!(propertyValueInt < filterValueInt))
+									{
+										return false;
+									}
+								}
+							}
+							else if (!propertyValue.equals(value)) {
+								return false;
+							}
+						}
+					}
+				} catch (Throwable e) {
+					e.printStackTrace();
+					return false;
+				}
+			}
+			return true;
+		}
+
 	}
 
 	synchronized public void setAppendDirectoryBar(String key, Bar bar) {
@@ -1019,68 +1094,7 @@ public class BarRenderer {
 							Set<String> filterKey = randomFolder.getFilter().keySet();
 							randomTargets = Stream.of(randomTargets).filter(r -> {
 								ScoreData scoreData = select.getScoreDataCache().readScoreData(r, config.getLnmode());
-								for (String key : filterKey) {
-									String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
-											+ key.substring(1);
-									try {
-										Object valueArr[] = ((String)randomFolder.getFilter().get(key)).split("&&");
-										for (Object value : valueArr)
-										{
-											value = ((String)value).replaceAll("\\s","");
-											if (scoreData == null) {
-												{
-													if (value instanceof String && !((String)value).isEmpty() && !((String)value).substring(0,1).equals("<")) {
-														return false;
-													}
-													if (value instanceof Integer && 0 != (Integer) value) {
-														return false;
-													}
-												}
-											} else {
-												Method getterMethod = ScoreData.class.getMethod(getterMethodName);
-												Object propertyValue = getterMethod.invoke(scoreData);
-												if (value instanceof String && propertyValue instanceof Integer) {
-													if (((String)value).substring(0,1).equals(">"))
-													{
-														if (((String)value).substring(1,2).equals("="))
-														{
-
-															if (!((Integer)propertyValue >= Integer.parseInt(((String)value).substring(2,((String)value).length()))))
-															{
-																return false;
-															}
-														}
-														else if (!((Integer)propertyValue > Integer.parseInt(((String)value).substring(1,((String)value).length()))))
-														{
-															return false;
-														}
-													}
-													if (((String)value).substring(0,1).equals("<"))
-													{
-														if (((String)value).substring(1,2).equals("="))
-														{
-															if (!((Integer)propertyValue <= Integer.parseInt(((String)value).substring(2,((String)value).length()))))
-															{
-																return false;
-															}
-														}
-														else if (!((Integer)propertyValue < Integer.parseInt(((String)value).substring(1,((String)value).length()))))
-														{
-															return false;
-														}
-													}
-												}
-												else if (!propertyValue.equals(value)) {
-													return false;
-												}
-											}
-										}
-									} catch (Throwable e) {
-										e.printStackTrace();
-										return false;
-									}
-								}
-								return true;
+								return randomFolder.filterSong(scoreData);
 							}).toArray(SongData[]::new);
 						}
 						if ((randomFolder.filter != null && randomTargets.length >= 1)
