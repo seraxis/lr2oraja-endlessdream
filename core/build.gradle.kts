@@ -1,3 +1,5 @@
+import java.nio.file.FileSystems
+
 plugins {
     id("java-library")
     id("application")
@@ -44,7 +46,12 @@ tasks {
     // shadow task that extends java `application` plugin JavaExec to cover fatjars
     // used to test builds, does not contain portaudio natives.
     runShadow {
-        workingDir = projectDir.resolve("../assets")
+        val runDirProp = System.getProperty("runDir")
+        val runDir = when(runDirProp != null)  {
+            true -> FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
+            false -> projectDir.resolve("../assets")
+        }
+        workingDir = runDir
     }
 }
 
