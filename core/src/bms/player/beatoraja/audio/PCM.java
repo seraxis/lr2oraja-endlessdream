@@ -199,7 +199,7 @@ public abstract class PCM<T> {
 						
 						break;					
 					}
-					case 2: 
+					/*case 2:
 					    {
 						channels = input.channels;
 						sampleRate = input.sampleRate;
@@ -228,7 +228,7 @@ public abstract class PCM<T> {
 
 						Logger.getGlobal().info("Filename: " + p );
 						break;
-					}
+					}*/
 					// IMA-ADPCM Decoder
 /* 					case 11:
 					{
