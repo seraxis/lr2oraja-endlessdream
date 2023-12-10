@@ -1032,30 +1032,9 @@ public class IntegerPropertyFactory {
 		option_dp(54, (state) -> (state.resource.getPlayerConfig().getDoubleoption())),
 
 		hsfix(55, (state) -> {
-			if (state.resource.getSongdata() != null) {
-				SongData song = state.resource.getSongdata();
-				PlayConfig pc = state.resource.getPlayerConfig().getPlayConfig(song.getMode())
-						.getPlayconfig();
+			PlayConfig pc = ((MusicSelector)state).getSelectedBarPlayConfig();
+			if (pc != null) {
 				return pc.getFixhispeed();
-			} else if (state.resource.getCourseData() != null) {
-				PlayConfig pc = null;
-				for (SongData song : state.resource.getCourseData().getSong()) {
-					if (song.getPath() == null) {
-						pc = null;
-						break;
-					}
-					PlayConfig pc2 = state.resource.getPlayerConfig().getPlayConfig(song.getMode()).getPlayconfig();
-					if (pc == null) {
-						pc = pc2;
-					}
-					if (pc != pc2) {
-						pc = null;
-						break;
-					}
-				}
-				if (pc != null) {
-					return pc.getFixhispeed();
-				}
 			}
 			return Integer.MIN_VALUE;
 		}),
