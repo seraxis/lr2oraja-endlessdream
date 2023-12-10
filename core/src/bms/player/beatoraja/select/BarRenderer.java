@@ -414,24 +414,36 @@ public class BarRenderer {
 				String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
 						+ key.substring(1);
 				try {
+					if (this.getFilter().get(key) instanceof Integer) {
+						Integer value = (Integer)this.getFilter().get(key);
+						if (scoreData == null) {
+							if (0 != value) {
+								return false;
+							}
+						} else {
+							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
+							Object propertyValue = getterMethod.invoke(scoreData);
+							if (!propertyValue.equals(value)) {
+								return false;
+							}
+						}
+						return true;
+					}
 					Object valueArr[] = ((String)this.getFilter().get(key)).split("&&");
 					for (Object value : valueArr)
 					{
 						value = ((String)value).replaceAll("\\s","");
 						if (scoreData == null) {
 							if (value instanceof String) {
-								String stringValue = (String)value;
-								if (!stringValue.isEmpty() && !stringValue.substring(0,1).equals("<")) {
+								String stringValue = (String) value;
+								if (!stringValue.isEmpty() && !stringValue.substring(0, 1).equals("<")) {
 									return false;
 								}
-							}
-							if (value instanceof Integer && 0 != (Integer) value) {
-								return false;
 							}
 						} else {
 							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
 							Object propertyValue = getterMethod.invoke(scoreData);
-							if (value instanceof String && propertyValue instanceof Integer) {
+							if (propertyValue instanceof Integer) {
 								String valueString = (String)value;
 								Integer propertyValueInt = (Integer)propertyValue;
 								Integer filterValueInt;
