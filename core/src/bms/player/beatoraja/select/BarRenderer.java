@@ -414,7 +414,7 @@ public class BarRenderer {
 				String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
 						+ key.substring(1);
 				try {
-					if (this.getFilter().get(key) instanceof Integer) {
+					if (this.getFilter().get(key) instanceof Integer) { // Fork for integer values of the filter key.
 						Integer value = (Integer)this.getFilter().get(key);
 						if (scoreData == null) {
 							if (0 != value) {
@@ -430,15 +430,13 @@ public class BarRenderer {
 						return true;
 					}
 					Object valueArr[] = ((String)this.getFilter().get(key)).split("&&");
-					for (Object value : valueArr)
+					for (Object value : valueArr) // Fork for string values of the filter key.
 					{
-						value = ((String)value).replaceAll("\\s","");
+						value = ((String)value).replaceAll("\\s",""); // Clean from whitespaces.
 						if (scoreData == null) {
-							if (value instanceof String) {
-								String stringValue = (String) value;
-								if (!stringValue.isEmpty() && !stringValue.substring(0, 1).equals("<")) {
-									return false;
-								}
+							String stringValue = (String) value;
+							if (!stringValue.isEmpty() && !stringValue.substring(0, 1).equals("<")) {
+								return false; // Because lack of value would be less than anything.
 							}
 						} else {
 							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
@@ -447,12 +445,14 @@ public class BarRenderer {
 								String valueString = (String)value;
 								Integer propertyValueInt = (Integer)propertyValue;
 								Integer filterValueInt;
-								if (valueString.substring(1,2).equals("=")){
-									filterValueInt = Integer.parseInt(valueString.substring(2,valueString.length()));
+								// Checking the position for the integer bit of the key value.
+								if (valueString.substring(1,2).equals("=")){ // If the operation is either >= or <=.
+									filterValueInt = Integer.parseInt(valueString.substring(2));
 								}
-								else filterValueInt = Integer.parseInt(valueString.substring(1,valueString.length()));
+								// If the operation is > or <.
+								else filterValueInt = Integer.parseInt(valueString.substring(1));
 
-								if (valueString.substring(0,1).equals(">"))
+								if (valueString.substring(0,1).equals(">")) // Fork for > and >= operations.
 								{
 									if (valueString.substring(1,2).equals("="))
 									{
@@ -466,7 +466,7 @@ public class BarRenderer {
 										return false;
 									}
 								}
-								if (valueString.substring(0,1).equals("<"))
+								if (valueString.substring(0,1).equals("<")) // Fork for < and <= operations.
 								{
 									if (valueString.substring(1,2).equals("="))
 									{
