@@ -1032,7 +1032,13 @@ public class IntegerPropertyFactory {
 		option_dp(54, (state) -> (state.resource.getPlayerConfig().getDoubleoption())),
 
 		hsfix(55, (state) -> {
-			PlayConfig pc = ((MusicSelector)state).getSelectedBarPlayConfig();
+			PlayConfig pc = null;
+			if (state instanceof MusicSelector) {
+				pc = ((MusicSelector) state).getSelectedBarPlayConfig();
+			}
+			else {
+				pc = state.resource.getPlayerConfig().getPlayConfig(state.resource.getPlayerConfig().getMode()).getPlayconfig();
+			}
 			if (pc != null) {
 				return pc.getFixhispeed();
 			}
