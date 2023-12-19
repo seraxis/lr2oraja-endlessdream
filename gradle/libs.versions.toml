@@ -1,6 +1,6 @@
 [versions]
 beatoraja = "0.8.6-endlessdream"
-endlessdream = "pre0.0.1"
+endlessdream = "pre0.1.0"
 kotlin = "1.9.20"
 gdx = "1.12.1"
 gdx-controllers = "2.2.3"
