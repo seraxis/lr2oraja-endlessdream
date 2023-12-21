@@ -390,7 +390,7 @@ public class SkinNoteDistributionGraph extends SkinObject {
 				for (int j = 0, k = n[0], index = 0; j < max && index < n.length;) {
 					if (k > 0) {
 						k--;
-						shape.drawPixmap(chips[index], 0, 0, 1, 1, i * 5, j * 5, 4, 4 + (isNoGap ? 1 : 0));
+						shape.drawPixmap(chips[index], 0, 0, 1, 1, i * 5, j * 5, 4 + (isNoGap ? 1 : 0), 4 + (isNoGap ? 1 : 0));
 						j++;
 					} else {
 						index++;
@@ -404,7 +404,7 @@ public class SkinNoteDistributionGraph extends SkinObject {
 				for (int j = 0, k = n[n.length - 1], index = n.length - 1; j < max && index < n.length;) {
 					if (k > 0) {
 						k--;
-						shape.drawPixmap(chips[index], 0, 0, 1, 1, i * 5, j * 5, 4, 4 + (isNoGap ? 1 : 0));
+						shape.drawPixmap(chips[index], 0, 0, 1, 1, i * 5, j * 5, 4 + (isNoGap ? 1 : 0), 4 + (isNoGap ? 1 : 0));
 						j++;
 					} else {
 						index--;
