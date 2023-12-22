@@ -523,26 +523,16 @@ public class BMSPlayer extends MainState {
 
 			if(RandomTrainer.isFreaky()) {
 				int freq = RandomTrainer.getFreq();
-				//int starttime = 0;
+
 				//model = resource.getBMSModel();
 				practice.create(model);
 				PracticeProperty property = practice.getPracticeProperty();
-				////int endtime = model.getLastTime() + 1000;
-				//Logger.getGlobal().info(
-				//		"-- FreakyTrainer --\nFreaky Power:\t" + freq + "%" +
-				//		"\nStart Time:\t" + property.starttime +
-				//		"\nEnd Time:\t" + property.endtime);
 
 				BMSModelUtils.changeFrequency(model, freq / 100f);
 				lanerender.init(model);
 				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 					main.getAudioProcessor().setGlobalPitch(freq / 100f);
 				}
-
-				// This is probably just for the compressed PMode chart view
-				//PracticeModifier freakyrave = new PracticeModifier(property.starttime * 100 / freq,
-				//		property.endtime * 100 / freq);
-				//freakyrave.modify(model);
 			}
 			if(config.isChartPreview()) {
 				if(timer.isTimerOn(TIMER_PLAY) && micronow > startpressedtime) {
@@ -574,33 +564,6 @@ public class BMSPlayer extends MainState {
 				timer.setTimerOn(TIMER_PM_CHARA_1P_NEUTRAL);
 				timer.setTimerOn(TIMER_PM_CHARA_2P_NEUTRAL);
 			}
-
-/*
-			if(RandomTrainer.isFreaky()) {
-				int freq = RandomTrainer.getFreq();
-				//Logger.getGlobal().info("-- FreakyTrainer --\nFreaky Power:\t" + freq + "%");
-
-				// Does not re-scale chart to new speed
-				// i.e. 200 freq will be 2x fast scroll, still need to remodel chart:
-				//setPlaySpeed(freq);
-
-				int starttime = 0;
-				model = resource.getBMSModel();
-				PracticeProperty property = practice.getPracticeProperty();
-				//int endtime = model.getLastTime() + 1000;
-				//Logger.getGlobal().info(
-				//		"-- FreakyTrainer --\nFreaky Power:\t" + freq + "%" +
-				//		"\nStart Time:\t" + property.starttime +
-				//		"\nEnd Time:\t" + property.endtime);
-
-				BMSModelUtils.changeFrequency(model, freq / 100f);
-				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
-					main.getAudioProcessor().setGlobalPitch(freq / 100f);
-				}
-				//PracticeModifier freakyrave = new PracticeModifier(property.starttime * 100 / freq,
-				//		property.endtime * 100 / freq);
-				//freakyrave.modify(model);
-			}*/
 
 			break;
 		// practice mode
@@ -701,11 +664,8 @@ public class BMSPlayer extends MainState {
 			final long deltatime = micronow - prevtime;
 			final long deltaplay = deltatime * (100 - playspeed) / 100;
 			PracticeProperty property = practice.getPracticeProperty();
-			//if(RandomTrainer.isFreaky()) { property.freq = RandomTrainer.getFreq();}
 
 			timer.setMicroTimer(TIMER_PLAY, timer.getMicroTimer(TIMER_PLAY) + deltaplay);
-
-			// Does freq+ need to do anything for the following?:
 
 			rhythm.update(this, deltatime, lanerender.getNowBPM(), property.freq);
 

@@ -13,6 +13,7 @@ import com.badlogic.gdx.controllers.ControllerManager;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.controllers.desktop.JamepadControllerManager;
 
+import com.sun.javafx.util.Utils;
 import imgui.*;
 import imgui.flag.*;
 import imgui.callback.ImGuiInputTextCallback;
@@ -51,7 +52,6 @@ public class ImGuiRenderer {
     private static ImBoolean BLACK_WHITE_RANDOM_PERMUTATION = new ImBoolean(false);
 
     private static ArrayList<String> LANE_ORDER = new ArrayList<>(Arrays.asList("1","2","3","4","5","6","7"));
-    //private static ArrayList<Integer> FREQ_LIST = new ArrayList<>(Arrays.asList(100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200));
     private static int[] FREQ = new int[] {100};
 
     public static void init() {
@@ -166,6 +166,8 @@ public class ImGuiRenderer {
                     100,
                     200);
             // formatString="%d", ImGuiSliderFlags=0);
+            FREQ[0] = Utils.clamp(100, FREQ[0], 200);
+
             RandomTrainer.setFreaky((FREQ[0]>100));
             RandomTrainer.setFreq(FREQ[0]);
 
