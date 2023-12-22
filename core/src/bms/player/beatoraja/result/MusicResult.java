@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
@@ -47,6 +48,8 @@ public class MusicResult extends AbstractResult {
 		setSound(SOUND_CLEAR, "clear.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_FAIL, "fail.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_CLOSE, "resultclose.wav", SoundType.SOUND, false);
+
+		main.getMessageRenderer().addMessage("FREQ+ " + RandomTrainer.getFreq() + "%", 20000, Color.GOLD, 0);
 
 		property = ResultKeyProperty.get(resource.getBMSModel().getMode());
 		if (property == null) {
