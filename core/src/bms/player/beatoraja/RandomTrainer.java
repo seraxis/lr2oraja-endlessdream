@@ -13,12 +13,14 @@ public class RandomTrainer {
 
     private static boolean blackWhitePermute;
     private static boolean active;
+    private static boolean freaky;
 
     private static final ArrayList<Boolean> laneMask = new ArrayList<>(Arrays.asList(false, false, false, false, false, false, false));
 
     private static HashMap<Integer, Long> randomSeedMap;
 
     private static final ArrayDeque<RandomHistoryEntry> laneOrderHistory = new ArrayDeque<RandomHistoryEntry>();
+    private static int freq = 100;
 
     public RandomTrainer() {
         if (randomSeedMap == null) {
@@ -73,7 +75,19 @@ public class RandomTrainer {
     public static void setActive(boolean active) {
         RandomTrainer.active = active;
     }
+    public static boolean isFreaky() {
+        return freaky;
+    }
 
+    public static void setFreaky(boolean freaky) {
+        RandomTrainer.freaky = freaky;
+    }
+    public static int getFreq() {
+        return RandomTrainer.freq;
+    }
+    public static void setFreq(int freq) {
+        RandomTrainer.freq = freq;
+    }
     public static HashMap<Integer, Long> getRandomSeedMap() {
         return randomSeedMap;
     }
