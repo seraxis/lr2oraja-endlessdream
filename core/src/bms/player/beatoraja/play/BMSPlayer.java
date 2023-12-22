@@ -512,27 +512,27 @@ public class BMSPlayer extends MainState {
 		switch (state) {
 		// 楽曲ロード
 		case STATE_PRELOAD:
-
-			// Do we actually need all of these for FREQ+?
-			// Move to inside conditional?
-			resource.reloadBMSFile();
-			model = resource.getBMSModel();
-			resource.getSongdata().setBMSModel(model);
-			lanerender.init(model); // Likely Need
-			keyinput.setKeyBeamStop(false);
-
 			if(RandomTrainer.isFreaky()) {
+				resource.reloadBMSFile();
+				model = resource.getBMSModel();
+				resource.getSongdata().setBMSModel(model);
+
 				int freq = RandomTrainer.getFreq();
 
-				//model = resource.getBMSModel();
 				practice.create(model);
 				PracticeProperty property = practice.getPracticeProperty();
 
+				// Chart render scale
 				BMSModelUtils.changeFrequency(model, freq / 100f);
 				lanerender.init(model);
+
+				// Update note rate
+				judge.init(model, resource);
+
 				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 					main.getAudioProcessor().setGlobalPitch(freq / 100f);
 				}
+
 			}
 			if(config.isChartPreview()) {
 				if(timer.isTimerOn(TIMER_PLAY) && micronow > startpressedtime) {
@@ -564,7 +564,6 @@ public class BMSPlayer extends MainState {
 				timer.setTimerOn(TIMER_PM_CHARA_1P_NEUTRAL);
 				timer.setTimerOn(TIMER_PM_CHARA_2P_NEUTRAL);
 			}
-
 			break;
 		// practice mode
 		case STATE_PRACTICE:
@@ -664,6 +663,7 @@ public class BMSPlayer extends MainState {
 			final long deltatime = micronow - prevtime;
 			final long deltaplay = deltatime * (100 - playspeed) / 100;
 			PracticeProperty property = practice.getPracticeProperty();
+			if(RandomTrainer.isFreaky()) { property.freq = RandomTrainer.getFreq();}
 
 			timer.setMicroTimer(TIMER_PLAY, timer.getMicroTimer(TIMER_PLAY) + deltaplay);
 

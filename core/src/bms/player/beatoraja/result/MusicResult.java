@@ -49,7 +49,9 @@ public class MusicResult extends AbstractResult {
 		setSound(SOUND_FAIL, "fail.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_CLOSE, "resultclose.wav", SoundType.SOUND, false);
 
-		main.getMessageRenderer().addMessage("FREQ+ " + RandomTrainer.getFreq() + "%", 20000, Color.GOLD, 0);
+		if(RandomTrainer.isFreaky()) {
+			main.getMessageRenderer().addMessage("FREQ+ " + RandomTrainer.getFreq() + "%", 20000, Color.GOLD, 0);
+		}
 
 		property = ResultKeyProperty.get(resource.getBMSModel().getMode());
 		if (property == null) {
