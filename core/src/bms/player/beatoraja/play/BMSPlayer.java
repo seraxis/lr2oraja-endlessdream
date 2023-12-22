@@ -529,9 +529,16 @@ public class BMSPlayer extends MainState {
 				// Update note rate
 				judge.init(model, resource);
 
+				// BG Audio
+				//setPlaySpeed(freq);
+
+				// Keysound Audio
 				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 					main.getAudioProcessor().setGlobalPitch(freq / 100f);
 				}
+
+				starttimeoffset = (property.starttime > 1000 ? property.starttime - 1000 : 0) * 100 / freq;
+				playtime = (property.endtime + 1000) * 100 / freq + TIME_MARGIN;
 
 			}
 			if(config.isChartPreview()) {
