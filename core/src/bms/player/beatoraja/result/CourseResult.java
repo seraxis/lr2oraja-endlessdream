@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.input.KeyCommand;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.FloatArray;
 
 import bms.model.BMSModel;
@@ -44,6 +45,10 @@ public class CourseResult extends AbstractResult {
 		setSound(SOUND_CLEAR, "course_clear.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_FAIL, "course_fail.wav", SoundType.SOUND, isLoopSound);
 		setSound(SOUND_CLOSE, "course_close.wav", SoundType.SOUND, false);
+
+		if(RandomTrainer.isFreaky()) {
+			main.getMessageRenderer().addMessage("FREQ+ " + RandomTrainer.getFreq() + "%", 20000, Color.GOLD, 0);
+		}
 
 		for(int i = resource.getCourseGauge().size;i < resource.getCourseBMSModels().length;i++) {
 			FloatArray[] list = new FloatArray[resource.getGrooveGauge().getGaugeTypeLength()];

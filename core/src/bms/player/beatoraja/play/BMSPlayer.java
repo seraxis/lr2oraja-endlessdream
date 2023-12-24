@@ -214,6 +214,24 @@ public class BMSPlayer extends MainState {
 		playtime = (autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY ? model.getLastTime() : model.getLastNoteTime()) + TIME_MARGIN;
 
 		if (autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY) {
+			if(RandomTrainer.isFreaky() && autoplay.mode != BMSPlayerMode.Mode.AUTOPLAY) {
+				int freq = RandomTrainer.getFreq();
+
+				practice.create(model);
+				PracticeProperty property = practice.getPracticeProperty();
+				// Don't need this? Pending testing
+				//starttimeoffset = (property.starttime > 1000 ? property.starttime - 1000 : 0) * 100 / freq;
+				playtime = (property.endtime + 1000) * 100 / freq + TIME_MARGIN;
+
+				// Chart render scale, note judge is handled by create()::judge.init() later
+				BMSModelUtils.changeFrequency(model, freq / 100f);
+
+				// Audio
+				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
+					main.getAudioProcessor().setGlobalPitch(freq / 100f);
+				}
+			}
+
 			if (config.isBpmguide() && (model.getMinBPM() < model.getMaxBPM())) {
 				// BPM変化がなければBPMガイドなし
 				assist = Math.max(assist, 1);
@@ -512,35 +530,6 @@ public class BMSPlayer extends MainState {
 		switch (state) {
 		// 楽曲ロード
 		case STATE_PRELOAD:
-			if(RandomTrainer.isFreaky()) {
-				resource.reloadBMSFile();
-				model = resource.getBMSModel();
-				resource.getSongdata().setBMSModel(model);
-
-				int freq = RandomTrainer.getFreq();
-
-				practice.create(model);
-				PracticeProperty property = practice.getPracticeProperty();
-
-				// Chart render scale
-				BMSModelUtils.changeFrequency(model, freq / 100f);
-				lanerender.init(model);
-
-				// Update note rate
-				judge.init(model, resource);
-
-				// BG Audio
-				//setPlaySpeed(freq);
-
-				// Keysound Audio
-				if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
-					main.getAudioProcessor().setGlobalPitch(freq / 100f);
-				}
-
-				starttimeoffset = (property.starttime > 1000 ? property.starttime - 1000 : 0) * 100 / freq;
-				playtime = (property.endtime + 1000) * 100 / freq + TIME_MARGIN;
-
-			}
 			if(config.isChartPreview()) {
 				if(timer.isTimerOn(TIMER_PLAY) && micronow > startpressedtime) {
 					timer.setTimerOff(TIMER_PLAY);
