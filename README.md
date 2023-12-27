@@ -13,8 +13,8 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 
 ### Downloads
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/latest/lr2oraja-0.8.6-endlessdream-windows-pre0.0.1.jar)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/latest/lr2oraja-0.8.6-endlessdream-linux-pre0.0.1.jar)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.6-endlessdream-windows-0.1.1.jar)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.6-endlessdream-linux-0.1.1.jar)
 
 ## Building from source
 A JDK 8 **with javafx** is required to build and run. Consider using [liberica JDK](https://bell-sw.com/pages/downloads/#jdk-8-lts)
