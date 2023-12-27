@@ -217,7 +217,7 @@ public class BMSPlayer extends MainState {
 
 		playtime = (autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY ? model.getLastTime() : model.getLastNoteTime()) + TIME_MARGIN;
 
-		if(FreqTrainerMenu.isFreqTrainerEnabled() && autoplay.mode == BMSPlayerMode.Mode.PLAY) {
+		if(FreqTrainerMenu.isFreqTrainerEnabled() && autoplay.mode == BMSPlayerMode.Mode.PLAY && resource.getCourseBMSModels() == null) {
 			int freq = FreqTrainerMenu.getFreq();
 
 			playtime = (model.getLastNoteTime() + 1000) * 100 / freq + TIME_MARGIN;
