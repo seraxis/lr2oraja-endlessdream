@@ -7,6 +7,7 @@
 /assets/table/*
 /assets/course/*
 /assets/favorite/*
+/assets/layout.ini
 songdata.db
 songinfo.db
 config.json

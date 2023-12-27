@@ -26,6 +26,18 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
+# 0.1.1
+New features:
+- Added the **Rate Modifier**, an ImGui mod menu tool for changing the speed of charts ([e5df0c0](https://github.com/seraxis/lr2oraja-endlessdream/commit/e5df0c058cdd36795b14d687c21360699988096a))
+- Consolidated the Random Trainer and new addition into a main menu ([e5df0c0](https://github.com/seraxis/lr2oraja-endlessdream/commit/e5df0c058cdd36795b14d687c21360699988096a))
+
+Behavior changes:
+- The 'illegal song hashes' have been removed, previously unimportable bms can now be played ([5b95bdf](https://github.com/seraxis/lr2oraja-endlessdream/commit/5b95bdf933b7560bb18808bd108d9f85fd295fff))
+- The config version checker works again now, in English, and redirects you here ([e5df0c0](https://github.com/seraxis/lr2oraja-endlessdream/commit/e5df0c058cdd36795b14d687c21360699988096a))
+- Error handling for failed bms/bmson parses during import ([42d07ee](https://github.com/seraxis/lr2oraja-endlessdream/commit/42d07eee732b47d538052fd8e9b27ea139e27b85))
+
+Thanks to [@seraxis](https://github.com/seraxis), [@hadronyche](https://github.com/hadronyche)!
+
 # 0.1.0
 New features:
 - Update from libGDX 1.9.8 to 1.12.1, migrate to gradle ([bd59751](https://github.com/seraxis/lr2oraja-endlessdream/commit/bd59751954be1c4a1db12014bd4988b598a2adab))
