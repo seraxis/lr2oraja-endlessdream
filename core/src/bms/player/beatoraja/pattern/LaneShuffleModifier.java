@@ -3,9 +3,9 @@ package bms.player.beatoraja.pattern;
 import bms.model.*;
 
 import java.util.*;
-import bms.player.beatoraja.PlayerConfig;
-import bms.player.beatoraja.RandomTrainer;
-import bms.player.beatoraja.RandomTrainer.RandomHistoryEntry;
+
+import bms.player.beatoraja.modmenu.RandomTrainer;
+
 import java.util.logging.Logger;
 
 /**

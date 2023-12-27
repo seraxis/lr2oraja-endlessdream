@@ -60,6 +60,7 @@ public class MusicDecide extends MainState {
 			}
 			if (input.isControlKeyPressed(ControlKeys.ESCAPE) || (input.startPressed() && input.isSelectPressed())) {
 				cancel = true;
+				main.getAudioProcessor().setGlobalPitch(1f);
 				timer.setTimerOn(TIMER_FADEOUT);
 			}
 		}

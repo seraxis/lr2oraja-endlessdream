@@ -7,6 +7,8 @@ import bms.player.beatoraja.config.SkinConfiguration;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.ir.IRScoreData;
 import bms.player.beatoraja.ir.RankingData;
+import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.play.BMSPlayer;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.result.AbstractResult;
 import bms.player.beatoraja.result.CourseResult;
@@ -84,6 +86,9 @@ public class StringPropertyFactory {
 				}
 			}
 			final SongData song = state.resource.getSongdata();
+			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && FreqTrainerMenu.isFreqTrainerEnabled()) {
+				return FreqTrainerMenu.getFreqString() + " " + song.getTitle();
+			}
 			return song != null ? song.getTitle() : "";
 		}),
 		subtitle(11, (state) -> {
@@ -101,6 +106,9 @@ public class StringPropertyFactory {
 				}
 			}
 			final SongData song = state.resource.getSongdata();
+			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && FreqTrainerMenu.isFreqTrainerEnabled()) {
+				return FreqTrainerMenu.getFreqString() + " " + song.getFullTitle();
+			}
 			return song != null ? song.getFullTitle() : "";
 		}),
 		genre(13, (state) -> {

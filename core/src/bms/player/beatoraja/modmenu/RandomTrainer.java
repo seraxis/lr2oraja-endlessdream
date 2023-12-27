@@ -1,10 +1,9 @@
-package bms.player.beatoraja;
+package bms.player.beatoraja.modmenu;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 public class RandomTrainer {
     private static String laneOrder;

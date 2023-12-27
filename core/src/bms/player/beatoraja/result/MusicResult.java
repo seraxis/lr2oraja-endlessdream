@@ -1,6 +1,7 @@
 package bms.player.beatoraja.result;
 
 import static bms.player.beatoraja.ClearType.*;
+import static bms.player.beatoraja.modmenu.FreqTrainerMenu.*;
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
 import java.util.*;
@@ -55,7 +56,7 @@ public class MusicResult extends AbstractResult {
 
 		updateScoreDatabase();
 		// リプレイの自動保存
-		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !isFreqTrainerEnabled()) {
 			for (int i = 0; i < REPLAY_SIZE; i++) {
 				if (ReplayAutoSaveConstraint.get(resource.getPlayerConfig().getAutoSaveReplay()[i]).isQualified(oldscore,
 						resource.getScoreData())) {
@@ -71,6 +72,7 @@ public class MusicResult extends AbstractResult {
 		
 		gaugeType = resource.getGrooveGauge().getType();
 
+
 		loadSkin(SkinType.RESULT);
 	}
 	
@@ -82,7 +84,7 @@ public class MusicResult extends AbstractResult {
 		rankingOffset = 0;
 		// TODO スコアハッシュがあり、有効期限が切れていないものを送信する？
 		final IRStatus[] ir = main.getIRStatus();
-		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !isFreqTrainerEnabled()) {
 			state = STATE_IR_PROCESSING;
 			
         	for(IRStatus irc : ir) {
@@ -437,7 +439,11 @@ public class MusicResult extends AbstractResult {
 			newscore = cscore;
 		}
 
-		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+		if (isFreqTrainerEnabled()) {
+			resource.getScoreData().setClear(NoPlay.id);
+		}
+
+		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !isFreqNegative()) {
 			main.getPlayDataAccessor().writeScoreData(resource.getScoreData(), resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), resource.isUpdateScore());
 		} else {

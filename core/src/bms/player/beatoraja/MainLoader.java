@@ -272,15 +272,15 @@ public class MainLoader extends Application {
 
 		private void getInformation() {
 			try {
-				URL url = new URL("https://api.github.com/repos/exch-bms2/beatoraja/releases/latest");
+				URL url = new URL("https://api.github.com/repos/seraxis/lr2oraja-endlessdream/releases/latest");
 				ObjectMapper mapper = new ObjectMapper();
 				GithubLastestRelease lastestData = mapper.readValue(url, GithubLastestRelease.class);
 				final String name = lastestData.name;
 				if (MainController.getVersion().contains(name)) {
-					message = "最新版を利用中です";
+					message = "Already on the latest version";
 				} else {
-					message = String.format("最新版[%s]を利用可能です。", name);
-					dlurl = "https://mocha-repository.info/download/beatoraja" + name + ".zip";
+					message = String.format("Version [%s] is available to download", name);
+					dlurl = lastestData.html_url;
 				}
 			} catch (Exception e) {
 				Logger.getGlobal().warning("最新版URL取得時例外:" + e.getMessage());
@@ -291,6 +291,7 @@ public class MainLoader extends Application {
 
 	@JsonIgnoreProperties(ignoreUnknown=true)
 	static class GithubLastestRelease{
+		public String html_url;
 		public String name;
 	}
 
