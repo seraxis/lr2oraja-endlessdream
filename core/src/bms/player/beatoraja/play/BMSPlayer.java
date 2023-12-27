@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.RandomTrainer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
@@ -212,8 +214,22 @@ public class BMSPlayer extends MainState {
 			Logger.getGlobal().info("譜面分岐 : " + Arrays.toString(playinfo.rand));
 		}
 		// 通常プレイの場合は最後のノーツ、オートプレイの場合はBG/BGAを含めた最後のノーツ
+
 		playtime = (autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY ? model.getLastTime() : model.getLastNoteTime()) + TIME_MARGIN;
 
+		if(FreqTrainerMenu.isFreqTrainerEnabled() && autoplay.mode == BMSPlayerMode.Mode.PLAY) {
+			int freq = FreqTrainerMenu.getFreq();
+
+			playtime = (model.getLastNoteTime() + 1000) * 100 / freq + TIME_MARGIN;
+
+			// Chart render scale, note judge is handled by create()::judge.init() later
+			BMSModelUtils.changeFrequency(model, freq / 100f);
+
+			// Audio
+			if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
+				main.getAudioProcessor().setGlobalPitch(freq / 100f);
+			}
+		}
 		if (autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY) {
 			if (config.isBpmguide() && (model.getMinBPM() < model.getMaxBPM())) {
 				// BPM変化がなければBPMガイドなし
@@ -480,7 +496,7 @@ public class BMSPlayer extends MainState {
 			practice.create(model);
 			state = STATE_PRACTICE;
 		} else {
-			
+
 			if(resource.getRivalScoreData() == null || resource.getCourseBMSModels() != null) {
 				ScoreData rivalScore = TargetProperty.getTargetProperty(config.getTargetid()).getTarget(main);
 				resource.setRivalScoreData(rivalScore);
@@ -508,7 +524,7 @@ public class BMSPlayer extends MainState {
 		if(input.startPressed() || input.isSelectPressed()){
 			startpressedtime = micronow;
 		}
-		
+
 
 		switch (state) {
 		// 楽曲ロード
@@ -516,17 +532,17 @@ public class BMSPlayer extends MainState {
 			if(config.isChartPreview()) {
 				if(timer.isTimerOn(TIMER_PLAY) && micronow > startpressedtime) {
 					timer.setTimerOff(TIMER_PLAY);
-					lanerender.init(model);					
+					lanerender.init(model);
 				} else if(!timer.isTimerOn(TIMER_PLAY) && micronow == startpressedtime){
-					timer.setMicroTimer(TIMER_PLAY, micronow - starttimeoffset * 1000);				
-				}				
+					timer.setMicroTimer(TIMER_PLAY, micronow - starttimeoffset * 1000);
+				}
 			}
-			
+
 			if (resource.mediaLoadFinished() && micronow > (skin.getLoadstart() + skin.getLoadend()) * 1000
 					&& micronow - startpressedtime > 1000000) {
 				if(config.isChartPreview()) {
 					timer.setTimerOff(TIMER_PLAY);
-					lanerender.init(model);					
+					lanerender.init(model);
 				}
 				bga.prepare(this);
 				final long mem = Runtime.getRuntime().freeMemory();
@@ -741,6 +757,7 @@ public class BMSPlayer extends MainState {
 			keysound.stopBGPlay();
 			if ((input.startPressed() ^ input.isSelectPressed()) && resource.getCourseBMSModels() == null
 					&& autoplay.mode == BMSPlayerMode.Mode.PLAY) {
+				main.getAudioProcessor().setGlobalPitch(1f);
 				if (!resource.isUpdateScore()) {
 					resource.getReplayData().randomoptionseed = -1;
 					Logger.getGlobal().info("アシストモード時は同じ譜面でリプレイできません");
@@ -934,7 +951,7 @@ public class BMSPlayer extends MainState {
 
 		score.setPassnotes(notes);
 		score.setMinbp(score.getEbd() + score.getLbd() + score.getEpr() + score.getLpr() + score.getEms() + score.getLms() + resource.getSongdata().getNotes() - notes);
-		
+
 		long count = 0;
 		long avgduration = 0;
 		final int lanes = model.getMode().key;
@@ -943,7 +960,7 @@ public class BMSPlayer extends MainState {
 				Note n = tl.getNote(i);
 				if (n != null && (
 						n instanceof NormalNote ||
-						(n instanceof LongNote && 
+						(n instanceof LongNote &&
 						!(((model.getLntype() == BMSModel.LNTYPE_LONGNOTE && ((LongNote) n).getType() == LongNote.TYPE_UNDEFINED)
 								|| ((LongNote) n).getType() == LongNote.TYPE_LONGNOTE)
 								&& ((LongNote) n).isEnd())))) {
@@ -972,8 +989,10 @@ public class BMSPlayer extends MainState {
 			return;
 		}
 		if (state == STATE_PRELOAD || state == STATE_READY) {
+			main.getAudioProcessor().setGlobalPitch(1f);
 			timer.setTimerOn(TIMER_FADEOUT);
 			state = STATE_PRACTICE_FINISHED;
+
 			return;
 		}
 		if (timer.isTimerOn(TIMER_FAILED) || timer.isTimerOn(TIMER_FADEOUT)) {
@@ -986,6 +1005,7 @@ public class BMSPlayer extends MainState {
 		} else if(state == STATE_FINISHED && !timer.isTimerOn(TIMER_FADEOUT)) {
 			timer.setTimerOn(TIMER_FADEOUT);
 		} else if(state != STATE_FINISHED) {
+			main.getAudioProcessor().setGlobalPitch(1f);
 			state = STATE_FAILED;
 			timer.setTimerOn(TIMER_FAILED);
 			if (resource.mediaLoadFinished()) {

@@ -2,19 +2,11 @@ package bms.player.beatoraja.launcher;
 
 
 import java.util.Arrays;
-import java.awt.Desktop;
-import java.net.URI;
-import java.net.URL;
-import java.io.*;
-import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.PlayerConfig;
-import bms.player.beatoraja.RandomTrainer;
-import bms.player.beatoraja.launcher.PlayConfigurationView.OptionListCell;
+import bms.player.beatoraja.modmenu.RandomTrainer;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;

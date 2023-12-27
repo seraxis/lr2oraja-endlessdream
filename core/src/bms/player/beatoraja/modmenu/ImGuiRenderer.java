@@ -23,6 +23,9 @@ public class ImGuiRenderer {
 
     private static long windowHandle;
 
+    public static int windowWidth;
+    public static int windowHeight;
+
     private static ImGuiImplGlfw imGuiGlfw;
     private static ImGuiImplGl3 imGuiGl3;
 
@@ -33,15 +36,23 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_MOD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_RANDOM_TRAINER = new ImBoolean(false);
 
+    private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
+
 
     public static void init() {
+        Lwjgl3Graphics lwjglGraphics = ((Lwjgl3Graphics) Gdx.graphics);
+
         imGuiGlfw = new ImGuiImplGlfw();
         imGuiGl3 = new ImGuiImplGl3();
         manager = new Lwjgl3ControllerManager();
-        windowHandle = ((Lwjgl3Graphics) Gdx.graphics).getWindow().getWindowHandle();
+
+        windowHandle = lwjglGraphics.getWindow().getWindowHandle();
+        windowWidth = lwjglGraphics.getWidth();
+        windowHeight = lwjglGraphics.getHeight();
+
         ImGui.createContext();
         ImGuiIO io = ImGui.getIO();
-        io.setIniFilename(null);
+        io.setIniFilename("layout.ini");
         io.getFonts().addFontDefault();
 
         final ImFontGlyphRangesBuilder rangesBuilder = new ImFontGlyphRangesBuilder(); // Glyphs ranges provide
@@ -73,13 +84,23 @@ public class ImGuiRenderer {
     }
 
     public static void render() {
+        // Relative from top left corner, so 44% from the left, 2% from the top
+        float relativeX = windowWidth * 0.44f;
+        float relativeY = windowHeight * 0.02f;
+        ImGui.setNextWindowPos(relativeX, relativeY, ImGuiCond.Once);
+
         if (SHOW_MOD_MENU.get()) {
             ImGui.begin("Endless Dream", ImGuiWindowFlags.AlwaysAutoResize);
 
+            ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
-            if (SHOW_RANDOM_TRAINER.get()) {
-                RandomTrainer.show(SHOW_RANDOM_TRAINER);
+            if (SHOW_FREQ_PLUS.get()) {
+                FreqTrainerMenu.show(SHOW_FREQ_PLUS);
             }
+            if (SHOW_RANDOM_TRAINER.get()) {
+                RandomTrainerMenu.show(SHOW_RANDOM_TRAINER);
+            }
+
 
             if (ImGui.treeNode("Controller Input Debug Information")) {
                 float axis;
@@ -118,8 +139,6 @@ public class ImGuiRenderer {
     public static void toggleMenu() {
         SHOW_MOD_MENU.set(!SHOW_MOD_MENU.get());
     }
-
-
 
     public static void helpMarker(String desc) {
         ImGui.textDisabled("(?)");
