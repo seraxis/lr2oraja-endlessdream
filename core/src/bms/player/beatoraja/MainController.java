@@ -8,8 +8,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -38,12 +38,9 @@ import bms.player.beatoraja.select.bar.TableBar;
 import bms.player.beatoraja.skin.SkinLoader;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.SkinProperty;
-import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
-
-import static bms.player.beatoraja.ImGuiRenderer.start;
 
 /**
  * アプリケーションのルートクラス
@@ -583,9 +580,8 @@ public class MainController extends ApplicationAdapter {
                 }
             }
 
-			if (input.isActivated(KeyCommand.TOGGLE_TRAINER)) {
-				imGui.toggleTrainer();
-
+			if (input.isActivated(KeyCommand.TOGGLE_MOD_MENU)) {
+				imGui.toggleMenu();
 			}
 
 			if (download != null && download.getDownloadpath() != null) {

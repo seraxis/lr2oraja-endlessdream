@@ -428,7 +428,7 @@ public class BMSPlayerInputProcessor {
 			return isControlKeyPressed(ControlKeys.F11);
 		case OPEN_SKIN_CONFIGURATION:
 			return isControlKeyPressed(ControlKeys.F12);
-		case TOGGLE_TRAINER:
+		case TOGGLE_MOD_MENU:
 			return isControlKeyPressed(ControlKeys.INSERT);
 		}
 		return false;
