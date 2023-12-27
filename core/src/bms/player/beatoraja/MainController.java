@@ -49,7 +49,7 @@ import bms.tool.mdprocessor.MusicDownloadProcessor;
  */
 public class MainController extends ApplicationAdapter {
 
-	private static final String VERSION = "beatoraja 0.8.6";
+	private static final String VERSION = "LR2oraja Endless Dream 0.1.1";
 
 	public static final boolean debug = false;
 
@@ -793,7 +793,7 @@ public class MainController extends ApplicationAdapter {
 	}
 
 	public static String getVersion() {
-		return VERSION.replace("beatoraja", "LR2oraja");
+		return VERSION;
 	}
 
 	abstract class UpdateThread extends Thread {
