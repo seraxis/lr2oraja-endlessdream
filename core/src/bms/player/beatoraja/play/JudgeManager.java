@@ -150,6 +150,8 @@ public class JudgeManager {
 	 */
 	private int recentJudgesIndex = 0;
 
+	private int pressesSinceLastAutoadjust = 0;
+
 	private MultiBadCollector multiBadCollector = new MultiBadCollector();
 
 	public JudgeManager(BMSPlayer main) {
@@ -740,9 +742,15 @@ public class JudgeManager {
 		if(player.isNotesDisplayTimingAutoAdjust()) {
 			final BMSPlayerMode autoplay = main.resource.getPlayMode();
 			if(autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.PRACTICE) {
-				if (judge <= 2 && mfast >= -150000 && mfast <= 150000) {
-					player.setJudgetiming(player.getJudgetiming() - (int)((mfast >= 0 ? mfast + 15000 : mfast - 15000) / 30000));
-				}			
+				if (judge <= 3) {
+					pressesSinceLastAutoadjust++;
+					if (pressesSinceLastAutoadjust > 9) {
+						if (mfast <= -500 || mfast >= 500) {
+							player.setJudgetiming(player.getJudgetiming() + (int) (mfast < 0 ? 1 : -1));
+						}
+						pressesSinceLastAutoadjust = 0;
+					}
+				}
 			}			
 		}
 	}
