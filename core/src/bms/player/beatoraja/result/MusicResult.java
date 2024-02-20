@@ -286,7 +286,7 @@ public class MusicResult extends AbstractResult {
 					if (((MusicResultSkin) getSkin()).getRankTime() != 0
 							&& !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
 						timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED) {
+					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  3000) {
 						timer.switchTimer(TIMER_FADEOUT, true);
 						if (getSound(SOUND_CLOSE) != null) {
 							stop(SOUND_CLEAR);
