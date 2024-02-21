@@ -109,15 +109,15 @@ public class MusicResult extends AbstractResult {
 			Thread irprocess = new Thread(() -> {
                 try {
                 	boolean succeed = true;
-					IRSendStatus irc = null;
+					IRSendStatus score = null;
 					if (!main.irSendStatus.isEmpty()) {
-						irc = main.irSendStatus.get(main.irSendStatus.size() - 1);
+						score = main.irSendStatus.get(main.irSendStatus.size() - 1);
 					}
-                	if (irc != null) {
+                	if (score != null) {
         				timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
-                        succeed &= irc.send();
-                        if(irc.retry < 0 || irc.retry > main.getConfig().getIrSendCount()) {
-							main.irSendStatus.remove(irc);
+                        succeed &= score.send();
+                        if(score.isSent || score.retry > main.getConfig().getIrSendCount()) {
+							main.irSendStatus.remove(score);
                         }
 						timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
 

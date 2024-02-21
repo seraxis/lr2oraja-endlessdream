@@ -431,17 +431,17 @@ public class MainController extends ApplicationAdapter {
 						try {
 							List<IRSendStatus> removeIrSendStatus = new ArrayList<IRSendStatus>();
 
-							for(IRSendStatus irc : irSendStatus) {
-								long timeUntilNextTry = (long)(Math.pow(4, irc.retry) * 1000);
-								if (irc.retry != 0 && now - irc.lastTry >= timeUntilNextTry) {
-									irc.send();
+							for(IRSendStatus score : irSendStatus) {
+								long timeUntilNextTry = (long)(Math.pow(4, score.retry) * 1000);
+								if (score.retry != 0 && now - score.lastTry >= timeUntilNextTry) {
+									score.send();
 								}
-								if(irc.retry < 0) {
-									removeIrSendStatus.add(irc);
+								if(score.isSent) {
+									removeIrSendStatus.add(score);
 								}
-								if(irc.retry > getConfig().getIrSendCount()) {
-									removeIrSendStatus.add(irc);
-									messageRenderer.addMessage("Failed to send a score for " + irc.song.getTitle() + irc.song.getSubtitle(),5000, Color.RED, 1);
+								if(score.retry > getConfig().getIrSendCount()) {
+									removeIrSendStatus.add(score);
+									messageRenderer.addMessage("Failed to send a score for " + score.song.getTitle() + score.song.getSubtitle(),5000, Color.RED, 1);
 								}
 							}
 							irSendStatus.removeAll(removeIrSendStatus);
@@ -989,7 +989,7 @@ public class MainController extends ApplicationAdapter {
 		public final ScoreData score;
 		public int retry = 0;
 		public long lastTry = 0;
-
+		public boolean isSent = false;
 		public IRSendStatus(IRConnection ir, SongData song, ScoreData score) {
 			this.ir = ir;
 			this.song = song;
@@ -1000,13 +1000,13 @@ public class MainController extends ApplicationAdapter {
 			Logger.getGlobal().info("IRへスコア送信中 : " + song.getTitle());
 			lastTry = System.currentTimeMillis();
 			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
+			retry++;
 			if(send1.isSucceeded()) {
 				Logger.getGlobal().info("IRスコア送信完了 : " + song.getTitle());
-				retry = -255;
+				isSent = true;
 				return true;
 			} else {
 				Logger.getGlobal().warning("IRスコア送信失敗 : " + send1.getMessage());
-				retry++;
 				return false;
 			}
 
