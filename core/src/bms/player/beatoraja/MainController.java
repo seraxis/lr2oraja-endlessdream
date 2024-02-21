@@ -436,8 +436,12 @@ public class MainController extends ApplicationAdapter {
 								if (irc.retry != 0 && now - irc.lastTry >= timeUntilNextTry) {
 									irc.send();
 								}
-								if(irc.retry < 0 || irc.retry > getConfig().getIrSendCount()) {
+								if(irc.retry < 0) {
 									removeIrSendStatus.add(irc);
+								}
+								if(irc.retry > getConfig().getIrSendCount()) {
+									removeIrSendStatus.add(irc);
+									messageRenderer.addMessage("Failed to send a score for " + irc.song.getTitle() + irc.song.getSubtitle(),5000, Color.RED, 1);
 								}
 							}
 							irSendStatus.removeAll(removeIrSendStatus);
