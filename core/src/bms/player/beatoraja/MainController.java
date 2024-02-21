@@ -42,8 +42,6 @@ import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
 
-import static bms.player.beatoraja.skin.SkinProperty.*;
-
 /**
  * アプリケーションのルートクラス
  *
