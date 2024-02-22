@@ -115,7 +115,7 @@ public class MusicResult extends AbstractResult {
 					if (!main.irSendStatus.isEmpty()) {
 						scores = main.irSendStatus.subList(main.irSendStatus.size() - ir.length, main.irSendStatus.size());
 					}
-                	for (IRSendStatus score : scores) {
+					for (IRSendStatus score : scores) {
 						if(irsend == 0) {
 							timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
 						}
