@@ -129,6 +129,8 @@ public class MainController extends ApplicationAdapter {
 
 	public ImGuiRenderer imGui;
 
+	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -422,6 +424,38 @@ public class MainController extends ApplicationAdapter {
 
 		if(ir.length > 0) {
 			messageRenderer.addMessage(ir.length + " IR Connection Succeed" ,5000, Color.GREEN, 1);
+
+			Thread irResendProcess = new Thread(() -> {
+				for (;;) {
+					final long now = System.currentTimeMillis();
+						try {
+							List<IRSendStatus> removeIrSendStatus = new ArrayList<IRSendStatus>();
+
+							for(IRSendStatus score : irSendStatus) {
+								long timeUntilNextTry = (long)(Math.pow(4, score.retry) * 1000);
+								if (score.retry != 0 && now - score.lastTry >= timeUntilNextTry) {
+									score.send();
+								}
+								if(score.isSent) {
+									removeIrSendStatus.add(score);
+								}
+								if(score.retry > getConfig().getIrSendCount()) {
+									removeIrSendStatus.add(score);
+									messageRenderer.addMessage("Failed to send a score for " + score.song.getTitle() + score.song.getSubtitle(),5000, Color.RED, 1);
+								}
+							}
+							irSendStatus.removeAll(removeIrSendStatus);
+
+							try {
+								Thread.sleep(3000, 0);
+							} catch (InterruptedException e) {
+							}
+						} catch (Exception e) {
+							Logger.getGlobal().severe(e.getMessage());
+						}
+				}
+			});
+			irResendProcess.start();
 		}
 	}
 
@@ -946,6 +980,36 @@ public class MainController extends ApplicationAdapter {
 			this.config = config;
 			this.connection = connection;
 			this.player = player;
+		}
+	}
+
+	public static class IRSendStatus {
+		public final IRConnection ir;
+		public final SongData song;
+		public final ScoreData score;
+		public int retry = 0;
+		public long lastTry = 0;
+		public boolean isSent = false;
+		public IRSendStatus(IRConnection ir, SongData song, ScoreData score) {
+			this.ir = ir;
+			this.song = song;
+			this.score = score;
+		}
+
+		public boolean send() {
+			Logger.getGlobal().info("IRへスコア送信中 : " + song.getTitle());
+			lastTry = System.currentTimeMillis();
+			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
+			retry++;
+			if(send1.isSucceeded()) {
+				Logger.getGlobal().info("IRスコア送信完了 : " + song.getTitle());
+				isSent = true;
+				return true;
+			} else {
+				Logger.getGlobal().warning("IRスコア送信失敗 : " + send1.getMessage());
+				return false;
+			}
+
 		}
 	}
 }

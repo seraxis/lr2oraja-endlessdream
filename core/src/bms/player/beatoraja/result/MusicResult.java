@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.FloatArray;
 import bms.model.*;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
+import bms.player.beatoraja.MainController.IRSendStatus;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.play.GrooveGauge;
@@ -31,8 +32,6 @@ import bms.player.beatoraja.song.SongData;
 public class MusicResult extends AbstractResult {
 
 	private ResultKeyProperty property;
-	
-	private List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
 	public MusicResult(MainController main) {
 		super(main);
@@ -103,40 +102,34 @@ public class MusicResult extends AbstractResult {
     			}
     			
     			if(send) {
-    				irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
+    				main.irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
     			}
         	}
 			
 			Thread irprocess = new Thread(() -> {
                 try {
-                	int irsend = 0;
                 	boolean succeed = true;
-                	List<IRSendStatus> removeIrSendStatus = new ArrayList<IRSendStatus>();
-                	
-                	for(IRSendStatus irc : irSendStatus) {
-        				if(irsend == 0) {
-        					timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);                					
-        				}
-        				irsend++;
-                        succeed &= irc.send();
-                        if(irc.retry < 0 || irc.retry > main.getConfig().getIrSendCount()) {
-                        	removeIrSendStatus.add(irc);
+					IRSendStatus score = null;
+					if (!main.irSendStatus.isEmpty()) {
+						score = main.irSendStatus.get(main.irSendStatus.size() - 1);
+					}
+                	if (score != null) {
+        				timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
+                        succeed &= score.send();
+                        if(score.isSent || score.retry > main.getConfig().getIrSendCount()) {
+							main.irSendStatus.remove(score);
                         }
-                	}
-                	irSendStatus.removeAll(removeIrSendStatus);
-                	                	
-                	if(irsend > 0) {
-                		timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
-                        
-                        IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(resource.getSongdata()));
-                        if(response.isSucceeded()) {
-                    		ranking.updateScore(response.getData(), newscore.getExscore() > oldscore.getExscore() ? newscore : oldscore);
-                    		rankingOffset = ranking.getRank() > 10 ? ranking.getRank() - 5 : 0;
-                            Logger.getGlobal().warning("IRからのスコア取得成功 : " + response.getMessage());
-                        } else {
-                            Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
-                        }                    		
-                	}
+						timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
+
+						IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(resource.getSongdata()));
+						if(response.isSucceeded()) {
+							ranking.updateScore(response.getData(), newscore.getExscore() > oldscore.getExscore() ? newscore : oldscore);
+							rankingOffset = ranking.getRank() > 10 ? ranking.getRank() - 5 : 0;
+							Logger.getGlobal().warning("IRからのスコア取得成功 : " + response.getMessage());
+						} else {
+							Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
+						}
+					}
                 } catch (Exception e) {
                     Logger.getGlobal().severe(e.getMessage());
                 } finally {
@@ -286,7 +279,7 @@ public class MusicResult extends AbstractResult {
 					if (((MusicResultSkin) getSkin()).getRankTime() != 0
 							&& !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
 						timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED) {
+					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  3000) {
 						timer.switchTimer(TIMER_FADEOUT, true);
 						if (getSound(SOUND_CLOSE) != null) {
 							stop(SOUND_CLEAR);
@@ -484,33 +477,5 @@ public class MusicResult extends AbstractResult {
 
 	public ScoreData getNewScore() {
 		return resource.getScoreData();
-	}
-
-	static class IRSendStatus {
-		public final IRConnection ir;
-		public final SongData song;
-		public final ScoreData score;
-		public int retry = 0;
-		
-		public IRSendStatus(IRConnection ir, SongData song, ScoreData score) {
-			this.ir = ir;
-			this.song = song;
-			this.score = score;
-		}
-		
-		public boolean send() {
-			Logger.getGlobal().info("IRへスコア送信中 : " + song.getTitle());
-            IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
-            if(send1.isSucceeded()) {
-                Logger.getGlobal().info("IRスコア送信完了 : " + song.getTitle());
-                retry = -255;
-                return true;
-            } else {
-                Logger.getGlobal().warning("IRスコア送信失敗 : " + send1.getMessage());
-                retry++;
-                return false;
-            }
-
-		}
 	}
 }
