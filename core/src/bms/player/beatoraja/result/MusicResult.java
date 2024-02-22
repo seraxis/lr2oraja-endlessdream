@@ -109,16 +109,25 @@ public class MusicResult extends AbstractResult {
 			Thread irprocess = new Thread(() -> {
                 try {
                 	boolean succeed = true;
-					IRSendStatus score = null;
+					int irsend = 0;
+					List<IRSendStatus> removeIrSendStatus = new ArrayList<IRSendStatus>();
+					List<IRSendStatus> scores = new ArrayList<IRSendStatus>();
 					if (!main.irSendStatus.isEmpty()) {
-						score = main.irSendStatus.get(main.irSendStatus.size() - 1);
+						scores = main.irSendStatus.subList(main.irSendStatus.size() - ir.length, main.irSendStatus.size());
 					}
-                	if (score != null) {
-        				timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
+                	for (IRSendStatus score : scores) {
+						if(irsend == 0) {
+							timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
+						}
+						irsend++;
                         succeed &= score.send();
                         if(score.isSent || score.retry > main.getConfig().getIrSendCount()) {
-							main.irSendStatus.remove(score);
+							removeIrSendStatus.add(score);
                         }
+					}
+					main.irSendStatus.removeAll(removeIrSendStatus);
+
+					if(irsend > 0) {
 						timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
 
 						IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(resource.getSongdata()));
@@ -130,11 +139,11 @@ public class MusicResult extends AbstractResult {
 							Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
 						}
 					}
-                } catch (Exception e) {
+				} catch (Exception e) {
                     Logger.getGlobal().severe(e.getMessage());
-                } finally {
+				} finally {
                     state = STATE_IR_FINISHED;
-                }
+				}
             });
 			irprocess.start();
 		}
