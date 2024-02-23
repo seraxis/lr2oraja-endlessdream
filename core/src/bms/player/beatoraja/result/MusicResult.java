@@ -2,7 +2,6 @@ package bms.player.beatoraja.result;
 
 import static bms.player.beatoraja.ClearType.*;
 import static bms.player.beatoraja.modmenu.FreqTrainerMenu.*;
-import static bms.player.beatoraja.modmenu.FreqTrainerMenu.isFreqTrainerEnabled;
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
 import java.util.*;
@@ -437,7 +436,7 @@ public class MusicResult extends AbstractResult {
 			resource.getScoreData().setClear(NoPlay.id);
 		}
 
-		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !(isFreqTrainerEnabled() && isFreqNegative())) {
+		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !isFreqNegative()) {
 			main.getPlayDataAccessor().writeScoreData(resource.getScoreData(), resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), resource.isUpdateScore());
 		} else {
