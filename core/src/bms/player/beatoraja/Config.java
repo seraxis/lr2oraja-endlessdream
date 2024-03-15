@@ -19,7 +19,13 @@ import com.badlogic.gdx.utils.JsonWriter.OutputType;
  */
 public class Config implements Validatable {
 	
+	/**
+	 * 旧コンフィグパス。そのうち削除
+	 */
 	static final Path configpath_old = Paths.get("config.json");
+	/**
+	 * コンフィグパス(UTF-8)
+	 */
 	static final Path configpath = Paths.get("config_sys.json");	
 
 	/**
@@ -116,6 +122,8 @@ public class Config implements Validatable {
 
 	private String soundpath = "sound";
 
+	private String systemfontpath = "font/VL-Gothic-Regular.ttf";
+	private String messagefontpath = "font/VL-Gothic-Regular.ttf";
 	/**
 	 * BMSルートディレクトリパス
 	 */
@@ -154,17 +162,20 @@ public class Config implements Validatable {
 	private int irSendCount = 5;
 
 	private boolean useDiscordRPC = false;
+	private boolean setClipboardScreenshot = false;
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
-			"http://www.ribbit.xyz/bms/tables/normal.html",
-			"http://www.ribbit.xyz/bms/tables/insane.html",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=easy",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=normal",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=hard",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=fc",
+			"https://stellabms.xyz/sl/table.html",
+			"https://stellabms.xyz/st/table.html",
 			"https://mocha-repository.info/table/dpn_header.json",
 			"https://mocha-repository.info/table/dpi_header.json",
+			"https://stellabms.xyz/dp/table.html",
+			"https://stellabms.xyz/dpst/table.html",
 			"https://mocha-repository.info/table/ln_header.json",
 			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
 			"https://excln.github.io/table24k/table.html",
@@ -375,6 +386,14 @@ public class Config implements Validatable {
 	public void setUseDiscordRPC(boolean useDiscordRPC) {
 		this.useDiscordRPC = useDiscordRPC;
 	}
+	
+	public boolean isSetClipboardWhenScreenshot() {
+		return setClipboardScreenshot;
+	}
+
+	public void setClipboardWhenScreenshot(boolean setClipboardScreenshot) {
+		this.setClipboardScreenshot = setClipboardScreenshot;
+	}
 
 	public boolean isUpdatesong() {
 		return updatesong;
@@ -480,6 +499,22 @@ public class Config implements Validatable {
 		this.skinpath = skinpath;
 	}
 
+	public String getSystemfontpath() {
+		return systemfontpath;
+	}
+
+	public void setSystemfontpath(String systemfontpath) {
+		this.systemfontpath = systemfontpath;
+	}
+
+	public String getMessagefontpath() {
+		return messagefontpath;
+	}
+
+	public void setMessagefontpath(String messagefontpath) {
+		this.messagefontpath = messagefontpath;
+	}
+
 	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
@@ -537,6 +572,7 @@ public class Config implements Validatable {
 				e.printStackTrace();
 			}
 		} else if(Files.exists(configpath_old)) {
+			// 旧コンフィグ読み込み。そのうち削除
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
 			try (FileReader reader = new FileReader(configpath_old.toFile())) {

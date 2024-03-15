@@ -4,6 +4,7 @@ import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.song.SongData;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * ハッシュ集合を持ち、各ハッシュ値に該当する楽曲を含むフォルダバー
@@ -11,7 +12,7 @@ import java.util.*;
  * @author exch
  */
 public class HashBar extends DirectoryBar {
-    private String title;
+    private final String title;
     private SongData[] elements;
     private String[] elementsHash;
 
@@ -22,29 +23,21 @@ public class HashBar extends DirectoryBar {
     }
 
     @Override
-    public String getTitle() {
+    public final String getTitle() {
         return title;
     }
 
-    @Override
-    public String getArtist() {
-        return null;
-    }
-
-    public SongData[] getElements() {
+    public final SongData[] getElements() {
         return elements;
     }
 
-    public void setElements(SongData[] elements) {
+    public final void setElements(SongData[] elements) {
         this.elements = elements;
-        elementsHash = new String[elements.length];
-        for(int i = 0;i < elementsHash.length;i++) {
-        	elementsHash[i] = elements[i].getSha256().length() > 0 ? elements[i].getSha256() : elements[i].getMd5();
-        }
+        elementsHash = Stream.of(elements).map(e -> e.getSha256().length() > 0 ? e.getSha256() : e.getMd5()).toArray(String[]::new);
     }
 
     @Override
-    public Bar[] getChildren() {
+    public final Bar[] getChildren() {
         return SongBar.toSongBarArray(selector.getSongDatabase().getSongDatas(elementsHash), elements);
     }
 

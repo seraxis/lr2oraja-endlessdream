@@ -191,13 +191,11 @@ public class BooleanPropertyFactory {
 				if (state instanceof BMSPlayer) {
 					JudgeManager judge = ((BMSPlayer) state).getJudgeManager();
 					if (type == 0) {
-						return judge.getNowJudge().length > player && judge.getNowJudge()[player] == 1;
+						return judge.getNowJudge(player) == 1;
 					} else if (type == 1) {
-						return judge.getNowJudge().length > player && judge.getNowJudge()[player] > 1
-								&& judge.getRecentJudgeTiming()[player] > 0;
+						return judge.getNowJudge(player) > 1 && judge.getRecentJudgeTiming(player) > 0;
 					} else {
-						return judge.getNowJudge().length > player && judge.getNowJudge()[player] > 1
-								&& judge.getRecentJudgeTiming()[player] < 0;
+						return judge.getNowJudge(player) > 1 && judge.getRecentJudgeTiming(player) < 0;
 					}
 				}
 				return false;				
@@ -317,9 +315,9 @@ public class BooleanPropertyFactory {
 			if (state instanceof MusicSelector) {
 				final Bar current = ((MusicSelector) state).getSelectedBar();
 				return (current instanceof SelectableBar)
-						&& ((SelectableBar) current).getExistsReplayData().length > index
-						&& (type == 0 ? ((SelectableBar) current).getExistsReplayData()[index]
-								: !((SelectableBar) current).getExistsReplayData()[index]);
+						&& index >= 0 && index < MusicSelector.REPLAY
+						&& (type == 0 ? ((SelectableBar) current).existsReplay(index)
+								: !((SelectableBar) current).existsReplay(index));
 			} else if (state instanceof AbstractResult) {
 				return ((AbstractResult) state).getReplayStatus(index) == (type == 0 ? AbstractResult.ReplayStatus.EXIST
 						: (type == 1 ? AbstractResult.ReplayStatus.NOT_EXIST : AbstractResult.ReplayStatus.SAVED));

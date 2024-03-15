@@ -8,6 +8,8 @@ import bms.player.beatoraja.skin.property.*;
 import org.luaj.vm2.*;
 import org.luaj.vm2.lib.*;
 
+import com.badlogic.gdx.math.MathUtils;
+
 /**
  * 実行時にスキンからMainStateの数値などにアクセスできる関数を提供する
  */
@@ -135,6 +137,31 @@ public class MainStateAccessor {
 				return LuaInteger.ZERO;
 			}
 		});
+		table.set("audio_play", new TwoArgFunction() {
+			@Override
+			public LuaValue call(LuaValue path, LuaValue volume) {
+				float vol = volume.tofloat();
+				vol = vol <= 0 ? 1 : MathUtils.clamp(vol, 0.0f, 2.0f);
+				state.main.getAudioProcessor().play(path.tojstring(), state.main.getConfig().getAudioConfig().getSystemvolume() * vol, false);
+				return LuaBoolean.TRUE;
+			}
+		});
+		table.set("audio_loop", new TwoArgFunction() {
+			@Override
+			public LuaValue call(LuaValue path, LuaValue volume) {
+				float vol = volume.tofloat();
+				vol = vol <= 0 ? 1 : MathUtils.clamp(vol, 0.0f, 2.0f);
+				state.main.getAudioProcessor().play(path.tojstring(), state.main.getConfig().getAudioConfig().getSystemvolume() * vol, true);
+				return LuaBoolean.TRUE;
+			}
+		});
+		table.set("audio_stop", new OneArgFunction() {
+			@Override
+			public LuaValue call(LuaValue path) {
+				state.main.getAudioProcessor().stop(path.tojstring());
+				return LuaBoolean.TRUE;
+			}
+		});
 	}
 
 	/**
@@ -168,7 +195,7 @@ public class MainStateAccessor {
 	private class float_number extends OneArgFunction {
 		@Override
 		public LuaValue call(LuaValue luaValue) {
-			FloatProperty prop = FloatPropertyFactory.getFloatProperty(luaValue.toint());
+			FloatProperty prop = FloatPropertyFactory.getRateProperty(luaValue.toint());
 			return LuaDouble.valueOf(prop.get(state));
 		}
 	}

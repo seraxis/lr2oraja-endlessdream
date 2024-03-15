@@ -1,6 +1,7 @@
 package bms.player.beatoraja.play;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.play.SkinNote.SkinLane;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 import static bms.player.beatoraja.CourseData.CourseDataConstraint.*;
 import static bms.player.beatoraja.skin.SkinProperty.*;
@@ -70,12 +72,16 @@ public class LaneRenderer {
 		blank = new TextureRegion(new Texture(hp));
 		hp.dispose();
 
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
-				Gdx.files.internal("skin/default/VL-Gothic-Regular.ttf"));
-		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
-		parameter.size = 18;
-		font = generator.generateFont(parameter);
-		generator.dispose();
+		try {
+			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
+					Gdx.files.internal(main.main.getConfig().getSystemfontpath()));
+			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+			parameter.size = 18;
+			font = generator.generateFont(parameter);
+			generator.dispose();
+		} catch (GdxRuntimeException e) {
+			Logger.getGlobal().severe("Practice Font読み込み失敗");
+		}
 
 		this.skin = (PlaySkin) main.getSkin();
 		this.config = main.resource.getPlayerConfig();
@@ -254,8 +260,8 @@ public class LaneRenderer {
 			offsetH += offset.h;
 		}
 		
-		time = (main.timer.isTimerOn(TIMER_PLAY) ? time - main.timer.getTimer(TIMER_PLAY) : 0)
-				+ config.getJudgetiming();
+		time = (main.timer.isTimerOn(TIMER_PLAY) ? time - main.timer.getTimer(TIMER_PLAY) : 
+			(main.timer.isTimerOn(141) ? time - main.timer.getTimer(141) : 0)) + config.getJudgetiming();
 		if (main.getState() == BMSPlayer.STATE_PRACTICE) {
 			time = main.getPracticeConfiguration().getPracticeProperty().starttime;
 			pos = 0;
@@ -346,9 +352,10 @@ public class LaneRenderer {
 					}
 					for (Rectangle r : playerr) {
 						// TODO 数値もスキンベースへ移行
-						sprite.draw(font, String.format("%2d:%02d.%1d", tl.getTime() / 60000,
-								(tl.getTime() / 1000) % 60, (tl.getTime() / 100) % 10), r.x + 4, (float) (y + 20),
-								Color.valueOf("40c0c0"));
+						if(font != null) {
+							sprite.draw(font, String.format("%2d:%02d.%1d", tl.getTime() / 60000,
+									(tl.getTime() / 1000) % 60, (tl.getTime() / 100) % 10), r.x + 4, (float) (y + 20), Color.valueOf("40c0c0"));							
+						}
 					}
 				}
 
@@ -359,8 +366,10 @@ public class LaneRenderer {
 						}
 						for (Rectangle r : playerr) {
 							// TODO 数値もスキンベースへ移行
-							sprite.draw(font, "BPM" + ((int) tl.getBPM()), r.x + r.width / 2, (float) (y + 20),
-									Color.valueOf("00c000"));
+							if(font != null) {
+								sprite.draw(font, "BPM" + ((int) tl.getBPM()), r.x + r.width / 2, (float) (y + 20), Color.valueOf("00c000"));
+							}
+							
 						}
 
 					}
@@ -370,8 +379,9 @@ public class LaneRenderer {
 						}
 						for (Rectangle r : playerr) {
 							// TODO 数値もスキンベースへ移行
-							sprite.draw(font, "STOP " + ((int) tl.getStop()) + "ms", r.x + r.width / 2,
-									(float) (y + 20), Color.valueOf("c0c000"));
+							if(font != null) {
+								sprite.draw(font, "STOP " + ((int) tl.getStop()) + "ms", r.x + r.width / 2, (float) (y + 20), Color.valueOf("c0c000"));								
+							}
 						}
 					}
 
@@ -616,23 +626,23 @@ public class LaneRenderer {
 			// HCN
 			final JudgeManager judge = main.getJudgeManager();
 			sprite.draw(
-					longImage[judge.getProcessingLongNotes()[lane] == ln.getPair() ? 6
-							: (judge.getPassingLongNotes()[lane] == ln && ln.getState() != 0
-									? (judge.getHellChargeJudges()[lane] ? 8 : 9) : 7)],
+					longImage[judge.getProcessingLongNote(lane) == ln.getPair() ? 6
+							: (judge.getPassingLongNote(lane) == ln && ln.getState() != 0
+									? (judge.getHellChargeJudge(lane) ? 8 : 9) : 7)],
 					x, y - height + scale, width, height - scale);
 			sprite.draw(longImage[4], x, y, width, scale);
 			sprite.draw(longImage[5], x, y - height, width, scale);
 		} else if ((model.getLntype() == BMSModel.LNTYPE_CHARGENOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
 				|| ln.getType() == LongNote.TYPE_CHARGENOTE) {
 			// CN
-			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNotes()[lane] == ln.getPair() ? 2 : 3], x,
+			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNote(lane) == ln.getPair() ? 2 : 3], x,
 					y - height + scale, width, height - scale);
 			sprite.draw(longImage[0], x, y, width, scale);
 			sprite.draw(longImage[1], x, y - height, width, scale);
 		} else if ((model.getLntype() == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
 				|| ln.getType() == LongNote.TYPE_LONGNOTE) {
 			// LN
-			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNotes()[lane] == ln.getPair() ? 2 : 3], x,
+			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNote(lane) == ln.getPair() ? 2 : 3], x,
 					y - height + scale, width, height - scale);
 			sprite.draw(longImage[1], x, y - height, width, scale);
 		}

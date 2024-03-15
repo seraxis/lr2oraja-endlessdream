@@ -4,6 +4,7 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -322,7 +323,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 						judge[0] = new SkinJudge(0, (values[11] != 1));
 						skin.add(judge[0]);
 					}
-					judge[0].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]] = new SkinImage(images, values[10], values[9]);
+					judge[0].setJudge(values[1] <= 5  ? (5 - values[1]) : values[1], new SkinImage(images, values[10], values[9]));
 					// System.out.println("Nowjudge Added - " + (5 -
 					// values[1]));
 				}
@@ -335,7 +336,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 
 			@Override
 			public void execute(String[] str) {
-				if (judge[0] != null && judge[0].getJudge()[Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])] != null) {
+				if (judge[0] != null && judge[0].getJudge(Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])) != null) {
 					try {
 						int[] values = parseInt(str);
 						if (values[5] < 0) {
@@ -346,7 +347,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
-						judge[0].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]].setDestination(values[2], values[3] * dstw / srcw,
+						judge[0].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
 								values[12], values[13], values[14], values[15], values[16], values[17], values[18],
@@ -374,7 +375,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 						judge[1] = new SkinJudge(1, (values[11] != 1));
 						skin.add(judge[1]);
 					}
-					judge[1].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]] = new SkinImage(images, values[10], values[9]);
+					judge[1].setJudge(values[1] <= 5  ? (5 - values[1]) : values[1], new SkinImage(images, values[10], values[9]));
 					// System.out.println("Nowjudge Added - " + (5 -
 					// values[1]));
 				}
@@ -387,7 +388,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 
 			@Override
 			public void execute(String[] str) {
-				if (judge[1] != null && judge[1].getJudge()[Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])] != null) {
+				if (judge[1] != null && judge[1].getJudge(Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])) != null) {
 					try {
 						int[] values = parseInt(str);
 						if (values[5] < 0) {
@@ -398,7 +399,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
-						judge[1].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]].setDestination(values[2], values[3] * dstw / srcw,
+						judge[1].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
 								values[12], values[13], values[14], values[15], values[16], values[17], values[18],
@@ -425,7 +426,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 						judge[2] = new SkinJudge(2, (values[11] != 1));
 						skin.add(judge[2]);
 					}
-					judge[2].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]] = new SkinImage(images, values[10], values[9]);
+					judge[2].setJudge(values[1] <= 5  ? (5 - values[1]) : values[1], new SkinImage(images, values[10], values[9]));
 					// System.out.println("Nowjudge Added - " + (5 -
 					// values[1]));
 				}
@@ -438,7 +439,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 
 			@Override
 			public void execute(String[] str) {
-				if (judge[2] != null && judge[2].getJudge()[Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])] != null) {
+				if (judge[2] != null && judge[2].getJudge(Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])) != null) {
 					try {
 						int[] values = parseInt(str);
 						if (values[5] < 0) {
@@ -449,7 +450,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
-						judge[2].getJudge()[values[1] <= 5  ? (5 - values[1]) : values[1]].setDestination(values[2], values[3] * dstw / srcw,
+						judge[2].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
 								values[12], values[13], values[14], values[15], values[16], values[17], values[18],
@@ -642,6 +643,111 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 				}
 			}
 		});
+		addCommandWord(new CommandWord("DST_PM_CHARA_1P") {
+			@Override
+			public void execute(String[] str) {
+				//プレイ用 判定連動
+				//x,y,w,h,color,offset,folderpath
+				int[] values = parseInt(str);
+				if (values[3] < 0) {
+					values[1] += values[3];
+					values[3] = -values[3];
+				}
+				if (values[4] < 0) {
+					values[2] += values[4];
+					values[4] = -values[4];
+				}
+				final File imagefile = LR2SkinLoader.getPath(skinpath, str[7], filemap);
+				new PomyuCharaLoader(skin).load(usecim, imagefile,
+						0, (values[5] == 1 || values[5] == 2) ? values[5] : 1,
+						values[1] * dstw / srcw, dsth - (values[2] + values[4]) * dsth / srch, values[3] * dstw / srcw, values[4] * dsth / srch,
+						1, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, values[6]);
+			}
+		});
+		addCommandWord(new CommandWord("DST_PM_CHARA_2P") {
+			@Override
+			public void execute(String[] str) {
+				//プレイ用 判定連動
+				//x,y,w,h,color,offset,folderpath
+				int[] values = parseInt(str);
+				if (values[3] < 0) {
+					values[1] += values[3];
+					values[3] = -values[3];
+				}
+				if (values[4] < 0) {
+					values[2] += values[4];
+					values[4] = -values[4];
+				}
+				final File imagefile = LR2SkinLoader.getPath(skinpath, str[7], filemap);
+				new PomyuCharaLoader(skin).load(usecim, imagefile,
+						0, (values[5] == 1 || values[5] == 2) ? values[5] : 1,
+						values[1] * dstw / srcw, dsth - (values[2] + values[4]) * dsth / srch, values[3] * dstw / srcw, values[4] * dsth / srch,
+						2, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, values[6]);
+			}
+		});
+		addCommandWord(new CommandWord("DST_PM_CHARA_ANIMATION") {
+			@Override
+			public void execute(String[] str) {
+				//プレイ以外用 判定非連動
+				//x,y,w,h,color,animationtype,timer,op1,op2,op3,offset,folderpath
+				//type 0:NEUTRAL 1:FEVER 2:GREAT 3:GOOD 4:BAD 5:FEVERWIN 6:WIN 7:LOSE 8:OJAMA 9:DANCE
+				int[] values = parseInt(str);
+				if(values[6] >= 0 && values[6] <= 9) {
+					if (values[3] < 0) {
+						values[1] += values[3];
+						values[3] = -values[3];
+					}
+					if (values[4] < 0) {
+						values[2] += values[4];
+						values[4] = -values[4];
+					}
+					final File imagefile = LR2SkinLoader.getPath(skinpath, str[12], filemap);
+					new PomyuCharaLoader(skin).load(usecim, imagefile,
+							values[6] + 6, (values[5] == 1 || values[5] == 2) ? values[5] : 1,
+							values[1] * dstw / srcw, dsth - (values[2] + values[4]) * dsth / srch, values[3] * dstw / srcw, values[4] * dsth / srch,
+							Integer.MIN_VALUE, values[7], values[8], values[9], values[10], values[11]);
+				}
+			}
+		});
+		addCommandWord(new CommandWord("SRC_PM_CHARA_IMAGE") {
+			@Override
+			public void execute(String[] str) {
+				//color,type,folderpath
+				//type 0:キャラ背景 1:名前画像 2:ハリアイ画像(上半身のみ) 3:ハリアイ画像(全体) 4:キャラアイコン
+				PMcharaPart = null;
+				int[] values = parseInt(str);
+				if(values[2] >= 0 && values[2] <= 4) {
+					final File imagefile = LR2SkinLoader.getPath(skinpath, str[3], filemap);
+					PMcharaPart = new PomyuCharaLoader(skin).load(usecim, imagefile,
+							values[2] + 1, (values[1] == 1 || values[1] == 2) ? values[1] : 1,
+							Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE,
+							Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE);
+				}
+			}
+		});
+		addCommandWord(new CommandWord("DST_PM_CHARA_IMAGE") {
+			@Override
+			public void execute(String[] str) {
+				//DST_IMAGEと同様
+				if (PMcharaPart != null) {
+					int[] values = parseInt(str);
+					if (values[5] < 0) {
+						values[3] += values[5];
+						values[5] = -values[5];
+					}
+					if (values[6] < 0) {
+						values[4] += values[6];
+						values[6] = -values[6];
+					}
+					PMcharaPart.setDestination(values[2], values[3] * dstw / srcw,
+							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
+							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
+							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
+							values[19], values[20], readOffset(str, 21));
+				}
+			}
+		});
+
 	}
 	
 	private void setSrcNowCombo(int index, String[] str) {
@@ -657,9 +763,9 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 				}
 			}
 
-			judge[index].getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]] = new SkinNumber(images, values[10], values[9], values[13],
-					images.length > 10 ? 2 : 0, values[15], values[11]);
-			judge[index].getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]].setAlign(values[12] == 1 ?  2 : values[12]);
+			judge[index].setJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1], new SkinNumber(images, values[10], values[9], values[13],
+					images.length > 10 ? 2 : 0, values[15], values[11]));
+			judge[index].getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).setAlign(values[12] == 1 ?  2 : values[12]);
 			// System.out.println("Number Added - " +
 			// (num.getId()));
 		}
@@ -667,14 +773,14 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 
 	private void setDstNowCombo(int index, String[] str, int[] offset) {
 		final SkinJudge sj = judge[index];
-		if (sj != null && sj.getJudgeCount()[Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])] != null) {
+		if (sj != null && sj.getJudgeCount(Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])) != null) {
 			int[] values = parseInt(str);
-			sj.getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]].setRelative(true);
+			sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).setRelative(true);
 			float x = values[3];
-			if(sj.getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]].getAlign() == 2) {
-				x -= sj.getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]].getKeta() * values[5] / 2;
+			if(sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).getAlign() == 2) {
+				x -= sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).getKeta() * values[5] / 2;
 			}
-			sj.getJudgeCount()[values[1] <= 5  ? (5 - values[1]) : values[1]].setDestination(values[2], x * dstw / srcw,
+			sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], x * dstw / srcw,
 					-values[4] * dsth / srch, values[5] * dstw / srcw, values[6] * dsth / srch, values[7],
 					values[8], values[9], values[10], values[11], values[12], values[13], values[14],
 					values[15], values[16], values[17], values[18], values[19], values[20], offset);
@@ -895,30 +1001,28 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 }
 
 enum PlayCommand implements LR2SkinLoader.Command<LR2PlaySkinLoader> {
-	CLOSE {
-		@Override
-		public void execute(LR2PlaySkinLoader loader, String[] str) {
-			loader.skin.setClose(Integer.parseInt(str[1]));
-		}
-	},
-	PLAYSTART {
-		@Override
-		public void execute(LR2PlaySkinLoader loader, String[] str) {
-			loader.skin.setPlaystart(Integer.parseInt(str[1]));
-		}
-	},
-	LOADSTART {
-		@Override
-		public void execute(LR2PlaySkinLoader loader, String[] str) {
-			loader.skin.setLoadstart(Integer.parseInt(str[1]));
-		}
-	},
-	LOADEND {
-		@Override
-		public void execute(LR2PlaySkinLoader loader, String[] str) {
-			loader.skin.setLoadend(Integer.parseInt(str[1]));
-		}
-	}
+	CLOSE ((loader, str) -> {
+		loader.skin.setClose(Integer.parseInt(str[1]));
+	}),
+	PLAYSTART ((loader, str) -> {
+		loader.skin.setPlaystart(Integer.parseInt(str[1]));
+	}),
+	LOADSTART ((loader, str) -> {
+		loader.skin.setLoadstart(Integer.parseInt(str[1]));
+	}),
+	LOADEND ((loader, str) -> {
+		loader.skin.setLoadend(Integer.parseInt(str[1]));
+	})
 	;
 
+	
+	public final BiConsumer<LR2PlaySkinLoader, String[]> function;
+
+	private PlayCommand(BiConsumer<LR2PlaySkinLoader, String[]> function) {
+		this.function = function;
+	}
+
+	public void execute(LR2PlaySkinLoader loader, String[] str) {
+		function.accept(loader, str);
+	}
 }

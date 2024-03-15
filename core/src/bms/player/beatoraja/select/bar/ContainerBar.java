@@ -7,8 +7,8 @@ package bms.player.beatoraja.select.bar;
  */
 public class ContainerBar extends DirectoryBar {
 
-	private String title;
-    private Bar[] childbar;
+	private final String title;
+    private final Bar[] childbar;
 
     public ContainerBar(String title, Bar[] bar) {
     	super(null);
@@ -19,11 +19,6 @@ public class ContainerBar extends DirectoryBar {
     @Override
     public String getTitle() {
         return title;
-    }
-
-    @Override
-    public String getArtist() {
-        return null;
     }
 
     @Override

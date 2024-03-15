@@ -15,11 +15,11 @@ public class CommandBar extends DirectoryBar {
 	/**
 	 * バータイトル
 	 */
-    private String title;
+    private final String title;
     /**
      * DBに対するSQL
      */
-    private String sql;
+    private final String sql;
 
     public CommandBar(MusicSelector selector, String title, String sql) {
     	this(selector, title, sql, false);
@@ -34,11 +34,6 @@ public class CommandBar extends DirectoryBar {
     @Override
     public String getTitle() {
         return title;
-    }
-
-    @Override
-    public String getArtist() {
-        return null;
     }
 
     @Override

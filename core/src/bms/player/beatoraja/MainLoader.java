@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,7 +31,6 @@ import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
 import bms.player.beatoraja.song.SongUtils;
-import javafx.stage.Stage;
 
 /**
  * 起動用クラス
@@ -48,8 +48,6 @@ public class MainLoader extends Application {
 	private static Path bmsPath;
 
 	private static VersionChecker version;
-
-	//private static Stage configuratorStage;
 
 	public static void main(String[] args) {
 
@@ -99,7 +97,7 @@ public class MainLoader extends Application {
 
 
 
-		if (Files.exists(MainController.configpath) && (bmsPath != null || auto != null)) {
+		if (Files.exists(Config.configpath) && (bmsPath != null || auto != null)) {
 			IRConnectionManager.getAllAvailableIRConnectionName();
 			play(bmsPath, auto, true, null, null, bmsPath != null);
 		} else {
@@ -237,7 +235,6 @@ public class MainLoader extends Application {
 				bmsinfo.exit();
 			});
 			primaryStage.show();
-			//configuratorStage = primaryStage;
 //			Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
 
 		} catch (IOException e) {

@@ -1,39 +1,21 @@
 package bms.player.beatoraja.select;
 
-import java.io.BufferedInputStream;
-import java.lang.reflect.Method;
-import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
+import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
+
+import java.util.stream.*;
 
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
-import bms.player.beatoraja.ir.*;
-import bms.player.beatoraja.ir.IRCourseData.IRTrophyData;
 import bms.player.beatoraja.select.MusicSelectKeyProperty.MusicSelectKey;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
-import bms.player.beatoraja.skin.property.EventFactory.EventType;
 
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
-import bms.model.Mode;
-import bms.player.beatoraja.*;
-import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.CourseData.TrophyData;
-import bms.player.beatoraja.external.BMSSearchAccessor;
 import bms.player.beatoraja.song.*;
-import com.badlogic.gdx.utils.StringBuilder;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 楽曲バー描画用クラス
@@ -42,60 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class BarRenderer {
 
-	private MusicSelector select;
+	private final MusicSelector select;
 
-	private BarContentsLoaderThread loader;
-
-	/**
-	 * 現在のフォルダ階層
-	 */
-	private Queue<DirectoryBar> dir = new Queue<>();
-	private String dirString = "";
-	/**
-	 * 各階層のフォルダを開く元となったバー
-	 */
-	private Queue<Bar> sourcebars = new Queue<>();
-	/**
-	 * 現在表示中のバー一覧
-	 */
-	private Bar[] currentsongs;
-	/**
-	 * 選択中のバーのインデックス
-	 */
-	private int selectedindex;
-
-	private Bar[] commands;
-
-	private TableBar courses;
-
-	private HashBar[] favorites = new HashBar[0];
-
-	// システム側で挿入されるルートフォルダ
-	private HashMap<String, Bar> appendFolders = new HashMap<String, Bar>();
-
-	/**
-	 * 難易度表バー一覧
-	 */
-	private TableBar[] tables = new TableBar[0];
-	/**
-	 * 検索結果バー一覧
-	 */
-	private Array<SearchWordBar> search = new Array<SearchWordBar>();
-	/**
-	 * ランダムコース結果バー一覧
-	 */
-	private Array<RandomCourseResult> randamCourseResult = new Array<>();
-
-	private class RandomCourseResult {
-		public GradeBar course;
-		public String dirString;
-
-		public RandomCourseResult(GradeBar course, String dirString) {
-			this.course = course;
-			this.dirString = dirString;
-		}
-	}
-
+	private final BarManager manager;
+	
 	private final String[] TROPHY = { "bronzemedal", "silvermedal", "goldmedal" };
 
 	private final int durationlow;
@@ -117,7 +49,9 @@ public class BarRenderer {
 	private final int analogTicksPerScroll;
 
 	private final int barlength = 60;
-	private final BarArea[] bararea = new BarArea[barlength];
+	private final BarArea[] bararea;
+
+	private boolean bartextupdate = false;
 
 	private static class BarArea {
 		public Bar sd;
@@ -127,448 +61,17 @@ public class BarRenderer {
 		public int text;
 	}
 
-	// jsonで定義したrandom bar (folder)
-	private List<RandomFolder> randomFolderList;
-
-	public BarRenderer(MusicSelector select) {
-		final MainController main = select.main;
+	public BarRenderer(MusicSelector select, BarManager manager) {
 		this.select = select;
-		TableDataAccessor tdaccessor = new TableDataAccessor(select.resource.getConfig().getTablepath());
-
-		TableData[] unsortedtables = tdaccessor.readAll();
-		Array<TableData> sortedtables = new Array<TableData>(unsortedtables.length);
+		this.manager = manager;
 		
-		for(String url : select.resource.getConfig().getTableURL()) {
-			for(int i = 0;i < unsortedtables.length;i++) {
-				final TableData td = unsortedtables[i];
-				if(td != null && url.equals(td.getUrl())) {
-					sortedtables.add(td);
-					unsortedtables[i] = null;
-					break;
-				}
-			}
-		}
-		
-		for(TableData td : unsortedtables) {
-			if(td != null) {
-				sortedtables.add(td);
-			}
-		}
-
-		BMSSearchAccessor bmssearcha = new BMSSearchAccessor(select.resource.getConfig().getTablepath());
-
-		Array<TableBar> table = new Array<TableBar>();
-
 		durationlow = select.resource.getConfig().getScrollDurationLow();
 		durationhigh = select.resource.getConfig().getScrollDurationHigh();
 		analogTicksPerScroll = select.resource.getConfig().getAnalogTicksPerScroll();
 
-		for (TableData td : sortedtables) {
-			if (td.getName().equals("BMS Search")) {
-				TableBar bmssearch = new TableBar(select, td, bmssearcha);
-				table.add(bmssearch);
-			} else {
-				table.add(new TableBar(select, td,
-						new TableDataAccessor.DifficultyTableAccessor(select.resource.getConfig().getTablepath(), td.getUrl())));
-			}
-		}
-
-		if(main.getIRStatus().length > 0) {
-			IRResponse<IRTableData[]> response = main.getIRStatus()[0].connection.getTableDatas();
-			if(response.isSucceeded()) {
-				for(IRTableData irtd : response.getData()) {
-					TableData td = new TableData();
-					td.setName(irtd.name);
-					TableData.TableFolder[] folder = new TableData.TableFolder[irtd.folders.length];
-					for(int i = 0;i < folder.length;i++) {
-						TableData.TableFolder tf = new TableData.TableFolder();
-						tf.setName(irtd.folders[i].name);
-						SongData[] songs = new SongData[irtd.folders[i].charts.length];
-						for(int j = 0;j < songs.length;j++) {
-							SongData song = new SongData();
-							IRChartData chart = irtd.folders[i].charts[j];
-							song.setSha256(chart.sha256);
-							song.setMd5(chart.md5);
-							song.setTitle(chart.title);
-							song.setArtist(chart.artist);
-							song.setGenre(chart.genre);
-							song.setUrl(chart.url);
-							song.setAppendurl(chart.appendurl);
-							if(chart.mode != null) {
-								song.setMode(chart.mode.id);								
-							}
-							songs[j] = song;
-						}
-						tf.setSong(songs);
-						folder[i] = tf;
-					}
-					td.setFolder(folder);
-					CourseData[] course = new CourseData[irtd.courses.length];
-					for(int i = 0;i < course.length;i++) {
-						CourseData cd = new CourseData();
-						cd.setName(irtd.courses[i].name);
-						SongData[] songs = new SongData[irtd.courses[i].charts.length];
-						for(int j = 0;j < songs.length;j++) {
-							SongData song = new SongData();
-							IRChartData chart = irtd.courses[i].charts[j];
-							song.setSha256(chart.sha256);
-							song.setMd5(chart.md5);
-							song.setTitle(chart.title);
-							song.setArtist(chart.artist);
-							song.setGenre(chart.genre);
-							song.setUrl(chart.url);
-							song.setAppendurl(chart.appendurl);
-							if(chart.mode != null) {
-								song.setMode(chart.mode.id);								
-							}
-							songs[j] = song;
-						}
-						cd.setSong(songs);
-						cd.setConstraint(irtd.courses[i].constraint);
-						TrophyData[] trophyDatas = new TrophyData[irtd.courses[i].trophy.length];
-						for(int j = 0;j < irtd.courses[i].trophy.length; j++) {
-						    TrophyData trophyData = new TrophyData();
-						    IRTrophyData t = irtd.courses[i].trophy[j];
-						    trophyData.setName(t.name);
-						    trophyData.setMissrate(t.smissrate);
-						    trophyData.setScorerate(t.scorerate);
-						    trophyDatas[j] = trophyData;
-						}
-						cd.setTrophy(trophyDatas);
-						cd.setRelease(true);
-						course[i] = cd;
-					}
-					td.setCourse(course);
-					if(td.validate()) {
-						table.add(new TableBar(select, td, new TableDataAccessor.DifficultyTableAccessor(select.resource.getConfig().getTablepath(), td.getUrl())));						
-					}
-				}
-			} else {
-				Logger.getGlobal().warning("IRからのテーブル取得失敗 : " + response.getMessage());
-			}
-		}
-
-		new Thread(() -> {
-			TableData td = bmssearcha.read();
-			if (td != null) {
-				tdaccessor.write(td);
-			}
-		}).start();
-
-		this.tables = table.toArray(TableBar.class);
-
-		TableDataAccessor.TableAccessor courseReader = new TableDataAccessor.TableAccessor("course") {
-			@Override
-			public TableData read() {
-				TableData td = new TableData();
-				td.setName("COURSE");
-				td.setCourse(new CourseDataAccessor("course").readAll());
-				return td;
-			}
-
-			@Override
-			public void write(TableData td) {
-			}
-		};
-
-		courses = new TableBar(select, courseReader.read(), courseReader);
-
-		CourseData[] cds = new CourseDataAccessor("favorite").readAll();
-//		if(cds.length == 0) {
-//			cds = new CourseData[1];
-//			cds[0] = new CourseData();
-//			cds[0].setName("FAVORITE");
-//		}
-		favorites = new HashBar[cds.length];
-		for (int i = 0; i < cds.length; i++) {
-			favorites[i] = new HashBar(select, cds[i].getName(), cds[i].getSong());
-		}
-
-		Array<Bar> l = new Array<Bar>();
-
-		Array<Bar> lampupdate = new Array<Bar>();
-		Array<Bar> scoreupdate = new Array<Bar>();
-		for(int i = 0;i < 30;i++) {
-			String s = i == 0 ? "TODAY" : i + "DAYS AGO";
-			long t = ((System.currentTimeMillis() / 86400000) - i) * 86400;
-			lampupdate.add(new CommandBar(select,  s, "scorelog.clear > scorelog.oldclear AND scorelog.date >= "  + t + " AND scorelog.date < " + (t + 86400)));
-			scoreupdate.add(new CommandBar(select,  s,  "scorelog.score > scorelog.oldscore AND scorelog.date >= "  + t + " AND scorelog.date < " + (t + 86400)));
-		}
-		l.add(new ContainerBar("LAMP UPDATE", lampupdate.toArray(Bar.class)));
-		l.add(new ContainerBar("SCORE UPDATE", scoreupdate.toArray(Bar.class)));
-		try {
-			Json json = new Json();
-			CommandFolder[] cf = json.fromJson(CommandFolder[].class,
-					new BufferedInputStream(Files.newInputStream(Paths.get("folder/default.json"))));
-			for(CommandFolder folder : cf) {
-				l.add(createCommandBar(main, folder));
-			}
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+		manager.init();
 		
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			randomFolderList = objectMapper.readValue(
-					new BufferedInputStream(Files.newInputStream(Paths.get("random/default.json"))),
-					new TypeReference<List<RandomFolder>>() {
-					});
-		} catch (Throwable e) {
-			randomFolderList = new ArrayList<RandomFolder>();
-			RandomFolder randomFolder = new RandomFolder();
-			randomFolder.setName("RANDOM SELECT");
-			randomFolderList.add(randomFolder);
-			e.printStackTrace();
-		}
-
-		commands = l.toArray(Bar.class);
-
-		for(int i = 0;i < barlength;i++) {
-			bararea[i] = new BarArea();
-		}
-	}
-
-	private Bar createCommandBar(MainController main, CommandFolder folder) {
-		if(folder.getFolder() != null && folder.getFolder().length > 0 || folder.getRandomCourse() != null && folder.getRandomCourse().length > 0) {
-			Array<Bar> l = new Array<Bar>();
-			for(CommandFolder child : folder.getFolder()) {
-				l.add(createCommandBar(main, child));
-			}
-			for(RandomCourseData course : folder.getRandomCourse()) {
-				l.add(new RandomCourseBar(course));
-			}
-			return new ContainerBar(folder.getName(), l.toArray(Bar.class));
-		} else {
-			return new CommandBar(select, folder.getName(), folder.getSql(), folder.isShowall());
-		}
-	}
-
-	public static class CommandFolder {
-
-		private String name;
-		private CommandFolder[] folder = new CommandFolder[0];
-		private String sql;
-		private RandomCourseData[] rcourse = RandomCourseData.EMPTY;
-		private boolean showall = false;
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public CommandFolder[] getFolder() {
-			return folder;
-		}
-
-		public void setFolder(CommandFolder[] songs) {
-			this.folder = songs;
-		}
-
-		public String getSql() {
-			return sql;
-		}
-
-		public void setSql(String sql) {
-			this.sql = sql;
-		}
-
-		public RandomCourseData[] getRandomCourse() { return rcourse; }
-
-		public void setRandomCourse(RandomCourseData[] course) { this.rcourse = course; }
-
-		public boolean isShowall() {
-			return showall;
-		}
-
-		public void setShowall(boolean showall) {
-			this.showall = showall;
-		}
-	}
-	
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class RandomFolder {
-		private String name;
-		private Map<String, Object> filter;
-		public String getName() {
-			return "[RANDOM] " + name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public Map<String, Object> getFilter() {
-			return filter;
-		}
-
-		public void setFilter(Map<String, Object> filter) {
-			this.filter = filter;
-		}
-
-		public Boolean filterSong(ScoreData scoreData) {
-			Set<String> filterKey = this.getFilter().keySet();
-			for (String key : filterKey) {
-				String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
-						+ key.substring(1);
-				try {
-					if (this.getFilter().get(key) instanceof Integer) { // Fork for integer values of the filter key.
-						Integer value = (Integer)this.getFilter().get(key);
-						if (scoreData == null) {
-							if (0 != value) {
-								return false;
-							}
-						} else {
-							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
-							Object propertyValue = getterMethod.invoke(scoreData);
-							if (!propertyValue.equals(value)) {
-								return false;
-							}
-						}
-						return true;
-					}
-					Object valueArr[] = ((String)this.getFilter().get(key)).split("&&");
-					for (Object value : valueArr) // Fork for string values of the filter key.
-					{
-						value = ((String)value).replaceAll("\\s",""); // Clean from whitespaces.
-						if (scoreData == null) {
-							String stringValue = (String) value;
-							if (!stringValue.isEmpty() && !stringValue.substring(0, 1).equals("<")) {
-								return false; // Because lack of value would be less than anything.
-							}
-						} else {
-							Method getterMethod = ScoreData.class.getMethod(getterMethodName);
-							Object propertyValue = getterMethod.invoke(scoreData);
-							if (propertyValue instanceof Integer) {
-								String valueString = (String)value;
-								Integer propertyValueInt = (Integer)propertyValue;
-								Integer filterValueInt;
-								// Checking the position for the integer bit of the key value.
-								if (valueString.substring(1,2).equals("=")){ // If the operation is either >= or <=.
-									filterValueInt = Integer.parseInt(valueString.substring(2));
-								}
-								// If the operation is > or <.
-								else filterValueInt = Integer.parseInt(valueString.substring(1));
-
-								if (valueString.substring(0,1).equals(">")) // Fork for > and >= operations.
-								{
-									if (valueString.substring(1,2).equals("="))
-									{
-										if (!(propertyValueInt >= filterValueInt))
-										{
-											return false;
-										}
-									}
-									else if (!(propertyValueInt > filterValueInt))
-									{
-										return false;
-									}
-								}
-								if (valueString.substring(0,1).equals("<")) // Fork for < and <= operations.
-								{
-									if (valueString.substring(1,2).equals("="))
-									{
-										if (!(propertyValueInt <= filterValueInt))
-										{
-											return false;
-										}
-									}
-									else if (!(propertyValueInt < filterValueInt))
-									{
-										return false;
-									}
-								}
-							}
-							else if (!propertyValue.equals(value)) {
-								return false;
-							}
-						}
-					}
-				} catch (Throwable e) {
-					e.printStackTrace();
-					return false;
-				}
-			}
-			return true;
-		}
-
-	}
-
-	synchronized public void setAppendDirectoryBar(String key, Bar bar) {
-	    this.appendFolders.put(key, bar);
-	}
-
-	public Bar getSelected() {
-		return currentsongs != null ? currentsongs[selectedindex] : null;
-	}
-
-	public void setSelected(Bar bar) {
-		for (int i = 0; i < currentsongs.length; i++) {
-			if (currentsongs[i].getTitle().equals(bar.getTitle())) {
-				selectedindex = i;
-				select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
-						currentsongs[selectedindex].getRivalScore());
-				break;
-			}
-		}
-	}
-
-	public float getSelectedPosition() {
-		return ((float) selectedindex) / currentsongs.length;
-	}
-
-	public void setSelectedPosition(float value) {
-		if (value >= 0 && value < 1) {
-			selectedindex = (int) (currentsongs.length * value);
-		}
-		select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
-				currentsongs[selectedindex].getRivalScore());
-	}
-
-	public void move(boolean inclease) {
-		if (inclease) {
-			selectedindex++;
-		} else {
-			selectedindex += currentsongs.length - 1;
-		}
-		selectedindex = selectedindex % currentsongs.length;
-		select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
-				currentsongs[selectedindex].getRivalScore());
-	}
-
-	public void close() {
-		if(dir.size == 0) {
-			select.executeEvent(EventType.sort);
-			return;
-		}
-
-		final DirectoryBar current = dir.removeLast();
-		final DirectoryBar parent = dir.size > 0 ? dir.last() : null;
-		dir.addLast(current);
-		updateBar(parent);
-		select.play(MusicSelector.SOUND_FOLDERCLOSE);
-	}
-
-	public void addSearch(SearchWordBar bar) {
-		for (SearchWordBar s : search) {
-			if (s.getTitle().equals(bar.getTitle())) {
-				search.removeValue(s, true);
-				break;
-			}
-		}
-		if (search.size >= select.resource.getConfig().getMaxSearchBarCount()) {
-			search.removeIndex(0);
-		}
-		search.add(bar);
-	}
-
-	public void addRandomCourse(GradeBar bar, String dirString) {
-		if (randamCourseResult.size >= 100) {
-			randamCourseResult.removeIndex(0);
-		}
-		randamCourseResult.add(new RandomCourseResult(bar, dirString));
+		bararea = Stream.generate(BarArea::new).limit(barlength).toArray(BarArea[]::new);
 	}
 
 	public boolean mousePressed(SkinBar baro, int button, int x, int y) {
@@ -577,9 +80,9 @@ public class BarRenderer {
 			if (baro.getBarImages(on, i) == null) {
 				continue;
 			}
-			int index = (int) (selectedindex + currentsongs.length * 100 + i
-					- ((MusicSelectSkin) select.getSkin()).getCenterBar()) % currentsongs.length;
-			Bar sd = currentsongs[index];
+			int index = (int) (manager.selectedindex + manager.currentsongs.length * 100 + i
+					- ((MusicSelectSkin) select.getSkin()).getCenterBar()) % manager.currentsongs.length;
+			Bar sd = manager.currentsongs[index];
 
 			Rectangle r = baro.getBarImages(on, i).getDestination(select.timer.getNowTime(), select);
 			if (r != null) {
@@ -587,7 +90,7 @@ public class BarRenderer {
 					if (button == 0) {
 						select.select(sd);
 					} else {
-						close();
+						manager.close();
 					}
 					return true;
 				}
@@ -632,9 +135,9 @@ public class BarRenderer {
 				ba.y = (int) (si1.region.y + dy + (baro.getPosition() == 1 ? si1.region.height : 0));
 
 				// set song bar type
-				int index = (selectedindex + currentsongs.length * 100 + i - skin.getCenterBar())
-						% currentsongs.length;
-				Bar sd = currentsongs[index];
+				int index = (manager.selectedindex + manager.currentsongs.length * 100 + i - skin.getCenterBar())
+						% manager.currentsongs.length;
+				Bar sd = manager.currentsongs[index];
 				ba.sd = sd;
 
 				if (sd instanceof TableBar) {
@@ -701,7 +204,7 @@ public class BarRenderer {
 			bartextupdate = false;
 			ObjectSet<Character> charset = new ObjectSet<Character>();
 
-			for (Bar song : currentsongs) {
+			for (Bar song : manager.currentsongs) {
 				for (char c : song.getTitle().toCharArray()) {
 					charset.add(c);
 				}
@@ -721,9 +224,9 @@ public class BarRenderer {
 		}
 
 		// check terminated loader thread and load song images
-		if(loader != null && loader.getState() == Thread.State.TERMINATED){
+		if(manager.loader != null && manager.loader.getState() == Thread.State.TERMINATED){
 			select.loadSelectedSongImages();
-			loader = null;
+			manager.loader = null;
 		}
 
 		// draw song bar
@@ -952,13 +455,13 @@ public class BarRenderer {
 			duration = 0;
 		}
 		while(mov > 0) {
-			move(true);
-			select.play(MusicSelector.SOUND_SCRATCH);
+			manager.move(true);
+			select.play(SCRATCH);
 			mov--;
 		}
 		while(mov < 0) {
-			move(false);
-			select.play(MusicSelector.SOUND_SCRATCH);
+			manager.move(false);
+			select.play(SCRATCH);
 			mov++;
 		}
 	}
@@ -970,218 +473,10 @@ public class BarRenderer {
 		}
 	}
 
-	private boolean bartextupdate = false;
-
-	public Queue<DirectoryBar> getDirectory() {
-		return dir;
+	void updateBarText() {
+		bartextupdate = true;
 	}
-
-	public String getDirectoryString() {
-		return dirString;
-	}
-
-	public boolean updateBar() {
-		if (dir.size > 0) {
-			return updateBar(dir.last());
-		}
-		return updateBar(null);
-	}
-
-	public boolean updateBar(Bar bar) {
-		Bar prevbar = currentsongs != null ? currentsongs[selectedindex] : null;
-		int prevdirsize = dir.size;
-		Bar sourcebar = null;
-		Array<Bar> l = new Array<Bar>();
-		boolean showInvisibleCharts = false;
-		boolean isSortable = true;
-
-		if (MainLoader.getIllegalSongCount() > 0) {
-			l.addAll(SongBar.toSongBarArray(select.getSongDatabase().getSongDatas(MainLoader.getIllegalSongs())));
-		} else if (bar == null) {
-			if (dir.size > 0) {
-				prevbar = dir.first();
-			}
-			dir.clear();
-			sourcebars.clear();
-			l.addAll(new FolderBar(select, null, "e2977170").getChildren());
-			l.add(courses);
-			l.addAll(favorites);
-			appendFolders.keySet().forEach((key) -> {
-			    l.add(appendFolders.get(key));
-			});
-			l.addAll(tables);
-			l.addAll(commands);
-			l.addAll(search);
-		} else if (bar instanceof DirectoryBar) {
-			showInvisibleCharts = ((DirectoryBar)bar).isShowInvisibleChart();
-			if(dir.indexOf((DirectoryBar) bar, true) != -1) {
-				while(dir.last() != bar) {
-					prevbar = dir.removeLast();
-					sourcebar = sourcebars.removeLast();
-				}
-				dir.removeLast();
-			}
-			l.addAll(((DirectoryBar) bar).getChildren());
-			isSortable = ((DirectoryBar) bar).isSortable();
-
-			if (bar instanceof ContainerBar && randamCourseResult.size > 0) {
-				StringBuilder str = new StringBuilder();
-				for (Bar b : dir) {
-					str.append(b.getTitle()).append(" > ");
-				}
-				str.append(bar.getTitle()).append(" > ");
-				final String ds = str.toString();
-				for (RandomCourseResult r : randamCourseResult) {
-					if (r.dirString.equals(ds)) {
-						l.add(r.course);
-					}
-				}
-			}
-		}
-
-		if(!select.resource.getConfig().isShowNoSongExistingBar()) {
-			Array<Bar> remove = new Array<Bar>();
-			for (Bar b : l) {
-				if ((b instanceof SongBar && !((SongBar) b).existsSong())
-					|| b instanceof GradeBar && !((GradeBar) b).existsAllSongs()) {
-					remove.add(b);
-				}
-			}
-			l.removeAll(remove, true);
-		}
-
-		if (l.size > 0) {
-			final PlayerConfig config = select.resource.getPlayerConfig();
-			int modeIndex = 0;
-			for(;modeIndex < MusicSelector.MODE.length && MusicSelector.MODE[modeIndex] != config.getMode();modeIndex++);
-			for(int trialCount = 0; trialCount < MusicSelector.MODE.length; trialCount++, modeIndex++) {
-				final Mode mode = MusicSelector.MODE[modeIndex % MusicSelector.MODE.length];
-				config.setMode(mode);
-				Array<Bar> remove = new Array<Bar>();
-				for (Bar b : l) {
-					if(b instanceof SongBar && ((SongBar) b).getSongData() != null) {
-						final SongData song = ((SongBar) b).getSongData();
-						if((!showInvisibleCharts && (song.getFavorite() & (SongData.INVISIBLE_SONG | SongData.INVISIBLE_CHART)) != 0)
-								|| (mode != null && song.getMode() != 0 && song.getMode() != mode.id)) {
-							remove.add(b);
-						}
-					}
-				}
-				if(l.size != remove.size) {
-					l.removeAll(remove, true);
-					break;
-				}
-			}
-
-			if (bar != null) {
-				dir.addLast((DirectoryBar) bar);
-				if (dir.size > prevdirsize) {
-					sourcebars.addLast(prevbar);
-				}
-			}
-
-			Bar[] newcurrentsongs = l.toArray(Bar.class);
-			for (Bar b : newcurrentsongs) {
-				if (b instanceof SongBar) {
-					SongData sd = ((SongBar) b).getSongData();
-					if (sd != null && select.getScoreDataCache().existsScoreDataCache(sd, config.getLnmode())) {
-						b.setScore(select.getScoreDataCache().readScoreData(sd, config.getLnmode()));
-					}
-				}
-			}
-
-			if(isSortable) {
-			    Sort.instance().sort(newcurrentsongs, BarSorter.values()[select.getSort()]);
-			}
-
-			Array<Bar> bars = new Array<Bar>();
-			if (select.main.getPlayerConfig().isRandomSelect()) {
-				try {
-					for (RandomFolder randomFolder : randomFolderList) {
-						SongData[] randomTargets = Stream.of(newcurrentsongs).filter(
-								songBar -> songBar instanceof SongBar
-										&& ((SongBar) songBar).getSongData().getPath() != null)
-								.map(songBar -> ((SongBar) songBar).getSongData()).toArray(SongData[]::new);
-						if (randomFolder.filter != null) {
-							Set<String> filterKey = randomFolder.getFilter().keySet();
-							randomTargets = Stream.of(randomTargets).filter(r -> {
-								ScoreData scoreData = select.getScoreDataCache().readScoreData(r, config.getLnmode());
-								return randomFolder.filterSong(scoreData);
-							}).toArray(SongData[]::new);
-						}
-						if ((randomFolder.filter != null && randomTargets.length >= 1)
-								|| (randomFolder.filter == null && randomTargets.length >= 2)) {
-							Bar randomBar = new ExecutableBar(randomTargets, select.main.getCurrentState(),
-									randomFolder.name);
-							bars.add(randomBar);
-						}
-					}
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
-			}
-
-			bars.addAll(newcurrentsongs);
-
-			currentsongs = bars.toArray(Bar.class);
-			bartextupdate = true;
-
-			selectedindex = 0;
-
-			// 変更前と同じバーがあればカーソル位置を保持する
-			if (sourcebar != null) {
-				prevbar = sourcebar;
-			}
-			if (prevbar != null) {
-				if (prevbar instanceof SongBar && ((SongBar) prevbar).existsSong()) {
-					final SongBar prevsong = (SongBar) prevbar;
-					for (int i = 0; i < currentsongs.length; i++) {
-						if (currentsongs[i] instanceof SongBar && ((SongBar) currentsongs[i]).existsSong() &&
-								((SongBar) currentsongs[i]).getSongData().getSha256()
-								.equals(prevsong.getSongData().getSha256())) {
-							selectedindex = i;
-							break;
-						}
-					}
-				} else {
-					for (int i = 0; i < currentsongs.length; i++) {
-						if (currentsongs[i].getClass() == prevbar.getClass() && currentsongs[i].getTitle().equals(prevbar.getTitle())) {
-							selectedindex = i;
-							break;
-						}
-					}
-
-				}
-			}
-
-			if (loader != null) {
-				loader.stopRunning();
-			}
-			loader = new BarContentsLoaderThread(currentsongs);
-			loader.start();
-			select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
-					currentsongs[selectedindex].getRivalScore());
-
-			StringBuilder str = new StringBuilder();
-			for (Bar b : dir) {
-				str.append(b.getTitle()).append(" > ");
-			}
-			dirString = str.toString();
-
-			select.selectedBarMoved();
-
-			return true;
-		}
-
-		if (dir.size > 0) {
-			updateBar(dir.last());
-		} else {
-			updateBar(null);
-		}
-		Logger.getGlobal().warning("楽曲がありません");
-		return false;
-	}
-
+	
 	public void dispose() {
 		// favorite書き込み
 //		CourseData course = new CourseData();
@@ -1202,126 +497,4 @@ public class BarRenderer {
 //		cda.write("default", course);
 	}
 
-	/**
-	 * 選曲バー内のスコアデータ等を読み込むためのスレッド
-	 */
-	class BarContentsLoaderThread extends Thread {
-
-		/**
-		 * データ読み込み対象の選曲バー
-		 */
-		private Bar[] bars;
-		/**
-		 * 読み込み終了フラグ
-		 */
-		private boolean stop = false;
-
-		public BarContentsLoaderThread(Bar[] bar) {
-			this.bars = bar;
-		}
-
-		@Override
-		public void run() {
-			final MainController main = select.main;
-			final PlayerConfig config = select.resource.getPlayerConfig();
-			final ScoreDataCache rival = select.getRivalScoreDataCache();
-
-			final Array<SongData> songarray = new Array<>(bars.length);
-			for (Bar bar : bars) {
-				if (bar instanceof SongBar && ((SongBar) bar).existsSong()) {
-					songarray.add(((SongBar) bar).getSongData());
-				}
-			}
-			final SongData[] songs = songarray.toArray(SongData.class);
-			// loading score
-			// TODO collectorを使用してスコアをまとめて取得
-			for (Bar bar : bars) {
-				if (bar instanceof SongBar && ((SongBar) bar).existsSong()) {
-					SongData sd = ((SongBar) bar).getSongData();
-					if (bar.getScore() == null) {
-						bar.setScore(select.getScoreDataCache().readScoreData(sd, config.getLnmode()));
-					}
-					if (rival != null && bar.getRivalScore() == null) {
-						bar.setRivalScore(rival.readScoreData(sd, config.getLnmode()));
-					}
-					boolean[] replay = new boolean[MusicSelector.REPLAY];
-					for (int i = 0; i < MusicSelector.REPLAY; i++) {
-						replay[i] = main.getPlayDataAccessor().existsReplayData(sd.getSha256(), sd.hasUndefinedLongNote(),
-								config.getLnmode(), i);
-					}
-					((SongBar) bar).setExistsReplayData(replay);
-				}
-				if (bar instanceof GradeBar) {
-					GradeBar gb = (GradeBar) bar;
-					if (gb.existsAllSongs()) {
-						String[] hash = new String[gb.getSongDatas().length];
-						boolean ln = false;
-						for (int j = 0; j < gb.getSongDatas().length; j++) {
-							hash[j] = gb.getSongDatas()[j].getSha256();
-							ln |= gb.getSongDatas()[j].hasUndefinedLongNote();
-						}
-						CourseDataConstraint[] constraint = gb.getCourseData().getConstraint();
-						gb.setScore(main.getPlayDataAccessor().readScoreData(hash, ln, config.getLnmode(), 0, constraint));
-						gb.setMirrorScore(main.getPlayDataAccessor().readScoreData(hash, ln, config.getLnmode(), 1, constraint));
-						gb.setRandomScore(main.getPlayDataAccessor().readScoreData(hash, ln, config.getLnmode(), 2, constraint));
-						boolean[] replay = new boolean[MusicSelector.REPLAY];
-						for (int i = 0; i < MusicSelector.REPLAY; i++) {
-							replay[i] = main.getPlayDataAccessor().existsReplayData(hash, ln, config.getLnmode(), i, constraint);
-						}
-						gb.setExistsReplayData(replay);
-					}
-				}
-
-				if (select.resource.getConfig().isFolderlamp()) {
-					if (bar instanceof DirectoryBar) {
-						((DirectoryBar) bar).updateFolderStatus();
-					}
-				}
-				if (stop) {
-					break;
-				}
-			}
-			// loading song information
-			final SongInformationAccessor info = main.getInfoDatabase();
-			if(info != null) {
-				info.getInformation(songs);
-			}
-			// loading banner
-			// loading stagefile
-			for (Bar bar : bars) {
-				if (bar instanceof SongBar && ((SongBar) bar).existsSong()) {
-					final SongBar songbar = (SongBar) bar;
-					SongData song = songbar.getSongData();
-					try {
-						Path bannerfile = Paths.get(song.getPath()).getParent().resolve(song.getBanner());
-						// System.out.println(bannerfile.getPath());
-						if (song.getBanner().length() > 0 && Files.exists(bannerfile)) {
-							songbar.setBanner(select.getBannerResource().get(bannerfile.toString()));
-						}
-					} catch (Exception e) {
-						Logger.getGlobal().warning("banner読み込み失敗 : " + song.getBanner());
-					}
-					try {
-						Path stagefilefile = Paths.get(song.getPath()).getParent().resolve(song.getStagefile());
-						// System.out.println(stagefilefile.getPath());
-						if (song.getStagefile().length() > 0 && Files.exists(stagefilefile)) {
-							songbar.setStagefile(select.getStagefileResource().get(stagefilefile.toString()));
-						}
-					} catch (Exception e) {
-						Logger.getGlobal().warning("stagefile読み込み失敗 : " + song.getStagefile());
-					}
-				}
-				if (stop) {
-					break;
-				}
-			}
-		}
-
-		/**
-		 * データ読み込みを中断する
-		 */
-		public void stopRunning() {
-			stop = true;
-		}
-	}
 }

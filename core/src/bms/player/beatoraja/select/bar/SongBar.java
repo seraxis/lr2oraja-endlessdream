@@ -19,7 +19,7 @@ public class SongBar extends SelectableBar {
     /**
      * 楽曲データ
      */
-    private SongData song;
+    private final SongData song;
     /**
      * バナーデータ
      */
@@ -33,11 +33,11 @@ public class SongBar extends SelectableBar {
         this.song = song;
     }
 
-    public SongData getSongData() {
+    public final SongData getSongData() {
         return song;
     }
 
-    public boolean existsSong() {
+    public final boolean existsSong() {
     	return song.getPath() != null;
     }
 
@@ -58,13 +58,8 @@ public class SongBar extends SelectableBar {
     }
 
     @Override
-    public String getTitle() {
+    public final String getTitle() {
         return song.getFullTitle();
-    }
-
-    @Override
-    public String getArtist() {
-        return song.getFullArtist();
     }
 
     public int getLamp(boolean isPlayer) {

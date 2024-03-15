@@ -5,6 +5,9 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import java.util.Arrays;
 import java.util.Calendar;
 
+import bms.model.Mode;
+import bms.player.beatoraja.pattern.Random;
+import bms.player.beatoraja.result.MusicResult;
 import com.badlogic.gdx.Gdx;
 
 import bms.model.BMSModel;
@@ -357,7 +360,7 @@ public class IntegerPropertyFactory {
 		case NUMBER_MAXCOMBO2:
 			return (state) -> {
 				if (state instanceof MusicSelector) {
-					final ScoreData score = ((MusicSelector)state).getBarRender().getSelected().getScore();
+					final ScoreData score = ((MusicSelector)state).getBarManager().getSelected().getScore();
 					return score != null ? score.getCombo() : Integer.MIN_VALUE;
 				}
 				if (state instanceof BMSPlayer) {
@@ -443,7 +446,7 @@ public class IntegerPropertyFactory {
 		case NUMBER_MISSCOUNT2:
 			return (state) -> {
 				if (state instanceof MusicSelector) {
-					final ScoreData score = ((MusicSelector)state).getBarRender().getSelected().getScore();
+					final ScoreData score = ((MusicSelector)state).getBarManager().getSelected().getScore();
 					return score != null ? score.getMinbp() : Integer.MIN_VALUE;
 				}
 				if (state instanceof AbstractResult) {
@@ -518,21 +521,21 @@ public class IntegerPropertyFactory {
 
 		playcount(77, (state) -> {
 			if (state instanceof MusicSelector) {
-				final ScoreData score = ((MusicSelector)state).getBarRender().getSelected().getScore();
+				final ScoreData score = ((MusicSelector)state).getBarManager().getSelected().getScore();
 				return score != null ? score.getPlaycount() : Integer.MIN_VALUE;
 			}
 			return Integer.MIN_VALUE;
 		}),
 		clearcount(78, (state) -> {
 			if (state instanceof MusicSelector) {
-				final ScoreData score = ((MusicSelector)state).getBarRender().getSelected().getScore();
+				final ScoreData score = ((MusicSelector)state).getBarManager().getSelected().getScore();
 				return score != null ? score.getClearcount() : Integer.MIN_VALUE;
 			}
 			return Integer.MIN_VALUE;
 		}),
 		failcount(79, (state) -> {
 			if (state instanceof MusicSelector) {
-				final ScoreData score = ((MusicSelector)state).getBarRender().getSelected().getScore();
+				final ScoreData score = ((MusicSelector)state).getBarManager().getSelected().getScore();
 				return score != null ? score.getPlaycount() - score.getClearcount() : Integer.MIN_VALUE;
 			}
 			return Integer.MIN_VALUE;
@@ -833,7 +836,7 @@ public class IntegerPropertyFactory {
 		private static IntegerProperty createFolderClearCountProperty(final int clearType) {
 			return (state) -> {
 				if (state instanceof MusicSelector) {
-					final Bar selected = ((MusicSelector)state).getBarRender().getSelected();
+					final Bar selected = ((MusicSelector)state).getBarManager().getSelected();
 					if (selected instanceof DirectoryBar) {
 						return ((DirectoryBar) selected).getLamps()[clearType];
 					}
@@ -943,8 +946,7 @@ public class IntegerPropertyFactory {
 			return (state) -> {
 				if (state instanceof BMSPlayer) {
 					final JudgeManager judge = ((BMSPlayer) state).getJudgeManager();
-					return (int) (judge.getRecentJudgeTiming().length > player ? judge.getRecentJudgeTiming()[player]
-							: judge.getRecentJudgeTiming()[0]);
+					return (int) judge.getRecentJudgeTiming(player);
 				}
 				return 0;
 			};
@@ -1026,10 +1028,38 @@ public class IntegerPropertyFactory {
 			return Integer.MIN_VALUE;
 		}),
 		sort(12, (state) -> ((state instanceof MusicSelector) ? ((MusicSelector) state).getSort() : Integer.MIN_VALUE)),
-		gaugetype_1p(40, (state) -> (state.resource.getPlayerConfig().getGauge())),
-		option_1p(42, (state) -> (state.resource.getPlayerConfig().getRandom())),
-		option_2p(43, (state) -> (state.resource.getPlayerConfig().getRandom2())),
-		option_dp(54, (state) -> (state.resource.getPlayerConfig().getDoubleoption())),
+		gaugetype_1p(40, (state) -> {
+			if(state instanceof BMSPlayer) {
+				return ((BMSPlayer)state).getGauge().getType();
+			} else if(state instanceof AbstractResult) {
+				return ((AbstractResult) state).getGaugeType();
+			}
+			return state.resource.getPlayerConfig().getGauge();
+		}),
+		option_1p(42, (state) -> {
+			if(state instanceof BMSPlayer) {
+				return ((BMSPlayer)state).getOptionInformation().randomoption;
+			} else if(state instanceof AbstractResult) {
+				return state.resource.getReplayData().randomoption;
+			}
+			return state.resource.getPlayerConfig().getRandom();
+		}),
+		option_2p(43, (state) -> {
+			if(state instanceof BMSPlayer) {
+				return ((BMSPlayer)state).getOptionInformation().randomoption2;
+			} else if(state instanceof AbstractResult) {
+				return state.resource.getReplayData().randomoption2;
+			}
+			return state.resource.getPlayerConfig().getRandom2();
+		}),
+		option_dp(54, (state) -> {
+			if(state instanceof BMSPlayer) {
+				return ((BMSPlayer)state).getOptionInformation().doubleoption;
+			} else if(state instanceof AbstractResult) {
+				return state.resource.getReplayData().doubleoption;
+			}
+			return state.resource.getPlayerConfig().getDoubleoption();
+		}),
 
 		hsfix(55, (state) -> {
 			PlayConfig pc = null;
@@ -1044,6 +1074,33 @@ public class IntegerPropertyFactory {
 			}
 			return Integer.MIN_VALUE;
 		}),
+		
+		option_target1_1p(61, (state) -> {
+			final ScoreData rival = (state instanceof BMSPlayer || state instanceof AbstractResult) 
+					? state.main.getPlayerResource().getTargetScoreData() : state.getScoreDataProperty().getRivalScoreData();
+			if(rival != null && rival.getOption() >= 0) {
+				return rival.getOption() % 10;
+			}
+			return Integer.MIN_VALUE;
+		}),
+		option_target1_2p(62, (state) -> {
+			final ScoreData rival = (state instanceof BMSPlayer || state instanceof AbstractResult) 
+					? state.main.getPlayerResource().getTargetScoreData() : state.getScoreDataProperty().getRivalScoreData();
+			if(rival != null && rival.getOption() >= 0) {
+				return (rival.getOption() / 10) % 10;
+			}
+			return Integer.MIN_VALUE;
+		}),
+		option_target1_dp(63, (state) -> {
+			final ScoreData rival = (state instanceof BMSPlayer || state instanceof AbstractResult) 
+					? state.main.getPlayerResource().getTargetScoreData() : state.getScoreDataProperty().getRivalScoreData();
+			if(rival != null && rival.getOption() >= 0) {
+				return (rival.getOption() / 100) % 10;
+			}
+			return Integer.MIN_VALUE;
+		}),
+		// TODO 64-69はtarget2, target3に割り当てたい
+
 		hispeedautoadjust(342, (state) -> {
 			PlayConfig pc = null;
 			if(state instanceof MusicSelector) {
@@ -1144,6 +1201,7 @@ public class IntegerPropertyFactory {
 			}
 			return Integer.MIN_VALUE;
 		}),
+		guidese(343, (state) -> (state.resource.getPlayerConfig().isGuideSE() ? 1 : 0)),
 
 		extranotedepth(350, (state) -> (state.resource.getPlayerConfig().getExtranoteDepth())),
 		minemode(351, (state) -> (state.resource.getPlayerConfig().getMineMode())),
@@ -1155,7 +1213,7 @@ public class IntegerPropertyFactory {
 
 		cleartype(370, (state) -> {
 			if (state instanceof MusicSelector) {
-				final Bar selected = ((MusicSelector) state).getBarRender().getSelected();
+				final Bar selected = ((MusicSelector) state).getBarManager().getSelected();
 				return selected.getScore() != null ? selected.getScore().getClear() : Integer.MIN_VALUE;
 			} else if (state instanceof AbstractResult) {
 				final ScoreData score = ((AbstractResult) state).getNewScore();
@@ -1168,7 +1226,7 @@ public class IntegerPropertyFactory {
 		}),
 		cleartype_target(371, (state) -> {
 			if (state instanceof MusicSelector) {
-				final Bar selected = ((MusicSelector) state).getBarRender().getSelected();
+				final Bar selected = ((MusicSelector) state).getBarManager().getSelected();
 				return selected.getRivalScore() != null ? selected.getRivalScore().getClear() : Integer.MIN_VALUE;
 			} else if (state instanceof AbstractResult) {
 				return ((AbstractResult) state).getOldScore().getClear();
@@ -1185,6 +1243,25 @@ public class IntegerPropertyFactory {
 		cleartype_ranking8(397, createRankinCleartypeProperty(7)),
 		cleartype_ranking9(398, createRankinCleartypeProperty(8)),
 		cleartype_ranking10(399, createRankinCleartypeProperty(9)),
+		pattern_1p_1(450, getAssignedLane(0, false)),
+		pattern_1p_2(451, getAssignedLane(1, false)),
+		pattern_1p_3(452, getAssignedLane(2, false)),
+		pattern_1p_4(453, getAssignedLane(3, false)),
+		pattern_1p_5(454, getAssignedLane(4, false)),
+		pattern_1p_6(455, getAssignedLane(5, false)),
+		pattern_1p_7(456, getAssignedLane(6, false)),
+		pattern_1p_8(457, getAssignedLane(7, false)),
+		pattern_1p_9(458, getAssignedLane(8, false)),
+		pattern_1p_SCR(459, getAssignedLane(-1, false)),
+		pattern_2p_1(460, getAssignedLane(0, true)),
+		pattern_2p_2(461, getAssignedLane(1, true)),
+		pattern_2p_3(462, getAssignedLane(2, true)),
+		pattern_2p_4(463, getAssignedLane(3, true)),
+		pattern_2p_5(464, getAssignedLane(4, true)),
+		pattern_2p_6(465, getAssignedLane(5, true)),
+		pattern_2p_7(466, getAssignedLane(6, true)),
+		pattern_2p_SCR(469, getAssignedLane(-1, true)),
+
 		
 		// 旧仕様
 		assist_constant(BUTTON_ASSIST_CONSTANT, (state) -> (state.resource.getPlayerConfig().getScrollMode() == 1 ? 1 : 0)),
@@ -1222,6 +1299,58 @@ public class IntegerPropertyFactory {
 				return score != null ? score.clear.id : Integer.MIN_VALUE;
 			};
 		}
+
+		/**
+		 * ランダムオプションで割り当てられたレーンを返す
+		 */
+		private static IntegerProperty getAssignedLane(int key, boolean is2PSide){
+			return (state) -> {
+				if (!(state instanceof MusicResult)){
+					return 0;
+				}
+
+				ReplayData rd = state.resource.getReplayData();
+				Random type = Random.getRandom(is2PSide? rd.randomoption2: rd.randomoption);
+
+				switch (type){
+					case RANDOM:
+					case R_RANDOM:
+					case CROSS:
+					case RANDOM_EX:
+						break;
+					default:
+						return 0;
+				}
+
+				if(rd.laneShufflePattern == null){ // patternModifyLogで再現されたリプレイの場合が該当
+					return 0;
+				}
+
+				Mode mode = state.resource.getBMSModel().getMode();
+				if(mode.player == 1 && is2PSide){
+					return 0;
+				}
+				int keyNum = mode.key / mode.player;
+
+				int index;
+				if(key >= keyNum || (mode.scratchKey.length != 0 && key == mode.scratchKey[0])) {
+					return 0;
+				} else if(key == -1){ // scratch
+					if (mode.scratchKey.length == 0 || type != Random.RANDOM_EX){ // no scratch
+						return 0;
+					}
+					index = mode.scratchKey[0];
+				} else {
+					index = key;
+				}
+
+				int[] pattern = rd.laneShufflePattern[is2PSide? 1 : 0];
+				if (pattern == null){
+					return 0;
+				}
+				return pattern[index] + 1 - (is2PSide? keyNum: 0);
+			};
+		}
 	}
 
 	private static class FolderTotalClearCountProperty implements IntegerProperty {
@@ -1234,7 +1363,7 @@ public class IntegerPropertyFactory {
 		@Override
 		public int get(MainState state) {
 			if (state instanceof MusicSelector) {
-				final Bar selected = ((MusicSelector)state).getBarRender().getSelected();
+				final Bar selected = ((MusicSelector)state).getBarManager().getSelected();
 				if (selected instanceof DirectoryBar) {
 					int[] lamps = ((DirectoryBar) selected).getLamps();
 					int count = 0;

@@ -26,7 +26,13 @@ import com.badlogic.gdx.utils.SerializationException;
  */
 public class PlayerConfig {
 
+	/**
+	 * 旧コンフィグパス。そのうち削除
+	 */
 	static final Path configpath_old = Paths.get("config.json");
+	/**
+	 * コンフィグパス(UTF-8)
+	 */
 	static final Path configpath = Paths.get("config_player.json");	
 
 	private String id;
@@ -207,7 +213,7 @@ public class PlayerConfig {
 	/**
 	 * チャートプレビューを使用するかどうか
 	 */
-	private boolean chartPreview = false;
+	private boolean chartPreview = true;
 	
 	/**
 	 * 選択中の選曲時ソート
@@ -811,7 +817,7 @@ public class PlayerConfig {
 		mode24.validate(26);
 		mode24double.validate(52);
 		
-		sort = MathUtils.clamp(sort, 0 , BarSorter.values().length - 1);
+		sort = MathUtils.clamp(sort, 0 , BarSorter.defaultSorter.length - 1);
 
 		gauge = MathUtils.clamp(gauge, 0, 5);
 		random = MathUtils.clamp(random, 0, 9);
@@ -954,6 +960,7 @@ public class PlayerConfig {
 				e.printStackTrace();
 			}			
 		} else if(Files.exists(path_old)) {
+			// 旧コンフィグ読み込み。そのうち削除
 			try (FileReader reader = new FileReader(path_old.toFile())) {
 				Json json = new Json();
 				json.setIgnoreUnknownFields(true);
