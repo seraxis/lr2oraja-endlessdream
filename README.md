@@ -13,7 +13,7 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 
 ### Downloads
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-linux-0.2.0.zip)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-windows-0.2.0.zip)
 - [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-linux-0.2.0.zip)
 
 ## Building from source
