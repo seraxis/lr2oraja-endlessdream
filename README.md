@@ -8,13 +8,13 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 * Increased perfomance by using the latest graphics backends available to libgdx
 * Faster BMS folder processing than stock (up to 20x)
 * Faster Table Processing
-* Compatible with pre and post beatoraja 0.8.6 installs
+* Compatible with pre and post beatoraja 0.8.7 installs
 * Built in Mod Menu, accessible using **`Insert`**
 
 ### Downloads
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.6-endlessdream-windows-0.1.1.jar)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.6-endlessdream-linux-0.1.1.jar)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.7-endlessdream-windows-0.2.0.zip)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.1.1/lr2oraja-0.8.7-endlessdream-linux-0.2.0.zip)
 
 ## Building from source
 A JDK 8 **with javafx** is required to build and run. Consider using [liberica JDK](https://bell-sw.com/pages/downloads/#jdk-8-lts)
@@ -43,7 +43,7 @@ Configure the `runDir` system property to point to a beatoraja install or leave 
 
 **Windows:**
 ```powershell
-.\gradlew.bat core:runShadow -Dplatform=windows -DrunDir="C:\beatoraja0.8.6"
+.\gradlew.bat core:runShadow -Dplatform=windows -DrunDir="C:\beatoraja0.8.7"
 ```
 
 ## Contributing

@@ -16,6 +16,7 @@ public class Lwjgl3ControllerManager implements ControllerManager {
 
 	private boolean focused = true;
 	final Array<Controller> controllers = new Array<Controller>();
+	final Array<Integer> blacklistedControllers = new Array<Integer>();
 	final Array<Controller> polledControllers = new Array<Controller>();
 	final Array<ControllerListener> listeners = new Array<ControllerListener>();
 	
@@ -36,6 +37,9 @@ public class Lwjgl3ControllerManager implements ControllerManager {
 	void pollState() {
 
 		for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_LAST; i++) {
+			if (blacklistedControllers.contains(i, true)) {
+				continue;
+			}
 			if(GLFW.glfwJoystickPresent(i)) {
 				boolean alreadyUsed = false;
 				for(int j = 0; j < controllers.size; j++) {
@@ -45,8 +49,13 @@ public class Lwjgl3ControllerManager implements ControllerManager {
 					}
 				}
 				if(!alreadyUsed) {
-					Lwjgl3Controller controller = new Lwjgl3Controller(this, i);
-					connected(controller);
+					try {
+						Lwjgl3Controller controller = new Lwjgl3Controller(this, i);
+						connected(controller);
+					} catch (Exception e) {
+						blacklistedControllers.add(i);
+					}
+
 				}
 			}
 		}
@@ -126,7 +135,6 @@ public class Lwjgl3ControllerManager implements ControllerManager {
 	}
 
 	void setUnfocused (long win, boolean isFocused) {
-		System.out.println("focus changed");
 		this.focused = isFocused;
 	}
 }
