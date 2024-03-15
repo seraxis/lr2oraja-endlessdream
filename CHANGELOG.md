@@ -26,6 +26,22 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
+# 0.2.0
+New features:
+- Updated to upstream beatoraja version 0.8.7 ([fb664a4](https://github.com/seraxis/lr2oraja-endlessdream/commit/fb664a4c7932a8821ba33244fed784d137ca10c2))
+  - This brings support for base 62 keysound slots for BMS, some general code cleanup, and the addition of "pomu" mascot characters
+  - a new directory `font/` is now required as of this version
+
+Behavior changes:
+- `F5` now opens the mod menu along with `Insert` ([800062d](https://github.com/seraxis/lr2oraja-endlessdream/commit/800062dfaa4eef2ce67e3f9d9c86b60051dd31e9))
+- Auto adjust now works like LR2's: less sensitive with a more gentle hysteresis ([e81eecb](https://github.com/seraxis/lr2oraja-endlessdream/commit/e81eecb69f3f8d5c9d8a68c7f24acf55a5b161fd))
+- Scores that fail to send to IR will now be retried throughout your session, no more lost scores ([d917fc7](https://github.com/seraxis/lr2oraja-endlessdream/commit/d917fc79d349f4d399093c7503fbad93faa7cb5e))
+- The `Trainer` config tab has been removed ([800062d](https://github.com/seraxis/lr2oraja-endlessdream/commit/800062dfaa4eef2ce67e3f9d9c86b60051dd31e9))
+- Error handling for malformed USB devices that present themselves as controllers ([4b7320d](https://github.com/seraxis/lr2oraja-endlessdream/commit/4b7320de9e786bb2eb808ac48b4c89cd0c660449))
+- Negative FREQ being set in the Rates menu no longer stops scores from being saved even when the trainer is disabled
+
+Thanks to [@seraxis](https://github.com/seraxis), [@wcko87](https://github.com/wcko87), [@MatVeiQaaa](https://github.com/MatVeiQaaa), [@radiden](https://github.com/radiden)!
+
 # 0.1.1
 New features:
 - Added the **Rate Modifier**, an ImGui mod menu tool for changing the speed of charts ([e5df0c0](https://github.com/seraxis/lr2oraja-endlessdream/commit/e5df0c058cdd36795b14d687c21360699988096a))

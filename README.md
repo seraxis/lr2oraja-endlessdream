@@ -9,7 +9,7 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 * Faster BMS folder processing than stock (up to 20x)
 * Faster Table Processing
 * Compatible with pre and post beatoraja 0.8.7 installs
-* Built in Mod Menu, accessible using **`Insert`**
+* Built in Mod Menu, accessible using **`F5` or `Insert`**
 
 ### Downloads
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
