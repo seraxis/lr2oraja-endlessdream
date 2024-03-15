@@ -474,7 +474,7 @@ public class PlayConfigurationView implements Initializable {
 
 		irController.update(player);
 		streamController.update(player);
-		trainerController.update(player);
+		//trainerController.update(player);
 
 		txtTwitterPIN.setDisable(true);
 		twitterPINButton.setDisable(true);
