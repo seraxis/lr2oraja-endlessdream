@@ -676,9 +676,9 @@ public class PlayConfigurationView implements Initializable {
 		streamTab.setDisable(true);
 		controlPanel.setDisable(true);
 
+		// Minimise the stage after start
 		Stage stage = (Stage) root.getScene().getWindow();
 		stage.setIconified(true);
-		stage.hide();
 
 		MainLoader.play(null, bms.player.beatoraja.BMSPlayerMode.PLAY, true, config, player, songUpdated);
 	}

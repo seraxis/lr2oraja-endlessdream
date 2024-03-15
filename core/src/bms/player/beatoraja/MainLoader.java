@@ -157,8 +157,33 @@ public class MainLoader extends Application {
 
 			gdxConfig.setAudioConfig(config.getAudioConfig().getDeviceSimultaneousSources(), config.getAudioConfig().getDeviceBufferSize(), 1);
 
-			new Lwjgl3Application(main, gdxConfig);
-			System.exit(0);
+			//new Lwjgl3Application(main, gdxConfig);
+			new Lwjgl3Application(new ApplicationListener() {
+				public void resume() {
+					main.resume();
+				}
+
+				public void resize(int width, int height) {
+					main.resize(width, height);
+				}
+
+				public void render() {
+					main.render();
+				}
+
+				public void pause() {
+					main.pause();
+				}
+
+				public void dispose() {
+					main.dispose();
+				}
+
+				public void create() {
+					main.create();
+				}
+			}, gdxConfig);
+			//System.exit(0);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
