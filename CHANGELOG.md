@@ -38,7 +38,7 @@ Behavior changes:
 - Scores that fail to send to IR will now be retried throughout your session, no more lost scores ([d917fc7](https://github.com/seraxis/lr2oraja-endlessdream/commit/d917fc79d349f4d399093c7503fbad93faa7cb5e))
 - The `Trainer` config tab has been removed ([800062d](https://github.com/seraxis/lr2oraja-endlessdream/commit/800062dfaa4eef2ce67e3f9d9c86b60051dd31e9))
 - Error handling for malformed USB devices that present themselves as controllers ([4b7320d](https://github.com/seraxis/lr2oraja-endlessdream/commit/4b7320de9e786bb2eb808ac48b4c89cd0c660449))
-- Negative FREQ being set in the Rates menu no longer stops scores from being saved even when the trainer is disabled
+- Negative FREQ being set in the Rates menu no longer stops scores from being saved even when the trainer is disabled ([9f865e5](https://github.com/seraxis/lr2oraja-endlessdream/commit/9f865e519cd89ccc7425e62f516669d7b01dfe96))
 
 Thanks to [@seraxis](https://github.com/seraxis), [@wcko87](https://github.com/wcko87), [@MatVeiQaaa](https://github.com/MatVeiQaaa), [@radiden](https://github.com/radiden)!
 

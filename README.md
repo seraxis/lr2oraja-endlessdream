@@ -16,6 +16,9 @@ Development builds are created for every commit and published as [releases](http
 - [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-windows-0.2.0.zip)
 - [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-linux-0.2.0.zip)
 
+### Installing from scratch
+If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.7 JRE`](https://mocha-repository.info/download/beatoraja0.8.7-jre-win64.zip) bundled version, or choose a version yourself from the [release page](https://mocha-repository.info/download.php).
+
 ## Building from source
 A JDK 8 **with javafx** is required to build and run. Consider using [liberica JDK](https://bell-sw.com/pages/downloads/#jdk-8-lts)
 Clone this repository with submodules
