@@ -188,6 +188,7 @@ public class MainLoader extends Application {
 			e.printStackTrace();
 			Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
 		}
+		System.exit(0);
 	}
 
 	public static Graphics.DisplayMode[] getAvailableDisplayMode() {
