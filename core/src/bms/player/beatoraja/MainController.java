@@ -46,7 +46,7 @@ import bms.tool.mdprocessor.MusicDownloadProcessor;
  */
 public class MainController {
 
-	private static final String VERSION = "LR2oraja Endless Dream 0.2.0";
+	private static final String VERSION = "LR2oraja Endless Dream pre0.2.1";
 
 	public static final boolean debug = false;
 
