@@ -438,7 +438,7 @@ public class MusicResult extends AbstractResult {
 			newscore = cscore;
 		}
 
-		if (isFreqTrainerEnabled()) {
+		if (isFreqTrainerEnabled() && resource.getScoreData().getClear() != ClearType.Failed.id) {
 			resource.getScoreData().setClear(NoPlay.id);
 		}
 
