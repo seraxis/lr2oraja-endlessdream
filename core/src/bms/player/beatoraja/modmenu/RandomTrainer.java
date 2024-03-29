@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class RandomTrainer {
-    private static String laneOrder;
+    private static String laneOrder = "1234567";
 
 
 
