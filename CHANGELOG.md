@@ -26,6 +26,16 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
+# 0.2.1
+New features:
+- Added IntelliJ run gradle run configurations ([a7f3e75](https://github.com/seraxis/lr2oraja-endlessdream/commit/a7f3e751b682951da7b2ddf7a13d1bd3b35eaa74))
+
+Behavior changes:
+- Fixed the launcher not closing after player close ([9bfeaa1](https://github.com/seraxis/lr2oraja-endlessdream/commit/9bfeaa1db288643450b19a615c3b2f3cf26c4bbd))
+  - This fixes settings not being saved between game launches
+
+Thanks to [@seraxis](https://github.com/seraxis), [@corndogit](https://github.com/corndogit)!
+
 # 0.2.0
 New features:
 - Updated to upstream beatoraja version 0.8.7 ([fb664a4](https://github.com/seraxis/lr2oraja-endlessdream/commit/fb664a4c7932a8821ba33244fed784d137ca10c2))

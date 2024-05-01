@@ -13,8 +13,8 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 
 ### Downloads
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-windows-0.2.0.zip)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.0/lr2oraja-0.8.7-endlessdream-linux-0.2.0.zip)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.1/lr2oraja-0.8.7-endlessdream-windows-0.2.1.zip)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.2.1/lr2oraja-0.8.7-endlessdream-linux-0.2.1.zip)
 
 ### Installing from scratch
 If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.7 JRE`](https://mocha-repository.info/download/beatoraja0.8.7-jre-win64.zip) bundled version, or choose a version yourself from the [release page](https://mocha-repository.info/download.php).
