@@ -46,7 +46,6 @@ tasks {
     // shadow task that extends java `application` plugin JavaExec to cover fatjars
     // used to test builds, does not contain portaudio natives.
     runShadow {
-        jvmArgs = listOf("-Djdk.gtk.version=2")
         val runDirProp = System.getProperty("runDir")
         val runDir = when(runDirProp != null)  {
             true -> FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()

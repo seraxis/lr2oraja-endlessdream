@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Gradle - Test JAR (Linux)" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="Gradle - Test JAR (Linux - Wayland GTK2)" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="_JAVA_OPTIONS" value="-Dsun.java2d.opengl=true -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -Dfile.encoding=&quot;UTF-8&quot;" />
+          <entry key="_JAVA_OPTIONS" value="-Dsun.java2d.opengl=true -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true -Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel -Dfile.encoding=&quot;UTF-8&quot; -Djdk.gtk.version=2" />
         </map>
       </option>
       <option name="executionName" />
@@ -18,7 +18,7 @@
           <option value="core:runShadow" />
         </list>
       </option>
-      <option name="vmOptions" value="-Djdk.gtk.version=2" />
+      <option name="vmOptions" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
