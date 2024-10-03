@@ -9,6 +9,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.external.ScoreDataImporter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -421,8 +422,13 @@ public class PlayConfigurationView implements Initializable {
 	}
 
 	public void updatePlayer() {
-		player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), players.getValue());
-		playername.setText(player.getName());
+        try {
+            player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), players.getValue());
+        } catch (PlayerConfigException e) {
+            Logger.getGlobal().warning("Player config failed to load: " + e.getLocalizedMessage());
+			player = PlayerConfig.validatePlayerConfig("player1", new PlayerConfig());
+        }
+        playername.setText(player.getName());
 
 		videoController.updatePlayer(player);
 		musicselectController.updatePlayer(player);

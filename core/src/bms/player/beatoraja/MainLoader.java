@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
@@ -19,6 +20,7 @@ import imgui.ImGuiIO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
@@ -108,8 +110,12 @@ public class MainLoader extends Application {
 	public static void play(Path bmsPath, BMSPlayerMode playerMode, boolean forceExit, Config config, PlayerConfig player, boolean songUpdated) {
 		//configuratorStage.setIconified(true);
 		if(config == null) {
-			config = Config.read();
-		}
+            try {
+                config = Config.read();
+            } catch (PlayerConfigException e) {
+                JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
 
 		for(SongData song : getScoreDatabaseAccessor().getSongDatas(SongUtils.illegalsongs)) {
 			MainLoader.putIllegalSong(song.getSha256());
@@ -205,10 +211,10 @@ public class MainLoader extends Application {
 				Config config = Config.read();
 				Class.forName("org.sqlite.JDBC");
 				songdb = new SQLiteSongDatabaseAccessor(config.getSongpath(), config.getBmsroot());
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
+			} catch (ClassNotFoundException | PlayerConfigException e) {
+				Logger.getGlobal().severe("Failed to access score database: " + e.getLocalizedMessage());
 			}
-		}
+        }
 		return songdb;
 	}
 
@@ -243,9 +249,19 @@ public class MainLoader extends Application {
 
 	@Override
 	public void start(javafx.stage.Stage primaryStage) throws Exception {
-		Config config = Config.read();
+        Config config;
+        try {
+            config = Config.read();
+        } catch (PlayerConfigException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+			alert.setTitle("Config error");
+			alert.setHeaderText("Config failed to load");
+			alert.setContentText(String.format("Failed to load config: %s", e.getMessage()));
+			alert.showAndWait();
+			config = Config.validateConfig(new Config());
+        }
 
-		try {
+        try {
 //			final long t = System.currentTimeMillis();
 			ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 			FXMLLoader loader = new FXMLLoader(

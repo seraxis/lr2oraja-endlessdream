@@ -15,7 +15,7 @@ commons-dbutils = "1.6"
 sqlite = "3.23.1"
 jackson = "2.13.4"
 twitter4j = "4.0.4"
-java-discord = "2.0.1"
+java-discord = "2.0.1-all"
 
 [libraries]
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
