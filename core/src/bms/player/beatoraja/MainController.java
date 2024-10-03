@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
@@ -135,8 +136,12 @@ public class MainController {
 		}
 
 		if(player == null) {
-			player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), config.getPlayername());
-		}
+            try {
+                player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), config.getPlayername());
+            } catch (PlayerConfigException e) {
+                Logger.getGlobal().severe(e.getLocalizedMessage());
+            }
+        }
 		this.player = player;
 
 		this.bmsfile = f;

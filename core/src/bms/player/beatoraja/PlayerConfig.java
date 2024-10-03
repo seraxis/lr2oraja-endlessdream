@@ -6,6 +6,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.ir.IRConnectionManager;
 import bms.player.beatoraja.pattern.*;
 import bms.player.beatoraja.play.GrooveGauge;
@@ -879,7 +880,7 @@ public class PlayerConfig {
 		maxRequestCount = MathUtils.clamp(maxRequestCount, 0, 100);
 	}
 
-	public static void init(Config config) {
+	public static void init(Config config) throws PlayerConfigException {
 		// TODO プレイヤーアカウント検証
 		if(!Files.exists(Paths.get(config.getPlayerpath()))) {
 			createDirectory(Paths.get(config.getPlayerpath()));
@@ -963,43 +964,50 @@ public class PlayerConfig {
 		return l.toArray(new String[l.size()]);
 	}
 
-	public static PlayerConfig readPlayerConfig(String playerpath, String playerid) {
+	public static PlayerConfig readPlayerConfig(String playerpath, String playerid) throws PlayerConfigException {
 		PlayerConfig player = new PlayerConfig();
 		final Path path = Paths.get(playerpath + "/" + playerid + "/" + configpath);
 		final Path path_old = Paths.get(playerpath + "/" + playerid + "/" + configpath_old);
 
 		if (Files.exists(path)) {
-			player = loadPlayerConfig(playerpath, playerid, path, player);
+			player = loadPlayerConfig(playerpath, playerid, path);
 		} else if(Files.exists(path_old)) {
 			// 旧コンフィグ読み込み。そのうち削除
-			player = loadPlayerConfigFromOldPath(path_old, player);
+			player = loadPlayerConfigFromOldPath(path_old);
 		}
+
+		return validatePlayerConfig(playerid, player);
+	}
+
+	public static PlayerConfig validatePlayerConfig(String playerid, PlayerConfig player) {
 		player.setId(playerid);
 		player.validate();
 		return player;
 	}
 
-	private static PlayerConfig loadPlayerConfig(String playerpath, String playerid, Path path, PlayerConfig player) {
+	private static PlayerConfig loadPlayerConfig(String playerpath, String playerid, Path path) throws PlayerConfigException {
+		PlayerConfig player;
 		try (Reader reader = new InputStreamReader(Files.newInputStream(path.toFile().toPath()), StandardCharsets.UTF_8)) {
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
 			player = json.fromJson(PlayerConfig.class, reader);
 		} catch (SerializationException e) {
-			Logger.getGlobal().warning("PlayerConfigの読み込み失敗 - Path : " + path + " , Log : " + e.getLocalizedMessage());
 			writeBackupConfigFile(playerpath, playerid, path);
+			throw new PlayerConfigException("PlayerConfigの読み込み失敗 - Path : " + path + " , Log : " + e.getLocalizedMessage());
 		} catch (IOException e) {
-			Logger.getGlobal().severe("Failed to load player config file: " + e.getLocalizedMessage());
+			throw new PlayerConfigException("Failed to load player config file: " + e.getLocalizedMessage());
 		}
 		return player;
 	}
 
-	private static PlayerConfig loadPlayerConfigFromOldPath(Path path_old, PlayerConfig player) {
+	private static PlayerConfig loadPlayerConfigFromOldPath(Path path_old) throws PlayerConfigException {
+		PlayerConfig player;
 		try (FileReader reader = new FileReader(path_old.toFile())) {
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
 			player = json.fromJson(PlayerConfig.class, reader);
 		} catch (Throwable e) {
-			Logger.getGlobal().severe("Failed to load player config file: " + e.getLocalizedMessage());
+			throw new PlayerConfigException("Failed to load player config file: " + e.getLocalizedMessage());
 		}
 		return player;
 	}

@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
@@ -561,7 +562,7 @@ public class Config implements Validatable {
 		return true;
 	}
 
-	public static Config read() {
+	public static Config read() throws PlayerConfigException {
 		Config config = null;
 		if (Files.exists(configpath)) {
 			Json json = new Json();
@@ -584,10 +585,12 @@ public class Config implements Validatable {
 		if(config == null) {
 			config = new Config();
 		}
+		return validateConfig(config);
+	}
+
+	public static Config validateConfig(Config config) throws PlayerConfigException {
 		config.validate();
-
 		PlayerConfig.init(config);
-
 		return config;
 	}
 
