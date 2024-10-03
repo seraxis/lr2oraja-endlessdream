@@ -881,33 +881,57 @@ public class PlayerConfig {
 
 	public static void init(Config config) {
 		// TODO プレイヤーアカウント検証
-		try {
-			if(!Files.exists(Paths.get(config.getPlayerpath()))) {
-				Files.createDirectory(Paths.get(config.getPlayerpath()));
-			}
-			if(readAllPlayerID(config.getPlayerpath()).length == 0 || readPlayerConfig(config.getPlayerpath(), config.getPlayername()) == null) {
-				PlayerConfig pc = new PlayerConfig();
-				create(config.getPlayerpath(), "player1");
-				// スコアデータコピー
-				if(Files.exists(Paths.get("playerscore.db"))) {
-					Files.copy(Paths.get("playerscore.db"), Paths.get(config.getPlayerpath() + "/player1/score.db"));
-				}
-				// リプレイデータコピー
-				Files.createDirectory(Paths.get(config.getPlayerpath() + "/player1/replay"));
-				if(Files.exists(Paths.get("replay"))) {
-					try (DirectoryStream<Path> paths = Files.newDirectoryStream(Paths.get("replay"))) {
-						for (Path p : paths) {
-							Files.copy(p, Paths.get(config.getPlayerpath() + "/player1/replay").resolve(p.getFileName()));
-						}
-					} catch(Throwable e) {
-						e.printStackTrace();
-					}
-				}
+		if(!Files.exists(Paths.get(config.getPlayerpath()))) {
+			createDirectory(Paths.get(config.getPlayerpath()));
+		}
 
-				config.setPlayername("player1");
+		if(readAllPlayerID(config.getPlayerpath()).length == 0) {
+			PlayerConfig pc = new PlayerConfig();
+			create(config.getPlayerpath(), "player1");
+
+			// スコアデータコピー
+			Path parentPlayerScoreDBPath = Paths.get("playerscore.db");
+			if(Files.exists(parentPlayerScoreDBPath)) {
+                try {
+                    Files.copy(parentPlayerScoreDBPath, Paths.get(config.getPlayerpath() + "/player1/score.db"));
+                } catch (IOException e) {
+					Logger.getGlobal().severe(String.format("Failed to copy playerscore.db to %s: %s", config.getPlayerpath(), e.getMessage()));
+                }
+            }
+
+			// リプレイデータコピー
+			copyReplays(config);
+
+			config.setPlayername("player1");
+		} else {
+			readPlayerConfig(config.getPlayerpath(), config.getPlayername());
+		}
+	}
+
+	private static void createDirectory(Path path) {
+        try {
+            Files.createDirectory(path);
+        } catch (IOException e) {
+            Logger.getGlobal().severe(String.format("Failed to create directory at %s: %s", path, e.getMessage()));
+        }
+    }
+
+	private static void copyReplays(Config config) {
+		Path player1ReplayDir = Paths.get(config.getPlayerpath() + "/player1/replay");
+		Path parentReplayDir = Paths.get("replay");
+
+		createDirectory(player1ReplayDir);
+		if(!Files.exists(parentReplayDir)) {
+			// nothing to copy
+			return;
+		}
+
+		try (DirectoryStream<Path> paths = Files.newDirectoryStream(parentReplayDir)) {
+			for (Path p : paths) {
+				Files.copy(p, player1ReplayDir.resolve(p.getFileName()));
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch(Throwable e) {
+			Logger.getGlobal().warning("Error while copying replays: " + e.getMessage());
 		}
 	}
 
