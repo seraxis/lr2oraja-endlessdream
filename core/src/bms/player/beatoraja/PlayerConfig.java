@@ -886,7 +886,6 @@ public class PlayerConfig {
 		}
 
 		if(readAllPlayerID(config.getPlayerpath()).length == 0) {
-			PlayerConfig pc = new PlayerConfig();
 			create(config.getPlayerpath(), "player1");
 
 			// スコアデータコピー
@@ -895,7 +894,7 @@ public class PlayerConfig {
                 try {
                     Files.copy(parentPlayerScoreDBPath, Paths.get(config.getPlayerpath() + "/player1/score.db"));
                 } catch (IOException e) {
-					Logger.getGlobal().severe(String.format("Failed to copy playerscore.db to %s: %s", config.getPlayerpath(), e.getMessage()));
+					Logger.getGlobal().severe(String.format("Failed to copy playerscore.db to %s: %s", config.getPlayerpath(), e.getLocalizedMessage()));
                 }
             }
 
@@ -912,7 +911,7 @@ public class PlayerConfig {
         try {
             Files.createDirectory(path);
         } catch (IOException e) {
-            Logger.getGlobal().severe(String.format("Failed to create directory at %s: %s", path, e.getMessage()));
+            Logger.getGlobal().severe(String.format("Failed to create directory at %s: %s", path, e.getLocalizedMessage()));
         }
     }
 
@@ -931,7 +930,7 @@ public class PlayerConfig {
 				Files.copy(p, player1ReplayDir.resolve(p.getFileName()));
 			}
 		} catch(Throwable e) {
-			Logger.getGlobal().warning("Error while copying replays: " + e.getMessage());
+			Logger.getGlobal().warning("Error while copying replays: " + e.getLocalizedMessage());
 		}
 	}
 
@@ -968,34 +967,51 @@ public class PlayerConfig {
 		PlayerConfig player = new PlayerConfig();
 		final Path path = Paths.get(playerpath + "/" + playerid + "/" + configpath);
 		final Path path_old = Paths.get(playerpath + "/" + playerid + "/" + configpath_old);
+
 		if (Files.exists(path)) {
-			try (Reader reader = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
-				Json json = new Json();
-				json.setIgnoreUnknownFields(true);
-				player = json.fromJson(PlayerConfig.class, reader);
-			} catch (SerializationException e) {
-				Logger.getGlobal().warning("PlayerConfigの読み込み失敗 - Path : " + path.toString() + " , Log : " + e.getMessage());
-				try {
-					Files.copy(path, Paths.get(playerpath + "/" + playerid + "/config_backup.json"));
-				} catch (IOException e1) {
-//					e1.printStackTrace();
-				}
-			} catch(Throwable e) {
-				e.printStackTrace();
-			}			
+			player = loadPlayerConfig(playerpath, playerid, path, player);
 		} else if(Files.exists(path_old)) {
 			// 旧コンフィグ読み込み。そのうち削除
-			try (FileReader reader = new FileReader(path_old.toFile())) {
-				Json json = new Json();
-				json.setIgnoreUnknownFields(true);
-				player = json.fromJson(PlayerConfig.class, reader);
-			} catch(Throwable e) {
-				e.printStackTrace();
-			}
+			player = loadPlayerConfigFromOldPath(path_old, player);
 		}
 		player.setId(playerid);
 		player.validate();
 		return player;
+	}
+
+	private static PlayerConfig loadPlayerConfig(String playerpath, String playerid, Path path, PlayerConfig player) {
+		try (Reader reader = new InputStreamReader(Files.newInputStream(path.toFile().toPath()), StandardCharsets.UTF_8)) {
+			Json json = new Json();
+			json.setIgnoreUnknownFields(true);
+			player = json.fromJson(PlayerConfig.class, reader);
+		} catch (SerializationException e) {
+			Logger.getGlobal().warning("PlayerConfigの読み込み失敗 - Path : " + path + " , Log : " + e.getLocalizedMessage());
+			writeBackupConfigFile(playerpath, playerid, path);
+		} catch (IOException e) {
+			Logger.getGlobal().severe("Failed to load player config file: " + e.getLocalizedMessage());
+		}
+		return player;
+	}
+
+	private static PlayerConfig loadPlayerConfigFromOldPath(Path path_old, PlayerConfig player) {
+		try (FileReader reader = new FileReader(path_old.toFile())) {
+			Json json = new Json();
+			json.setIgnoreUnknownFields(true);
+			player = json.fromJson(PlayerConfig.class, reader);
+		} catch (Throwable e) {
+			Logger.getGlobal().severe("Failed to load player config file: " + e.getLocalizedMessage());
+		}
+		return player;
+	}
+
+	private static void writeBackupConfigFile(String playerpath, String playerid, Path path) {
+		try {
+			Path configBackupPath = Paths.get(playerpath + "/" + playerid + "/config_backup.json");
+			Files.copy(path, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
+			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+		} catch (IOException e) {
+			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+		}
 	}
 
 	public static void write(String playerpath, PlayerConfig player) {
