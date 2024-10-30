@@ -1320,7 +1320,7 @@ public class IntegerPropertyFactory {
 		 */
 		private static IntegerProperty getAssignedLane(int key, boolean is2PSide){
 			return (state) -> {
-				if (!(state instanceof MusicResult)){
+				if (!(state instanceof MusicResult || state instanceof BMSPlayer)){
 					return 0;
 				}
 
