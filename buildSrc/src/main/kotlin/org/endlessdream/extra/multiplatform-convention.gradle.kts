@@ -12,6 +12,15 @@ var platform = when(System.getProperty("platform") != null)  {
     false -> "windows"
 }!!
 
+// use `-Darch=[arch]` or change this value to set the target arch for the jar
+// Available arch:
+//    "x86-64", "aarch64"
+// Defauls to x86-64
+var arch = when(System.getProperty("arch") != null) {
+    true -> System.getProperty("arch")
+    false -> "x86-64"
+}
+
 tasks {
     register<Copy>("resolveRuntimeClasspath") {
         from(configurations.runtimeClasspath)
@@ -24,7 +33,7 @@ configurations.matching {
 }.configureEach {
     attributes {
         attribute(OperatingSystemFamily.OPERATING_SYSTEM_ATTRIBUTE, objects.named(platform))
-        attribute(MachineArchitecture.ARCHITECTURE_ATTRIBUTE, objects.named("x86-64"))
+        attribute(MachineArchitecture.ARCHITECTURE_ATTRIBUTE, objects.named(arch))
         attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
     }
 }
@@ -53,6 +62,7 @@ dependencies {
 
         parameters {
             platformString = platform
+            archString = arch
         }
     }
     components {

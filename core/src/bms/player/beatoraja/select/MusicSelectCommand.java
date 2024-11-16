@@ -1,6 +1,11 @@
 package bms.player.beatoraja.select;
 
-import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
+import bms.player.beatoraja.select.bar.*;
+import bms.player.beatoraja.song.SongData;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.Queue;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,18 +13,11 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import bms.player.beatoraja.select.bar.*;
-import bms.player.beatoraja.song.SongData;
-
-import java.awt.datatransfer.StringSelection;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-
-import com.badlogic.gdx.utils.Queue;
-import com.badlogic.gdx.graphics.Color;
+import static bms.player.beatoraja.SystemSoundManager.SoundType.FOLDER_OPEN;
+import static bms.player.beatoraja.SystemSoundManager.SoundType.OPTION_CHANGE;
 
 public enum MusicSelectCommand {
-	
+
 	// TODO 最終的には全てEventFactoryへ移動
 
 	RESET_REPLAY(selector -> {
@@ -66,9 +64,13 @@ public enum MusicSelectCommand {
 			if (song != null) {
 				String hash = song.getMd5();
 				if (hash != null && hash.length() > 0) {
-					StringSelection stringSelection = new StringSelection(hash);
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					clipboard.setContents(stringSelection, null);
+                    // NOTE: Previous clipboard management is using the java.awt library
+                    // which is broken only on macos.
+                    // COPY_SHA256_HASH has the same issue
+					Clipboard clipboard = Clipboard.getSystemClipboard();
+                    ClipboardContent clipboardContent = new ClipboardContent();
+                    clipboardContent.putString(hash);
+                    clipboard.setContent(clipboardContent);
 					selector.main.getMessageRenderer().addMessage("MD5 hash copied : " + hash, 2000, Color.GOLD, 0);
 				}
 			}
@@ -83,9 +85,10 @@ public enum MusicSelectCommand {
 			if (song != null) {
 				String hash = song.getSha256();
 				if (hash != null && hash.length() > 0) {
-					StringSelection stringSelection = new StringSelection(hash);
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					clipboard.setContents(stringSelection, null);
+					Clipboard clipboard = Clipboard.getSystemClipboard();
+                    ClipboardContent clipboardContent = new ClipboardContent();
+                    clipboardContent.putString(hash);
+                    clipboard.setContent(clipboardContent);
 					selector.main.getMessageRenderer().addMessage("SHA256 hash copied : " + hash, 2000, Color.GOLD, 0);
 				}
 			}

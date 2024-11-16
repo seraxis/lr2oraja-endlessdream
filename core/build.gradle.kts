@@ -14,6 +14,7 @@ repositories {
     flatDir{
         dirs("../lib")
     }
+    maven(url = "https://jitpack.io" )
 }
 
 version = libs.versions.beatoraja.get()
@@ -33,8 +34,13 @@ tasks {
     // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
     shadowJar {
         val platformProp = System.getProperty("platform")
+        val archProp = System.getProperty("arch")
+        val archVariant = when(archProp != null) {
+            true -> archProp.plus("-")
+            false -> ""
+        }
         val classifierPlatform = when(platformProp != null)  {
-            true -> platformProp.plus("-").plus(libs.versions.endlessdream.get())
+            true -> platformProp.plus("-").plus(archVariant).plus(libs.versions.endlessdream.get())
             false -> "".plus(libs.versions.endlessdream.get())
         }
         destinationDirectory.set(projectDir.resolveSibling("dist"))
@@ -87,4 +93,6 @@ dependencies {
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
     implementation(":luaj-jse:3.0.2-custom")
+    implementation("com.github.crykn.guacamole:gdx:v0.3.5")
+    implementation("space.earlygrey:shapedrawer:2.5.0")
 }
