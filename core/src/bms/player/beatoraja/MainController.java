@@ -39,6 +39,10 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
+import de.damios.guacamole.gdx.graphics.ShaderCompatibilityHelper;
+import de.damios.guacamole.gdx.graphics.ShaderProgramFactory;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * アプリケーションのルートクラス
@@ -323,7 +327,7 @@ public class MainController {
 
 	public void create() {
 		final long t = System.currentTimeMillis();
-		sprite = new SpriteBatch();
+		sprite = SpriteBatchHelper.createSpriteBatch();
 		SkinLoader.initPixmapResourcePool(config.getSkinPixmapGen());
 
 

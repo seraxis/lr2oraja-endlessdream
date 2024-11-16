@@ -35,6 +35,13 @@ Run the gradle wrapper for your operating system and specify your desired platfo
 ```sh
 ./gradlew core:shadowJar -Dplatform=linux
 ```
+**MacOS:**
+```sh
+./gradlew core:shadowJar -Dplatform=macos
+```
+
+> [!NOTE]
+> For `arm` user: add -Darch=aarch64
 
 This task will create a jar located in `dist/` that can be used with any working installation of the game.
 ### Testing changes

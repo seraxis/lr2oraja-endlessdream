@@ -24,6 +24,8 @@ abstract class PlatformFilter : TransformAction<PlatformFilter.Parameters> {
     interface Parameters : TransformParameters {
         @get:Input
         var platformString: String
+        @get:Input
+        var archString: String
     }
 
     @get:PathSensitive(PathSensitivity.NAME_ONLY)
@@ -33,10 +35,15 @@ abstract class PlatformFilter : TransformAction<PlatformFilter.Parameters> {
     override
     fun transform(outputs: TransformOutputs) {
         val fileName = primaryInput.get().asFile.name
-        // Remove all platform natives for platforms other than the current one,
+        // Remove all platform natives for platforms other than the current one
+        // hack for macos-arm64
+        val lwjglSuffixName = when (parameters.platformString) {
+            "macos" -> if (parameters.archString == "aarch64") "macos-arm64" else "macos-x86_64"
+            else -> parameters.platformString
+        }
         if (fileName.contains("lwjgl") && fileName.contains("natives")) {
             val nameWithoutExtension = fileName.substring(0, fileName.length - 4)
-            if (!nameWithoutExtension.endsWith(parameters.platformString)) {
+            if (!nameWithoutExtension.endsWith(lwjglSuffixName)) {
                 return
             }
         }
@@ -46,6 +53,7 @@ abstract class PlatformFilter : TransformAction<PlatformFilter.Parameters> {
             }
         }
         if (fileName.contains("javacpp-1.5.9-windows-x86_64")) return
+        if (fileName.contains("javacpp-1.5.9-macos-arm64")) return
 
         outputs.file(primaryInput)
     }
