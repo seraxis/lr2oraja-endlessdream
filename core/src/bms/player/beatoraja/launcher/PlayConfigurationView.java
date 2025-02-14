@@ -203,6 +203,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private CheckBox showhiddennote;
 	@FXML
+	private CheckBox showpastnote;
+	@FXML
 	private ComboBox<String> target;
 
 	@FXML
@@ -481,6 +483,7 @@ public class PlayConfigurationView implements Initializable {
 		target.getItems().setAll(targets);
 		target.setValue(player.getTargetid());
 		showhiddennote.setSelected(player.isShowhiddennote());
+		showpastnote.setSelected(player.isShowpastnote());
 
 		irController.update(player);
 		streamController.update(player);
@@ -584,6 +587,7 @@ public class PlayConfigurationView implements Initializable {
 		player.setTargetid(target.getValue());
 
 		player.setShowhiddennote(showhiddennote.isSelected());
+		player.setShowpastnote(showpastnote.isSelected());
 
 		inputController.commit();
 		irController.commit();
