@@ -431,7 +431,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 							}
 						}
 						if (s.endsWith(".bms") || s.endsWith(".bme") || s.endsWith(".bml") || s.endsWith(".pms")
-								|| s.endsWith(".bmson")) {
+								|| s.endsWith(".bmson") || s.endsWith(".osu")) {
 							bmsfiles.add(p);
 						}
 					}
@@ -490,8 +490,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				folder.setParent(SongUtils.crc32(parentpath.toString() , bmsroot, root.toString()));
 				folder.setDate((int) (Files.getLastModifiedTime(path).toMillis() / 1000));
 				folder.setAdddate((int) property.updatetime);
-				
-				SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "folder", folder);			
+
+				SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "folder", folder);
 			}
 			// ディレクトリ内に存在しないフォルダレコードを削除
 			folders.parallelStream().filter(Objects::nonNull).forEach(folder -> {
@@ -510,6 +510,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			int count = 0;
 			BMSDecoder bmsdecoder = null;
 			BMSONDecoder bmsondecoder = null;
+			OSUDecoder osudecoder = null;
 			final int len = records.size();
 			for (Path path : bmsfiles) {
 				long lastModifiedTime = -1;
@@ -542,6 +543,15 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						model = bmsondecoder.decode(path);
 					} catch (Exception e) {
 						Logger.getGlobal().severe("Error while decoding bmson at path: " + pathname + e.getMessage());
+					}
+				} else if (pathname.toLowerCase().endsWith(".osu")) {
+					if (osudecoder == null) {
+						osudecoder = new OSUDecoder(BMSModel.LNTYPE_LONGNOTE);
+					}
+					try {
+						model = osudecoder.decode(path);
+					} catch (Exception e) {
+						Logger.getGlobal().severe("Error while decoding osu at path: " + pathname + e.getMessage());
 					}
 				} else {
 					if (bmsdecoder == null) {
