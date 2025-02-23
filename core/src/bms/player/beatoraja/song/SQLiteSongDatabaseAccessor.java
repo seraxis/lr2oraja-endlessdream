@@ -567,79 +567,84 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				if (model == null) {
 					continue;
 				}
-				final SongData sd = new SongData(model, txt);
-				if (sd.getNotes() != 0 || model.getWavList().length != 0) {
-					if (sd.getDifficulty() == 0) {
-						final String fulltitle = (sd.getTitle() + sd.getSubtitle()).toLowerCase();
-						final String diffname = (sd.getSubtitle()).toLowerCase();
-						if (diffname.contains("beginner")) {
-							sd.setDifficulty(1);
-						} else if (diffname.contains("normal")) {
-							sd.setDifficulty(2);
-						} else if (diffname.contains("hyper")) {
-							sd.setDifficulty(3);
-						} else if (diffname.contains("another")) {
-							sd.setDifficulty(4);
-						} else if (diffname.contains("insane") || diffname.contains("leggendaria")) {
-							sd.setDifficulty(5);
-						} else {
-							if (fulltitle.contains("beginner")) {
-								sd.setDifficulty(1);
-							} else if (fulltitle.contains("normal")) {
-								sd.setDifficulty(2);
-							} else if (fulltitle.contains("hyper")) {
-								sd.setDifficulty(3);
-							} else if (fulltitle.contains("another")) {
-								sd.setDifficulty(4);
-							} else if (fulltitle.contains("insane") || fulltitle.contains("leggendaria")) {
-								sd.setDifficulty(5);
-							} else {
-								if (sd.getNotes() < 250) {
-									sd.setDifficulty(1);
-								} else if (sd.getNotes() < 600) {
-									sd.setDifficulty(2);
-								} else if (sd.getNotes() < 1000) {
-									sd.setDifficulty(3);
-								} else if (sd.getNotes() < 2000) {
-									sd.setDifficulty(4);
-								} else {
-									sd.setDifficulty(5);
-								}
-							}
-						}
-					}
-					if((sd.getPreview() == null || sd.getPreview().length() == 0) && previewpath != null) {
-						sd.setPreview(previewpath);
-					}
-					final String tag = property.tags.get(sd.getSha256());
-					final Integer favorite = property.favorites.get(sd.getSha256());
-					
-					for(SongDatabaseAccessorPlugin plugin : plugins) {
-						plugin.update(model, sd);
-					}
+                try {
+                    final SongData sd = new SongData(model, txt);
+                    if (sd.getNotes() != 0 || model.getWavList().length != 0) {
+                        if (sd.getDifficulty() == 0) {
+                            final String fulltitle = (sd.getTitle() + sd.getSubtitle()).toLowerCase();
+                            final String diffname = (sd.getSubtitle()).toLowerCase();
+                            if (diffname.contains("beginner")) {
+                                sd.setDifficulty(1);
+                            } else if (diffname.contains("normal")) {
+                                sd.setDifficulty(2);
+                            } else if (diffname.contains("hyper")) {
+                                sd.setDifficulty(3);
+                            } else if (diffname.contains("another")) {
+                                sd.setDifficulty(4);
+                            } else if (diffname.contains("insane") || diffname.contains("leggendaria")) {
+                                sd.setDifficulty(5);
+                            } else {
+                                if (fulltitle.contains("beginner")) {
+                                    sd.setDifficulty(1);
+                                } else if (fulltitle.contains("normal")) {
+                                    sd.setDifficulty(2);
+                                } else if (fulltitle.contains("hyper")) {
+                                    sd.setDifficulty(3);
+                                } else if (fulltitle.contains("another")) {
+                                    sd.setDifficulty(4);
+                                } else if (fulltitle.contains("insane") || fulltitle.contains("leggendaria")) {
+                                    sd.setDifficulty(5);
+                                } else {
+                                    if (sd.getNotes() < 250) {
+                                        sd.setDifficulty(1);
+                                    } else if (sd.getNotes() < 600) {
+                                        sd.setDifficulty(2);
+                                    } else if (sd.getNotes() < 1000) {
+                                        sd.setDifficulty(3);
+                                    } else if (sd.getNotes() < 2000) {
+                                        sd.setDifficulty(4);
+                                    } else {
+                                        sd.setDifficulty(5);
+                                    }
+                                }
+                            }
+                        }
+                        if((sd.getPreview() == null || sd.getPreview().length() == 0) && previewpath != null) {
+                            sd.setPreview(previewpath);
+                        }
+                        final String tag = property.tags.get(sd.getSha256());
+                        final Integer favorite = property.favorites.get(sd.getSha256());
 
-					sd.setTag(tag != null ? tag : "");
-					sd.setPath(pathname);
-					sd.setFolder(SongUtils.crc32(path.getParent().toString(), bmsroot, root.toString()));
-					sd.setParent(SongUtils.crc32(path.getParent().getParent().toString(), bmsroot, root.toString()));
-					sd.setDate((int) lastModifiedTime);
-					sd.setFavorite(favorite != null ? favorite.intValue() : 0);
-					sd.setAdddate((int) property.updatetime);
-					try {
-						SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "song", sd);
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
-					if(property.info != null) {
-						property.info.update(model);
-					}
-					count++;
-				} else {
-					try {
-						qr.update(property.conn, "DELETE FROM song WHERE path = ?", pathname);
-					} catch (SQLException e) {
-						e.printStackTrace();
-					}
+                        for(SongDatabaseAccessorPlugin plugin : plugins) {
+                            plugin.update(model, sd);
+                        }
+
+                        sd.setTag(tag != null ? tag : "");
+                        sd.setPath(pathname);
+                        sd.setFolder(SongUtils.crc32(path.getParent().toString(), bmsroot, root.toString()));
+                        sd.setParent(SongUtils.crc32(path.getParent().getParent().toString(), bmsroot, root.toString()));
+                        sd.setDate((int) lastModifiedTime);
+                        sd.setFavorite(favorite != null ? favorite.intValue() : 0);
+                        sd.setAdddate((int) property.updatetime);
+                        try {
+                            SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "song", sd);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                        if(property.info != null) {
+                            property.info.update(model);
+                        }
+                        count++;
+                    } else {
+                        try {
+                            qr.update(property.conn, "DELETE FROM song WHERE path = ?", pathname);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+				catch (Exception e) {
+					Logger.getGlobal().severe("Error while adding db record for chart at path: " + pathname + e.getMessage());
 				}
 			}
 			// ディレクトリ内のファイルに存在しないレコードを削除
