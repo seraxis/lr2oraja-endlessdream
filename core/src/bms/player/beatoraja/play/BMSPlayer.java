@@ -578,9 +578,9 @@ public class BMSPlayer extends MainState {
                     if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
                         HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
                         Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
-                        pattern_mod.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+                        pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
                     }
-                    pattern_mod.modify(model);
+                    pm.modify(model);
 
 					gauge = practice.getGauge(model);
 					model.setJudgerank(property.judgerank);
