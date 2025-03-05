@@ -47,9 +47,9 @@ public abstract class LaneShuffleModifier extends PatternModifier {
 		random = makeRandom(keys, model);
 
         // Random Trainer History
-        if (random.length == 7) {
+        if (random.length == 8) {
             StringBuilder randomSb = new StringBuilder();
-            for (int i = 0; i < random.length; i++) {
+            for (int i = 0; i < random.length - 1; i++) {
                 randomSb.append(Integer.toString(random[i] + 1));
             }
             RandomTrainer rt = new RandomTrainer();
