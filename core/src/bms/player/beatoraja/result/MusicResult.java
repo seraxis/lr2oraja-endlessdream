@@ -347,6 +347,8 @@ public class MusicResult extends AbstractResult {
 		// duration average
 		int count = 0;
 		avgduration = newscore.getAvgjudge();
+		avg = newscore.getAvg();
+		stddev = newscore.getStddev();
 		timingDistribution.init();
 		BMSModel model = resource.getBMSModel();
 		final int lanes = model.getMode().key;

@@ -85,6 +85,12 @@ public class ScoreData implements Validatable {
 	private long avgjudge = Long.MAX_VALUE;
 	
 	private long totalDuration = 0;
+
+	private long avg = Long.MAX_VALUE;
+
+	private long totalAvg = 0;
+
+	private long stddev = Long.MAX_VALUE;
 	/**
 	 * 各譜面オプションのクリア履歴
 	 */
@@ -353,9 +359,21 @@ public class ScoreData implements Validatable {
 		return totalDuration;
 	}
 
-	public void setTotalDuration(long ttoalDuration) {
-		this.totalDuration = ttoalDuration;
+	public void setTotalDuration(long totalDuration) {
+		this.totalDuration = totalDuration;
 	}
+
+	public long getAvg() { return avg; }
+
+	public void setAvg(long avg) { this.avg = avg; }
+
+	public void setTotalAvg(long totalAvg) { this.totalAvg = totalAvg; }
+
+	public long getTotalAvg() { return totalAvg; }
+
+	public long getStddev() { return stddev; }
+
+	public void setStddev(long stddev) { this.stddev = stddev; }
 
 	public String getTrophy() {
 		return trophy;
