@@ -25,7 +25,7 @@ import bms.player.beatoraja.song.SongData;
  *
  * @author exch
  */
-public class PlayerResource {
+public final class PlayerResource {
 	
 	/**
 	 * 選曲中のBMS
@@ -79,6 +79,8 @@ public class PlayerResource {
 	private FloatArray[] gauge;
 
 	private ReplayData replay;
+	
+	private ReplayData chartOption;
 
 	private Path[] bmsPaths;
 	private boolean loop;
@@ -170,6 +172,7 @@ public class PlayerResource {
 		} else {
 			songdata = new SongData(model, false);			
 		}
+		// TODO 選曲の時点で表名、フォルダ名を補完しておきたい
 		if(tablename.length() == 0 || courseindex != 0){
 			setTableinfo();
 		}
@@ -543,6 +546,14 @@ public class PlayerResource {
 		}
 		setTablename("");
 		setTablelevel("");
+	}
+
+	public ReplayData getChartOption() {
+		return chartOption;
+	}
+
+	public void setChartOption(ReplayData chartOption) {
+		this.chartOption = chartOption;
 	}
 
 	public bms.model.Mode getOriginalMode() {
