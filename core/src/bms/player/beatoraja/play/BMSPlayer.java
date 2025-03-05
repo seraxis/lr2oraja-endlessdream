@@ -690,6 +690,8 @@ public class BMSPlayer extends MainState {
 			}
 			// 閉店処理
 			case STATE_FAILED -> {
+                control.setEnableControl(false);
+                control.setEnableCursor(false);
 				keyinput.stopJudge();
 				keysound.stopBGPlay();
 				if ((input.startPressed() ^ input.isSelectPressed()) && resource.getCourseBMSModels() == null
@@ -742,7 +744,9 @@ public class BMSPlayer extends MainState {
 			}
 			// 完奏処理
 			case STATE_FINISHED -> {
-				keyinput.stopJudge();
+                control.setEnableControl(false);
+                control.setEnableCursor(false);
+                keyinput.stopJudge();
 				keysound.stopBGPlay();
 				if (timer.getNowTime(TIMER_MUSIC_END) > skin.getFinishMargin()) {
 					timer.switchTimer(TIMER_FADEOUT, true);
