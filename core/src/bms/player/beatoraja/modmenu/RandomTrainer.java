@@ -7,8 +7,7 @@ import java.util.logging.Logger;
 
 public class RandomTrainer {
     private static String laneOrder = "1234567";
-
-
+    private static ArrayList<Character> lanesToRandom = new ArrayList<>();
 
     private static boolean blackWhitePermute;
     private static boolean active;
@@ -62,8 +61,24 @@ public class RandomTrainer {
             }
             laneOrder = newLaneOrder.toString();
         }
+
+        ArrayList<Character> shuffledLanes = new ArrayList<>(lanesToRandom);
+        Collections.shuffle(shuffledLanes);
+        StringBuilder newLaneOrder = new StringBuilder(laneOrder);
+        for (int i = 0; i < laneOrder.length(); i++) {
+            if (lanesToRandom.contains(laneOrder.charAt(i))) {
+                newLaneOrder.setCharAt(i, shuffledLanes.remove(0));
+            }
+        }
+        laneOrder = newLaneOrder.toString();
         return laneOrder;
     }
+
+    public static boolean isLaneToRandom(char lane) {return lanesToRandom.contains(lane);}
+
+    public static void setLaneToRandom(char lane) {lanesToRandom.add(lane);}
+
+    public static void removeLaneToRandom(char lane) {lanesToRandom.remove(lanesToRandom.indexOf(lane));}
 
     public static boolean isActive() {
         return active;
