@@ -915,9 +915,11 @@ public class BMSPlayer extends MainState {
 
 		score.setPassnotes(judge.getPastNotes());
 		score.setMinbp(score.getEbd() + score.getLbd() + score.getEpr() + score.getLpr() + score.getEms() + score.getLms() + resource.getSongdata().getNotes() - judge.getPastNotes());
-		
-		long count = 0;
+
 		long avgduration = 0;
+		long average = 0;
+		long stddev = 0;
+		ArrayList<Long> playTimes = new ArrayList<Long>();
 		final int lanes = model.getMode().key;
 		for (TimeLine tl : model.getAllTimeLines()) {
 			for (int i = 0; i < lanes; i++) {
@@ -928,15 +930,29 @@ public class BMSPlayer extends MainState {
 								&& ((LongNote) n).isEnd())))) {
 					int state = n.getState();
 					long time = n.getMicroPlayTime();
-					avgduration += state >= 1 && state <= 4 ? Math.abs(time) : 1000000;
-					count++;
-//					System.out.println(time);
+					if (state >= 1 && state <= 4) {
+						playTimes.add(time);
+						avgduration += Math.abs(time);
+						average += time;
+					}
 				}
 			}
 		}
 		score.setTotalDuration(avgduration);
-		score.setAvgjudge(avgduration / count);
-//		System.out.println(avgduration + " / " + count + " = " + score.getAvgjudge());
+		score.setTotalAvg(average);
+		if (!playTimes.isEmpty()) {
+			score.setAvgjudge(avgduration / playTimes.size());
+			score.setAvg(average / playTimes.size());
+		}
+
+		for (long time : playTimes) {
+			long meanOffset = time - score.getAvg();
+			stddev += meanOffset * meanOffset;
+		}
+		if (!playTimes.isEmpty()) {
+			stddev = (long)Math.sqrt((double)(stddev / playTimes.size()));
+		}
+		score.setStddev(stddev);
 
 		score.setDeviceType(main.getInputProcessor().getDeviceType());
 		score.setSkin(getSkin().header.getName());

@@ -746,22 +746,27 @@ public class IntegerPropertyFactory {
 			}
 			return Integer.MIN_VALUE;
 		}),
-		timing_average(374, state -> (state instanceof AbstractResult result ? (int) result.getTimingDistribution().getAverage() : Integer.MIN_VALUE)),
-		timing_average_afterdot(375, (state) -> {
+		timing_average(374, (state) -> {
 			if (state instanceof AbstractResult) {
-				TimingDistribution timingDistribution = ((AbstractResult) state).getTimingDistribution();
-				if (timingDistribution.getAverage() >= 0.0) {
-					return (int) (timingDistribution.getAverage() * 100) % 100;
-				} else {
-					return (int) ( -1 * ((Math.abs(timingDistribution.getAverage()) * 100) % 100));
-				}
+				return (int) (((AbstractResult) state).getAverage() / 1000);
 			}
 			return Integer.MIN_VALUE;
 		}),
-		timing_stddev(376, (state) -> (state instanceof AbstractResult result ? (int) result.getTimingDistribution().getStdDev() :  Integer.MIN_VALUE)),
+		timing_average_afterdot(375, (state) -> {
+			if (state instanceof AbstractResult) {
+				return (int) ((((AbstractResult) state).getAverage() / 10) % 100);
+			}
+			return Integer.MIN_VALUE;
+		}),
+		timing_stddev(376, (state) -> {
+			if (state instanceof AbstractResult) {
+				return (int) (((AbstractResult) state).getStddev() / 1000);
+			}
+			return Integer.MIN_VALUE;
+		}),
 		timing_atddev_afterdot(377, (state) -> {
 			if (state instanceof AbstractResult) {
-				return (int) (((AbstractResult) state).getTimingDistribution().getStdDev() * 100) % 100;
+				return (int) ((((AbstractResult) state).getStddev() / 10) % 100);
 			}
 			return Integer.MIN_VALUE;
 		}),
