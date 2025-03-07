@@ -62,7 +62,7 @@ public class BGAProcessor {
 
 	private Texture blanktex;
 
-	private TimeLine[] timelines;
+	private TimeLine[] timelines = {};
 	private int pos;
 	private TextureRegion image;
 	private Rectangle tmpRect = new Rectangle();

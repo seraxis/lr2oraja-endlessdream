@@ -1,7 +1,9 @@
 package bms.player.beatoraja.play;
 
+import static bms.model.DecodeLog.State.WARNING;
 import static bms.player.beatoraja.skin.SkinProperty.TIMER_PLAY;
 
+import bms.model.DecodeLog;
 import com.badlogic.gdx.utils.Array;
 
 import bms.model.BMSModel;
@@ -9,6 +11,8 @@ import bms.model.Note;
 import bms.model.TimeLine;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.audio.AudioDriver;
+
+import java.util.logging.Logger;
 
 /**
  * キー音処理用クラス
@@ -67,7 +71,7 @@ public class KeySoundProcessor {
 		@Override
 		public void run() {
 			final long lasttime = timelines.length > 0 ?
-					timelines[timelines.length - 1].getMicroTime() + BMSPlayer.TIME_MARGIN * 1000 : 0;
+					timelines[timelines.length - 1].getMicroTime() : 0;
 			final Config config = player.resource.getConfig();
 			int p = 0;
 			for (long time = starttime; p < timelines.length && timelines[p].getMicroTime() < time; p++)
