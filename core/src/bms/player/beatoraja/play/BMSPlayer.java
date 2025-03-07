@@ -781,6 +781,30 @@ public class BMSPlayer extends MainState {
 					}
 				}
 			}
+			case STATE_ABORTED -> {
+				if ((resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY
+						&& input.startPressed() ^ input.isSelectPressed()) && resource.getCourseBMSModels() == null) {
+					main.getAudioProcessor().setGlobalPitch(1f);
+					if (!resource.isUpdateScore()) {
+						resource.getReplayData().randomoptionseed = -1;
+						Logger.getGlobal().info("アシストモード時は同じ譜面でリプレイできません");
+					} else if (input.startPressed()) {
+						resource.getReplayData().randomoptionseed = -1;
+						Logger.getGlobal().info("オプションを変更せずリプレイ");
+					} else {
+						resource.setScoreData(createScoreData());
+						Logger.getGlobal().info("同じ譜面でリプレイ");
+					}
+					saveConfig();
+					resource.reloadBMSFile();
+					main.changeState(MainStateType.PLAY);
+				}
+				if (timer.getNowTime(TIMER_FADEOUT) > skin.getFadeout()) {
+					input.setEnable(true);
+					input.setStartTime(0);
+					main.changeState(MainStateType.MUSICSELECT);
+				}
+			}
 		}
 
 		prevtime = micronow;
@@ -839,6 +863,7 @@ public class BMSPlayer extends MainState {
 		final PlayerConfig config = resource.getPlayerConfig();
 		ScoreData score = judge.getScoreData();
 		if (resource.getCourseBMSModels() == null
+				&& state != STATE_ABORTED
 				&& (score.getEpg() + score.getLpg() + score.getEgr() + score.getLgr() + score.getEgd() + score.getLgd() + score.getEbd() + score.getLbd() == 0)) {
 			return null;
 		}
@@ -928,10 +953,25 @@ public class BMSPlayer extends MainState {
 		if (state == STATE_PRELOAD || state == STATE_READY) {
 			main.getAudioProcessor().setGlobalPitch(1f);
 			timer.setTimerOn(TIMER_FADEOUT);
-			state = STATE_PRACTICE_FINISHED;
+			if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+				state = STATE_ABORTED;
+			} else {
+				state = STATE_PRACTICE_FINISHED;
+			}
 			return;
 		}
 		if (timer.isTimerOn(TIMER_FAILED) || timer.isTimerOn(TIMER_FADEOUT)) {
+			return;
+		}
+		if (state != STATE_FINISHED && resource.getCourseBMSModels() == null &&
+				judge.getJudgeCount(0) + judge.getJudgeCount(1) + judge.getJudgeCount(2) + judge.getJudgeCount(3) == 0) {
+			keyinput.stopJudge();
+			keysound.stopBGPlay();
+			if (resource.mediaLoadFinished()) {
+				main.getAudioProcessor().stop((Note) null);
+			}
+			state = STATE_ABORTED;
+			timer.setTimerOn(TIMER_FADEOUT);
 			return;
 		}
 		if (state != STATE_FINISHED && 
