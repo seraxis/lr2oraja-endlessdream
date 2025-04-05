@@ -129,6 +129,7 @@ public class MainLoader extends Application {
 			MainController main = new MainController(bmsPath, config, player, playerMode, songUpdated);
 
 			Lwjgl3ApplicationConfiguration gdxConfig = new Lwjgl3ApplicationConfiguration();
+			gdxConfig.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
 
 			final int w = config.getResolution().width;
 			final int h = config.getResolution().height;
