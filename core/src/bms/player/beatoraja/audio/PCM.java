@@ -1,14 +1,12 @@
 package bms.player.beatoraja.audio;
 
 import java.io.*;
-import java.nio.ShortBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.jflac.FLACDecoder;
 import org.jflac.metadata.StreamInfo;
 
@@ -199,36 +197,27 @@ public abstract class PCM<T> {
 						
 						break;					
 					}
-					/*case 2:
+					case 2:
 					    {
 						channels = input.channels;
 						sampleRate = input.sampleRate;
-						//bitsPerSample = input.bitsPerSample;
 						bitsPerSample = 16;
 						blockAlign = input.blockAlign;
-						Logger.getGlobal().info("channels: " + channels);
-						Logger.getGlobal().info("sample rate: " + sampleRate);
-						Logger.getGlobal().info("block align" + blockAlign);
-
+//						Logger.getGlobal().info("channels: " + channels);
+//						Logger.getGlobal().info("sample rate: " + sampleRate);
+//						Logger.getGlobal().info("block align" + blockAlign);
 
 						OptimizedByteArrayOutputStream inputByteStream = new OptimizedByteArrayOutputStream(input.dataRemaining);
 						StreamUtils.copyStream(input, inputByteStream);
 						ByteBuffer inputByteBuffer = ByteBuffer.wrap(inputByteStream.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
-						//inputByteBuffer.flip();
 
-						Logger.getGlobal().info("buffer limit" + inputByteBuffer.limit());
-						Logger.getGlobal().info("buffer hasRemain" + inputByteBuffer.hasRemaining());
-						Logger.getGlobal().info("buffer remain" + inputByteBuffer.remaining());
-						ByteArrayOutputStream result = new ByteArrayOutputStream(channels * 2 * inputByteBuffer.limit());
 						MSADPCMDecoder decoder = new MSADPCMDecoder(channels, sampleRate, blockAlign);
-						decoder.decode(inputByteBuffer, result);
+						pcm = decoder.decode(inputByteBuffer);
 
-						pcm = ByteBuffer.wrap(result.toByteArray());
-						//pcm.flip();
 
 						Logger.getGlobal().info("Filename: " + p );
 						break;
-					}*/
+					}
 					// IMA-ADPCM Decoder
 /* 					case 11:
 					{
