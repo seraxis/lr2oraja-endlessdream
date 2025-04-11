@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import com.badlogic.gdx.ApplicationListener;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -129,50 +130,90 @@ public class MainLoader extends Application {
 			MainController main = new MainController(bmsPath, config, player, playerMode, songUpdated);
 
 			Lwjgl3ApplicationConfiguration gdxConfig = new Lwjgl3ApplicationConfiguration();
-			// This line is provided for macos-fix, the original issue is mac dropped the OpenGL full support,
-			// according to the document from libgdx, mac machine now only supports OpenGL 3.2 and needs to emulate GL30
-			// to make libgdx work
-			// However, this line may break some old machine which has no OpenGL 3.2 support. It seems that libgdx defaults
-			// to emulate GL20, this version gap might be danger. Therefore, this line is wrapped as macos only
-			// NOTE: SpriteBatchHelper is also macos only, it degenerates to beatoraja's default behaviour when executing
-			// on other platforms
-			if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-				gdxConfig.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
-			}
-			final int w = config.getResolution().width;
-			final int h = config.getResolution().height;
-			if (config.getDisplaymode() == Config.DisplayMode.FULLSCREEN) {
-				Graphics.DisplayMode d = null;
-				for (Graphics.DisplayMode display : Lwjgl3ApplicationConfiguration.getDisplayModes()) {
-					System.out.println("available DisplayMode : w - " + display.width + " h - " + display.height
-							+ " refresh - " + display.refreshRate + " color bit - " + display.bitsPerPixel);
-					if (display.width == w
-							&& display.height == h
-							&& (d == null || (d.refreshRate <= display.refreshRate && d.bitsPerPixel <= display.bitsPerPixel))) {
-						d = display;
-					}
-				}
-				if (d != null) {
-					gdxConfig.setFullscreenMode(d);
-				} else {
-					gdxConfig.setWindowedMode(w, h);
-				}
-			} else {
-				if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
+            // This line is provided for macos-fix, the original issue is mac dropped the OpenGL full support,
+            // according to the document from libgdx, mac machine now only supports OpenGL 3.2 and needs to emulate GL30
+            // to make libgdx work
+            // However, this line may break some old machine which has no OpenGL 3.2 support. It seems that libgdx defaults
+            // to emulate GL20, this version gap might be danger. Therefore, this line is wrapped as macos only
+            // NOTE: SpriteBatchHelper is also macos only, it degenerates to beatoraja's default behaviour when executing
+            // on other platforms
+            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                gdxConfig.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
+            }
+            final int w = config.getResolution().width;
+            final int h = config.getResolution().height;
+            String targetMonitorName = config.getMonitorName();
+            Graphics.Monitor targetMonitor = null;
+			Graphics.DisplayMode gdxDisplayMode = null;
+            if (targetMonitorName != null && !targetMonitorName.isEmpty()) {
+                Optional<Graphics.Monitor> optMonitor = Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors())
+                        .filter(monitor -> monitor.name.equals(targetMonitorName))
+                        .findAny();
+                if (optMonitor.isPresent()) {
+                    targetMonitor = optMonitor.get();
+                }
+            }
+            if (config.getDisplaymode() == Config.DisplayMode.FULLSCREEN) {
+                Graphics.DisplayMode d = null;
+                Graphics.DisplayMode[] displayModes = Lwjgl3ApplicationConfiguration.getDisplayModes();
+                if (targetMonitor != null) {
+                    displayModes = Lwjgl3ApplicationConfiguration.getDisplayModes(targetMonitor);
+                }
+                for (Graphics.DisplayMode display : displayModes) {
+                    System.out.println("available DisplayMode : w - " + display.width + " h - " + display.height
+                            + " refresh - " + display.refreshRate + " color bit - " + display.bitsPerPixel);
+                    if (display.width == w
+                            && display.height == h
+                            && (d == null || (d.refreshRate <= display.refreshRate && d.bitsPerPixel <= display.bitsPerPixel))) {
+                        d = display;
+                    }
+                }
+
+                if (d != null) {
 					gdxConfig.setDecorated(false);
-					//System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
-				}
-				gdxConfig.setWindowedMode(w, h);
-			}
-			// vSync
-			gdxConfig.useVsync(config.isVsync());
-			gdxConfig.setIdleFPS(config.getMaxFramePerSecond());
-			gdxConfig.setForegroundFPS(config.getMaxFramePerSecond());
-			gdxConfig.setTitle(MainController.getVersion());
+					gdxConfig.setWindowedMode(w, h);
+                    // Move screen to the correct monitor position
+                    if (targetMonitor != null) {
+                        int posX = targetMonitor.virtualX;
+                        int posY = targetMonitor.virtualY;
+                        gdxConfig.setWindowPosition(posX, posY);
+                    }
+					gdxDisplayMode = d;
+                } else {
+                    gdxConfig.setWindowedMode(w, h);
+					if (targetMonitor != null) {
+						gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
+					} else {
+						gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
+					}
+                }
+            } else {
+                if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
+                    gdxConfig.setDecorated(false);
+                    //System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
+                }
+                gdxConfig.setWindowedMode(w, h);
+                if (targetMonitor != null) {
+                    Graphics.DisplayMode d = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
+                    int posX = targetMonitor.virtualX;
+                    int posY = targetMonitor.virtualY;
+                    gdxConfig.setWindowPosition(posX, posY);
+					gdxDisplayMode = d;
+                } else {
+					gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
+                }
+            }
+            // vSync
+            gdxConfig.useVsync(config.isVsync());
+            gdxConfig.setIdleFPS(config.getMaxFramePerSecond());
+            gdxConfig.setForegroundFPS(config.getMaxFramePerSecond());
+            gdxConfig.setTitle(MainController.getVersion());
 
 			gdxConfig.setAudioConfig(config.getAudioConfig().getDeviceSimultaneousSources(), config.getAudioConfig().getDeviceBufferSize(), 1);
 
+			Config.DisplayMode displaymode = config.getDisplaymode();
 			//new Lwjgl3Application(main, gdxConfig);
+			Graphics.DisplayMode finalGdxDisplayMode = gdxDisplayMode;
 			new Lwjgl3Application(new ApplicationListener() {
 				public void resume() {
 					main.resume();
@@ -196,6 +237,9 @@ public class MainLoader extends Application {
 
 				public void create() {
 					main.create();
+					if (displaymode == Config.DisplayMode.FULLSCREEN) {
+						Gdx.graphics.setFullscreenMode(finalGdxDisplayMode);
+					}
 				}
 			}, gdxConfig);
 			//System.exit(0);
