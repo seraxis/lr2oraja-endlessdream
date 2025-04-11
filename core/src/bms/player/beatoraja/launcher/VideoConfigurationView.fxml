@@ -67,6 +67,9 @@
             </items>
         </ComboBox>
 
+        <Label text="%MONITOR" GridPane.rowIndex="9" GridPane.columnIndex="0" styleClass="optionLabel"/>
+        <ComboBox fx:id="monitor" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
         <stylesheets>
             <URL value="@LauncherStyle.css"/>
         </stylesheets>
