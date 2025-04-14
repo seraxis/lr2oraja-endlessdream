@@ -33,8 +33,6 @@ import bms.player.beatoraja.song.SongData;
 public class MusicResult extends AbstractResult {
 
 	private ResultKeyProperty property;
-	
-	private List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
 	public MusicResult(MainController main) {
 		super(main);
@@ -107,8 +105,12 @@ public class MusicResult extends AbstractResult {
 				int irsend = 0;
 				boolean succeed = true;
 				List<IRSendStatus> removeIrSendStatus = new ArrayList<IRSendStatus>();
+				List<IRSendStatus> scores = new ArrayList<IRSendStatus>();
+				if (!main.irSendStatus.isEmpty()) {
+					scores = main.irSendStatus.subList(main.irSendStatus.size() - ir.length, main.irSendStatus.size());
+				}
 
-				for (IRSendStatus irc : irSendStatus) {
+				for (IRSendStatus irc : scores) {
 					try {
 						if (irsend == 0) {
 							timer.switchTimer(TIMER_IR_CONNECT_BEGIN, true);
@@ -125,7 +127,7 @@ public class MusicResult extends AbstractResult {
 						removeIrSendStatus.add(irc);
 					}
 				}
-				irSendStatus.removeAll(removeIrSendStatus);
+				main.irSendStatus.removeAll(removeIrSendStatus);
 
 				if(irsend > 0) {
 					timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
@@ -289,7 +291,7 @@ public class MusicResult extends AbstractResult {
 					if (((MusicResultSkin) getSkin()).getRankTime() != 0
 							&& !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
 						timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  3000) {
+					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  1000) {
 						timer.switchTimer(TIMER_FADEOUT, true);
 						if (getSound(RESULT_CLOSE) != null) {
 							stop(RESULT_CLEAR);
