@@ -1,7 +1,10 @@
 package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
+import bms.player.beatoraja.modmenu.fm.SongManagerMenu;
+import bms.player.beatoraja.modmenu.fm.FolderManagerMenu;
 
+import bms.player.beatoraja.select.MusicSelector;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
@@ -35,8 +38,9 @@ public class ImGuiRenderer {
 
     private static ImBoolean SHOW_MOD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_RANDOM_TRAINER = new ImBoolean(false);
-
     private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
+    private static ImBoolean SHOW_FOLDER_MANAGER = new ImBoolean(false);
+    private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
 
 
     public static void init() {
@@ -77,7 +81,7 @@ public class ImGuiRenderer {
     public static void start() {
         if (tmpProcessor != null) {
            Gdx.input.setInputProcessor(tmpProcessor);
-            tmpProcessor = null;
+           tmpProcessor = null;
         }
         imGuiGlfw.newFrame();
         ImGui.newFrame();
@@ -94,13 +98,21 @@ public class ImGuiRenderer {
 
             ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
+            ImGui.checkbox("Show Folder Manager Menu", SHOW_FOLDER_MANAGER);
+            ImGui.checkbox("Show Song Manager Menu", SHOW_SONG_MANAGER);
+
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);
             }
             if (SHOW_RANDOM_TRAINER.get()) {
                 RandomTrainerMenu.show(SHOW_RANDOM_TRAINER);
             }
-
+            if (SHOW_FOLDER_MANAGER.get()) {
+                FolderManagerMenu.show(SHOW_FOLDER_MANAGER);
+            }
+            if (SHOW_SONG_MANAGER.get()) {
+                SongManagerMenu.show(SHOW_SONG_MANAGER);
+            }
 
             if (ImGui.treeNode("Controller Input Debug Information")) {
                 float axis;
@@ -149,7 +161,6 @@ public class ImGuiRenderer {
             ImGui.popTextWrapPos();
             ImGui.endTooltip();
         }
-
     }
 
 
