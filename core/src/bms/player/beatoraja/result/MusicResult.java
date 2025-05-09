@@ -98,6 +98,7 @@ public class MusicResult extends AbstractResult {
     			
     			if(send) {
     				main.irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
+					irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
     			}
         	}
 			
