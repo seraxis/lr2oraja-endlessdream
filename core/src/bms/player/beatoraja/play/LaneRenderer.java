@@ -217,6 +217,10 @@ public class LaneRenderer {
 		playconfig.setHidden(hiddenCover < 0 ? 0 : (hiddenCover > 1 ? 1 : hiddenCover));
 	}
 
+	public void setEnableHidden(boolean b) {
+		playconfig.setEnablehidden(b);
+	}
+
 	public boolean isEnableHidden() {
 		return playconfig.isEnablehidden();
 	}

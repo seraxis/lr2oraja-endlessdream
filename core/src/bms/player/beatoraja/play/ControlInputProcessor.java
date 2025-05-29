@@ -20,6 +20,7 @@ public final class ControlInputProcessor {
 
 	private boolean[] hschanged;
 	private long startpressedtime;
+	private long selectpressedtime;
 	private boolean startpressed = false;
 	private boolean selectpressed = false;
 	private boolean startAndSelectPressed = false;
@@ -152,7 +153,7 @@ public final class ControlInputProcessor {
 				setCoverValue(- input.getScroll() * 0.005f);
 				input.resetScroll();
 			}
-			if ((input.startPressed() && !input.isSelectPressed())
+			if ((input.startPressed())
 					|| (player.resource.getPlayerConfig().isWindowHold() && player.timer.isTimerOn(TIMER_PLAY) && !player.isNoteEnd())) {
 				if ((autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.PRACTICE) && startpressed) {
 					processStart.run();
@@ -173,11 +174,20 @@ public final class ControlInputProcessor {
 			} else {
 				startpressed = false;
 			}
-			if(input.isSelectPressed() && !input.startPressed()){
+			if(input.isSelectPressed()){
 				if ((autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.PRACTICE) && selectpressed) {
 					processSelect.run();
 				} else if ((autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.PRACTICE) && !selectpressed) {
 					Arrays.fill(hschanged, true);
+				}
+				if (!selectpressed) {
+					long stime = System.currentTimeMillis();
+					if (stime < selectpressedtime + 500) {
+						lanerender.setEnableHidden(!lanerender.isEnableHidden());
+						selectpressedtime = 0;
+					} else {
+						selectpressedtime = stime;
+					}
 				}
 				selectpressed = true;
 			} else {
@@ -232,10 +242,12 @@ public final class ControlInputProcessor {
 		final LaneRenderer lanerender = player.getLanerender();
 		if(lanerender.isEnableLanecover() || (!lanerender.isEnableLift() && !lanerender.isEnableHidden())) {
 			lanerender.setLanecover(lanerender.getLanecover() + value);
-		} else if(lanerender.isEnableLift() && (!lanerender.isEnableHidden() || isChangeLift)) {
-			lanerender.setLiftRegion(lanerender.getLiftRegion() - value);
-		} else {
+
+		} else if(lanerender.isEnableHidden()) {
 			lanerender.setHiddenCover(lanerender.getHiddenCover() - value);
+		}
+		else if(lanerender.isEnableLift() && isChangeLift) {
+			lanerender.setLiftRegion(lanerender.getLiftRegion() - value);
 		}
 
 		if (hispeedAutoAdjust && lanerender.getNowBPM() > 0) {
