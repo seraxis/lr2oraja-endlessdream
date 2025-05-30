@@ -158,6 +158,8 @@ public class Config implements Validatable {
 	private int songResourceGen = 1;
 
 	private boolean enableIpfs = true;
+	// TODO: This field has no related javafx option currently
+	private boolean enableWriggle = true;
 	private String ipfsurl = "https://gateway.ipfs.io/";
 
 	private int irSendCount = 5;
@@ -622,7 +624,15 @@ public class Config implements Validatable {
 		this.useResolution = useResolution;
 	}
 
-	public enum DisplayMode {
+    public boolean isEnableWriggle() {
+        return enableWriggle;
+    }
+
+    public void setEnableWriggle(boolean enableWriggle) {
+        this.enableWriggle = enableWriggle;
+    }
+
+    public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
 	}
 
