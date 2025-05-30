@@ -26,11 +26,6 @@ public class HttpDownloadProcessor {
     // Multi-thread download thread pool
     private final ExecutorService executor = Executors.newFixedThreadPool(MAXIMUM_DOWNLOAD_COUNT);
 
-    // TODO: Only for test, you shouldn't see this
-    public HttpDownloadProcessor() {
-        submitMD5Task("d837d90c1eeef5efbb5422dacbd3b76e");
-    }
-
     private Optional<DownloadTask> getTaskById(int taskId) {
         return Optional.ofNullable(tasks.get(taskId));
     }
