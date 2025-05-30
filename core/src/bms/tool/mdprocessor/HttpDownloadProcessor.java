@@ -1,8 +1,9 @@
 package bms.tool.mdprocessor;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+
+import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -24,6 +25,11 @@ public class HttpDownloadProcessor {
     private final AtomicInteger idGenerator = new AtomicInteger(0);
     // Multi-thread download thread pool
     private final ExecutorService executor = Executors.newFixedThreadPool(MAXIMUM_DOWNLOAD_COUNT);
+
+    // TODO: Only for test, you shouldn't see this
+    public HttpDownloadProcessor() {
+        submitMD5Task("d837d90c1eeef5efbb5422dacbd3b76e");
+    }
 
     private Optional<DownloadTask> getTaskById(int taskId) {
         return Optional.ofNullable(tasks.get(taskId));
@@ -51,6 +57,27 @@ public class HttpDownloadProcessor {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                try (SevenZFile sevenZFile = SevenZFile.builder().setFile(downloadFilePath.toFile()).get()) {
+                    SevenZArchiveEntry entry;
+                    while ((entry = sevenZFile.getNextEntry()) != null) {
+                        if (entry.isDirectory()) continue;
+                        File outputFile = new File("wriggle_download", entry.getName());
+                        outputFile.getParentFile().mkdirs();
+
+                        try (FileOutputStream fos = new FileOutputStream(outputFile);
+                             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                            byte[] buf = new byte[1024];
+                            int bytesRead;
+                            while ((bytesRead = sevenZFile.read(buf)) != -1) {
+                                bos.write(buf, 0, bytesRead);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e.getMessage());
+                }
+                Logger.getGlobal().info("Successfully extracted");
             } catch (FileNotFoundException e) {
                 System.out.println("No such song on wriggle site?");
             } catch (IOException e) {

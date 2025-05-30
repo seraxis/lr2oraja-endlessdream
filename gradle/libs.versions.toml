@@ -10,12 +10,13 @@ javacv = "1.5.9"
 ffmpeg = "6.0-1.5.9"
 jflac = "1.5.2"
 commons-codec = "1.15"
-commons-compress = "1.16.1"
+commons-compress = "1.26.1"
 commons-dbutils = "1.6"
 sqlite = "3.42.0.0"
 jackson = "2.13.4"
 twitter4j = "4.0.4"
 java-discord = "2.0.1-all"
+xz = "1.10"
 shapedrawer = "2.5.0"
 guacamole = "0.3.5"
 
@@ -59,6 +60,7 @@ commons-codec = { group = "commons-codec", name = "commons-codec", version.ref =
 
 commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commons-compress" }
 commons-dbutils = { group = "commons-dbutils", name = "commons-dbutils", version.ref = "commons-dbutils" }
+xz = { group = "org.tukaani", name = "xz", version.ref = "xz" }
 sqlite = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite" }
 
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
