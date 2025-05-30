@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -75,7 +76,7 @@ public class MainController {
 	private MessageRenderer messageRenderer;
 
 	private MainState current;
-	
+
 	private TimerManager timer;
 
 	private Config config;
@@ -112,7 +113,8 @@ public class MainController {
 	private Thread screenshot;
 
 	private MusicDownloadProcessor download;
-	
+	private HttpDownloadProcessor httpDownloadProcessor;
+
 	private StreamController streamController;
 
 	public static final int offsetCount = SkinProperty.OFFSET_MAX + 1;
@@ -157,6 +159,16 @@ public class MainController {
 				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
 			}
 		}
+		if (config.isEnableWriggle()) {
+			Path wrigglePath = Paths.get("wriggle_download").toAbsolutePath();
+			if (!wrigglePath.toFile().exists())
+				wrigglePath.toFile().mkdirs();
+			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
+			if (wrigglePath.toFile().exists() && !roots.contains(wrigglePath.toString())) {
+				roots.add(wrigglePath.toString());
+				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
+			}
+		}
 		try {
 			Class.forName("org.sqlite.JDBC");
 			if(config.isUseSongInfo()) {
@@ -195,7 +207,7 @@ public class MainController {
 
 		}
 		ir = irarray.toArray(IRStatus.class);
-		
+
 		rivals.update(this);
 
 		switch(config.getAudioConfig().getDriver()) {
@@ -211,7 +223,7 @@ public class MainController {
 
 		timer = new TimerManager();
 		sound = new SystemSoundManager(this);
-		
+
 		if(config.isUseDiscordRPC()) {
 			stateListener.add(new DiscordListener());
 		}
@@ -232,11 +244,11 @@ public class MainController {
 	public PlayDataAccessor getPlayDataAccessor() {
 		return playdata;
 	}
-	
+
 	public RivalDataAccessor getRivalDataAccessor() {
 		return rivals;
 	}
-	
+
 	public RankingDataCache getRankingDataCache() {
 		return ircache;
 	}
@@ -418,6 +430,10 @@ public class MainController {
 				return result;
 			});
 			download.start(null);
+		}
+
+		if (config.isEnableWriggle()) {
+			httpDownloadProcessor = new HttpDownloadProcessor();
 		}
 
 		if(ir.length > 0) {
@@ -814,6 +830,14 @@ public class MainController {
 
 	public void setMicroTimer(int id, long microtime) {
 		timer.setMicroTimer(id, microtime);
+	}
+
+	public HttpDownloadProcessor getHttpDownloadProcessor() {
+		return httpDownloadProcessor;
+	}
+
+	public void setHttpDownloadProcessor(HttpDownloadProcessor httpDownloadProcessor) {
+		this.httpDownloadProcessor = httpDownloadProcessor;
 	}
 
 	public void switchTimer(int id, boolean on) {
