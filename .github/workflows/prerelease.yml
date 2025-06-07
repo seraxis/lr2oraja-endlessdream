@@ -50,3 +50,4 @@ jobs:
         title: "Latest Development Build"
         files: |
           dist/*
+
