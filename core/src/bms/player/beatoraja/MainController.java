@@ -439,7 +439,7 @@ public class MainController {
 		}
 
 		if (config.isEnableWriggle()) {
-			httpDownloadProcessor = new HttpDownloadProcessor();
+			httpDownloadProcessor = new HttpDownloadProcessor(this);
 		}
 
 		if(ir.length > 0) {
