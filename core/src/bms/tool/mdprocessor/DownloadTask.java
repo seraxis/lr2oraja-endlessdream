@@ -3,41 +3,39 @@ package bms.tool.mdprocessor;
 import java.nio.file.Path;
 
 public class DownloadTask {
-    public enum DownloadTaskStatus {
-        Prepare(0, "Prepare"),
-        Downloading(1, "Downloading"),
-        Success(2, "Success"),
-        Error(3, "Error"),
-        Cancel(4, "Cancel");
-
-        private final int value;
-        private final String name;
-
-        DownloadTaskStatus(int value, String name) {
-            this.value = value;
-            this.name = name;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
-
     private int id;
     private String url;
+    private String name;
     private DownloadTaskStatus downloadTaskStatus;
     private Path downloadFilePath;
     private double downloadSize;
     private double contentLength;
     private String errorMessage;
+    public DownloadTask() {
 
-    public DownloadTask(String url, Path downloadFilePath) {
+    }
+
+    public DownloadTask(int id, String url, String name, Path downloadFilePath) {
+        this.id = id;
         this.url = url;
+        this.name = name;
         this.downloadFilePath = downloadFilePath;
+    }
+
+    /**
+     * @return A copied DownloadTask instance, only used for rendering
+     */
+    public DownloadTask copy() {
+        DownloadTask downloadTask = new DownloadTask();
+        // Yeah this is java
+        downloadTask.id = this.id;
+        downloadTask.url = this.url;
+        downloadTask.name = this.name;
+        downloadTask.downloadTaskStatus = this.downloadTaskStatus;
+        downloadTask.downloadSize = this.downloadSize;
+        downloadTask.contentLength = this.contentLength;
+        downloadTask.errorMessage = this.errorMessage;
+        return downloadTask;
     }
 
     public String getUrl() {
@@ -94,5 +92,37 @@ public class DownloadTask {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public enum DownloadTaskStatus {
+        Prepare(0, "Prepare"),
+        Downloading(1, "Downloading"),
+        Success(2, "Success"),
+        Error(3, "Error"),
+        Cancel(4, "Cancel");
+
+        private final int value;
+        private final String name;
+
+        DownloadTaskStatus(int value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }

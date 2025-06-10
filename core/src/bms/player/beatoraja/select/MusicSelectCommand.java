@@ -136,7 +136,7 @@ public enum MusicSelectCommand {
 			}
 			Logger.getGlobal().info("Missing song md5: " + song.getMd5());
 			if (song.getMd5() != null && !song.getMd5().isEmpty()) {
-				selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5());
+				selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5(), song.getTitle());
 			}
 		}
 	}),
