@@ -1,5 +1,6 @@
 package bms.tool.mdprocessor;
 
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
 import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 /**
@@ -34,8 +36,16 @@ import java.util.logging.Logger;
  *
  * @author Catizard
  * @since Tue, 10 Jun 2025 05:33 PM
+ * @implNote Remember to update DOWNLOAD_SOURCES after adding a download source
  */
 public class HttpDownloadProcessor {
+    public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCES = new HashMap<>();
+    static {
+        // Wriggle
+        HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
+        DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
+    }
+
     public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
     // TODO: make this magic constants configurable? I think not very worthy though
     public static final String DOWNLOAD_DIRECTORY = "wriggle_download";
@@ -47,9 +57,15 @@ public class HttpDownloadProcessor {
     private final ExecutorService executor = Executors.newFixedThreadPool(MAXIMUM_DOWNLOAD_COUNT);
     // A reference to the main controller, only used for updating folder and rendering the message
     private final MainController main;
+    private final HttpDownloadSource httpDownloadSource;
 
-    public HttpDownloadProcessor(MainController main) {
+    public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource) {
         this.main = main;
+        this.httpDownloadSource = httpDownloadSource;
+    }
+
+    public static HttpDownloadSourceMeta getDefaultDownloadSource() {
+        return WriggleDownloadSource.META;
     }
 
     private Optional<DownloadTask> getTaskById(int taskId) {
@@ -77,17 +93,6 @@ public class HttpDownloadProcessor {
     }
 
     /**
-     * Construct download url based on md5 <br>
-     * TODO: Encapsulate the download source & Make download url configurable
-     *
-     * @param md5 missing sabun's md5
-     * @return download url, based on download source
-     */
-    private String getDownloadURLBasedOnMd5(String md5) {
-        return String.format("https://bms.wrigglebug.xyz/download/package/%s", md5);
-    }
-
-    /**
      * Submit a download task based on md5
      *
      * @param md5      missing sabun's md5
@@ -98,9 +103,10 @@ public class HttpDownloadProcessor {
         // TODO: Implement an intermediate file rename strategy could be better
         String fileName = String.format("%s.7z", md5);
         Path downloadFilePath = Path.of(DOWNLOAD_DIRECTORY, fileName);
+        String downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
 
         int taskId = idGenerator.addAndGet(1);
-        DownloadTask downloadTask = new DownloadTask(taskId, getDownloadURLBasedOnMd5(md5), taskName, downloadFilePath);
+        DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName, downloadFilePath);
         synchronized (tasks) {
             tasks.put(taskId, downloadTask);
         }
@@ -108,6 +114,7 @@ public class HttpDownloadProcessor {
 
         executor.submit(() -> {
             try {
+                Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
                 URL url = new URL(downloadTask.getUrl());
                 ReadableByteChannel readChannel = Channels.newChannel(url.openStream());
                 try (FileOutputStream outputStream = new FileOutputStream(downloadFilePath.toFile())) {

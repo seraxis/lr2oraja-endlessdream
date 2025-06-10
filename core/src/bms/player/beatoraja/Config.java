@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
@@ -158,9 +159,13 @@ public class Config implements Validatable {
 	private int songResourceGen = 1;
 
 	private boolean enableIpfs = true;
-	// TODO: This field has no related javafx option currently
-	private boolean enableWriggle = true;
 	private String ipfsurl = "https://gateway.ipfs.io/";
+
+	private boolean enableHttp = true;
+	private String downloadSource = HttpDownloadProcessor.getDefaultDownloadSource().getName();
+	// Only for passing parameter, not used as a config option
+	private String defaultDownloadURL = HttpDownloadProcessor.getDefaultDownloadSource().getDefaultURL();
+	private String overrideDownloadURL = "";
 
 	private int irSendCount = 5;
 
@@ -518,6 +523,38 @@ public class Config implements Validatable {
 		this.messagefontpath = messagefontpath;
 	}
 
+	public boolean isEnableHttp() {
+		return enableHttp;
+	}
+
+	public void setEnableHttp(boolean enableHttp) {
+		this.enableHttp = enableHttp;
+	}
+
+	public String getDownloadSource() {
+		return downloadSource;
+	}
+
+	public void setDownloadSource(String downloadSource) {
+		this.downloadSource = downloadSource;
+	}
+
+	public String getDefaultDownloadURL() {
+		return defaultDownloadURL;
+	}
+
+	public void setDefaultDownloadURL(String defaultDownloadURL) {
+		this.defaultDownloadURL = defaultDownloadURL;
+	}
+
+	public String getOverrideDownloadURL() {
+		return overrideDownloadURL;
+	}
+
+	public void setOverrideDownloadURL(String overrideDownloadURL) {
+		this.overrideDownloadURL = overrideDownloadURL;
+	}
+
 	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
@@ -623,14 +660,6 @@ public class Config implements Validatable {
 	public void setUseResolution(boolean useResolution) {
 		this.useResolution = useResolution;
 	}
-
-    public boolean isEnableWriggle() {
-        return enableWriggle;
-    }
-
-    public void setEnableWriggle(boolean enableWriggle) {
-        this.enableWriggle = enableWriggle;
-    }
 
     public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
