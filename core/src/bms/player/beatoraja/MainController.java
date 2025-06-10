@@ -3,12 +3,14 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.DownloadTaskMenu;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -164,7 +166,8 @@ public class MainController {
 				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
 			}
 		}
-		if (config.isEnableWriggle()) {
+		if (config.isEnableHttp()) {
+			// TODO: oh...a breaking change...
 			Path wrigglePath = Paths.get("wriggle_download").toAbsolutePath();
 			if (!wrigglePath.toFile().exists())
 				wrigglePath.toFile().mkdirs();
@@ -437,8 +440,9 @@ public class MainController {
 			download.start(null);
 		}
 
-		if (config.isEnableWriggle()) {
-			httpDownloadProcessor = new HttpDownloadProcessor(this);
+		if (config.isEnableHttp()) {
+			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
+			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
 			DownloadTaskMenu.initialize(httpDownloadProcessor);
 		}
 
