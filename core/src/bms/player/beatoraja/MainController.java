@@ -3,7 +3,6 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Function;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;

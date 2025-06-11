@@ -1,29 +1,25 @@
 package bms.tool.mdprocessor;
 
-import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
 import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * In-game download processor. In charge of:
@@ -35,22 +31,23 @@ import java.util.logging.Logger;
  * </ul>
  *
  * @author Catizard
- * @since Tue, 10 Jun 2025 05:33 PM
  * @implNote Remember to update DOWNLOAD_SOURCES after adding a download source
+ * @since Tue, 10 Jun 2025 05:33 PM
  */
 public class HttpDownloadProcessor {
     public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCES = new HashMap<>();
+    public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
+    // TODO: make this magic constants configurable? I think not very worthy though
+    public static final String DOWNLOAD_DIRECTORY = "wriggle_download";
+
     static {
         // Wriggle
         HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
         DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
     }
 
-    public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
-    // TODO: make this magic constants configurable? I think not very worthy though
-    public static final String DOWNLOAD_DIRECTORY = "wriggle_download";
     // id => task
-    private final Map<Integer, DownloadTask> tasks = new HashMap<>();
+    private final Map<Integer, DownloadTask> tasks = new ConcurrentHashMap<>();
     // In-memory self-add id generator
     private final AtomicInteger idGenerator = new AtomicInteger(0);
     // Multi-thread download thread pool
@@ -102,30 +99,26 @@ public class HttpDownloadProcessor {
         Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to submit new download task[%s](based on md5: %s)", taskName, md5));
         // TODO: Implement an intermediate file rename strategy could be better
         String fileName = String.format("%s.7z", md5);
-        Path downloadFilePath = Path.of(DOWNLOAD_DIRECTORY, fileName);
         String downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
 
         int taskId = idGenerator.addAndGet(1);
-        DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName, downloadFilePath);
+        DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
         synchronized (tasks) {
             tasks.put(taskId, downloadTask);
         }
         pushMessage(String.format("New download task[%s] submitted", taskName), null);
 
         executor.submit(() -> {
+            Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
+            downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloading);
             try {
-                Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
-                URL url = new URL(downloadTask.getUrl());
-                ReadableByteChannel readChannel = Channels.newChannel(url.openStream());
-                try (FileOutputStream outputStream = new FileOutputStream(downloadFilePath.toFile())) {
-                    FileChannel writeChannel = outputStream.getChannel();
-                    writeChannel.transferFrom(readChannel, 0, Long.MAX_VALUE);
+                Path result;
+                try {
+                    result = downloadFileFromURL(taskId, downloadTask.getUrl(), fileName);
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    pushMessage("Failed to download from wriggle", null);
-                    throw new RuntimeException(e.getMessage());
+                    throw e;
                 }
-                try (SevenZFile sevenZFile = SevenZFile.builder().setFile(downloadFilePath.toFile()).get()) {
+                try (SevenZFile sevenZFile = SevenZFile.builder().setFile(result.toFile()).get()) {
                     SevenZArchiveEntry entry;
                     while ((entry = sevenZFile.getNextEntry()) != null) {
                         if (entry.isDirectory()) continue;
@@ -156,11 +149,101 @@ public class HttpDownloadProcessor {
                 pushMessage("Successfully downloaded. Trying to rebuild directory", null);
                 main.updateSong(DOWNLOAD_DIRECTORY);
             } catch (FileNotFoundException e) {
-                pushMessage("Cannot find specified song from wriggle", null);
+                Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] returns 404 back", httpDownloadSource.getName()));
+                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
+                pushMessage(String.format("Cannot find specified song from %s", httpDownloadSource.getName()), null);
             } catch (Exception e) {
-                Logger.getGlobal().severe("Failed to download, exception: " + e.getMessage());
                 e.printStackTrace();
+                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
+                Logger.getGlobal().severe("Failed to download, exception: " + e.getMessage());
+                pushMessage(String.format("Unexpected error: %s", e.getMessage()), null);
             }
         });
+    }
+
+    /**
+     * Download a file from url (no intermediate file protection)
+     *
+     * @param taskId           download task's unique id, for submitting result
+     * @param downloadURL      remote url
+     * @param fallbackFileName fallback file name if remote server's response doesn't contain a valid file name
+     * @return result file path, null if failed
+     */
+    private Path downloadFileFromURL(int taskId, String downloadURL, String fallbackFileName) throws FileNotFoundException {
+        HttpURLConnection conn = null;
+        InputStream is = null;
+        FileOutputStream fos = null;
+        Path result = null;
+
+        // TODO: The race condition seems harmless...There is only one write side & one read side while the read side
+        // is only copying the reference
+        DownloadTask task = getTaskById(taskId).orElseThrow();
+
+        try {
+            URL url = new URL(downloadURL);
+            conn = ((HttpURLConnection) url.openConnection());
+            conn.connect();
+            int responseCode = conn.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    throw new FileNotFoundException();
+                }
+                throw new IllegalStateException("Unexpected http response code: " + responseCode);
+            }
+            // Prepare the file name
+            String fileName = fallbackFileName;
+            String contentDisposition = conn.getHeaderField("Content-Disposition");
+            String candidateFileName = "";
+            if (contentDisposition != null && !contentDisposition.isEmpty()) {
+                Matcher matcher = Pattern.compile("filename=\"?([^\"]+)\"?").matcher(contentDisposition);
+                if (matcher.find()) {
+                    candidateFileName = matcher.group(1);
+                }
+            }
+            if (candidateFileName != null && !candidateFileName.isEmpty()) {
+                fileName = candidateFileName;
+            }
+
+            long contentLength = conn.getContentLengthLong();
+            is = conn.getInputStream();
+            result = Path.of(DOWNLOAD_DIRECTORY, fileName);
+            fos = new FileOutputStream(result.toFile());
+
+            // TODO: We can bind the buffer to the worker thread instead of creating & releasing it repeatedly
+            byte[] buffer = new byte[8192];
+            long downloadBytes = 0;
+
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                fos.write(buffer, 0, read);
+                downloadBytes += read;
+                task.setDownloadSize(downloadBytes);
+                task.setContentLength(contentLength);
+            }
+            Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Download successfully to %s", result));
+            task.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Success);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.getGlobal().info("[HttpDownloadProcessor] Failed to download file from url: " + e.getMessage());
+            task.setDownloadSize(0);
+            task.setContentLength(0);
+            task.setErrorMessage(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                if (is != null) {
+                    is.close();
+                }
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (Exception e) {
+                // Do nothing...
+            }
+        }
+        return result;
     }
 }
