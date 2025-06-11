@@ -8,18 +8,18 @@ public class DownloadTask {
     private String name;
     private DownloadTaskStatus downloadTaskStatus;
     private Path downloadFilePath;
-    private double downloadSize;
-    private double contentLength;
+    private long downloadSize;
+    private long contentLength;
     private String errorMessage;
     public DownloadTask() {
 
     }
 
-    public DownloadTask(int id, String url, String name, Path downloadFilePath) {
+    public DownloadTask(int id, String url, String name) {
         this.id = id;
         this.url = url;
         this.name = name;
-        this.downloadFilePath = downloadFilePath;
+        this.downloadTaskStatus = DownloadTaskStatus.Prepare;
     }
 
     /**
@@ -62,19 +62,19 @@ public class DownloadTask {
         this.downloadFilePath = downloadFilePath;
     }
 
-    public double getDownloadSize() {
+    public long getDownloadSize() {
         return downloadSize;
     }
 
-    public void setDownloadSize(double downloadSize) {
+    public void setDownloadSize(long downloadSize) {
         this.downloadSize = downloadSize;
     }
 
-    public double getContentLength() {
+    public long getContentLength() {
         return contentLength;
     }
 
-    public void setContentLength(double contentLength) {
+    public void setContentLength(long contentLength) {
         this.contentLength = contentLength;
     }
 
@@ -102,6 +102,7 @@ public class DownloadTask {
         this.name = name;
     }
 
+    // TODO: Success state should be split into multiple different states like `Download successfully` and `Extract successfully`
     public enum DownloadTaskStatus {
         Prepare(0, "Prepare"),
         Downloading(1, "Downloading"),
