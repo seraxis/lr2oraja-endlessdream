@@ -16,6 +16,11 @@ public interface HttpDownloadSource {
      */
     String getDownloadURLBasedOnMd5(String md5);
 
+    /**
+     * Name is an unique symbol, also the option from 'otherTab'
+     */
+    String getName();
+
     // For further implementations
 
     boolean isAllowDownloadThroughMd5();

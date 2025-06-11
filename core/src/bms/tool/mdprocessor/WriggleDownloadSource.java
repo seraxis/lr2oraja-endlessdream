@@ -28,6 +28,11 @@ public class WriggleDownloadSource implements HttpDownloadSource {
     }
 
     @Override
+    public String getName() {
+        return META.getName();
+    }
+
+    @Override
     public boolean isAllowDownloadThroughMd5() {
         return true;
     }
