@@ -85,8 +85,16 @@ public class HttpDownloadProcessor {
      * @param color   message color. Fallback to Blue if passing null
      */
     private void pushMessage(String content, Color color) {
-        Color renderColor = color == null ? Color.BLUE : color;
-        main.getMessageRenderer().addMessage(content, 5000, renderColor, 1);
+        main.getMessageRenderer().addMessage(content, 5000, color, 1);
+    }
+
+    /**
+     * Send a new message with default color(blue) to MainController
+     *
+     * @param content message
+     */
+    private void pushMessage(String content) {
+        pushMessage(content, Color.BLUE);
     }
 
     /**
@@ -97,8 +105,6 @@ public class HttpDownloadProcessor {
      */
     public void submitMD5Task(String md5, String taskName) {
         Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to submit new download task[%s](based on md5: %s)", taskName, md5));
-        // TODO: Implement an intermediate file rename strategy could be better
-        String fileName = String.format("%s.7z", md5);
         String downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
 
         int taskId = idGenerator.addAndGet(1);
@@ -106,57 +112,43 @@ public class HttpDownloadProcessor {
         synchronized (tasks) {
             tasks.put(taskId, downloadTask);
         }
-        pushMessage(String.format("New download task[%s] submitted", taskName), null);
+        pushMessage(String.format("New download task[%s] submitted", taskName));
 
         executor.submit(() -> {
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
             downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloading);
+            Path result = null;
+            String sourceName = httpDownloadSource.getName();
+            // 1) Download file from remote http server
             try {
-                Path result;
-                try {
-                    result = downloadFileFromURL(taskId, downloadTask.getUrl(), fileName);
-                } catch (Exception e) {
-                    throw e;
-                }
-                try (SevenZFile sevenZFile = SevenZFile.builder().setFile(result.toFile()).get()) {
-                    SevenZArchiveEntry entry;
-                    while ((entry = sevenZFile.getNextEntry()) != null) {
-                        if (entry.isDirectory()) continue;
-                        File outputFile = new File(DOWNLOAD_DIRECTORY, entry.getName());
-                        outputFile.getParentFile().mkdirs();
-
-                        try (FileOutputStream fos = new FileOutputStream(outputFile);
-                             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-                            byte[] buf = new byte[1024];
-                            int bytesRead;
-                            while ((bytesRead = sevenZFile.read(buf)) != -1) {
-                                bos.write(buf, 0, bytesRead);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    pushMessage("Failed to extract compressed file", null);
-                    throw new RuntimeException(e.getMessage());
-                }
-                // TODO: We cannot get real file name here. By refactoring the download code to use plain http
-                // download and extract the file-name parameter from `Content-Disposition` is a way, but I
-                // prefer the server side provide an endpoint for retrieving the meta data instead
-                Logger.getGlobal().info("Successfully extracted");
+                result = downloadFileFromURL(taskId, downloadTask.getUrl(), String.format("%s.7z", md5));
+            } catch (FileNotFoundException e) {
+                Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] returns 404 back", sourceName));
+                pushMessage(String.format("Cannot find specified song from %s", sourceName));
+            } catch (Exception e) {
+                e.printStackTrace();
+                pushMessage(String.format("Failed downloading from %s due to %s", sourceName, e.getMessage()));
+            }
+            if (result == null) {
+                // Download failed, skip the remaining steps
+                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
+                return ;
+            }
+            // 2) Extract the compressed archive & update download directory automatically
+            boolean successfullyExtracted = false;
+            try {
+                extractCompressedFile(result.toFile(), null);
+                successfullyExtracted = true;
+            } catch (Exception e) {
+                e.printStackTrace();
+                pushMessage(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
+            }
+            if (successfullyExtracted) {
                 // TODO: Directory update is protected, this might cause some uncovered situation. Personally speaking,
                 // I don't think this has any issue since user can always turn back to root directory
                 // and update the download directory manually
-                pushMessage("Successfully downloaded. Trying to rebuild directory", null);
+                pushMessage("Successfully downloaded & extracted. Trying to rebuild download directory");
                 main.updateSong(DOWNLOAD_DIRECTORY);
-            } catch (FileNotFoundException e) {
-                Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] returns 404 back", httpDownloadSource.getName()));
-                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
-                pushMessage(String.format("Cannot find specified song from %s", httpDownloadSource.getName()), null);
-            } catch (Exception e) {
-                e.printStackTrace();
-                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
-                Logger.getGlobal().severe("Failed to download, exception: " + e.getMessage());
-                pushMessage(String.format("Unexpected error: %s", e.getMessage()), null);
             }
         });
     }
@@ -245,5 +237,35 @@ public class HttpDownloadProcessor {
             }
         }
         return result;
+    }
+
+    /**
+     * Extract a compressed file into targetPath
+     *
+     * @param file compressed archive
+     * @param targetPath target directory, fallback to DOWNLOAD_DIRECTORY if null
+     */
+    private void extractCompressedFile(File file, Path targetPath) {
+        Path resultDirectory = targetPath == null ? Path.of(DOWNLOAD_DIRECTORY) : targetPath;
+        try (SevenZFile sevenZFile = SevenZFile.builder().setFile(file).get()) {
+            SevenZArchiveEntry entry;
+            while ((entry = sevenZFile.getNextEntry()) != null) {
+                if (entry.isDirectory()) continue;
+                File outputFile = new File(resultDirectory.toString(), entry.getName());
+                outputFile.getParentFile().mkdirs();
+
+                try (FileOutputStream fos = new FileOutputStream(outputFile);
+                     BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                    byte[] buf = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = sevenZFile.read(buf)) != -1) {
+                        bos.write(buf, 0, bytesRead);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }
