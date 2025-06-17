@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -55,6 +53,7 @@ public class HttpDownloadProcessor {
     private final AtomicInteger idGenerator = new AtomicInteger(0);
     // Multi-thread download thread pool
     private final ExecutorService executor = Executors.newFixedThreadPool(MAXIMUM_DOWNLOAD_COUNT);
+    private final ExecutorService submitter = Executors.newSingleThreadExecutor();
     // A reference to the main controller, only used for updating folder and rendering the message
     private final MainController main;
     private final HttpDownloadSource httpDownloadSource;
@@ -115,19 +114,45 @@ public class HttpDownloadProcessor {
         } catch (FileNotFoundException e) {
             Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] reports no such data", sourceName));
             pushMessage(String.format("Cannot find specified song from %s", sourceName));
-            return ;
+            return;
         } catch (RuntimeException e) {
             e.printStackTrace();
             Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Cannot get download url from remote server[%s] due to unexpected exception: %s", sourceName, e.getMessage()));
-            return ;
+            return;
         }
 
-        int taskId = idGenerator.addAndGet(1);
-        DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
-        synchronized (tasks) {
-            tasks.put(taskId, downloadTask);
+        // NOTE: The reason of using executor instead of using 'synchronized' on tasks directly is forcing
+        // it to run the submit step on an different thread to get rid of the re-entrant feature of 'synchronized'.
+        // Alternative way is providing a wait queue and an extra thread polling submit request routinely
+        Future<DownloadTask> submit = submitter.submit(() -> {
+            synchronized (tasks) {
+                // NOTE: This reject strategy works for Konmai because the download url could be considered as a unique
+                // info, but not wriggle since it doesn't offer a meta query api.
+                if (tasks.values().stream().anyMatch(task -> task.getUrl().equals(downloadURL))) {
+                    Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Rejecting download task[%s] because duplication has been found", downloadURL));
+                    pushMessage("Already submitted");
+                    return null;
+                }
+                int taskId = idGenerator.addAndGet(1);
+                DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
+                tasks.put(taskId, downloadTask);
+                pushMessage(String.format("New download task[%s] submitted", taskName));
+                return downloadTask;
+            }
+        });
+
+        DownloadTask downloadTask;
+        try {
+            downloadTask = submit.get();
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+            Logger.getGlobal().severe("Unexpected error from submitting download task: " + e.getMessage());
+            return;
         }
-        pushMessage(String.format("New download task[%s] submitted", taskName));
+
+        if (downloadTask == null) {
+            return;
+        }
 
         executor.submit(() -> {
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
@@ -135,7 +160,7 @@ public class HttpDownloadProcessor {
             Path result = null;
             // 1) Download file from remote http server
             try {
-                result = downloadFileFromURL(taskId, downloadTask.getUrl(), String.format("%s.7z", md5));
+                result = downloadFileFromURL(downloadTask, String.format("%s.7z", md5));
             } catch (FileNotFoundException e) {
                 Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] returns 404 back", sourceName));
                 pushMessage(String.format("Cannot find specified song from %s", sourceName));
@@ -146,7 +171,7 @@ public class HttpDownloadProcessor {
             if (result == null) {
                 // Download failed, skip the remaining steps
                 downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
-                return ;
+                return;
             }
             // 2) Extract the compressed archive & update download directory automatically
             boolean successfullyExtracted = false;
@@ -170,23 +195,17 @@ public class HttpDownloadProcessor {
     /**
      * Download a file from url (no intermediate file protection)
      *
-     * @param taskId           download task's unique id, for submitting result
-     * @param downloadURL      remote url
      * @param fallbackFileName fallback file name if remote server's response doesn't contain a valid file name
      * @return result file path, null if failed
      */
-    private Path downloadFileFromURL(int taskId, String downloadURL, String fallbackFileName) throws FileNotFoundException {
+    private Path downloadFileFromURL(DownloadTask task, String fallbackFileName) throws FileNotFoundException {
         HttpURLConnection conn = null;
         InputStream is = null;
         FileOutputStream fos = null;
         Path result = null;
 
-        // TODO: The race condition seems harmless...There is only one write side & one read side while the read side
-        // is only copying the reference
-        DownloadTask task = getTaskById(taskId).orElseThrow();
-
         try {
-            URL url = new URL(downloadURL);
+            URL url = new URL(task.getUrl());
             conn = ((HttpURLConnection) url.openConnection());
             conn.connect();
             int responseCode = conn.getResponseCode();
@@ -256,7 +275,7 @@ public class HttpDownloadProcessor {
     /**
      * Extract a compressed file into targetPath
      *
-     * @param file compressed archive
+     * @param file       compressed archive
      * @param targetPath target directory, fallback to DOWNLOAD_DIRECTORY if null
      */
     private void extractCompressedFile(File file, Path targetPath) {
