@@ -44,6 +44,9 @@ public class HttpDownloadProcessor {
         // Wriggle
         HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
         DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
+        // Konmai
+        HttpDownloadSourceMeta konmaiDownloadSourceMeta = KonmaiDownloadSource.META;
+        DOWNLOAD_SOURCES.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
     }
 
     // id => task
@@ -105,7 +108,19 @@ public class HttpDownloadProcessor {
      */
     public void submitMD5Task(String md5, String taskName) {
         Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to submit new download task[%s](based on md5: %s)", taskName, md5));
-        String downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
+        String sourceName = httpDownloadSource.getName();
+        String downloadURL;
+        try {
+            downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
+        } catch (FileNotFoundException e) {
+            Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] reports no such data", sourceName));
+            pushMessage(String.format("Cannot find specified song from %s", sourceName));
+            return ;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Cannot get download url from remote server[%s] due to unexpected exception: %s", sourceName, e.getMessage()));
+            return ;
+        }
 
         int taskId = idGenerator.addAndGet(1);
         DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
@@ -118,7 +133,6 @@ public class HttpDownloadProcessor {
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
             downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloading);
             Path result = null;
-            String sourceName = httpDownloadSource.getName();
             // 1) Download file from remote http server
             try {
                 result = downloadFileFromURL(taskId, downloadTask.getUrl(), String.format("%s.7z", md5));

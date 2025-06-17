@@ -1,5 +1,7 @@
 package bms.tool.mdprocessor;
 
+import java.io.FileNotFoundException;
+
 /**
  * Defines a http download source
  *
@@ -14,7 +16,7 @@ public interface HttpDownloadSource {
      * @param md5 missing sabun's md5
      * @return download url, based on download source
      */
-    String getDownloadURLBasedOnMd5(String md5);
+    String getDownloadURLBasedOnMd5(String md5) throws FileNotFoundException, RuntimeException;
 
     /**
      * Name is an unique symbol, also the option from 'otherTab'

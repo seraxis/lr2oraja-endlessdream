@@ -50,7 +50,7 @@ public class DownloadTaskMenu {
         if (ImGui.begin("Download Tasks", showDownloadTasksWindow, ImGuiWindowFlags.AlwaysAutoResize)) {
             List<DownloadTask> tasks = DownloadTaskMenu.downloadTaskSnapshot.get();
             if (tasks == null || tasks.isEmpty()) {
-                ImGui.text("No Data");
+                ImGui.text("No Download Task. Try selecting missing bms to submit new task!");
             } else {
                 for (int i = 0; i < tasks.size(); ++i) {
                     DownloadTask downloadTask = tasks.get(i);
@@ -70,7 +70,6 @@ public class DownloadTaskMenu {
                     ImGui.popID();
                 }
             }
-
         }
         ImGui.end();
     }
