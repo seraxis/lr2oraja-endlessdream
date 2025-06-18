@@ -43,7 +43,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 	private final QueryRunner qr;
 	
-	private List<SongDatabaseAccessorPlugin> plugins = new ArrayList();
+	private List<SongDatabaseAccessorPlugin> plugins = new ArrayList<>();
 	
 	public SQLiteSongDatabaseAccessor(String filepath, String[] bmsroot) throws ClassNotFoundException {
 		super(new Table("folder", 
@@ -95,6 +95,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		conf.setSharedCache(true);
 		conf.setSynchronous(SynchronousMode.OFF);
 		// conf.setJournalMode(JournalMode.MEMORY);
+
+		// Using WAL is a good chunk faster than the default of DELETE. Small optimization but we're doing a lot
+		// of SQL queries in a loop and in paralel, which is exatly our use case here.
+		conf.setJournalMode(SQLiteConfig.JournalMode.WAL);
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + filepath);
 		qr = new QueryRunner(ds);
@@ -175,9 +179,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					md5str.append('\'').append(hash).append('\'');
 				}
 			}
-			List<SongData> m = qr.query("SELECT * FROM song WHERE md5 IN (" + md5str.toString() + ") OR sha256 IN ("
-					+ sha256str.toString() + ")", songhandler);
-			
+			List<SongData> m = qr.query("SELECT * FROM song WHERE md5 IN (" + md5str + ") OR sha256 IN ("
+					+ sha256str + ")", songhandler);
+
 			// 検索並び順保持
 			List<SongData> sorted = m.stream().sorted((a, b) -> {
 				int aIndexSha256 = -1,aIndexMd5 = -1,bIndexSha256 = -1,bIndexMd5 = -1;
@@ -192,8 +196,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			    return bIndex - aIndex;
             }).collect(Collectors.toList());
 
-			SongData[] validated = Validatable.removeInvalidElements(sorted).toArray(new SongData[m.size()]);
-			return validated;
+			return Validatable.removeInvalidElements(sorted).toArray(new SongData[m.size()]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
@@ -225,11 +228,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				ResultSet rs = stmt.executeQuery(s);
 				m = songhandler.handle(rs);
 			}
-			stmt.execute("DETACH DATABASE scorelogdb");				
+			stmt.execute("DETACH DATABASE scorelogdb");
 			stmt.execute("DETACH DATABASE scoredb");
 			return Validatable.removeInvalidElements(m).toArray(new SongData[m.size()]);
 		} catch(Throwable e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 
 		return SongData.EMPTY;
@@ -300,7 +303,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			return;
 		}
 		SongDatabaseUpdater updater = new SongDatabaseUpdater(updateAll, bmsroot, info);
-		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(p -> Paths.get(p)) : Stream.of(Paths.get(path)));
+		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(Paths::get) : Stream.of(Paths.get(path)));
 	}
 	
 	/**
@@ -339,7 +342,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				conn.setAutoCommit(false);
 				// 楽曲のタグ,FAVORITEの保持
 				for (SongData record : qr.query(conn, "SELECT sha256, tag, favorite FROM song", songhandler)) {
-					if (record.getTag().length() > 0) {
+					if (!record.getTag().isEmpty()) {
 						property.tags.put(record.getSha256(), record.getTag());
 					}
 					if (record.getFavorite() > 0) {
@@ -363,8 +366,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					
 					qr.update(conn,
 							"DELETE FROM folder WHERE path NOT LIKE 'LR2files%' AND path NOT LIKE '%.lr2folder' AND "
-									+ dsql.toString(), param);
-					qr.update(conn, "DELETE FROM song WHERE " + dsql.toString(), param);					
+									+ dsql, param);
+					qr.update(conn, "DELETE FROM song WHERE " + dsql, param);
 				}
 
 				paths.parallel().forEach((p) -> {
@@ -440,7 +443,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				e.printStackTrace();
 			}
 
-			final boolean containsBMS = bmsfiles.size() > 0;
+			final boolean containsBMS = !bmsfiles.isEmpty();
 			property.count.addAndGet(this.processBMSFolder(records, property));
 
 			final int len = folders.size();
@@ -450,9 +453,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				for (int i = 0; i < len;i++) {
 					final FolderData record = folders.get(i);
 					if (record != null && record.getPath().equals(s)) {
-//						long t = System.nanoTime();
 						folders.set(i, null);
-//						System.out.println(System.nanoTime() - t);
 						try {
 							if (record.getDate() == Files.getLastModifiedTime(bf.path).toMillis() / 1000) {
 								bf.updateFolder = false;
@@ -520,7 +521,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				}
 				boolean update = true;
 				final String pathname = (path.startsWith(root) ? root.relativize(path).toString() : path.toString());
-				for (int i = 0;i < len;i++) {
+				for (int i = 0; i < len; i++) {
 					final SongData record = records.get(i);
 					if (record != null && record.getPath().equals(pathname)) {
 						records.set(i, null);
@@ -585,7 +586,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 							}
 						}
 					}
-					if((sd.getPreview() == null || sd.getPreview().length() == 0) && previewpath != null) {
+					if((sd.getPreview() == null || sd.getPreview().isEmpty()) && previewpath != null) {
 						sd.setPreview(previewpath);
 					}
 					final String tag = property.tags.get(sd.getSha256());
@@ -600,7 +601,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					sd.setFolder(SongUtils.crc32(path.getParent().toString(), bmsroot, root.toString()));
 					sd.setParent(SongUtils.crc32(path.getParent().getParent().toString(), bmsroot, root.toString()));
 					sd.setDate((int) lastModifiedTime);
-					sd.setFavorite(favorite != null ? favorite.intValue() : 0);
+					sd.setFavorite(favorite != null ? favorite : 0);
 					sd.setAdddate((int) property.updatetime);
 					try {
 						SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "song", sd);
@@ -610,7 +611,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					if(property.info != null) {
 						property.info.update(model);
 					}
-					count++;
+					++count;
 				} else {
 					try {
 						qr.update(property.conn, "DELETE FROM song WHERE path = ?", pathname);
