@@ -72,7 +72,9 @@ public class MSADPCMDecoder {
 
         while (in.hasRemaining()) {
 //            in.get(adpcmBlock, 0, blockSize);
-            ByteBuffer block = in.slice().limit(blockSize).order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer block = in.slice();
+            block.limit(blockSize);
+            block = block.order(ByteOrder.LITTLE_ENDIAN);
             decode_block(out.asShortBuffer(), block);
             in.position(in.position() + blockSize);
             out.position(out.position() + blockSampleSize);
