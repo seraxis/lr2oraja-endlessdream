@@ -2,20 +2,23 @@
 beatoraja = "0.8.8-endlessdream"
 endlessdream = "0.3.0"
 kotlin = "1.9.20"
-gdx = "1.12.1"
+gdx = "1.13.0"
 gdx-controllers = "2.2.3"
 lwjgl = "3.3.3"
-imgui = "1.86.11"
+imgui = "1.86.12"
 javacv = "1.5.9"
 ffmpeg = "6.0-1.5.9"
 jflac = "1.5.2"
 commons-codec = "1.15"
 commons-compress = "1.16.1"
 commons-dbutils = "1.6"
-sqlite = "3.23.1"
+sqlite = "3.42.0.0"
 jackson = "2.13.4"
 twitter4j = "4.0.4"
 java-discord = "2.0.1-all"
+shapedrawer = "2.5.0"
+guacamole = "0.3.5"
+
 
 [libraries]
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -30,6 +33,9 @@ gdx-controllers = { group = "com.badlogicgames.gdx", name = "gdx-", version.ref 
 
 gdx-controllers-core = { group = "com.badlogicgames.gdx-controllers", name = "gdx-controllers-core", version.ref = "gdx-controllers" }
 gdx-controllers-desktop = { group = "com.badlogicgames.gdx-controllers", name = "gdx-controllers-desktop", version.ref = "gdx-controllers" }
+
+shapedrawer = { group = "space.earlygrey", name = "shapedrawer", version.ref = "shapedrawer" }
+guacamole = { group = "com.github.crykn.guacamole", name = "gdx", version.ref = "guacamole" }
 
 lwjgl = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
 lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
