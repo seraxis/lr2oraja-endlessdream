@@ -144,7 +144,7 @@ public class MainLoader extends Application {
             final int h = config.getResolution().height;
             String targetMonitorName = config.getMonitorName();
             Graphics.Monitor targetMonitor = null;
-			Graphics.DisplayMode gdxDisplayMode = null;
+			Graphics.DisplayMode gdxDisplayMode;
             if (targetMonitorName != null && !targetMonitorName.isEmpty()) {
                 Optional<Graphics.Monitor> optMonitor = Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors())
                         .filter(monitor -> monitor.name.equals(targetMonitorName))
@@ -169,24 +169,22 @@ public class MainLoader extends Application {
                     }
                 }
 
-                if (d != null) {
-					gdxConfig.setDecorated(false);
-					gdxConfig.setWindowedMode(w, h);
-                    // Move screen to the correct monitor position
-                    if (targetMonitor != null) {
-                        int posX = targetMonitor.virtualX;
-                        int posY = targetMonitor.virtualY;
-                        gdxConfig.setWindowPosition(posX, posY);
-                    }
-					gdxDisplayMode = d;
-                } else {
-                    gdxConfig.setWindowedMode(w, h);
-					if (targetMonitor != null) {
-						gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
-					} else {
-						gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
-					}
-                }
+				// We need to do the following hack to enter full-screen mode on specified monitor
+				// 1. enter borderless mode first
+				// 2. move the window position to target monitor's origin point
+				// 3. enter full-screen mode manually after window has created
+				gdxConfig.setDecorated(false);
+				gdxConfig.setWindowedMode(w, h);
+				if (targetMonitor != null) {
+					int posX = targetMonitor.virtualX;
+					int posY = targetMonitor.virtualY;
+					gdxConfig.setWindowPosition(posX, posY);
+				}
+				gdxDisplayMode = d;
+				if (gdxDisplayMode == null) {
+					Logger.getGlobal().warning(String.format("Current resolution(%dx%d) is not compatible with current monitor, full-screen mode might be malfunctioning", w, h));
+					gdxDisplayMode = targetMonitor == null ? Lwjgl3ApplicationConfiguration.getDisplayMode() : Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
+				}
             } else {
                 if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
                     gdxConfig.setDecorated(false);
