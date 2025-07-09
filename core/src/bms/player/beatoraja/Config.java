@@ -164,6 +164,7 @@ public class Config implements Validatable {
 
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
+	private String monitorName = "";
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
@@ -514,6 +515,14 @@ public class Config implements Validatable {
 
 	public void setMessagefontpath(String messagefontpath) {
 		this.messagefontpath = messagefontpath;
+	}
+
+	public String getMonitorName() {
+		return monitorName;
+	}
+
+	public void setMonitorName(String monitorName) {
+		this.monitorName = monitorName;
 	}
 
 	public boolean validate() {
