@@ -2,6 +2,7 @@ package bms.player.beatoraja.song;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -33,6 +34,7 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 	private final QueryRunner qr;
 
 	private Connection conn;
+	private final static int LOAD_CHUNK_SIZE = 1000;
 
 	public SongInformationAccessor(String filepath) throws ClassNotFoundException {
 		super(new Table("information", 
@@ -89,21 +91,31 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 
 	public void getInformation(SongData[] songs) {
 		try {
-			StringBuilder str = new StringBuilder(songs.length * 64);
-			for (SongData song : songs) {
-				if(song.getSha256() != null) {
-					if (str.length() > 0) {
-						str.append(',');
+			int songLength = songs.length;
+			int chunkLength = (songLength + LOAD_CHUNK_SIZE - 1) / LOAD_CHUNK_SIZE;
+			List<SongInformation> infos = new ArrayList<>();
+			for (int i = 0; i < chunkLength;++i) {
+				// [i * CHUNK_SIZE, min(length, (i + 1) * CHUNK_SIZE)
+				final int L = i * LOAD_CHUNK_SIZE, R = Math.min(songLength, (i + 1) * LOAD_CHUNK_SIZE);
+				for (int j = L; j < R; ++j) {
+					SongData song = songs[j];
+					StringBuilder str = new StringBuilder(songs.length * 64);
+					if (song.getSha256() != null) {
+						if (str.length() > 0) {
+							str.append(',');
+						}
+						str.append('\'').append(song.getSha256()).append('\'');
 					}
-					str.append('\'').append(song.getSha256()).append('\'');
+
+					List<SongInformation> subInfos = Validatable.removeInvalidElements(qr
+							.query("SELECT * FROM information WHERE sha256 IN (" + str + ")", songhandler));
+					infos.addAll(subInfos);
+					str.setLength(0);
 				}
 			}
-
-			List<SongInformation> infos = Validatable.removeInvalidElements(qr
-					.query("SELECT * FROM information WHERE sha256 IN (" + str.toString() + ")", songhandler));
-			for(SongData song : songs) {
-				for(SongInformation info : infos) {
-					if(info.getSha256().equals(song.getSha256())) {
+			for (SongData song : songs) {
+				for (SongInformation info : infos) {
+					if (info.getSha256().equals(song.getSha256())) {
 						song.setInformation(info);
 						break;
 					}
