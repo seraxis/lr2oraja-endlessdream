@@ -26,6 +26,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 	private final ResultSetHandler<List<PlayerInformation>> infoHandler = new BeanListHandler<PlayerInformation>(PlayerInformation.class);
 	private final ResultSetHandler<List<ScoreData>> scoreHandler = new BeanListHandler<ScoreData>(ScoreData.class);
 	private final ResultSetHandler<List<PlayerData>> playerHandler = new BeanListHandler<PlayerData>(PlayerData.class);
+	private static final int LOAD_CHUNK_SIZE = 1000;
 
 	public ScoreDatabaseAccessor(String path) throws ClassNotFoundException {
 		super(new Table("info", 
@@ -157,17 +158,27 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 	
 	private void getScoreDatas(ScoreDataCollector collector, SongData[] songs, int mode, StringBuilder str, boolean hasln) {
 		try {
-			for (SongData song : songs) {
-				if((hasln && song.hasUndefinedLongNote()) || (!hasln && !song.hasUndefinedLongNote())) {
-					if (str.length() > 0) {
-						str.append(',');
+			int songLength = songs.length;
+			int chunkLength = (songLength + LOAD_CHUNK_SIZE - 1) / LOAD_CHUNK_SIZE;
+			List<ScoreData> scores = new ArrayList<>();
+			for (int i = 0; i < chunkLength;++i) {
+				// [i * CHUNK_SIZE, min(length, (i + 1) * CHUNK_SIZE)
+				final int L = i * LOAD_CHUNK_SIZE, R = Math.min(songLength, (i + 1) * LOAD_CHUNK_SIZE);
+				for (int j = L; j < R;++j) {
+					SongData song = songs[j];
+					if((hasln && song.hasUndefinedLongNote()) || (!hasln && !song.hasUndefinedLongNote())) {
+						if (str.length() > 0) {
+							str.append(',');
+						}
+						str.append('\'').append(song.getSha256()).append('\'');
 					}
-					str.append('\'').append(song.getSha256()).append('\'');					
 				}
-			}
 
-			List<ScoreData> scores = Validatable.removeInvalidElements(qr
-					.query("SELECT * FROM score WHERE sha256 IN (" + str.toString() + ") AND mode = " + mode, scoreHandler));
+				List<ScoreData> subScores = Validatable.removeInvalidElements(qr
+						.query("SELECT * FROM score WHERE sha256 IN (" + str.toString() + ") AND mode = " + mode, scoreHandler));
+				str.setLength(0);
+				scores.addAll(subScores);
+			}
 			for(SongData song : songs) {
 				if((hasln && song.hasUndefinedLongNote()) || (!hasln && !song.hasUndefinedLongNote())) {
 					boolean b = true;
@@ -179,8 +190,8 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 						}
 					}
 					if(b) {
-						collector.collect(song, null);					
-					}					
+						collector.collect(song, null);
+					}
 				}
 			}
 		} catch (Exception e) {
