@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.external.ScoreDataImporter;
 
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -242,6 +243,15 @@ public class PlayConfigurationView implements Initializable {
 	private TextField ipfsurl;
 
 	@FXML
+	private CheckBox enableHttp;
+	@FXML
+	private ComboBox<String> httpDownloadSource;
+	@FXML
+	private TextField defaultDownloadURL;
+	@FXML
+	private TextField overrideDownloadURL;
+
+	@FXML
 	private VBox skin;
 	@FXML
 	private VideoConfigurationView videoController;
@@ -322,6 +332,7 @@ public class PlayConfigurationView implements Initializable {
 		initComboBox(autosavereplay3, autosaves);
 		initComboBox(autosavereplay4, autosaves);
 
+		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCES.keySet());
 		notesdisplaytiming.setValueFactoryValues(PlayerConfig.JUDGETIMING_MIN, PlayerConfig.JUDGETIMING_MAX, 0, 1);
 		resourceController.init(this);
 
@@ -386,6 +397,11 @@ public class PlayConfigurationView implements Initializable {
 
 		enableIpfs.setSelected(config.isEnableIpfs());
 		ipfsurl.setText(config.getIpfsUrl());
+
+		enableHttp.setSelected(config.isEnableHttp());
+		httpDownloadSource.setValue(config.getDownloadSource());
+		defaultDownloadURL.setText(config.getDefaultDownloadURL());
+		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
@@ -526,6 +542,10 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setEnableIpfs(enableIpfs.isSelected());
 		config.setIpfsUrl(ipfsurl.getText());
+
+		config.setEnableHttp(enableHttp.isSelected());
+		config.setDownloadSource(httpDownloadSource.getValue());
+		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
 		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());

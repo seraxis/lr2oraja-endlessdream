@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
@@ -159,6 +160,12 @@ public class Config implements Validatable {
 
 	private boolean enableIpfs = true;
 	private String ipfsurl = "https://gateway.ipfs.io/";
+
+	private boolean enableHttp = true;
+	private String downloadSource = HttpDownloadProcessor.getDefaultDownloadSource().getName();
+	// Only for passing parameter, not used as a config option
+	private String defaultDownloadURL = HttpDownloadProcessor.getDefaultDownloadSource().getDefaultURL();
+	private String overrideDownloadURL = "";
 
 	private int irSendCount = 5;
 
@@ -516,6 +523,38 @@ public class Config implements Validatable {
 		this.messagefontpath = messagefontpath;
 	}
 
+	public boolean isEnableHttp() {
+		return enableHttp;
+	}
+
+	public void setEnableHttp(boolean enableHttp) {
+		this.enableHttp = enableHttp;
+	}
+
+	public String getDownloadSource() {
+		return downloadSource;
+	}
+
+	public void setDownloadSource(String downloadSource) {
+		this.downloadSource = downloadSource;
+	}
+
+	public String getDefaultDownloadURL() {
+		return defaultDownloadURL;
+	}
+
+	public void setDefaultDownloadURL(String defaultDownloadURL) {
+		this.defaultDownloadURL = defaultDownloadURL;
+	}
+
+	public String getOverrideDownloadURL() {
+		return overrideDownloadURL;
+	}
+
+	public void setOverrideDownloadURL(String overrideDownloadURL) {
+		this.overrideDownloadURL = overrideDownloadURL;
+	}
+
 	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
@@ -622,7 +661,7 @@ public class Config implements Validatable {
 		this.useResolution = useResolution;
 	}
 
-	public enum DisplayMode {
+    public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
 	}
 
