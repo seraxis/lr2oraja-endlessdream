@@ -1,6 +1,7 @@
 package bms.player.beatoraja.select;
 
 import bms.player.beatoraja.Resolution;
+import bms.player.beatoraja.SpriteBatchHelper;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.SearchWordBar;
 
@@ -47,7 +48,7 @@ public class SearchTextField extends Stage {
 	private Group screen;
 
 	public SearchTextField(MusicSelector selector, Resolution resolution) {
-		super(new FitViewport(resolution.width, resolution.height));
+		super(new FitViewport(resolution.width, resolution.height), SpriteBatchHelper.createSpriteBatch());
 
 		final Rectangle r = ((MusicSelectSkin) selector.getSkin()).getSearchTextRegion();
 

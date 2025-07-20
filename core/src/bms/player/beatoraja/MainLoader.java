@@ -129,7 +129,16 @@ public class MainLoader extends Application {
 			MainController main = new MainController(bmsPath, config, player, playerMode, songUpdated);
 
 			Lwjgl3ApplicationConfiguration gdxConfig = new Lwjgl3ApplicationConfiguration();
-
+			// This line is provided for macos-fix, the original issue is mac dropped the OpenGL full support,
+			// according to the document from libgdx, mac machine now only supports OpenGL 3.2 and needs to emulate GL30
+			// to make libgdx work
+			// However, this line may break some old machine which has no OpenGL 3.2 support. It seems that libgdx defaults
+			// to emulate GL20, this version gap might be danger. Therefore, this line is wrapped as macos only
+			// NOTE: SpriteBatchHelper is also macos only, it degenerates to beatoraja's default behaviour when executing
+			// on other platforms
+			if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+				gdxConfig.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
+			}
 			final int w = config.getResolution().width;
 			final int h = config.getResolution().height;
 			if (config.getDisplaymode() == Config.DisplayMode.FULLSCREEN) {

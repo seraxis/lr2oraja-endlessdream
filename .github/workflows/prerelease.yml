@@ -40,6 +40,10 @@ jobs:
       run: ./gradlew -Dplatform=windows shadowJar
     - name: Execute Linux Gradle build
       run: ./gradlew -Dplatform=linux shadowJar
+    - name: Execute Macos(x86) Gradle build
+      run: ./gradlew -Dplatform=macos shadowJar
+    - name: Execute Macos(arm) Gradle build
+      run: ./gradlew -Dplatform=macos -Darch=aarch64 shadowJar
 
     - name: Make Github release with build artifacts
       uses: "marvinpinto/action-automatic-releases@latest"
