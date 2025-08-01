@@ -18,14 +18,11 @@ import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
 public class DownloadTaskMenu {
     public static final int MAXIMUM_TASK_NAME_LENGTH = 10;
     private static final AtomicReference<List<DownloadTask>> downloadTaskSnapshot = new AtomicReference<>(new ArrayList<>());
-    // A reference to HttpDownloadProcessor, initialized by initialize() function
-    private static HttpDownloadProcessor httpDownloadProcessor;
 
     /**
      * @implNote Static in java is infectious, I cannot think of a better idea
      */
     public static void initialize(HttpDownloadProcessor httpDownloadProcessor) {
-        DownloadTaskMenu.httpDownloadProcessor = httpDownloadProcessor;
         // The reason use a thread for updating snapshot of download tasks is ImGui's render
         // function (show, in this class) is based on frame. I think we have to separate the
         // state management and render part (Or maybe not? Still a question)
