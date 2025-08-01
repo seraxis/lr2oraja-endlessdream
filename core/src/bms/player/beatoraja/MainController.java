@@ -167,13 +167,12 @@ public class MainController {
 			}
 		}
 		if (config.isEnableHttp()) {
-			// TODO: oh...a breaking change...
-			Path wrigglePath = Paths.get("wriggle_download").toAbsolutePath();
-			if (!wrigglePath.toFile().exists())
-				wrigglePath.toFile().mkdirs();
+			Path httpdlPath = Paths.get("http_download").toAbsolutePath();
+			if (!httpdlPath.toFile().exists())
+				httpdlPath.toFile().mkdirs();
 			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
-			if (wrigglePath.toFile().exists() && !roots.contains(wrigglePath.toString())) {
-				roots.add(wrigglePath.toString());
+			if (httpdlPath.toFile().exists() && !roots.contains(httpdlPath.toString())) {
+				roots.add(httpdlPath.toString());
 				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
 			}
 		}
