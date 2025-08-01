@@ -8,6 +8,7 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +73,7 @@ public class HttpDownloadProcessor {
     }
 
     /**
-     * @return Current snapshot of all tasks;
+     * @return Current snapshot of all tasks
      */
     public List<DownloadTask> getAllTaskSnapshot() {
         synchronized (tasks) {
@@ -188,6 +189,13 @@ public class HttpDownloadProcessor {
                 // and update the download directory manually
                 pushMessage("Successfully downloaded & extracted. Trying to rebuild download directory");
                 main.updateSong(DOWNLOAD_DIRECTORY);
+                // If everything works well, trying to delete the downloaded archive
+                try {
+                    Files.delete(result);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    pushMessage("Failed deleting archive file automatically");
+                }
             }
         });
     }
