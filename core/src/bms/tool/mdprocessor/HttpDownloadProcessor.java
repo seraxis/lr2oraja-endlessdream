@@ -37,7 +37,7 @@ public class HttpDownloadProcessor {
     public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCES = new HashMap<>();
     public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
     // TODO: make this magic constants configurable? I think not very worthy though
-    public static final String DOWNLOAD_DIRECTORY = "wriggle_download";
+    public static final String DOWNLOAD_DIRECTORY = "http_download";
 
     static {
         // Wriggle
