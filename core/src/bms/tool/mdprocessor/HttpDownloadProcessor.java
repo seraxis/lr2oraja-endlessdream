@@ -162,9 +162,6 @@ public class HttpDownloadProcessor {
             // 1) Download file from remote http server
             try {
                 result = downloadFileFromURL(downloadTask, String.format("%s.7z", md5));
-            } catch (FileNotFoundException e) {
-                Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] returns 404 back", sourceName));
-                pushMessage(String.format("Cannot find specified song from %s", sourceName));
             } catch (Exception e) {
                 e.printStackTrace();
                 pushMessage(String.format("Failed downloading from %s due to %s", sourceName, e.getMessage()));
@@ -219,7 +216,7 @@ public class HttpDownloadProcessor {
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    throw new FileNotFoundException();
+                    throw new FileNotFoundException("Package not found at " + httpDownloadSource.getName());
                 }
                 throw new IllegalStateException("Unexpected http response code: " + responseCode);
             }
@@ -261,6 +258,7 @@ public class HttpDownloadProcessor {
             task.setDownloadSize(0);
             task.setContentLength(0);
             task.setErrorMessage(e.getMessage());
+            // All other unexpected exception are rethrown as RuntimeException
             throw new RuntimeException(e.getMessage());
         } finally {
             try {
