@@ -65,7 +65,7 @@ public final class PlayerResource {
 	 * ターゲットスコア
 	 */
 	private ScoreData tscore;
-	
+
 	private RankingData ranking;
 	/**
 	 * スコア更新するかどうか
@@ -127,6 +127,8 @@ public final class PlayerResource {
 	private String tablename = "";
 	private String tablelevel = "";
 	private String tablefull;
+	private boolean freqOn;
+	private String freqString;
 
 	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig) {
 		this.config = config;
@@ -562,5 +564,21 @@ public final class PlayerResource {
 
 	public void setOriginalMode(bms.model.Mode orgmode) {
 		this.orgmode = orgmode;
+	}
+
+	public boolean isFreqOn() {
+		return freqOn;
+	}
+
+	public void setFreqOn(boolean freqOn) {
+		this.freqOn = freqOn;
+	}
+
+	public String getFreqString() {
+		return freqString;
+	}
+
+	public void setFreqString(String freqString) {
+		this.freqString = freqString;
 	}
 }
