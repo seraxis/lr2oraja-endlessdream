@@ -82,8 +82,8 @@ public class StringPropertyFactory {
 				return state.resource.getCoursetitle();						
 			}
 			final SongData song = state.resource.getSongdata();
-			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && FreqTrainerMenu.isFreqTrainerEnabled()) {
-				return FreqTrainerMenu.getFreqString() + " " + song.getTitle();
+			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && state.resource.isFreqOn()) {
+				return state.resource.getFreqString() + " " + song.getTitle();
 			}
 			return song != null ? song.getTitle() : "";
 		}),
@@ -98,8 +98,8 @@ public class StringPropertyFactory {
 				return state.resource.getCoursetitle();
 			}
 			final SongData song = state.resource.getSongdata();
-			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && FreqTrainerMenu.isFreqTrainerEnabled()) {
-				return FreqTrainerMenu.getFreqString() + " " + song.getFullTitle();
+			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && state.resource.isFreqOn()) {
+				return state.resource.getFreqString() + " " + song.getFullTitle();
 			}
 			return song != null ? song.getFullTitle() : "";
 		}),

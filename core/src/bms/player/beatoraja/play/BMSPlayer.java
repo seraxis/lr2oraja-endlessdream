@@ -202,6 +202,8 @@ public class BMSPlayer extends MainState {
 		// 通常プレイの場合は最後のノーツ、オートプレイの場合はBG/BGAを含めた最後のノーツ
 		playtime = (autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY ? model.getLastTime() : model.getLastNoteTime()) + TIME_MARGIN;
 
+		resource.setFreqOn(false);
+		resource.setFreqString("");
 		if(FreqTrainerMenu.isFreqTrainerEnabled() && autoplay.mode == BMSPlayerMode.Mode.PLAY && resource.getCourseBMSModels() == null) {
 			int freq = FreqTrainerMenu.getFreq();
 
@@ -214,6 +216,10 @@ public class BMSPlayer extends MainState {
 			if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 				main.getAudioProcessor().setGlobalPitch(freq / 100f);
 			}
+
+			// "Persist" some states in resource
+			resource.setFreqOn(true);
+			resource.setFreqString(FreqTrainerMenu.getFreqString());
 		}
 		if (autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY) {
 			if (config.isBpmguide() && (model.getMinBPM() < model.getMaxBPM())) {
