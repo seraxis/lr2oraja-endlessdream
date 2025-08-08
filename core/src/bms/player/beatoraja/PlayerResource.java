@@ -1,15 +1,5 @@
 package bms.player.beatoraja;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import com.badlogic.gdx.utils.*;
-
 import bms.model.*;
 import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.TableData.TableFolder;
@@ -19,6 +9,16 @@ import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.play.bga.BGAProcessor;
 import bms.player.beatoraja.song.SongData;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * プレイヤーのコンポーネント間でデータをやり取りするためのクラス
@@ -127,6 +127,8 @@ public final class PlayerResource {
 	private String tablename = "";
 	private String tablelevel = "";
 	private String tablefull;
+	private boolean freqOn;
+	private String freqString;
 	// Full list of difficult tables that contains current song
 	private List<String> reverseLookup = new ArrayList<>();
 
@@ -594,5 +596,21 @@ public final class PlayerResource {
 
 	public void setOriginalMode(bms.model.Mode orgmode) {
 		this.orgmode = orgmode;
+	}
+
+	public boolean isFreqOn() {
+		return freqOn;
+	}
+
+	public void setFreqOn(boolean freqOn) {
+		this.freqOn = freqOn;
+	}
+
+	public String getFreqString() {
+		return freqString;
+	}
+
+	public void setFreqString(String freqString) {
+		this.freqString = freqString;
 	}
 }
