@@ -38,6 +38,8 @@ public class ImGuiRenderer {
 
     private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
 
+    private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
+
 
     public static void init() {
         Lwjgl3Graphics lwjglGraphics = ((Lwjgl3Graphics) Gdx.graphics);
@@ -94,11 +96,16 @@ public class ImGuiRenderer {
 
             ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
+            ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
+
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);
             }
             if (SHOW_RANDOM_TRAINER.get()) {
                 RandomTrainerMenu.show(SHOW_RANDOM_TRAINER);
+            }
+            if (SHOW_JUDGE_TRAINER.get()) {
+                JudgeTrainerMenu.show(SHOW_JUDGE_TRAINER);
             }
 
 

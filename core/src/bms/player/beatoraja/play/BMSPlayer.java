@@ -6,9 +6,11 @@ import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.JudgeTrainer;
 import bms.player.beatoraja.modmenu.RandomTrainer;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
@@ -227,6 +229,21 @@ public class BMSPlayer extends MainState {
 					|| config.getScratchJudgeWindowRatePerfectGreat() > 100 || config.getScratchJudgeWindowRateGreat() > 100 || config.getScratchJudgeWindowRateGood() > 100)) {
 				assist = Math.max(assist, 2);
 				score = false;
+			}
+
+			// Override judge rank
+			if (JudgeTrainer.isActive()) {
+				// This could work since beatoraja would firstly convert the judge rank that is not defined as
+				// the window rate to it and directly mark the model as BMSON type (see BMSPlayerRule::validate)
+				int overridingJudgeWindowRate = JudgeTrainer.getJudgeWindowRate(model.getMode());
+				int originalJudgeWindowRate = model.getJudgerank();
+				Logger.getGlobal().info(String.format("Overriding original judge window from %d to %d", originalJudgeWindowRate, overridingJudgeWindowRate));
+				if (originalJudgeWindowRate < overridingJudgeWindowRate) {
+					// Like expand judge treatment above if the original judge window is stricter than customized one
+					assist = Math.max(assist, 2);
+					score = false;
+				}
+				model.setJudgerank(overridingJudgeWindowRate);
 			}
 
 			Array<PatternModifier> mods = new Array<PatternModifier>();
