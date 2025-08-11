@@ -38,7 +38,7 @@ abstract class PlatformFilter : TransformAction<PlatformFilter.Parameters> {
         // Remove all platform natives for platforms other than the current one
         // hack for macos-arm64
         val lwjglSuffixName = when (parameters.platformString) {
-            "macos" -> if (parameters.archString == "aarch64") "macos-arm64" else "macos-x86_64"
+            "macos" -> if (parameters.archString == "aarch64") "macos-arm64" else "macos"
             else -> parameters.platformString
         }
         if (fileName.contains("lwjgl") && fileName.contains("natives")) {
