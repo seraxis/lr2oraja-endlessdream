@@ -60,7 +60,12 @@ public class ImGuiRenderer {
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesJapanese());
-        rangesBuilder.addChar('★');
+        // TODO: After ImGUI 1.92, manual glyph setup is no longer required. We can delete this garbage line after
+        // ImGui-java has upgraded to 1.92 or above
+        // This line is provided for "reverse difficult table lookup" feature. Because some difficult tables' symbol
+        // is not baked in above glyph ranges, this line manually adds them into the ranges. Otherwise, the symbol
+        // would be rendered as a '?' in ImGUI window.
+        rangesBuilder.addText("☆★▽▼δ白黒◆◎縦≡田⇒●∽");
 
         // Font config for additional fonts
         // This is a natively allocated struct so don't forget to call destroy after atlas is built
