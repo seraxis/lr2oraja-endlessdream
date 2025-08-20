@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.sqlite)
     implementation(libs.commons.compress)
     implementation(libs.commons.dbutils)
+    implementation(libs.xz)
 
     implementation(libs.javadiscord)
     implementation(libs.twitter4j)
