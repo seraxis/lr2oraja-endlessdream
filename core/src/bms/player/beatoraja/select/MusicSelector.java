@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
@@ -25,6 +26,7 @@ import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
+import imgui.ImGui;
 
 /**
  * 選曲部分。 楽曲一覧とカーソルが指す楽曲のステータスを表示し、選択した楽曲を 曲決定部分に渡す。
@@ -433,7 +435,7 @@ public final class MusicSelector extends MainState {
 			playedsong = song;
 			main.changeState(MainStateType.DECIDE);
 		} else {
-			main.getMessageRenderer().addMessage("Failed to loading BMS : Song not found, or Song has error", 1200, Color.RED, 1);
+			ImGuiNotify.error("Failed to loading BMS : Song not found, or Song has error", 1200);
 		}
 	}
 	
@@ -445,7 +447,7 @@ public final class MusicSelector extends MainState {
 		}
 
 		if (!_readCourse(mode, gradeBar)) {
-			main.getMessageRenderer().addMessage("Failed to loading Course : Some of songs not found", 1200, Color.RED, 1);
+			ImGuiNotify.error("Failed to loading Course : Some of songs not found", 1200);
 			Logger.getGlobal().info("段位の楽曲が揃っていません");
 		}
 	}
@@ -460,7 +462,7 @@ public final class MusicSelector extends MainState {
 		randomCourseBar.getCourseData().lotterySongDatas(main);
 		final GradeBar gradeBar = new GradeBar(randomCourseBar.getCourseData().createCourseData());
 		if (!gradeBar.existsAllSongs()) {
-			main.getMessageRenderer().addMessage("Failed to loading Random Course : Some of songs not found", 1200, Color.RED, 1);
+			ImGuiNotify.error("Failed to loading Random Course : Some of songs not found", 1200);
 			Logger.getGlobal().info("ランダムコースの楽曲が揃っていません");
 			return;
 		}
@@ -470,7 +472,7 @@ public final class MusicSelector extends MainState {
 			manager.updateBar();
 			manager.setSelected(gradeBar);
 		} else {
-			main.getMessageRenderer().addMessage("Failed to loading Random Course : Some of songs not found", 1200, Color.RED, 1);
+			ImGuiNotify.error("Failed to loading Random Course : Some of songs not found", 1200);
 			Logger.getGlobal().info("ランダムコースの楽曲が揃っていません");
 		}
 	}
