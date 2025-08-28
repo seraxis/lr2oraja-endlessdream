@@ -9,10 +9,8 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class SongManagerMenu {
@@ -49,6 +47,18 @@ public class SongManagerMenu {
                         ImGui.popID();
                     }
                     ImGui.endPopup();;
+                }
+            }
+
+            // TODO: Remove me!
+            if (ImGui.button("NOTIFY ME!!!")) {
+                Random random = new Random();
+                int x = random.nextInt(4);
+                switch (x) {
+                    case 0 -> ImGuiNotify.info("I've had these jeans since I was born");
+                    case 1 -> ImGuiNotify.error("And now they're ripped and now they're torn");
+                    case 2 -> ImGuiNotify.warning("And all my friends have skateboards");
+                    case 3 -> ImGuiNotify.success("I want a knife and a gun and things");
                 }
             }
         }
