@@ -4,6 +4,7 @@ import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.util.stream.*;
 
+import bms.player.beatoraja.arena.client.ArenaBar;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.MusicSelectKeyProperty.MusicSelectKey;
@@ -149,7 +150,7 @@ public final class BarRenderer {
 				Bar sd = manager.currentsongs[index];
 				ba.sd = sd;
 
-				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar) {
+				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar || sd instanceof ArenaBar) {
 					ba.value = 2;
 				} else if (sd instanceof GradeBar) {
 					ba.value = ((GradeBar) sd).existsAllSongs() ? 3 : 4;
