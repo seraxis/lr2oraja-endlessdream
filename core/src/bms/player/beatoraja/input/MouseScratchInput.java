@@ -4,11 +4,9 @@ import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.PlayModeConfig.MouseScratchConfig;
 import com.badlogic.gdx.Gdx;
 
-import java.util.Arrays;
-
 public class MouseScratchInput {
     private final BMSPlayerInputProcessor bmsPlayerInputProcessor;
-    private final KeyBoardInputProcesseor keyboardInputProcessor;
+    private final KeyBoardInputProcessor keyboardInputProcessor;
     
     private int[] keys;
     private int[] control;
@@ -46,7 +44,7 @@ public class MouseScratchInput {
      */
     private int mouseScratchDistance = 150;
 
-    public MouseScratchInput(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyBoardInputProcesseor keyboardInputProcessor, KeyboardConfig config) {
+    public MouseScratchInput(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyBoardInputProcessor keyboardInputProcessor, KeyboardConfig config) {
         this.bmsPlayerInputProcessor = bmsPlayerInputProcessor;
         this.keyboardInputProcessor = keyboardInputProcessor;
         this.setConfig(config);

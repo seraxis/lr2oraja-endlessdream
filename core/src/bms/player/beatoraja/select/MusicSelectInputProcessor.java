@@ -4,7 +4,7 @@ import bms.player.beatoraja.*;
 import bms.player.beatoraja.SystemSoundManager.SoundType;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyCommand;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
 import bms.player.beatoraja.select.MusicSelectKeyProperty.MusicSelectKey;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;

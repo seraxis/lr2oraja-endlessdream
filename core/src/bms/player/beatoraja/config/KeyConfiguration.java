@@ -7,8 +7,8 @@ import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.PlayModeConfig.MidiConfig;
 import bms.player.beatoraja.input.BMControllerInputProcessor;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcessor;
+import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
 import bms.player.beatoraja.input.MidiInputProcessor;
 import bms.player.beatoraja.skin.SkinHeader;
 import bms.player.beatoraja.skin.SkinType;
@@ -83,7 +83,7 @@ public class KeyConfiguration extends MainState {
 	private ShapeDrawer shape;
 
 	private BMSPlayerInputProcessor input;
-	private KeyBoardInputProcesseor keyboard;
+	private KeyBoardInputProcessor keyboard;
 	private BMControllerInputProcessor[] controllers;
 	private MidiInputProcessor midiinput;
 
@@ -436,7 +436,7 @@ public class KeyConfiguration extends MainState {
 		}
 	}
 
-	private void setMouseScratchKeyAssign(int index, KeyBoardInputProcesseor kbp) {
+	private void setMouseScratchKeyAssign(int index, KeyBoardInputProcessor kbp) {
 		resetKeyAssign(index);
 		int lastMouseScratch = kbp.getMouseScratchInput().getLastMouseScratch();
 		if (index >= 0) {

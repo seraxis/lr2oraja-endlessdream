@@ -14,7 +14,7 @@ import bms.model.BMSModel;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
 import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;

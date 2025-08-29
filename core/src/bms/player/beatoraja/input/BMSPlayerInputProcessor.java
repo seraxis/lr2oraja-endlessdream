@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import bms.player.beatoraja.PlayModeConfig.*;
 import bms.player.beatoraja.input.BMSPlayerInputDevice.Type;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
 
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.Controllers;
@@ -24,7 +24,7 @@ public class BMSPlayerInputProcessor {
 	
 	private boolean enable = true;
 
-	private KeyBoardInputProcesseor kbinput;
+	private KeyBoardInputProcessor kbinput;
 
 	private BMControllerInputProcessor[] bminput;
 
@@ -34,7 +34,7 @@ public class BMSPlayerInputProcessor {
 
 	public BMSPlayerInputProcessor(Config config, PlayerConfig player) {
 		Resolution resolution = config.getResolution();
-		kbinput = new KeyBoardInputProcesseor(this, player.getMode14().getKeyboardConfig(), resolution);
+		kbinput = new KeyBoardInputProcessor(this, player.getMode14().getKeyboardConfig(), resolution);
 		// Gdx.input.setInputProcessor(kbinput);
 		Controllers.preferredManager = "bms.player.beatoraja.controller.Lwjgl3ControllerManager";
 
@@ -391,8 +391,8 @@ public class BMSPlayerInputProcessor {
 	}
 
 	public boolean isActivated(KeyCommand key) {
-		final int MASK_CTRL = KeyBoardInputProcesseor.MASK_CTRL;
-		final int MASK_CTRL_SHIFT = KeyBoardInputProcesseor.MASK_CTRL|KeyBoardInputProcesseor.MASK_SHIFT;
+		final int MASK_CTRL = KeyBoardInputProcessor.MASK_CTRL;
+		final int MASK_CTRL_SHIFT = KeyBoardInputProcessor.MASK_CTRL| KeyBoardInputProcessor.MASK_SHIFT;
 
 		switch(key) {
 		case SHOW_FPS:
@@ -435,7 +435,7 @@ public class BMSPlayerInputProcessor {
 		this.selectPressed = selectPressed;
 	}
 
-	public KeyBoardInputProcesseor getKeyBoardInputProcesseor() {
+	public KeyBoardInputProcessor getKeyBoardInputProcesseor() {
 		return kbinput;
 	}
 

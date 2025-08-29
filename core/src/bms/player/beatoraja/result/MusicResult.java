@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.input.KeyCommand;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
@@ -23,7 +23,6 @@ import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
-import bms.player.beatoraja.song.SongData;
 
 /**
  * リザルト
