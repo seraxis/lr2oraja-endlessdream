@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
@@ -27,7 +26,6 @@ import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
-import imgui.ImGui;
 
 /**
  * 選曲部分。 楽曲一覧とカーソルが指す楽曲のステータスを表示し、選択した楽曲を 曲決定部分に渡す。
