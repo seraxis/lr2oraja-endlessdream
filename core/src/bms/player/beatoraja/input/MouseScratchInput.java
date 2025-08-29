@@ -4,8 +4,6 @@ import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.PlayModeConfig.MouseScratchConfig;
 import com.badlogic.gdx.Gdx;
 
-import java.util.Arrays;
-
 public class MouseScratchInput {
     private final BMSPlayerInputProcessor bmsPlayerInputProcessor;
     private final KeyBoardInputProcesseor keyboardInputProcessor;

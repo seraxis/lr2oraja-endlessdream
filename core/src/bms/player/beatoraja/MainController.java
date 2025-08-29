@@ -573,6 +573,7 @@ public class MainController {
 	private void updateStateReferences() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
+		ArenaMenu.setMusicSelector(selector);
 	}
 
 	private void triggerLnWarning() {
