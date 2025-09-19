@@ -39,6 +39,7 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
     private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
+    private static ImBoolean SHOW_SKIN_WIDGET_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
     private static ImBoolean SHOW_MISC_SETTING = new ImBoolean(false);
 
@@ -107,6 +108,7 @@ public class ImGuiRenderer {
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
             ImGui.checkbox("Show Song Manager Menu", SHOW_SONG_MANAGER);
             ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
+            ImGui.checkbox("Show Skin Widget Manager Menu", SHOW_SKIN_WIDGET_MANAGER);
             if (ImGui.checkbox("Show Performance Monitor", SHOW_PERFORMANCE_MONITOR) &&
                 SHOW_PERFORMANCE_MONITOR.get()) {
                 PerformanceMonitor.reloadEventTree();
@@ -128,6 +130,9 @@ public class ImGuiRenderer {
             // TODO: This menu should based on config. Should not be rendered if user doesn't flag the http download feature
             if (SHOW_DOWNLOAD_MENU.get()) {
                 DownloadTaskMenu.show(SHOW_DOWNLOAD_MENU);
+            }
+            if (SHOW_SKIN_WIDGET_MANAGER.get()) {
+                SkinWidgetManager.show(SHOW_SKIN_WIDGET_MANAGER);
             }
             if (SHOW_PERFORMANCE_MONITOR.get()) {
                 PerformanceMonitor.show(SHOW_PERFORMANCE_MONITOR);

@@ -137,9 +137,21 @@ public class Skin {
 				loop, timer, op);
 	}
 
+	public void setDestination(String name, SkinObject object, long time, float x, float y, float w, float h, int acc, int a,
+	                           int r, int g, int b, int blend, int filter, int angle, int center, int loop, TimerProperty timer, int[] op) {
+		object.setDestination(name, time, x * dw, y * dh, w * dw, h * dh, acc, a, r, g, b, blend, filter, angle, center,
+				loop, timer, op);
+	}
+
 	public void setDestination(SkinObject object, long time, float x, float y, float w, float h, int acc, int a,
 	                           int r, int g, int b, int blend, int filter, int angle, int center, int loop, TimerProperty timer, BooleanProperty draw) {
 		object.setDestination(time, x * dw, y * dh, w * dw, h * dh, acc, a, r, g, b, blend, filter, angle, center,
+				loop, timer, draw);
+	}
+
+	public void setDestination(String name, SkinObject object, long time, float x, float y, float w, float h, int acc, int a,
+	                           int r, int g, int b, int blend, int filter, int angle, int center, int loop, TimerProperty timer, BooleanProperty draw) {
+		object.setDestination(name, time, x * dw, y * dh, w * dw, h * dh, acc, a, r, g, b, blend, filter, angle, center,
 				loop, timer, draw);
 	}
 

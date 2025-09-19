@@ -431,10 +431,10 @@ public class JSONSkinLoader extends SkinLoader {
 				a.b = (a.b == Integer.MIN_VALUE ? prev.b : a.b);
 			}
 			if(dst.draw != null) {
-				skin.setDestination(obj, a.time, a.x, a.y, a.w, a.h, a.acc, a.a, a.r, a.g, a.b, dst.blend, dst.filter,
+				skin.setDestination(dst.id, obj, a.time, a.x, a.y, a.w, a.h, a.acc, a.a, a.r, a.g, a.b, dst.blend, dst.filter,
 						a.angle, dst.center, dst.loop, dst.timer, dst.draw);
 			} else {
-				skin.setDestination(obj, a.time, a.x, a.y, a.w, a.h, a.acc, a.a, a.r, a.g, a.b, dst.blend, dst.filter,
+				skin.setDestination(dst.id, obj, a.time, a.x, a.y, a.w, a.h, a.acc, a.a, a.r, a.g, a.b, dst.blend, dst.filter,
 						a.angle, dst.center, dst.loop, dst.timer, dst.op);
 			}
 			if (dst.mouseRect != null) {

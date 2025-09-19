@@ -380,6 +380,7 @@ public class MainController {
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
+		SkinWidgetManager.setMainController(this);
 		MiscSettingMenu.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
