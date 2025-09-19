@@ -5,16 +5,13 @@ import bms.player.beatoraja.MainLoader;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.Resolution;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
-import javafx.util.Pair;
 
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class VideoConfigurationView implements Initializable {
@@ -35,22 +32,17 @@ public class VideoConfigurationView implements Initializable {
 	@FXML
 	private Spinner<Integer> missLayerTime;
 
-	@FXML
-	private ComboBox<String> monitor;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 		updateResolutions();
 
 		displayMode.getItems().setAll(Config.DisplayMode.values());
-		monitor.getItems().setAll(Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors()).map(monitor -> monitor.name).toList());
     }
 
     public void update(Config config) {
 		displayMode.setValue(config.getDisplaymode());
 		resolution.setValue(config.getResolution());
 		vSync.setSelected(config.isVsync());
-		monitor.setValue(config.getMonitorName());
 		bgaOp.getSelectionModel().select(config.getBga());
 		bgaExpand.getSelectionModel().select(config.getBgaExpand());
 		maxFps.getValueFactory().setValue(config.getMaxFramePerSecond());
@@ -64,7 +56,6 @@ public class VideoConfigurationView implements Initializable {
 		config.setResolution(resolution.getValue());
 		config.setDisplaymode(displayMode.getValue());
 		config.setVsync(vSync.isSelected());
-		config.setMonitorName(monitor.getValue());
 		config.setBga(bgaOp.getSelectionModel().getSelectedIndex());
 		config.setBgaExpand(bgaExpand.getSelectionModel().getSelectedIndex());
 		config.setMaxFramePerSecond(maxFps.getValue());

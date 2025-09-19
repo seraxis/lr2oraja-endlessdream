@@ -171,7 +171,6 @@ public class Config implements Validatable {
 
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
-	private String monitorName = "";
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
@@ -556,14 +555,6 @@ public class Config implements Validatable {
 		this.overrideDownloadURL = overrideDownloadURL;
 	}
 
-	public String getMonitorName() {
-		return monitorName;
-	}
-
-	public void setMonitorName(String monitorName) {
-		this.monitorName = monitorName;
-	}
-
 	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
@@ -670,7 +661,7 @@ public class Config implements Validatable {
 		this.useResolution = useResolution;
 	}
 
-	public enum DisplayMode {
+    public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
 	}
 
