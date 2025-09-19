@@ -6,8 +6,11 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
+import bms.player.beatoraja.modmenu.DownloadTaskMenu;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import bms.player.beatoraja.modmenu.SongManagerMenu;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -117,7 +120,8 @@ public class MainController {
 	private Thread screenshot;
 
 	private MusicDownloadProcessor download;
-	
+	private HttpDownloadProcessor httpDownloadProcessor;
+
 	private StreamController streamController;
 
 	public static final int offsetCount = SkinProperty.OFFSET_MAX + 1;
@@ -159,6 +163,16 @@ public class MainController {
 			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
 			if (ipfspath.toFile().exists() && !roots.contains(ipfspath.toString())) {
 				roots.add(ipfspath.toString());
+				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
+			}
+		}
+		if (config.isEnableHttp()) {
+			Path httpdlPath = Paths.get("http_download").toAbsolutePath();
+			if (!httpdlPath.toFile().exists())
+				httpdlPath.toFile().mkdirs();
+			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
+			if (httpdlPath.toFile().exists() && !roots.contains(httpdlPath.toString())) {
+				roots.add(httpdlPath.toString());
 				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
 			}
 		}
@@ -424,6 +438,12 @@ public class MainController {
 				return result;
 			});
 			download.start(null);
+		}
+
+		if (config.isEnableHttp()) {
+			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
+			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
+			DownloadTaskMenu.initialize(httpDownloadProcessor);
 		}
 
 		if(ir.length > 0) {
@@ -820,6 +840,14 @@ public class MainController {
 
 	public void setMicroTimer(int id, long microtime) {
 		timer.setMicroTimer(id, microtime);
+	}
+
+	public HttpDownloadProcessor getHttpDownloadProcessor() {
+		return httpDownloadProcessor;
+	}
+
+	public void setHttpDownloadProcessor(HttpDownloadProcessor httpDownloadProcessor) {
+		this.httpDownloadProcessor = httpDownloadProcessor;
 	}
 
 	public void switchTimer(int id, boolean on) {

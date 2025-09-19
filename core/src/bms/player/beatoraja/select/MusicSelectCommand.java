@@ -126,6 +126,20 @@ public enum MusicSelectCommand {
 
 		}
 	}),
+	DOWNLOAD_HTTP(selector -> {
+		Bar current = selector.getBarManager().getSelected();
+		if (current instanceof SongBar) {
+			final SongData song = ((SongBar) current).getSongData();
+			if (song == null) {
+				Logger.getGlobal().info("Not a valid song bar? Skipped...");
+				return ;
+			}
+			Logger.getGlobal().info("Missing song md5: " + song.getMd5());
+			if (song.getMd5() != null && !song.getMd5().isEmpty()) {
+				selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5(), song.getTitle());
+			}
+		}
+	}),
 	/**
 	 * 同一フォルダにある譜面を全て表示する．コースの場合は構成譜面を全て表示する
 	 */

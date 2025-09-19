@@ -404,6 +404,17 @@
                            <TextField fx:id="ipfsurl" prefHeight="25.0" prefWidth="200.0" />
                         </children>
                      </HBox>
+                    <CheckBox fx:id="enableHttp" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_HTTP" />
+                    <ComboBox fx:id="httpDownloadSource" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <GridPane hgap="10" vgap="5">
+                        <children>
+                            <Label text="Default Http Server URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <TextField fx:id="defaultDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            <Label text="Override Http Server URL" prefHeight="25.0" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                            <TextField fx:id="overrideDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        </children>
+                    </GridPane>
+
                <VBox prefHeight="150.0" prefWidth="100.0" visible="false">
                   <children>
                      <HBox prefHeight="31.0" prefWidth="780.0">
