@@ -3,7 +3,9 @@
 <hr>
 
 <div align="center" style="line-height: 1;">
+
 [![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns)](https://discord.gg/HutCHCZHns)
+
 </div>
 
 Endless Dream is a community fork and drop-in replacement for [beatoraja](https://github.com/exch-bms2/beatoraja) that integrates quality of life patches and new features not present in the upstream version of the game.
