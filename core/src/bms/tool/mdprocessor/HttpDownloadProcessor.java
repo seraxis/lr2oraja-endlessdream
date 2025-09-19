@@ -44,8 +44,8 @@ public class HttpDownloadProcessor {
         HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
         DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
         // Konmai
-        HttpDownloadSourceMeta konmaiDownloadSourceMeta = KonmaiDownloadSource.META;
-        DOWNLOAD_SOURCES.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
+//        HttpDownloadSourceMeta konmaiDownloadSourceMeta = KonmaiDownloadSource.META;
+//        DOWNLOAD_SOURCES.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
     }
 
     // id => task
