@@ -451,13 +451,16 @@ public class MusicResult extends AbstractResult {
 			resource.getScoreData().setClear(NoPlay.id);
 		}
 
+		if (resource.getPlayerConfig().getPlayConfig(Mode.BEAT_7K).getPlayconfig().isEnableConstant()) {
+			resource.getScoreData().setClear(AssistEasy.id);
+		}
+
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !(isFreqTrainerEnabled() && isFreqNegative())) {
 			main.getPlayDataAccessor().writeScoreData(resource.getScoreData(), resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), resource.isUpdateScore());
 		} else {
 			Logger.getGlobal().info("プレイモードが" + resource.getPlayMode().mode.name() + "のため、スコア登録はされません");
 		}
-
 	}
 
 	public int getJudgeCount(int judge, boolean fast) {
