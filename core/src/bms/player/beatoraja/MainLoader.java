@@ -188,9 +188,6 @@ public class MainLoader extends Application {
             } else {
                 if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
                     gdxConfig.setDecorated(false);
-					int posX = targetMonitor.virtualX;
-					int posY = targetMonitor.virtualY;
-					gdxConfig.setWindowPosition(posX, posY);
                     //System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
                 } else {
 					gdxConfig.setDecorated(true);
@@ -198,6 +195,11 @@ public class MainLoader extends Application {
                 gdxConfig.setWindowedMode(w, h);
                 if (targetMonitor != null) {
                     Graphics.DisplayMode d = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
+					if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
+						int posX = targetMonitor.virtualX;
+						int posY = targetMonitor.virtualY;
+						gdxConfig.setWindowPosition(posX, posY);
+					}
 					gdxDisplayMode = d;
                 } else {
 					gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
