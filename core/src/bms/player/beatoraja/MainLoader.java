@@ -147,7 +147,7 @@ public class MainLoader extends Application {
 			Graphics.DisplayMode gdxDisplayMode;
             if (targetMonitorName != null && !targetMonitorName.isEmpty()) {
                 Optional<Graphics.Monitor> optMonitor = Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors())
-                        .filter(monitor -> monitor.name.equals(targetMonitorName))
+                        .filter(monitor -> String.format("%s [%s, %s]", monitor.name, Integer.toString(monitor.virtualX), Integer.toString(monitor.virtualY)).equals(targetMonitorName))
                         .findAny();
                 if (optMonitor.isPresent()) {
                     targetMonitor = optMonitor.get();
@@ -188,14 +188,16 @@ public class MainLoader extends Application {
             } else {
                 if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
                     gdxConfig.setDecorated(false);
+					int posX = targetMonitor.virtualX;
+					int posY = targetMonitor.virtualY;
+					gdxConfig.setWindowPosition(posX, posY);
                     //System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
-                }
+                } else {
+					gdxConfig.setDecorated(true);
+				}
                 gdxConfig.setWindowedMode(w, h);
                 if (targetMonitor != null) {
                     Graphics.DisplayMode d = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
-                    int posX = targetMonitor.virtualX;
-                    int posY = targetMonitor.virtualY;
-                    gdxConfig.setWindowPosition(posX, posY);
 					gdxDisplayMode = d;
                 } else {
 					gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();

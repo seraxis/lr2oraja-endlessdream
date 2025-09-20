@@ -43,7 +43,7 @@ public class VideoConfigurationView implements Initializable {
 		updateResolutions();
 
 		displayMode.getItems().setAll(Config.DisplayMode.values());
-		monitor.getItems().setAll(Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors()).map(monitor -> monitor.name).toList());
+		monitor.getItems().setAll(Arrays.stream(Lwjgl3ApplicationConfiguration.getMonitors()).map(monitor -> String.format("%s [%s, %s]", monitor.name, Integer.toString(monitor.virtualX), Integer.toString(monitor.virtualY))).toList());
     }
 
     public void update(Config config) {
