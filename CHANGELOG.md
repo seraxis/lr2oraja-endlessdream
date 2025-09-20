@@ -17,7 +17,7 @@ Also run the two find-and-replace regexes below for nice formatting:
 
 To quickly annotate commit hashes, append the full hash in parantheses to each line and then run
 this find-and-replace regex (VSCode flavor):
-- Find: [$1](https://github.com/seraxis/lr2oraja-endlessdream/commit/$1$2)
+- Find: (?<!commit/)([0-9a-f]{7})([0-9a-f]{33})
 - Replace: [$1](https://github.com/seraxis/lr2oraja-endlessdream/commit/$1$2)
 
 To quickly make GitHub usernames into clickable links, prepend each username with @ and then run
@@ -39,6 +39,7 @@ New features:
 - Added support for Intel and Apple Silicon based Macs ([112c5ce](https://github.com/seraxis/lr2oraja-endlessdream/commit/112c5ce0ce7fd3d7942afef572486b40d142b35f))
 - Added chart judge rank override feature in the mod menu ([a28dc06](https://github.com/seraxis/lr2oraja-endlessdream/commit/a28dc0677578cd4364eb831a232b703a496e51cf))
 - Added reverse table lookup for charts ([5e59bcc](https://github.com/seraxis/lr2oraja-endlessdream/commit/5e59bcc0594a07b2800af3f49b36be3dbe649f8e))
+- Added fullscreen and borderless monitor selection in the launcher ([6d5b85f](https://github.com/seraxis/lr2oraja-endlessdream/commit/6d5b85f7e835f707d43f3dc0b1822846aefda032))
 - Updated to upstream beatoraja version 0.8.8 ([36064c8](https://github.com/seraxis/lr2oraja-endlessdream/commit/36064c84296f1c956e7c003f9ff73bf78304aa52))
   - Switch from Java 8 to Java 17
   - Adds CONSTANT function (in Endless Dream this will produce Assist Clears)
