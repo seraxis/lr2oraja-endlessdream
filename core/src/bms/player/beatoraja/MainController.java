@@ -55,7 +55,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
  */
 public class MainController {
 
-	private static final String VERSION = "LR2oraja Endless Dream 0.3.0";
+	private static final String VERSION = "LR2oraja Endless Dream pre-release 0.3.1";
 
 	public static final boolean debug = false;
 	public static final int debugTextXpos = 10;
