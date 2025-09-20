@@ -1,6 +1,7 @@
 package bms.player.beatoraja;
 
 import bms.player.beatoraja.SkinConfig.Offset;
+import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
@@ -128,6 +129,7 @@ public abstract class MainState {
 				offset.r = e.value.r;
 				offset.a = e.value.a;
 			}
+			SkinWidgetManager.skinRef.set(skin);
 		}
 	}
 
