@@ -1,27 +1,32 @@
 package bms.player.beatoraja.config;
 
+import bms.model.Mode;
+import bms.player.beatoraja.*;
+import bms.player.beatoraja.PlayModeConfig.ControllerConfig;
+import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
+import bms.player.beatoraja.PlayModeConfig.MidiConfig;
+import bms.player.beatoraja.input.BMControllerInputProcessor;
+import bms.player.beatoraja.input.BMSPlayerInputProcessor;
+import bms.player.beatoraja.input.KeyBoardInputProcesseor;
+import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.input.MidiInputProcessor;
 import bms.player.beatoraja.skin.SkinHeader;
 import bms.player.beatoraja.skin.SkinType;
-
-import java.util.logging.Logger;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
-import bms.model.Mode;
-import bms.player.beatoraja.*;
-import bms.player.beatoraja.PlayModeConfig.*;
-import bms.player.beatoraja.input.*;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import java.util.logging.Logger;
 
 /**
  * キーコンフィグ画面
@@ -75,7 +80,7 @@ public class KeyConfiguration extends MainState {
 
 	private int mode = 0;
 
-	private ShapeRenderer shape;
+	private ShapeDrawer shape;
 
 	private BMSPlayerInputProcessor input;
 	private KeyBoardInputProcesseor keyboard;
@@ -92,7 +97,6 @@ public class KeyConfiguration extends MainState {
 
 	public KeyConfiguration(MainController main) {
 		super(main);
-
 	}
 
 	public void create() {
@@ -115,11 +119,12 @@ public class KeyConfiguration extends MainState {
 			Logger.getGlobal().severe("Font読み込み失敗");
 		}
 
-		shape = new ShapeRenderer();
-
 		input = main.getInputProcessor();
 		keyboard = input.getKeyBoardInputProcesseor();
 		controllers = input.getBMInputProcessor();
+		for (BMControllerInputProcessor controller: controllers) {
+			controller.setEnable(true);
+		}
 		midiinput = input.getMidiInputProcessor();
 		setMode(0);
 	}
@@ -128,6 +133,15 @@ public class KeyConfiguration extends MainState {
 		final SpriteBatch sprite = main.getSpriteBatch();
 		final float scaleX = (float) getSkin().getScaleX();
 		final float scaleY = (float) getSkin().getScaleY();
+
+		if (this.shape == null) {
+			Pixmap plainPixmap = new Pixmap(2,1, Pixmap.Format.RGBA8888);
+			plainPixmap.setColor(Color.WHITE);
+			plainPixmap.drawPixel(0, 0);
+			Texture plainTexture = new Texture(plainPixmap);
+			plainPixmap.dispose();
+			this.shape = new ShapeDrawer(sprite, new TextureRegion(plainTexture, 0, 0, 1, 1));
+		}
 
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -283,12 +297,12 @@ public class KeyConfiguration extends MainState {
 		for (int i = scrollpos; i < keys.length; i++) {
 			int y = 576 - (i - scrollpos) * 24;
 			if (i == cursorpos) {
-				shape.begin(ShapeType.Filled);
+				sprite.begin();
 				shape.setColor(keyinput ? Color.RED : Color.BLUE);
-				shape.rect(200 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
-				shape.rect(350 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
-				shape.rect(650 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
-				shape.end();
+				shape.filledRectangle(200 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
+				shape.filledRectangle(350 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
+				shape.filledRectangle(650 * scaleX, y * scaleY, 80 * scaleX, 24 * scaleY);
+				sprite.end();
 			}
 			sprite.begin();
 			if(titlefont != null) {
@@ -592,10 +606,6 @@ public class KeyConfiguration extends MainState {
 		if (titlefont != null) {
 			titlefont.dispose();
 			titlefont = null;
-		}
-		if (shape != null) {
-			shape.dispose();
-			shape = null;
 		}
 	}
 }

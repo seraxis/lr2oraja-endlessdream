@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
@@ -160,10 +161,17 @@ public class Config implements Validatable {
 	private boolean enableIpfs = true;
 	private String ipfsurl = "https://gateway.ipfs.io/";
 
+	private boolean enableHttp = true;
+	private String downloadSource = HttpDownloadProcessor.getDefaultDownloadSource().getName();
+	// Only for passing parameter, not used as a config option
+	private String defaultDownloadURL = HttpDownloadProcessor.getDefaultDownloadSource().getDefaultURL();
+	private String overrideDownloadURL = "";
+
 	private int irSendCount = 5;
 
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
+	private String monitorName = "";
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
@@ -514,6 +522,46 @@ public class Config implements Validatable {
 
 	public void setMessagefontpath(String messagefontpath) {
 		this.messagefontpath = messagefontpath;
+	}
+
+	public boolean isEnableHttp() {
+		return enableHttp;
+	}
+
+	public void setEnableHttp(boolean enableHttp) {
+		this.enableHttp = enableHttp;
+	}
+
+	public String getDownloadSource() {
+		return downloadSource;
+	}
+
+	public void setDownloadSource(String downloadSource) {
+		this.downloadSource = downloadSource;
+	}
+
+	public String getDefaultDownloadURL() {
+		return defaultDownloadURL;
+	}
+
+	public void setDefaultDownloadURL(String defaultDownloadURL) {
+		this.defaultDownloadURL = defaultDownloadURL;
+	}
+
+	public String getOverrideDownloadURL() {
+		return overrideDownloadURL;
+	}
+
+	public void setOverrideDownloadURL(String overrideDownloadURL) {
+		this.overrideDownloadURL = overrideDownloadURL;
+	}
+
+	public String getMonitorName() {
+		return monitorName;
+	}
+
+	public void setMonitorName(String monitorName) {
+		this.monitorName = monitorName;
 	}
 
 	public boolean validate() {

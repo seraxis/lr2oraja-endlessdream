@@ -24,11 +24,11 @@ jobs:
     - name: Validate Gradle wrapper
       uses: gradle/wrapper-validation-action@v1.0.5
 
-    - name: Set up JDK 1.8
+    - name: Set up JDK 17
       uses: actions/setup-java@v2
       with:
         distribution: liberica
-        java-version: 8.0.392+9
+        java-version: 17.0.14+10
         java-package: jdk+fx
 
     - name: Setup Gradle
@@ -40,6 +40,10 @@ jobs:
       run: ./gradlew -Dplatform=windows shadowJar
     - name: Execute Linux Gradle build
       run: ./gradlew -Dplatform=linux shadowJar
+    - name: Execute Macos(x86) Gradle build
+      run: ./gradlew -Dplatform=macos shadowJar
+    - name: Execute Macos(arm) Gradle build
+      run: ./gradlew -Dplatform=macos -Darch=aarch64 shadowJar
 
     - name: Make Github release with build artifacts
       uses: "marvinpinto/action-automatic-releases@latest"

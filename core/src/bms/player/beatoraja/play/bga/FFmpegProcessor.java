@@ -1,9 +1,13 @@
 package bms.player.beatoraja.play.bga;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Logger;
 
+import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber.Exception;
@@ -13,6 +17,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import org.bytedeco.javacv.Java2DFrameConverter;
 
 /**
  * ffmpegを使用した動画表示用クラス
@@ -95,6 +100,19 @@ public class FFmpegProcessor implements MovieProcessor {
 	 */
 	class MovieSeekThread extends Thread {
 		/**
+		 * FFmpegFrameGrabber::setVideoFrameNumber
+		 * 1.4.1以前のJavaCVには存在しない
+		 */
+		private static final Method setVideoFrameNumber;
+		static {
+			Method method = null;
+			try {
+				method = FFmpegFrameGrabber.class.getMethod("setVideoFrameNumber", int.class);
+			} catch (NoSuchMethodException | SecurityException ignored) {}
+			setVideoFrameNumber = method;
+		}
+
+		/**
 		 * ffmpegアクセサ
 		 */
 		private FFmpegFrameGrabber grabber;
@@ -163,6 +181,30 @@ public class FFmpegProcessor implements MovieProcessor {
 								break;
 							}
 							framecount++;
+							// HACK: frame caught by ffmpeg's color order is wrong on macos only
+							// Expected to be RGB, got BGR
+							// Below code hacks the order manually which obviously not a good idea,
+							// but I cannot find a better one
+							if (UIUtils.isMac) {
+								if (frame.image != null) {
+									ByteBuffer buf = ((ByteBuffer) frame.image[0]);
+									int size = buf.remaining();
+									byte[] pixelData = new byte[3]; // 3 size buf
+
+									for (int i = 0; i < size; i += 3) {
+										buf.position(i);
+										buf.get(pixelData); // BGR
+
+										byte temp = pixelData[0]; // t <- B
+										pixelData[0] = pixelData[2]; // RGR
+										pixelData[2] = temp; // RGB
+
+										buf.position(i);
+										buf.put(pixelData);
+									}
+									buf.rewind(); // It's this necessary?
+								}
+							}
 							// System.out.println("time : " + grabber.getTimestamp() + " --- " + time);
 						}
 						if (frame == null) {
@@ -239,8 +281,17 @@ public class FFmpegProcessor implements MovieProcessor {
 		
 		private void restart() throws Exception {
 			pixmap = null;
-			grabber.restart();
-			grabber.grabImage();
+			if (setVideoFrameNumber != null) {
+				try {
+					setVideoFrameNumber.invoke(grabber, 0);
+				} catch (IllegalAccessException | InvocationTargetException e) {
+					grabber.restart();
+					grabber.grabImage();
+				}
+			} else {
+				grabber.restart();
+				grabber.grabImage();
+			}
 			eof = false;
 			offset = grabber.getTimestamp() - time * 1000;
 			framecount = 1;

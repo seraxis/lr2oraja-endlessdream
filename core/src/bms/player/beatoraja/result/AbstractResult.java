@@ -41,6 +41,10 @@ public abstract class AbstractResult extends MainState {
 	 * 全ノーツの平均ズレ(us)
 	 */
 	protected long avgduration;
+
+	protected long avg;
+
+	protected long stddev;
 	/**
 	 * タイミング分布
 	 */
@@ -233,6 +237,10 @@ public abstract class AbstractResult extends MainState {
 	public long getAverageDuration() {
 		return avgduration;
 	}
+
+	public long getAverage() { return avg; }
+
+	public long getStddev() { return stddev; }
 	
 	public abstract ScoreData getNewScore();
 	

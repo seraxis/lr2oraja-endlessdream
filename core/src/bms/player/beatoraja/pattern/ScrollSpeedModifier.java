@@ -4,8 +4,6 @@ import bms.model.BMSModel;
 import bms.model.TimeLine;
 import bms.player.beatoraja.PlayerConfig;
 
-import java.util.List;
-
 /**
  * スクロールスピード変更に関するオプション
  *
@@ -35,7 +33,7 @@ public class ScrollSpeedModifier extends PatternModifier {
     }
 
     @Override
-    public List<PatternModifyLog> modify(BMSModel model) {
+    public void modify(BMSModel model) {
         if(mode == Mode.REMOVE) {
             // スクロールスピード変更、ストップシーケンス無効化
             AssistLevel assist = AssistLevel.NONE;
@@ -51,23 +49,21 @@ public class ScrollSpeedModifier extends PatternModifier {
                 tl.setScroll(starttl.getScroll());
             }
             setAssistLevel(assist);
-            return null;
-        }
-
-        final double base = model.getAllTimeLines()[0].getScroll();
-        double current = base;
-        int sectioncount = 0;
-        for (TimeLine tl : model.getAllTimeLines()) {
-            if(tl.getSectionLine()) {
-            	sectioncount++;
-            	if(section == sectioncount) {
-                    current = base * (1.0 + Math.random() * rate * 2 - rate);
-                    sectioncount = 0;
-            	}
+        } else {
+            final double base = model.getAllTimeLines()[0].getScroll();
+            double current = base;
+            int sectioncount = 0;
+            for (TimeLine tl : model.getAllTimeLines()) {
+                if(tl.getSectionLine()) {
+                	sectioncount++;
+                	if(section == sectioncount) {
+                        current = base * (1.0 + Math.random() * rate * 2 - rate);
+                        sectioncount = 0;
+                	}
+                }
+                tl.setScroll(current);
             }
-            tl.setScroll(current);
         }
-        return null;
     }
 
     public enum Mode {

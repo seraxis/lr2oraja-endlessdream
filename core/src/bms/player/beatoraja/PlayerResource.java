@@ -1,15 +1,5 @@
 package bms.player.beatoraja;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-import java.util.logging.Logger;
-
-import com.badlogic.gdx.utils.*;
-
 import bms.model.*;
 import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.TableData.TableFolder;
@@ -19,13 +9,23 @@ import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.play.bga.BGAProcessor;
 import bms.player.beatoraja.song.SongData;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * プレイヤーのコンポーネント間でデータをやり取りするためのクラス
  *
  * @author exch
  */
-public class PlayerResource {
+public final class PlayerResource {
 	
 	/**
 	 * 選曲中のBMS
@@ -79,6 +79,8 @@ public class PlayerResource {
 	private FloatArray[] gauge;
 
 	private ReplayData replay;
+	
+	private ReplayData chartOption;
 
 	private Path[] bmsPaths;
 	private boolean loop;
@@ -125,6 +127,10 @@ public class PlayerResource {
 	private String tablename = "";
 	private String tablelevel = "";
 	private String tablefull;
+	private boolean freqOn;
+	private String freqString;
+	// Full list of difficult tables that contains current song
+	private List<String> reverseLookup = new ArrayList<>();
 
 	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig) {
 		this.config = config;
@@ -170,6 +176,7 @@ public class PlayerResource {
 		} else {
 			songdata = new SongData(model, false);			
 		}
+		// TODO 選曲の時点で表名、フォルダ名を補完しておきたい
 		if(tablename.length() == 0 || courseindex != 0){
 			setTableinfo();
 		}
@@ -545,11 +552,65 @@ public class PlayerResource {
 		setTablelevel("");
 	}
 
+	public List<String> getReverseLookupData(String md5, String sha256) {
+		Set<String> urlSet = new HashSet<>(List.of(this.getConfig().getTableURL()));
+		TableDataAccessor tdaccessor = new TableDataAccessor(config.getTablepath());
+		TableData[] tds = tdaccessor.readAll();
+		List<String> reverseLookup = new ArrayList<>();
+		for (TableData td : tds) {
+			if (!urlSet.contains(td.getUrl())) {
+				continue;
+			}
+			TableFolder[] tfs = td.getFolder();
+			boolean found = false;
+			for (TableFolder tf : tfs) {
+				SongData[] tss = tf.getSong();
+				for (SongData ts : tss) {
+					boolean matchOnMd5 = !ts.getMd5().isEmpty() && ts.getMd5().equals(this.getSongdata().getMd5());
+					boolean matchOnSha256 = !ts.getSha256().isEmpty() && ts.getSha256().equals(this.getSongdata().getSha256());
+					if (matchOnMd5 || matchOnSha256) {
+						found = true;
+						break;
+					}
+				}
+				if (found) {
+					reverseLookup.add(td.getName() + " " + tf.getName());
+					break;
+				}
+			}
+		}
+		return reverseLookup;
+	}
+
+	public ReplayData getChartOption() {
+		return chartOption;
+	}
+
+	public void setChartOption(ReplayData chartOption) {
+		this.chartOption = chartOption;
+	}
+
 	public bms.model.Mode getOriginalMode() {
 		return orgmode;
 	}
 
 	public void setOriginalMode(bms.model.Mode orgmode) {
 		this.orgmode = orgmode;
+	}
+
+	public boolean isFreqOn() {
+		return freqOn;
+	}
+
+	public void setFreqOn(boolean freqOn) {
+		this.freqOn = freqOn;
+	}
+
+	public String getFreqString() {
+		return freqString;
+	}
+
+	public void setFreqString(String freqString) {
+		this.freqString = freqString;
 	}
 }
