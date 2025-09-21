@@ -116,6 +116,7 @@ public abstract class MainState {
 			this.skin.dispose();
 		}
 		this.skin = skin;
+		SkinWidgetManager.changeSkin(skin);
 		if (skin != null) {
 			for (IntMap.Entry<Offset> e : skin.getOffset().entries()) {
 				SkinOffset offset = main.getOffset(e.key);
@@ -129,7 +130,6 @@ public abstract class MainState {
 				offset.r = e.value.r;
 				offset.a = e.value.a;
 			}
-			SkinWidgetManager.skinRef.set(skin);
 		}
 	}
 
