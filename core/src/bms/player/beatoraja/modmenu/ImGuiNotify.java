@@ -26,6 +26,12 @@ public class ImGuiNotify {
             ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoNav |
             ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing;
 
+    public static final String[] NOTIFICATION_POSITIONS = new String[] {
+        "TopLeft", "TopCenter", "TopRight", "BottomLeft", "BottomCenter", "BottomRight", "Center"
+    };
+
+    private static ToastPos DEFAULT_TOAST_POS = ToastPos.TopLeft;
+
     public enum ToastType {
         None,
         Success,
@@ -42,18 +48,26 @@ public class ImGuiNotify {
     }
 
     public enum ToastPos {
-        TopLeft,
-        TopCenter,
-        TopRight,
-        BottomLeft,
-        BottomCenter,
-        BottomRight,
-        Center
+        TopLeft(0.0f, 0.0f),
+        TopCenter(0.5f, 0.0f),
+        TopRight(1.0f, 0.0f),
+        BottomLeft(0.0f, 1.0f),
+        BottomCenter(0.5f, 1.0f),
+        BottomRight(1.0f, 1.0f),
+        Center(0.5f, 0.5f);
+
+        final float pivotX;
+        final float pivotY;
+
+        ToastPos(float pivotX, float pivotY) {
+            this.pivotX = pivotX;
+            this.pivotY = pivotY;
+        }
     }
 
     public static class Toast {
         private ToastType type = ToastType.None;
-        private ToastPos pos = ToastPos.TopLeft;
+        private ToastPos pos = DEFAULT_TOAST_POS;
         private String title = "";
         private String content = "";
         private int dismissTime = NOTIFY_DEFAULT_DISMISS;
@@ -249,12 +263,13 @@ public class ImGuiNotify {
 
             ImGui.setNextWindowBgAlpha(opacity);
 
-            // TODO: working in progress
-            ToastPos toastPos = currentToast.getPos();
+            Pair<Float, Float> toastPos = getToastPos(currentToast.pos, height);
             ImGui.setNextWindowPos(
-                    NOTIFY_PADDING_X,
-                    NOTIFY_PADDING_Y + height,
-                    ImGuiWindowFlags.None
+                    toastPos.getKey(),
+                    toastPos.getValue(),
+                    ImGuiWindowFlags.None,
+                    currentToast.pos.pivotX,
+                    currentToast.pos.pivotY
             );
 
             int windowFlags = currentToast.getWindowFlags();
@@ -263,6 +278,7 @@ public class ImGuiNotify {
             }
 
             ImGui.begin(windowName, windowFlags);
+            float windowSizeX = ImGui.getWindowSizeX();
 
             ImGui.pushTextWrapPos(windowWidth / 3.0f);
 
@@ -336,6 +352,14 @@ public class ImGuiNotify {
         };
     }
 
+    private static Pair<Float, Float> getToastPos(ToastPos posType, float accY) {
+        if (posType == ToastPos.BottomLeft || posType == ToastPos.BottomCenter || posType == ToastPos.BottomRight) {
+            accY *= -1;
+        }
+        Pair<Float, Float> initPos = getRelativeInitPos(posType);
+        return new Pair<>(initPos.getKey()/* + accX */, initPos.getValue() + accY);
+    }
+
     // Notifications
     public static void success(String content) {
         insertNotification(new Toast(ToastType.Success, content));
@@ -371,5 +395,9 @@ public class ImGuiNotify {
 
     public static void withButton(ToastType type, String content, String buttonLabel, Runnable onButtonPress) {
         insertNotification(new Toast(type, NOTIFY_DEFAULT_DISMISS, buttonLabel, onButtonPress, content));
+    }
+
+    public static void setNotificationPosition(int index) {
+        DEFAULT_TOAST_POS = ToastPos.valueOf(NOTIFICATION_POSITIONS[index]);
     }
 }

@@ -49,18 +49,6 @@ public class SongManagerMenu {
                     ImGui.endPopup();;
                 }
             }
-
-            // TODO: Remove me!
-            if (ImGui.button("NOTIFY ME!!!")) {
-                Random random = new Random();
-                int x = random.nextInt(4);
-                switch (x) {
-                    case 0 -> ImGuiNotify.info("I've had these jeans since I was born");
-                    case 1 -> ImGuiNotify.error("And now they're ripped and now they're torn");
-                    case 2 -> ImGuiNotify.warning("And all my friends have skateboards");
-                    case 3 -> ImGuiNotify.success("I want a knife and a gun and things");
-                }
-            }
         }
         ImGui.end();
     }
