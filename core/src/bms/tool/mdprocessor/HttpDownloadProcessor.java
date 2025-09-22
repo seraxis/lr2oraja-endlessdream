@@ -1,6 +1,7 @@
 package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
@@ -88,7 +89,8 @@ public class HttpDownloadProcessor {
      * @param color   message color. Fallback to Blue if passing null
      */
     private void pushMessage(String content, Color color) {
-        main.getMessageRenderer().addMessage(content, 5000, color, 1);
+        // FIXME: Distinguish different message type...
+        ImGuiNotify.info(content);
     }
 
     /**
