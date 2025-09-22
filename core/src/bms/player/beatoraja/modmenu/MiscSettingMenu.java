@@ -23,17 +23,6 @@ public class MiscSettingMenu {
             if (ImGui.combo("Notification Positions", NOTIFICATION_POSITION, ImGuiNotify.NOTIFICATION_POSITIONS)) {
                 ImGuiNotify.setNotificationPosition(NOTIFICATION_POSITION.get());
             }
-            // TODO: Remove me!
-            if (ImGui.button("TEST NOTIFICATION")) {
-                Random random = new Random();
-                int x = random.nextInt(4);
-                switch (x) {
-                    case 0 -> ImGuiNotify.info("I've had these jeans since I was born");
-                    case 1 -> ImGuiNotify.error("And now they're ripped and now they're torn");
-                    case 2 -> ImGuiNotify.warning("And all my friends have skateboards");
-                    case 3 -> ImGuiNotify.success("I want a knife and a gun and things");
-                }
-            }
         }
         ImGui.end();
     }
