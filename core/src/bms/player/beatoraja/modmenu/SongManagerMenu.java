@@ -9,10 +9,8 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class SongManagerMenu {

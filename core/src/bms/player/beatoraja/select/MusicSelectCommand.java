@@ -1,5 +1,6 @@
 package bms.player.beatoraja.select;
 
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.graphics.Color;
@@ -71,7 +72,7 @@ public enum MusicSelectCommand {
                     ClipboardContent clipboardContent = new ClipboardContent();
                     clipboardContent.putString(hash);
                     clipboard.setContent(clipboardContent);
-					selector.main.getMessageRenderer().addMessage("MD5 hash copied : " + hash, 2000, Color.GOLD, 0);
+					ImGuiNotify.info(String.format("MD5 hash copied: %s", hash));
 				}
 			}
 		}
@@ -89,7 +90,7 @@ public enum MusicSelectCommand {
                     ClipboardContent clipboardContent = new ClipboardContent();
                     clipboardContent.putString(hash);
                     clipboard.setContent(clipboardContent);
-					selector.main.getMessageRenderer().addMessage("SHA256 hash copied : " + hash, 2000, Color.GOLD, 0);
+					ImGuiNotify.info(String.format("SHA256 hash copied: %s", hash), 2000);
 				}
 			}
 		}

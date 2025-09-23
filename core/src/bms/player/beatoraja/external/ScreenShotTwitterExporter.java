@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -118,7 +119,7 @@ public class ScreenShotTwitterExporter implements ScreenShotExporter {
 			Status status = twitter.updateStatus(update);
 			Logger.getGlobal().info("Twitter Post:" + status.toString());
 			pixmap.dispose();
-			currentState.main.getMessageRenderer().addMessage( "Twitter Upload : " + text, 2000, Color.YELLOW, 0);
+	        ImGuiNotify.info(String.format("Twitter Upload: %s", text), 2000);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();

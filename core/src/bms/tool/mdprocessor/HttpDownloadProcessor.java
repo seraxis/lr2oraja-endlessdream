@@ -1,6 +1,7 @@
 package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
@@ -82,25 +83,6 @@ public class HttpDownloadProcessor {
     }
 
     /**
-     * Send a new message to MainController to render
-     *
-     * @param content message
-     * @param color   message color. Fallback to Blue if passing null
-     */
-    private void pushMessage(String content, Color color) {
-        main.getMessageRenderer().addMessage(content, 5000, color, 1);
-    }
-
-    /**
-     * Send a new message with default color(blue) to MainController
-     *
-     * @param content message
-     */
-    private void pushMessage(String content) {
-        pushMessage(content, Color.BLUE);
-    }
-
-    /**
      * Submit a download task based on md5
      *
      * @param md5      missing sabun's md5
@@ -114,7 +96,7 @@ public class HttpDownloadProcessor {
             downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
         } catch (FileNotFoundException e) {
             Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Remote server[%s] reports no such data", sourceName));
-            pushMessage(String.format("Cannot find specified song from %s", sourceName));
+            ImGuiNotify.error(String.format("Cannot find specified song from %s", sourceName));
             return;
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -131,13 +113,13 @@ public class HttpDownloadProcessor {
                 // info, but not wriggle since it doesn't offer a meta query api.
                 if (tasks.values().stream().anyMatch(task -> task.getUrl().equals(downloadURL))) {
                     Logger.getGlobal().severe(String.format("[HttpDownloadProcessor] Rejecting download task[%s] because duplication has been found", downloadURL));
-                    pushMessage("Already submitted");
+                    ImGuiNotify.warning("Already submitted");
                     return null;
                 }
                 int taskId = idGenerator.addAndGet(1);
                 DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
                 tasks.put(taskId, downloadTask);
-                pushMessage(String.format("New download task[%s] submitted", taskName));
+                ImGuiNotify.info(String.format("New download task[%s] submitted", taskName));
                 return downloadTask;
             }
         });
@@ -164,7 +146,7 @@ public class HttpDownloadProcessor {
                 result = downloadFileFromURL(downloadTask, String.format("%s.7z", md5));
             } catch (Exception e) {
                 e.printStackTrace();
-                pushMessage(String.format("Failed downloading from %s due to %s", sourceName, e.getMessage()));
+                ImGuiNotify.error(String.format("Failed downloading from %s due to %s", sourceName, e.getMessage()));
             }
             if (result == null) {
                 // Download failed, skip the remaining steps
@@ -178,20 +160,20 @@ public class HttpDownloadProcessor {
                 successfullyExtracted = true;
             } catch (Exception e) {
                 e.printStackTrace();
-                pushMessage(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
+                ImGuiNotify.error(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
             }
             if (successfullyExtracted) {
                 // TODO: Directory update is protected, this might cause some uncovered situation. Personally speaking,
                 // I don't think this has any issue since user can always turn back to root directory
                 // and update the download directory manually
-                pushMessage("Successfully downloaded & extracted. Trying to rebuild download directory");
+                ImGuiNotify.info("Successfully downloaded & extracted. Trying to rebuild download directory");
                 main.updateSong(DOWNLOAD_DIRECTORY);
                 // If everything works well, trying to delete the downloaded archive
                 try {
                     Files.delete(result);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    pushMessage("Failed deleting archive file automatically");
+                    ImGuiNotify.error("Failed deleting archive file automatically");
                 }
             }
         });

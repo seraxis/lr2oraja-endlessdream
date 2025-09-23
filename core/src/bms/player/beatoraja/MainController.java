@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.DownloadTaskMenu;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import bms.player.beatoraja.modmenu.SongManagerMenu;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
@@ -80,7 +81,6 @@ public class MainController {
 	private PlayerResource resource;
 
 	private BitmapFont systemfont;
-	private MessageRenderer messageRenderer;
 
 	private MainState current;
 	
@@ -357,7 +357,6 @@ public class MainController {
 		} catch (GdxRuntimeException e) {
 			Logger.getGlobal().severe("System Font読み込み失敗");
 		}
-		messageRenderer = new MessageRenderer(config.getMessagefontpath());
 
 		input = new BMSPlayerInputProcessor(config, player);
 		switch(config.getAudioConfig().getDriver()) {
@@ -372,7 +371,7 @@ public class MainController {
 		resource = new PlayerResource(audio, config, player);
 		selector = new MusicSelector(this, songUpdated);
 		if(player.getRequestEnable()) {
-		    streamController = new StreamController(selector, (player.getRequestNotify() ? messageRenderer : null));
+		    streamController = new StreamController(selector);
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
@@ -447,7 +446,7 @@ public class MainController {
 		}
 
 		if(ir.length > 0) {
-			messageRenderer.addMessage(ir.length + " IR Connection Succeed" ,5000, Color.GREEN, 1);
+			ImGuiNotify.info("%d IR Connection Succeed", ir.length);
 
 			Thread irResendProcess = new Thread(() -> {
 				for (;;) {
@@ -465,7 +464,7 @@ public class MainController {
 								}
 								if(score.retry > getConfig().getIrSendCount()) {
 									removeIrSendStatus.add(score);
-									messageRenderer.addMessage("Failed to send a score for " + score.song.getTitle() + score.song.getSubtitle(),5000, Color.RED, 1);
+									ImGuiNotify.error(String.format("Failed to send a score for %s %s", score.song.getTitle(), score.song.getSubtitle()));
 								}
 							}
 							irSendStatus.removeAll(removeIrSendStatus);
@@ -573,11 +572,6 @@ public class MainController {
 		imGui.start();
 		imGui.render();
 		imGui.end();
-
-		// show message
-		sprite.begin();
-		messageRenderer.render(current, sprite, 100, config.getResolution().height - 2);
-		sprite.end();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
@@ -763,10 +757,6 @@ public class MainController {
 		return download;
 	}
 
-	public MessageRenderer getMessageRenderer() {
-		return messageRenderer;
-	}
-
 	public ImGuiRenderer getImGui() {
 		return imGui;
 	}
@@ -911,9 +901,8 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.CYAN, 1);
+			ImGuiNotify.info(this.message);
 			getSongDatabase().updateSongDatas(path, config.getBmsroot(), false, getInfoDatabase());
-			message.stop();
 		}
 	}
 
@@ -932,13 +921,12 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.CYAN, 1);
+			ImGuiNotify.info(this.message);
 			TableData td = accessor.getAccessor().read();
 			if (td != null) {
 				accessor.getAccessor().write(td);
 				accessor.setTableData(td);
 			}
-			message.stop();
 		}
 	}
 
@@ -948,16 +936,14 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.LIME, 1);
 			while (download != null && download.isDownload() && download.getMessage() != null) {
-				message.setText(download.getMessage());
+				ImGuiNotify.info(download.getMessage());
 				try {
 					sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			message.stop();
 		}
 	}
 

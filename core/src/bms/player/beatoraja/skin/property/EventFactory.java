@@ -4,6 +4,7 @@ import bms.player.beatoraja.*;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.MainState.MainStateType;
 import bms.player.beatoraja.ir.*;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.play.JudgeAlgorithm;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.result.*;
@@ -494,7 +495,7 @@ public class EventFactory {
 					
 					changeFav.accept(sd);
 
-					selector.main.getMessageRenderer().addMessage(message, 1200, Color.GREEN, 1);
+					ImGuiNotify.info(message);
 					selector.getBarManager().updateBar();
 					selector.play(OPTION_CHANGE);
 				}
@@ -546,8 +547,8 @@ public class EventFactory {
 					} else if((sd.getFavorite() & SongData.INVISIBLE_SONG) != 0) {
 						message =next ?  "Removed from Invisible Song" : "Added to Favorite Song";
 					}
-					changeFav.accept(sd);					
-					selector.main.getMessageRenderer().addMessage(message, 1200, Color.GREEN, 1);
+					changeFav.accept(sd);
+					ImGuiNotify.info(message);
 					selector.getBarManager().updateBar();
 					selector.play(OPTION_CHANGE);
 				}
