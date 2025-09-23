@@ -1,6 +1,7 @@
 package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.play.BMSPlayer;
 import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
@@ -10,10 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -59,9 +57,56 @@ public class HttpDownloadProcessor {
     private final MainController main;
     private final HttpDownloadSource httpDownloadSource;
 
+    // To delay the extract & update songdata.db steps if we're playing bms
+    private final Object waitingExtractLock = new Object();
+    private final Queue<Path> waitingExtractArchives = new ConcurrentLinkedQueue<>();
+
     public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource) {
         this.main = main;
         this.httpDownloadSource = httpDownloadSource;
+        (new Thread(() -> {
+            while (true) {
+                try {
+                    synchronized (waitingExtractLock) {
+                        if (main.getCurrentState() instanceof BMSPlayer) {
+                            // Do nothing
+                        } else if (!waitingExtractArchives.isEmpty()) {
+                            main.setSuspendPlaySceneTransition(true);
+
+                            List<Path> succeededPaths = new ArrayList<>();
+                            for (Path path : waitingExtractArchives) {
+                                try {
+                                    extractCompressedFile(path.toFile(), null);
+                                    succeededPaths.add(path);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    pushMessage(String.format("Failed extracting file: %s due to %s", path.getFileName(), e.getMessage()));
+                                }
+                            }
+                            if (!succeededPaths.isEmpty()) {
+                                pushMessage(String.format("Successfully extracted %d archives. Trying to rebuild download directory", succeededPaths.size()));
+                                main.updateSong(DOWNLOAD_DIRECTORY);
+                                // If everything works well, trying to delete the downloaded archive
+                                for (Path path : succeededPaths) {
+                                    try {
+                                        Files.delete(path);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        pushMessage(String.format("Failed deleting archive file at %s automatically", path));
+                                    }
+                                }
+                            }
+
+                            main.setSuspendPlaySceneTransition(false);
+                            waitingExtractArchives.clear();
+                        }
+                    }
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        })).start();
     }
 
     public static HttpDownloadSourceMeta getDefaultDownloadSource() {
@@ -171,28 +216,9 @@ public class HttpDownloadProcessor {
                 downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Error);
                 return;
             }
-            // 2) Extract the compressed archive & update download directory automatically
-            boolean successfullyExtracted = false;
-            try {
-                extractCompressedFile(result.toFile(), null);
-                successfullyExtracted = true;
-            } catch (Exception e) {
-                e.printStackTrace();
-                pushMessage(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
-            }
-            if (successfullyExtracted) {
-                // TODO: Directory update is protected, this might cause some uncovered situation. Personally speaking,
-                // I don't think this has any issue since user can always turn back to root directory
-                // and update the download directory manually
-                pushMessage("Successfully downloaded & extracted. Trying to rebuild download directory");
-                main.updateSong(DOWNLOAD_DIRECTORY);
-                // If everything works well, trying to delete the downloaded archive
-                try {
-                    Files.delete(result);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    pushMessage("Failed deleting archive file automatically");
-                }
+            // 2) Push the result to a queue as a buffer
+            synchronized (waitingExtractLock) {
+                waitingExtractArchives.add(result);
             }
         });
     }
