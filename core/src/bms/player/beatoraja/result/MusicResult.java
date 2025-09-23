@@ -451,7 +451,12 @@ public class MusicResult extends AbstractResult {
 			resource.getScoreData().setClear(NoPlay.id);
 		}
 
-		if (resource.getPlayerConfig().getPlayConfig(Mode.BEAT_7K).getPlayconfig().isEnableConstant()) {
+		// Disable lamps for plays using the CONSTANT setting. Community setting was overly negative towards this 0.8.8 feature
+		if (
+			resource.getCourseBMSModels() == null &&
+			resource.getPlayerConfig().getPlayConfig(Mode.BEAT_7K).getPlayconfig().isEnableConstant() &&
+			resource.getScoreData().getClear() != Failed.id
+		) {
 			resource.getScoreData().setClear(AssistEasy.id);
 		}
 
