@@ -46,6 +46,9 @@ public class MusicSelectConfigurationView implements Initializable {
 	@FXML
 	private ComboBox<String> chartReplicationMode;
 
+	@FXML
+	private CheckBox skipDecideScreen;
+
     private Config config;
     private PlayerConfig player;
 
@@ -69,6 +72,7 @@ public class MusicSelectConfigurationView implements Initializable {
 		songPreview.setValue(config.getSongPreview());
 		
 		maxsearchbar.getValueFactory().setValue(config.getMaxSearchBarCount());
+		skipDecideScreen.setSelected(config.isSkipDecideScreen());
 		
 	}
 	
@@ -85,6 +89,7 @@ public class MusicSelectConfigurationView implements Initializable {
         config.setSongPreview(songPreview.getValue());
         
         config.setMaxSearchBarCount(maxsearchbar.getValue());
+		config.setSkipDecideScreen(skipDecideScreen.isSelected());
 	}
 
 	public void updatePlayer(PlayerConfig player) {

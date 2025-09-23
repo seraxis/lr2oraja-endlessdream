@@ -72,6 +72,10 @@ public class Config implements Validatable {
 	 */
 	private int maxSearchBarCount = 10;
 	/**
+	 * When selecting a song, if set to true, game changes to play scene instead of decide scene
+	 */
+	private boolean skipDecideScreen = false;
+	/**
 	 * 所持していない楽曲バーを表示するかどうか
 	 */
 	private boolean showNoSongExistingBar = true;
@@ -320,6 +324,14 @@ public class Config implements Validatable {
     public void setMaxSearchBarCount(int maxSearchBarCount) {
 	    this.maxSearchBarCount = maxSearchBarCount;
     }
+
+	public void setSkipDecideScreen(boolean skipDecideScreen) {
+		this.skipDecideScreen = skipDecideScreen;
+	}
+
+	public boolean isSkipDecideScreen() {
+		return skipDecideScreen;
+	}
 
 	public boolean isShowNoSongExistingBar() {
 		return showNoSongExistingBar;
@@ -670,7 +682,7 @@ public class Config implements Validatable {
 		this.useResolution = useResolution;
 	}
 
-	public enum DisplayMode {
+    public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
 	}
 

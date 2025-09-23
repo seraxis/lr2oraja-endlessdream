@@ -81,5 +81,6 @@
         <Label text="Chart Replication Mode" prefHeight="25.0"/>
         <ComboBox fx:id="chartReplicationMode" prefHeight="25.0"/>
     </HBox>
+	<CheckBox fx:id="skipDecideScreen" mnemonicParsing="false" prefHeight="25.0" text="%SKIP_DECIDE_SCREEN" />
 </VBox>
 
