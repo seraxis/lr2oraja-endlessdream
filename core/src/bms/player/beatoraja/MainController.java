@@ -136,6 +136,8 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
+	private boolean suspendPlaySceneTransition = false;
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -290,6 +292,10 @@ public class MainController {
 			newState = decide;
 			break;
 		case PLAY:
+			if (suspendPlaySceneTransition) {
+				messageRenderer.addMessage("Cannot transition to play scene, please wait!", Color.CYAN, 1);
+				return ;
+			}
 			if (bmsplayer != null) {
 				bmsplayer.dispose();
 			}
@@ -848,6 +854,14 @@ public class MainController {
 
 	public void setHttpDownloadProcessor(HttpDownloadProcessor httpDownloadProcessor) {
 		this.httpDownloadProcessor = httpDownloadProcessor;
+	}
+
+	public boolean isSuspendPlaySceneTransition() {
+		return suspendPlaySceneTransition;
+	}
+
+	public void setSuspendPlaySceneTransition(boolean suspendPlaySceneTransition) {
+		this.suspendPlaySceneTransition = suspendPlaySceneTransition;
 	}
 
 	public void switchTimer(int id, boolean on) {
