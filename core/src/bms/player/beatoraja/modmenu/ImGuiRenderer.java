@@ -57,6 +57,7 @@ public class ImGuiRenderer {
         ImGuiIO io = ImGui.getIO();
         io.setIniFilename("layout.ini");
         io.getFonts().addFontDefault();
+        io.addConfigFlags(ImGuiConfigFlags.DockingEnable);
 
         final ImFontGlyphRangesBuilder rangesBuilder = new ImFontGlyphRangesBuilder(); // Glyphs ranges provide
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
@@ -101,6 +102,14 @@ public class ImGuiRenderer {
         if (SHOW_MOD_MENU.get()) {
             ImGui.begin("Endless Dream", ImGuiWindowFlags.AlwaysAutoResize);
 
+            ImGui.beginTabBar("modmenu_bar");
+            if (ImGui.beginTabItem("A")) {
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("B")) {
+                ImGui.endTabItem();
+            }
+            ImGui.endTabBar();
             ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);

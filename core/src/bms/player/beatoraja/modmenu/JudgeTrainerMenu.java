@@ -25,7 +25,8 @@ public class JudgeTrainerMenu {
             if (ImGui.combo("judge", OVERRIDE_JUDGE_RANK, JudgeTrainer.JUDGE_OPTIONS)) {
                 JudgeTrainer.setJudgeRank(OVERRIDE_JUDGE_RANK.get());
             }
-            ImGui.end();
+
         }
+        ImGui.end();
     }
 }
