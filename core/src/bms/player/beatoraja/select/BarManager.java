@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Queue;
@@ -373,6 +374,8 @@ public class BarManager {
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
 			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
+             if (SongManagerMenu.isLastPlayedSortEnabled())
+                 Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
 			}
 
 			Array<Bar> bars = new Array<Bar>();
