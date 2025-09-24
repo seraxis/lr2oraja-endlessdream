@@ -478,11 +478,13 @@ public final class BarRenderer {
 		}
 		while(mov > 0) {
 			manager.move(true);
+			select.stop(SCRATCH);
 			select.play(SCRATCH);
 			mov--;
 		}
 		while(mov < 0) {
 			manager.move(false);
+			select.stop(SCRATCH);
 			select.play(SCRATCH);
 			mov++;
 		}
