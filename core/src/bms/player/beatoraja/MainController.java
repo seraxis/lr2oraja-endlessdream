@@ -311,13 +311,13 @@ public class MainController {
 		}
 
 		if (newState != null && current != newState) {
-			if(current != null) {
-				current.shutdown();
-				current.setSkin(null);
-			}
 			newState.create();
 			if(newState.getSkin() != null) {
 				newState.getSkin().prepare(newState);
+			}
+			if(current != null) {
+				current.shutdown();
+				current.setSkin(null);
 			}
 			current = newState;
 			timer.setMainState(newState);
