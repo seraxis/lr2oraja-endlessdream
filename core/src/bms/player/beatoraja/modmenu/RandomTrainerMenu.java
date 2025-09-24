@@ -60,6 +60,19 @@ public class RandomTrainerMenu {
             ImGui.checkbox("Black/White Random Select", BLACK_WHITE_RANDOM_PERMUTATION);
             ImGui.unindent();
 
+            ImGui.newLine();
+            if (ImGui.button("Mirror")) {
+                mirrorLaneOrder();
+            }
+            ImGui.sameLine();
+            if (ImGui.button("Shift Left")) {
+                shiftLeftLaneOrder();
+            }
+            ImGui.sameLine();
+            if (ImGui.button("Shift Right")) {
+                shiftRightLaneOrder();
+            }
+
             RandomTrainer.setActive(RANDOM_TRAINER_ENABLED.get());
             if (RANDOM_TRAINER_ENABLED.get()) {
                 String currentUILaneOrder = String.join("", LANE_ORDER);
@@ -170,5 +183,34 @@ public class RandomTrainerMenu {
         for (int i = 0; i < LANE_ORDER.size(); i++) {
             LANE_ORDER.set(i, String.valueOf(random.charAt(i)));
         };
+    }
+
+    private static String getLaneOrder() {
+        return String.join("", LANE_ORDER);
+    }
+
+    /**
+     * 1234567 -> 7654321
+     */
+    public static void mirrorLaneOrder() {
+        changeLaneOrder(new StringBuilder(getLaneOrder()).reverse().toString());
+    }
+
+    /**
+     * 1234567 -> 2345671
+     *  |----| -> |----|
+     */
+    public static void shiftLeftLaneOrder() {
+        String s = getLaneOrder();
+        changeLaneOrder(s.substring(1) + s.charAt(0));
+    }
+
+    /**
+     * 1234567 -> 7123456
+     * |----|  ->  |----|
+     */
+    public static void shiftRightLaneOrder() {
+        String s = getLaneOrder();
+        changeLaneOrder(s.charAt(s.length() - 1) + s.substring(0, s.length() - 1));
     }
 }
