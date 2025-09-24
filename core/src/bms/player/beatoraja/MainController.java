@@ -23,7 +23,6 @@ import com.badlogic.gdx.utils.StringBuilder;
 
 import bms.player.beatoraja.AudioConfig.DriverType;
 import bms.player.beatoraja.MainState.MainStateType;
-import bms.player.beatoraja.MessageRenderer.Message;
 import bms.player.beatoraja.audio.*;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
@@ -44,10 +43,6 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
-import de.damios.guacamole.gdx.graphics.ShaderCompatibilityHelper;
-import de.damios.guacamole.gdx.graphics.ShaderProgramFactory;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * アプリケーションのルートクラス
@@ -287,14 +282,10 @@ public class MainController {
 			}
 			break;
 		case DECIDE:
-			newState = decide;
+			newState = config.isSkipDecideScreen() ? createBMSPlayerState() : decide;
 			break;
 		case PLAY:
-			if (bmsplayer != null) {
-				bmsplayer.dispose();
-			}
-			bmsplayer = new BMSPlayer(this, resource);
-			newState = bmsplayer;
+			newState = createBMSPlayerState();
 			break;
 		case RESULT:
 			newState = result;
@@ -329,6 +320,13 @@ public class MainController {
 		} else {
 			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
 		}
+	}
+
+	private MainState createBMSPlayerState() {
+		if (bmsplayer != null) {
+			bmsplayer.dispose();
+		}
+		return new BMSPlayer(this, resource);
 	}
 
 	public MainState getCurrentState() {
