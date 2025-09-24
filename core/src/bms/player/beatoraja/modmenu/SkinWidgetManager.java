@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
@@ -13,10 +14,7 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SkinWidgetManager {
@@ -54,65 +52,108 @@ public class SkinWidgetManager {
                 if (widgets.isEmpty()) {
                     ImGui.text("No skin is loaded");
                 } else {
-                    if (ImGui.beginTable("Skin Widgets", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
-                        ImGui.tableSetupScrollFreeze(0, 1);
-                        ImGui.tableSetupColumn("ID");
-                        ImGui.tableSetupColumn("x");
-                        ImGui.tableSetupColumn("y");
-                        ImGui.tableSetupColumn("w");
-                        ImGui.tableSetupColumn("h");
-                        ImGui.tableHeadersRow();
-                        ImGuiListClipper.forEach(widgets.size(), new ImListClipperCallback() {
-                            @Override
-                            public void accept(int row) {
-                                SkinWidget widget = widgets.get(row);
-                                ImGui.tableNextRow();
-                                ImGui.pushID(row);
-
-                                ImGui.tableSetColumnIndex(0);
-                                ImGui.text(widget.name);
-                                ImGui.sameLine();
-                                // We can wrap this in SkinWidget class if it's more complicated in the future
-                                if (ImGui.button("Edit")) {
-                                    editingWidgetX.set(widget.getDstX());
-                                    editingWidgetY.set(widget.getDstY());
-                                    editingWidgetW.set(widget.getDstW());
-                                    editingWidgetH.set(widget.getDstH());
-                                    ImGui.openPopup("Edit Skin Widget");
-                                }
-                                if (ImGui.beginPopup("Edit Skin Widget", ImGuiWindowFlags.AlwaysAutoResize)) {
-                                    ImGui.inputFloat("x", editingWidgetX);
-                                    ImGui.inputFloat("y", editingWidgetY);
-                                    ImGui.inputFloat("w", editingWidgetW);
-                                    ImGui.inputFloat("h", editingWidgetH);
-                                    if (ImGui.button("Submit")) {
-                                        widget.setDstX(editingWidgetX.get());
-                                        widget.setDstY(editingWidgetY.get());
-                                        widget.setDstW(editingWidgetW.get());
-                                        widget.setDstH(editingWidgetH.get());
-                                        ImGui.closeCurrentPopup();
-                                    }
-                                    ImGui.endPopup();
-                                }
-
-                                // NOTE for further dev:
-                                // If you want to implement a dynamic system, you can combine the event type & getter
-                                // in a pair type: Pair<EventType, Function<SkinWidget, Float>
-                                // The remaining things are trivial
-                                drawFloatValueColumn(1, widget.hasEvent(Event.EventType.CHANGE_X), widget.getDstX());
-                                drawFloatValueColumn(2, widget.hasEvent(Event.EventType.CHANGE_Y), widget.getDstY());
-                                drawFloatValueColumn(3, widget.hasEvent(Event.EventType.CHANGE_W), widget.getDstW());
-                                drawFloatValueColumn(4, widget.hasEvent(Event.EventType.CHANGE_H), widget.getDstH());
-
-                                ImGui.popID();
-                            }
-                        });
-
-                        ImGui.endTable();
+                    if (ImGui.beginTabBar("SkinWidgetsTabBar")) {
+                        if (ImGui.beginTabItem("SkinWidgets")) {
+                            renderSkinWidgetsTable();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("History")) {
+                            renderHistoryTable();
+                            ImGui.endTabItem();
+                        }
+                        ImGui.endTabBar();
                     }
                 }
             }
             ImGui.end();
+        }
+    }
+
+    /**
+     * Render skin widgets as a table
+     */
+    private static void renderSkinWidgetsTable() {
+        if (ImGui.beginTable("Skin Widgets", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("ID");
+            ImGui.tableSetupColumn("x");
+            ImGui.tableSetupColumn("y");
+            ImGui.tableSetupColumn("w");
+            ImGui.tableSetupColumn("h");
+            ImGui.tableHeadersRow();
+            ImGuiListClipper.forEach(widgets.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    SkinWidget widget = widgets.get(row);
+                    ImGui.tableNextRow();
+                    ImGui.pushID(row);
+
+                    ImGui.tableSetColumnIndex(0);
+                    ImGui.text(widget.name);
+                    ImGui.sameLine();
+                    // We can wrap this in SkinWidget class if it's more complicated in the future
+                    if (ImGui.button("Edit")) {
+                        editingWidgetX.set(widget.getDstX());
+                        editingWidgetY.set(widget.getDstY());
+                        editingWidgetW.set(widget.getDstW());
+                        editingWidgetH.set(widget.getDstH());
+                        ImGui.openPopup("Edit Skin Widget");
+                    }
+                    if (ImGui.beginPopup("Edit Skin Widget", ImGuiWindowFlags.AlwaysAutoResize)) {
+                        ImGui.inputFloat("x", editingWidgetX);
+                        ImGui.inputFloat("y", editingWidgetY);
+                        ImGui.inputFloat("w", editingWidgetW);
+                        ImGui.inputFloat("h", editingWidgetH);
+                        if (ImGui.button("Submit")) {
+                            widget.setDstX(editingWidgetX.get());
+                            widget.setDstY(editingWidgetY.get());
+                            widget.setDstW(editingWidgetW.get());
+                            widget.setDstH(editingWidgetH.get());
+                            ImGui.closeCurrentPopup();
+                        }
+                        ImGui.endPopup();
+                    }
+
+                    // NOTE for further dev:
+                    // If you want to implement a dynamic system, you can combine the event type & getter
+                    // in a pair type: Pair<EventType, Function<SkinWidget, Float>
+                    // The remaining things are trivial
+                    drawFloatValueColumn(1, widget.hasEvent(Event.EventType.CHANGE_X), widget.getDstX());
+                    drawFloatValueColumn(2, widget.hasEvent(Event.EventType.CHANGE_Y), widget.getDstY());
+                    drawFloatValueColumn(3, widget.hasEvent(Event.EventType.CHANGE_W), widget.getDstW());
+                    drawFloatValueColumn(4, widget.hasEvent(Event.EventType.CHANGE_H), widget.getDstH());
+
+                    ImGui.popID();
+                }
+            });
+
+            ImGui.endTable();
+        }
+    }
+
+    /**
+     * Render modification history
+     */
+    private static void renderHistoryTable() {
+        if (ImGui.beginTable("History", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("ID");
+            ImGui.tableSetupColumn("Desc");
+            ImGui.tableHeadersRow();
+            List<Event> flatEvents = events.values().stream().flatMap(Collection::stream).toList();
+            ImGuiListClipper.forEach(flatEvents.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    Event event = flatEvents.get(row);
+                    ImGui.tableNextRow();
+
+                    ImGui.tableSetColumnIndex(0);
+                    ImGui.text(event.target);
+                    ImGui.tableSetColumnIndex(1);
+                    ImGui.text(event.getDescription());
+                }
+            });
+            ImGui.endTable();
         }
     }
 
@@ -132,9 +173,17 @@ public class SkinWidgetManager {
         }
     }
 
-    private static void pushEvent(Event.EventType type, String target, float value) {
+    /**
+     * Push one "change single field" event into list
+     *
+     * @param type event type
+     * @param target widget's name
+     * @param previous previous value
+     * @param current current value
+     */
+    private static void pushChangeSingleFieldEvent(Event.EventType type, String target, float previous, float current) {
         events.putIfAbsent(target, new ArrayList<>());
-        events.get(target).add(new Event(type, target, value));
+        events.get(target).add(new ChangeSingleFieldEvent(type, target, previous, current));
     }
 
     // A simple wrapper class for tweaking destinations' name
@@ -165,29 +214,33 @@ public class SkinWidgetManager {
         }
 
         public void setDstX(float x) {
-            if (Math.abs(x - this.getDstX()) > eps) {
-                pushEvent(Event.EventType.CHANGE_X, this.name, x);
+            float previous = this.getDstX();
+            if (Math.abs(x - previous) > eps) {
+                pushChangeSingleFieldEvent(Event.EventType.CHANGE_X, this.name, previous, x);
             }
             destination.region.x = x;
         }
 
         public void setDstY(float y) {
-            if (Math.abs(y - this.getDstY()) > eps) {
-                pushEvent(Event.EventType.CHANGE_Y, this.name, y);
+            float previous = this.getDstY();
+            if (Math.abs(y - previous) > eps) {
+                pushChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this.name, previous, y);
             }
             destination.region.y = y;
         }
 
         public void setDstW(float w) {
-            if (Math.abs(w - this.getDstW()) > eps) {
-                pushEvent(Event.EventType.CHANGE_W, this.name, w);
+            float previous = this.getDstW();
+            if (Math.abs(w - previous) > eps) {
+                pushChangeSingleFieldEvent(Event.EventType.CHANGE_W, this.name, previous, w);
             }
             destination.region.width = w;
         }
 
         public void setDstH(float h) {
-            if (Math.abs(h - this.getDstH()) > eps) {
-                pushEvent(Event.EventType.CHANGE_H, this.name, h);
+            float previous = this.getDstH();
+            if (Math.abs(h - previous) > eps) {
+                pushChangeSingleFieldEvent(Event.EventType.CHANGE_H, this.name, previous, h);
             }
             destination.region.height = h;
         }
@@ -201,10 +254,9 @@ public class SkinWidgetManager {
         }
     }
 
-    private static class Event {
-        private EventType type;
-        private String target; // destination name
-        private float value;
+    private abstract static class Event {
+        protected EventType type;
+        protected String target; // destination name
 
         enum EventType {
             CHANGE_X,
@@ -213,10 +265,46 @@ public class SkinWidgetManager {
             CHANGE_H
         }
 
-        public Event(EventType type, String target, float value) {
+        public Event(EventType type, String target) {
             this.type = type;
             this.target = target;
-            this.value = value;
+        }
+
+        public abstract void undo(SkinWidget skinWidget);
+
+        public abstract String getDescription();
+    }
+
+    private static class ChangeSingleFieldEvent extends Event {
+        private final float previous;
+        private final float current;
+
+        public ChangeSingleFieldEvent(EventType type, String target, float previous, float current) {
+            super(type, target);
+            this.previous = previous;
+            this.current = current;
+        }
+
+        @Override
+        public void undo(SkinWidget skinWidget) {
+            switch (type) {
+                case CHANGE_X -> skinWidget.setDstX(previous);
+                case CHANGE_Y -> skinWidget.setDstY(previous);
+                case CHANGE_W -> skinWidget.setDstW(previous);
+                case CHANGE_H -> skinWidget.setDstH(previous);
+                default -> { /* Intentionally do nothing */ }
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            String fieldName = switch (type) {
+                case CHANGE_X -> "x";
+                case CHANGE_Y -> "y";
+                case CHANGE_W -> "width";
+                case CHANGE_H -> "height";
+            };
+            return String.format("Changed %s's %s from %.4f to %.4f", target, fieldName, previous, current);
         }
     }
 }
