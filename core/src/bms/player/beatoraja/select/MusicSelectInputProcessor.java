@@ -196,11 +196,13 @@ public final class MusicSelectInputProcessor {
 
             while(mov > 0) {
             	select.executeEvent(EventType.target, -1);
+                select.stop(SCRATCH);
                 select.play(SCRATCH);
                 mov--;
             }
             while(mov < 0) {
-            	select.executeEvent(EventType.target, 1);
+                select.executeEvent(EventType.target, 1);
+                select.stop(SCRATCH);
                 select.play(SCRATCH);
                 mov++;
             }
