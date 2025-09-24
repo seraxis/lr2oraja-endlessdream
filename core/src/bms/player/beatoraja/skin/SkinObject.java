@@ -92,12 +92,15 @@ public abstract class SkinObject extends DisposableObject {
 	 * 描画先
 	 */
 	private SkinObjectDestination[] dst = new SkinObjectDestination[0];
+	private String name;
 	
 	// 以下、高速化用
 	private long starttime;
 	private long endtime;
 
 	public boolean draw;
+	// Controlled by debugger instead of constraints defined by skin
+	public boolean visible = true;
 	public Rectangle region = new Rectangle();
 	public Color color = new Color();
 	public int angle;
@@ -168,36 +171,16 @@ public abstract class SkinObject extends DisposableObject {
 		}
 	}
 
-	public void setDestination(String name, long time, float x, float y, float w, float h, int acc, int a, int r, int g, int b,
-	                           int blend, int filter, int angle, int center, int loop, TimerProperty timer, int[] op) {
-		setDestination(name, time, x, y, w, h, acc, a, r, g, b, blend, filter, angle, center, loop, timer);
-		if (dstop.length == 0 && dstdraw.length == 0) {
-			setDrawCondition(op);
-		}
-	}
-
 	public void setDestination(long time, float x, float y, float w, float h, int acc, int a, int r, int g, int b,
 			int blend, int filter, int angle, int center, int loop, TimerProperty timer, BooleanProperty draw) {
 		setDestination(time, x, y, w, h, acc, a, r, g, b, blend, filter, angle, center, loop, timer);
 		dstdraw = new BooleanProperty[] {draw};
 	}
 
-	public void setDestination(String name, long time, float x, float y, float w, float h, int acc, int a, int r, int g, int b,
-	                           int blend, int filter, int angle, int center, int loop, TimerProperty timer, BooleanProperty draw) {
-		setDestination(name, time, x, y, w, h, acc, a, r, g, b, blend, filter, angle, center, loop, timer);
-		dstdraw = new BooleanProperty[] {draw};
-	}
-
 	private void setDestination(long time, float x, float y, float w, float h, int acc, int a, int r, int g, int b,
-	                            int blend, int filter, int angle, int center, int loop, TimerProperty timer) {
-		setDestination("", time, x,y,w,h,acc,a,r,g,b,blend, filter,angle, center, loop, timer);
-	}
-	
-	private void setDestination(String name, long time, float x, float y, float w, float h, int acc, int a, int r, int g, int b,
 			int blend, int filter, int angle, int center, int loop, TimerProperty timer) {
 		SkinObjectDestination obj = new SkinObjectDestination(time, new Rectangle(x, y, w, h), new Color(r / 255.0f,
 				g / 255.0f, b / 255.0f, a / 255.0f), angle, acc);
-		obj.name = name;
 		if (dst.length == 0) {
 			fixr = obj.region;
 			fixc = obj.color;
@@ -219,11 +202,11 @@ public abstract class SkinObject extends DisposableObject {
 		if (dstblend == 0) {
 			dstblend = blend;
 		}
-		
+
 		if (dstfilter == 0) {
 			dstfilter = filter;
 		}
-		
+
 		if (dstcenter == 0 && center >= 0 && center < 10) {
 			dstcenter = center;
 			centerx = CENTERX[center];
@@ -249,7 +232,7 @@ public abstract class SkinObject extends DisposableObject {
 		l.add(obj);
 		dst = l.toArray(SkinObjectDestination.class);
 		starttime = dst[0].time;
-		endtime = dst[dst.length - 1].time;		
+		endtime = dst[dst.length - 1].time;
 	}
 
 	public BooleanProperty[] getDrawCondition() {
@@ -788,5 +771,13 @@ public abstract class SkinObject extends DisposableObject {
 
 	public void setMouseRect(float x2, float y2, float w2, float h2) {
 		this.mouseRect = new Rectangle(x2, y2, w2, h2);
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
