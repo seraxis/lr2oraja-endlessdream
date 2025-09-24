@@ -413,6 +413,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			final List<FolderData> folders = qr.query(property.conn, "SELECT path,date FROM folder WHERE parent = ?",
 					folderhandler, SongUtils.crc32(path.toString(), bmsroot, root.toString()));
 			try (DirectoryStream<Path> paths = Files.newDirectoryStream(path)) {
+
+				// Explicit lower-priority selection of auto-generated previews.
+				String autoPreviewFile = null;
+
 				// TODO: Use .hasNext() method of Directory stream to resume directory processing even when a file has an error (such as having too long a name)
 				for (Path p : paths) {
 					if(Files.isDirectory(p)) {
@@ -427,7 +431,15 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 															s.endsWith(".ogg") ||
 															s.endsWith(".mp3") ||
 															s.endsWith(".flac"))) {
-								previewpath = p.getFileName().toString();
+								
+								// Hand-made previews and auto-generated previews with this tool (https://github.com/MikiraSora/BmsPreviewAudioGenerator)
+								// can clash. We will try picking auto-generated ones as the last resort (indicated by the specific default name).
+								if (s.startsWith("preview_auto_generator")) {
+									autoPreviewFile = p.getFileName().toString();
+								}
+								else {
+									previewpath = p.getFileName().toString();
+								}
 							}
 						}
 						if (s.endsWith(".bms") || s.endsWith(".bme") || s.endsWith(".bml") || s.endsWith(".pms")
@@ -435,6 +447,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 							bmsfiles.add(p);
 						}
 					}
+				}
+
+				// No manual preview file found. Try selecting an auto-preview one.
+				if (previewpath == null && autoPreviewFile != null) {
+					previewpath = autoPreviewFile;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
