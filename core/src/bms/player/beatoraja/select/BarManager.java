@@ -374,8 +374,9 @@ public class BarManager {
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
 			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
-             if (SongManagerMenu.isLastPlayedSortEnabled())
-                 Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
+                if (SongManagerMenu.isLastPlayedSortEnabled()) {
+                    Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
+                }
 			}
 
 			Array<Bar> bars = new Array<Bar>();

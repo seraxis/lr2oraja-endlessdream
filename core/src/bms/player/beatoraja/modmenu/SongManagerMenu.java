@@ -8,7 +8,9 @@ import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class SongManagerMenu {
@@ -20,12 +22,24 @@ public class SongManagerMenu {
     private static List<String> currentReverseLookupList = new ArrayList<>();
 
     private static ImBoolean LAST_PLAYED_SORT = new ImBoolean(false);
+    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void show(ImBoolean showSongManager) {
         Optional<SongData> currentSongData = getCurrentSongData();
+        Optional<ScoreData> currentScoreData = getCurrentScoreData();
         if (ImGui.begin("Song Manager", showSongManager, ImGuiWindowFlags.AlwaysAutoResize)) {
             String songName = currentSongData.map(SongData::getTitle).orElse("");
+            String lastPlayRecordTime = currentScoreData.map(scoreData -> {
+                Date date = new Date(scoreData.getDate() * 1000L);
+                return simpleDateFormat.format(date);
+            }).orElse("No Data");
             ImGui.text("current picking: " + songName);
+
+            ImGui.text("Last played: " + lastPlayRecordTime);
+            if (ImGui.checkbox("Sort by last played", LAST_PLAYED_SORT)) {
+                selector.getBarManager().updateBar();
+            }
+
             if (songName.isEmpty()) {
                 ImGui.text("Not a selectable song");
             } else {
@@ -43,11 +57,6 @@ public class SongManagerMenu {
                 }
             }
         }
-
-        if (ImGui.checkbox("Sort by last played", LAST_PLAYED_SORT)) {
-            selector.getBarManager().updateBar();
-        }
-
         ImGui.end();
     }
 
