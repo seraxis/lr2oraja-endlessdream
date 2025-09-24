@@ -6,6 +6,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.ir.IRConnectionManager;
 import bms.player.beatoraja.pattern.*;
 import bms.player.beatoraja.play.GrooveGauge;
@@ -24,7 +25,7 @@ import com.badlogic.gdx.utils.SerializationException;
  *
  * @author exch
  */
-public class PlayerConfig {
+public final class PlayerConfig {
 
 	/**
 	 * 旧コンフィグパス。そのうち削除
@@ -58,13 +59,15 @@ public class PlayerConfig {
 	 * DP用オプション
 	 */
 	private int doubleoption;
+	
+	private String chartReplicationMode = "RIVALCHART";
 
 	/**
 	 * スコアターゲット
 	 */
 	private String targetid = "MAX";
 	
-	private String[] targetlist = new String[] {"RATE_A-","RATE_A", "RATE_A+","RATE_AA-","RATE_AA", "RATE_AA+", "RATE_AAA-", "RATE_AAA", "RATE_AAA+", "MAX"
+	private String[] targetlist = new String[] {"RATE_A-","RATE_A", "RATE_A+","RATE_AA-","RATE_AA", "RATE_AA+", "RATE_AAA-", "RATE_AAA", "RATE_AAA+", "RATE_MAX-", "MAX"
 			,"RANK_NEXT", "IR_NEXT_1", "IR_NEXT_2", "IR_NEXT_3", "IR_NEXT_4", "IR_NEXT_5", "IR_NEXT_10"
 			, "IR_RANK_1", "IR_RANK_5", "IR_RANK_10", "IR_RANK_20", "IR_RANK_30", "IR_RANK_40", "IR_RANK_50"
 			, "IR_RANKRATE_5", "IR_RANKRATE_10", "IR_RANKRATE_15", "IR_RANKRATE_20", "IR_RANKRATE_25", "IR_RANKRATE_30", "IR_RANKRATE_35", "IR_RANKRATE_40", "IR_RANKRATE_45","IR_RANKRATE_50"
@@ -219,6 +222,10 @@ public class PlayerConfig {
 	 * 選択中の選曲時ソート
 	 */
 	private int sort;
+	/**
+	 * 選択中の選曲時ソート
+	 */
+	private String sortid;
 
 	/**
 	 * 選曲時でのキー入力方式
@@ -497,6 +504,15 @@ public class PlayerConfig {
 	public void setSort(int sort) {
 		this.sort = sort;
 	}
+
+	public String getSortid() {
+		return sortid;
+	}
+
+	public void setSortid(String sortid) {
+		this.sortid = sortid;
+	}
+
 
 	public int getMusicselectinput() {
 		return musicselectinput;
@@ -816,13 +832,17 @@ public class PlayerConfig {
 		mode9.validate(9);
 		mode24.validate(26);
 		mode24double.validate(52);
-		
+
 		sort = MathUtils.clamp(sort, 0 , BarSorter.defaultSorter.length - 1);
+		if(sortid == null) {
+			sortid = BarSorter.defaultSorter[sort].name();
+		}
 
 		gauge = MathUtils.clamp(gauge, 0, 5);
 		random = MathUtils.clamp(random, 0, 9);
 		random2 = MathUtils.clamp(random2, 0, 9);
 		doubleoption = MathUtils.clamp(doubleoption, 0, 3);
+		chartReplicationMode = chartReplicationMode != null ? chartReplicationMode : "NONE";
 		targetid = targetid!= null ? targetid : "MAX";
 		targetlist = targetlist != null ? targetlist : new String[0];
 		judgetiming = MathUtils.clamp(judgetiming, JUDGETIMING_MIN, JUDGETIMING_MAX);
@@ -879,35 +899,58 @@ public class PlayerConfig {
 		maxRequestCount = MathUtils.clamp(maxRequestCount, 0, 100);
 	}
 
-	public static void init(Config config) {
+	public static void init(Config config) throws PlayerConfigException {
 		// TODO プレイヤーアカウント検証
-		try {
-			if(!Files.exists(Paths.get(config.getPlayerpath()))) {
-				Files.createDirectory(Paths.get(config.getPlayerpath()));
-			}
-			if(readAllPlayerID(config.getPlayerpath()).length == 0 || readPlayerConfig(config.getPlayerpath(), config.getPlayername()) == null) {
-				PlayerConfig pc = new PlayerConfig();
-				create(config.getPlayerpath(), "player1");
-				// スコアデータコピー
-				if(Files.exists(Paths.get("playerscore.db"))) {
-					Files.copy(Paths.get("playerscore.db"), Paths.get(config.getPlayerpath() + "/player1/score.db"));
-				}
-				// リプレイデータコピー
-				Files.createDirectory(Paths.get(config.getPlayerpath() + "/player1/replay"));
-				if(Files.exists(Paths.get("replay"))) {
-					try (DirectoryStream<Path> paths = Files.newDirectoryStream(Paths.get("replay"))) {
-						for (Path p : paths) {
-							Files.copy(p, Paths.get(config.getPlayerpath() + "/player1/replay").resolve(p.getFileName()));
-						}
-					} catch(Throwable e) {
-						e.printStackTrace();
-					}
-				}
+		if(!Files.exists(Paths.get(config.getPlayerpath()))) {
+			createDirectory(Paths.get(config.getPlayerpath()));
+		}
 
-				config.setPlayername("player1");
+		if(readAllPlayerID(config.getPlayerpath()).length == 0) {
+			create(config.getPlayerpath(), "player1");
+
+			// スコアデータコピー
+			Path parentPlayerScoreDBPath = Paths.get("playerscore.db");
+			if(Files.exists(parentPlayerScoreDBPath)) {
+                try {
+                    Files.copy(parentPlayerScoreDBPath, Paths.get(config.getPlayerpath() + "/player1/score.db"));
+                } catch (IOException e) {
+					Logger.getGlobal().severe(String.format("Failed to copy playerscore.db to %s: %s", config.getPlayerpath(), e.getLocalizedMessage()));
+                }
+            }
+
+			// リプレイデータコピー
+			copyReplays(config);
+
+			config.setPlayername("player1");
+		} else {
+			readPlayerConfig(config.getPlayerpath(), config.getPlayername());
+		}
+	}
+
+	private static void createDirectory(Path path) {
+        try {
+            Files.createDirectory(path);
+        } catch (IOException e) {
+            Logger.getGlobal().severe(String.format("Failed to create directory at %s: %s", path, e.getLocalizedMessage()));
+        }
+    }
+
+	private static void copyReplays(Config config) {
+		Path player1ReplayDir = Paths.get(config.getPlayerpath() + "/player1/replay");
+		Path parentReplayDir = Paths.get("replay");
+
+		createDirectory(player1ReplayDir);
+		if(!Files.exists(parentReplayDir)) {
+			// nothing to copy
+			return;
+		}
+
+		try (DirectoryStream<Path> paths = Files.newDirectoryStream(parentReplayDir)) {
+			for (Path p : paths) {
+				Files.copy(p, player1ReplayDir.resolve(p.getFileName()));
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch(Throwable e) {
+			Logger.getGlobal().warning("Error while copying replays: " + e.getLocalizedMessage());
 		}
 	}
 
@@ -940,38 +983,62 @@ public class PlayerConfig {
 		return l.toArray(new String[l.size()]);
 	}
 
-	public static PlayerConfig readPlayerConfig(String playerpath, String playerid) {
+	public static PlayerConfig readPlayerConfig(String playerpath, String playerid) throws PlayerConfigException {
 		PlayerConfig player = new PlayerConfig();
 		final Path path = Paths.get(playerpath + "/" + playerid + "/" + configpath);
 		final Path path_old = Paths.get(playerpath + "/" + playerid + "/" + configpath_old);
+
 		if (Files.exists(path)) {
-			try (Reader reader = new InputStreamReader(new FileInputStream(path.toFile()), StandardCharsets.UTF_8)) {
-				Json json = new Json();
-				json.setIgnoreUnknownFields(true);
-				player = json.fromJson(PlayerConfig.class, reader);
-			} catch (SerializationException e) {
-				Logger.getGlobal().warning("PlayerConfigの読み込み失敗 - Path : " + path.toString() + " , Log : " + e.getMessage());
-				try {
-					Files.copy(path, Paths.get(playerpath + "/" + playerid + "/config_backup.json"));
-				} catch (IOException e1) {
-//					e1.printStackTrace();
-				}
-			} catch(Throwable e) {
-				e.printStackTrace();
-			}			
+			player = loadPlayerConfig(playerpath, playerid, path);
 		} else if(Files.exists(path_old)) {
 			// 旧コンフィグ読み込み。そのうち削除
-			try (FileReader reader = new FileReader(path_old.toFile())) {
-				Json json = new Json();
-				json.setIgnoreUnknownFields(true);
-				player = json.fromJson(PlayerConfig.class, reader);
-			} catch(Throwable e) {
-				e.printStackTrace();
-			}
+			player = loadPlayerConfigFromOldPath(path_old);
 		}
+
+		return validatePlayerConfig(playerid, player);
+	}
+
+	public static PlayerConfig validatePlayerConfig(String playerid, PlayerConfig player) {
 		player.setId(playerid);
 		player.validate();
 		return player;
+	}
+
+	private static PlayerConfig loadPlayerConfig(String playerpath, String playerid, Path path) throws PlayerConfigException {
+		PlayerConfig player;
+		try (Reader reader = new InputStreamReader(Files.newInputStream(path.toFile().toPath()), StandardCharsets.UTF_8)) {
+			Json json = new Json();
+			json.setIgnoreUnknownFields(true);
+			player = json.fromJson(PlayerConfig.class, reader);
+		} catch (SerializationException e) {
+			writeBackupConfigFile(playerpath, playerid, path);
+			throw new PlayerConfigException("PlayerConfigの読み込み失敗 - Path : " + path + " , Log : " + e.getLocalizedMessage());
+		} catch (IOException e) {
+			throw new PlayerConfigException("Failed to load player config file: " + e.getLocalizedMessage());
+		}
+		return player;
+	}
+
+	private static PlayerConfig loadPlayerConfigFromOldPath(Path path_old) throws PlayerConfigException {
+		PlayerConfig player;
+		try (FileReader reader = new FileReader(path_old.toFile())) {
+			Json json = new Json();
+			json.setIgnoreUnknownFields(true);
+			player = json.fromJson(PlayerConfig.class, reader);
+		} catch (Throwable e) {
+			throw new PlayerConfigException("Failed to load player config file: " + e.getLocalizedMessage());
+		}
+		return player;
+	}
+
+	private static void writeBackupConfigFile(String playerpath, String playerid, Path path) {
+		try {
+			Path configBackupPath = Paths.get(playerpath + "/" + playerid + "/config_backup.json");
+			Files.copy(path, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
+			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+		} catch (IOException e) {
+			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+		}
 	}
 
 	public static void write(String playerpath, PlayerConfig player) {
@@ -1043,5 +1110,13 @@ public class PlayerConfig {
 
 	public void setEventMode(boolean eventMode) {
 		this.eventMode = eventMode;
+	}
+
+	public String getChartReplicationMode() {
+		return chartReplicationMode;
+	}
+
+	public void setChartReplicationMode(String chartReplicationMode) {
+		this.chartReplicationMode = chartReplicationMode;
 	}
 }

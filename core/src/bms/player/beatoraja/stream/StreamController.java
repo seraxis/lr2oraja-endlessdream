@@ -19,12 +19,10 @@ public class StreamController {
     Thread polling;
     boolean isActive = false;
     MusicSelector selector;
-    MessageRenderer notifier;
 
-    public StreamController(MusicSelector selector, MessageRenderer notifier) {
+    public StreamController(MusicSelector selector) {
         this.selector = selector;
-        this.notifier = notifier;
-        commands = new StreamCommand[] { new StreamRequestCommand(this.selector, this.notifier) };
+        commands = new StreamCommand[] { new StreamRequestCommand(this.selector) };
         try {
             pipeBuffer = new BufferedReader(new FileReader("\\\\.\\pipe\\beatoraja"));
             isActive = true;

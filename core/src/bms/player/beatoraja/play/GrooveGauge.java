@@ -15,7 +15,7 @@ import bms.model.BMSModel;
  * 
  * @author exch
  */
-public class GrooveGauge {
+public final class GrooveGauge {
 
 	public static final int ASSISTEASY = 0;
 	public static final int EASY = 1;
@@ -181,7 +181,7 @@ public class GrooveGauge {
 		return new GrooveGauge(model, id, gauge);
 	}
 
-	public static class Gauge {
+	public static final class Gauge {
 		/**
 		 * ゲージの現在値
 		 */
@@ -193,7 +193,7 @@ public class GrooveGauge {
 		/**
 		 * 各判定毎のゲージの増減
 		 */
-		private float[] gauge;
+		private final float[] gauge;
 		/**
 		 * ゲージのクリアタイプ
 		 */
@@ -204,9 +204,9 @@ public class GrooveGauge {
 			this.value = element.init;
 			this.cleartype = cleartype;
 			this.gauge = element.value.clone();
-			if(element.type != null) {
+			if(element.modifier != null) {
 				for(int i = 0;i < gauge.length;i++) {
-					gauge[i] = element.type.modify(gauge[i], model);
+					gauge[i] = element.modifier.modify(gauge[i], model);
 				}				
 			}
 		}
@@ -255,70 +255,59 @@ public class GrooveGauge {
 		}
 	}
 	
-	public enum GaugeType {
+	public interface GaugeModifier {
+		
 		/**
 		 * 回復量にTOTALを使用
 		 */
-		TOTAL {
-			@Override
-			public float modify(float f, BMSModel model) {
-				if(f > 0) {
-					return (float) (f * (int)model.getTotal() / model.getTotalNotes());
-				}
-				return f;
-			}
-		},
+		public static final GaugeModifier TOTAL = (f, model) -> (f > 0 ? (float) (f * model.getTotal() / model.getTotalNotes()) : f);
+
 		/**
 		 * TOTAL値によって回復量に制限をかける
 		 */
-		LIMIT_INCREMENT {
-			@Override
-			public float modify(float f, BMSModel model) {
-				final float pg = (float) Math.max(Math.min(0.15f, (2 * model.getTotal() - 320) / model.getTotalNotes()), 0);
-				if(f > 0) {
-					f *= pg / 0.15f;
-				}
-				return f;
+		public static final GaugeModifier LIMIT_INCREMENT = (f, model) -> {
+			final float pg = (float) Math.max(Math.min(0.15f, (2 * model.getTotal() - 320) / model.getTotalNotes()), 0);
+			if(f > 0) {
+				f *= pg / 0.15f;
 			}
-		},
+			return f;
+		};
+		
 		/**
 		 * TOTAL値、総ノート数によってダメージ量を増加させる
 		 */
-		MODIFY_DAMAGE {
-			@Override
-			public float modify(float f, BMSModel model) {
+		public static final GaugeModifier MODIFY_DAMAGE = (f, model) -> {			
+			if(f < 0) {
 				float fix1=1.0f;
 				float fix2=1.0f;
-				if(f < 0) {
-					// トータル補正 (<240)
-					fix1 = (float)(10.0 / Math.min(10.0, Math.max(1.0, Math.floor(model.getTotal() / 16.0) - 5.0)));
 
-					// ノート数補正 (<1000)
-					if(model.getTotalNotes()<=20) {
-						fix2 = 10.0f;
-					}else if(model.getTotalNotes()<30) {
-						fix2 = 8.0f + 0.2f*(30-model.getTotalNotes());
-					}else if(model.getTotalNotes()<60) {
-						fix2 = 5.0f + 0.2f*(60-model.getTotalNotes())/3.0f;
-					}else if(model.getTotalNotes()<125) {
-						fix2 = 4.0f + (125-model.getTotalNotes())/65.0f;
-					}else if(model.getTotalNotes()<250) {
-						fix2 = 3.0f + 0.008f*(250-model.getTotalNotes());
-					}else if(model.getTotalNotes()<500) {
-						fix2 = 2.0f + 0.004f*(500-model.getTotalNotes());
-					}else if(model.getTotalNotes()<1000) {
-						fix2 = 1.0f + 0.002f*(1000-model.getTotalNotes());
-					}else {
-						fix2 = 1.0f;
-					}
+				// トータル補正 (<240)
+				fix1 = (float)(10.0 / Math.min(10.0, Math.max(1.0, Math.floor(model.getTotal() / 16.0) - 5.0)));
 
-					f *= Math.max(fix1, fix2);
+				// ノート数補正 (<1000)
+				if(model.getTotalNotes()<=20) {
+					fix2 = 10.0f;
+				}else if(model.getTotalNotes()<30) {
+					fix2 = 8.0f + 0.2f*(30-model.getTotalNotes());
+				}else if(model.getTotalNotes()<60) {
+					fix2 = 5.0f + 0.2f*(60-model.getTotalNotes())/3.0f;
+				}else if(model.getTotalNotes()<125) {
+					fix2 = 4.0f + (125-model.getTotalNotes())/65.0f;
+				}else if(model.getTotalNotes()<250) {
+					fix2 = 3.0f + 0.008f*(250-model.getTotalNotes());
+				}else if(model.getTotalNotes()<500) {
+					fix2 = 2.0f + 0.004f*(500-model.getTotalNotes());
+				}else if(model.getTotalNotes()<1000) {
+					fix2 = 1.0f + 0.002f*(1000-model.getTotalNotes());
+				}else {
+					fix2 = 1.0f;
 				}
-				return f;
-			}
-		},
-		;
 
-		public abstract float modify(float f, BMSModel model);
+				f *= Math.max(fix1, fix2);
+			}
+			return f;
+		};
+		
+		public abstract float modify(float f, BMSModel model);		
 	}
 }

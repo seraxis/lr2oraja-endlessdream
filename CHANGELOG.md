@@ -26,6 +26,32 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
+# 0.3.0
+
+## Requires Java 17 to run correctly. [Download here](https://bell-sw.com/pages/downloads/#jdk-17-lts) (Ensure `Package: Full JDK`)
+
+New features:
+- Added in-game song downloader ([858100d](https://github.com/seraxis/lr2oraja-endlessdream/commit/858100da3cb883d5c083137bdd3733b73b1f2b23))
+  - Attempting to play an undownloaded song initiates the download
+  - Downloaded songs are added to a new directory for user sorting
+- Added support for .osu chart files ([1e75da1](https://github.com/seraxis/lr2oraja-endlessdream/commit/1e75da163322ba0ebb187e8a8634adeb4e1f11c7))
+  - Add your osu songs folder to your BMS path as you would any BMS folder
+- Added support for Intel and Apple Silicon based Macs ([112c5ce](https://github.com/seraxis/lr2oraja-endlessdream/commit/112c5ce0ce7fd3d7942afef572486b40d142b35f))
+- Added chart judge rank override feature in the mod menu ([a28dc06](https://github.com/seraxis/lr2oraja-endlessdream/commit/a28dc0677578cd4364eb831a232b703a496e51cf))
+- Added reverse table lookup for charts ([5e59bcc](https://github.com/seraxis/lr2oraja-endlessdream/commit/5e59bcc0594a07b2800af3f49b36be3dbe649f8e))
+- Added fullscreen and borderless monitor selection in the launcher ([6d5b85f](https://github.com/seraxis/lr2oraja-endlessdream/commit/6d5b85f7e835f707d43f3dc0b1822846aefda032))
+- Updated to upstream beatoraja version 0.8.8 ([36064c8](https://github.com/seraxis/lr2oraja-endlessdream/commit/36064c84296f1c956e7c003f9ff73bf78304aa52))
+  - Switch from Java 8 to Java 17
+  - Adds CONSTANT function (in Endless Dream this will produce Assist Clears)
+  - Some Skin properties have changed, please consult the source.
+
+Behavior changes:
+- Freq can no longer be changed mid-game, added flags to discriminate freq plays for IRs ([9afb79b](https://github.com/seraxis/lr2oraja-endlessdream/commit/9afb79bac45217968cc438c523cfbbc316218e34))
+- Fixed the LR2 autoadjust logic ([3bad992](https://github.com/seraxis/lr2oraja-endlessdream/commit/3bad992bcd0c36be3d87a1a62ff7cdd5fdf45e82))
+- Various fixes for state transition timings
+
+Thanks to [@seraxis](https://github.com/seraxis), [@Catizard](https://github.com/Catizard), [@MatVeiQaaa](https://github.com/MatVeiQaaa)
+
 # 0.2.1
 New features:
 - Added IntelliJ run gradle run configurations ([a7f3e75](https://github.com/seraxis/lr2oraja-endlessdream/commit/a7f3e751b682951da7b2ddf7a13d1bd3b35eaa74))

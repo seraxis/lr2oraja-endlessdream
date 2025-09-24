@@ -234,6 +234,13 @@
                                                  <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="120" max="15000" min="0" />
                                              </valueFactory>
                                          </NumericSpinner>
+                                         <CheckBox fx:id="enableConstant" mnemonicParsing="false" text="%ENABLE_CONSTANT" GridPane.rowIndex="12" />
+                                         <Label text="%CONSTANT_FADEIN_TIME" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                                         <NumericSpinner fx:id="constFadeinTime" editable="true" GridPane.columnIndex="2" GridPane.rowIndex="12">
+                                             <valueFactory>
+                                                 <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="100" max="1000" min="-1000" />
+                                             </valueFactory>
+                                         </NumericSpinner>
                                      </GridPane>
                                      <GridPane fx:id="lr2configurationassist" hgap="10.0" prefHeight="48.0" prefWidth="632.0" vgap="10.0">
                                          <columnConstraints>
@@ -256,6 +263,7 @@
                                          <CheckBox fx:id="markprocessednote" mnemonicParsing="false" text="%MARK_PROCESSED_NOTE" GridPane.columnIndex="3" GridPane.rowIndex="1" />
                                          <CheckBox fx:id="guidese" mnemonicParsing="false" text="%GUIDE_SE" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                          <CheckBox fx:id="windowhold" mnemonicParsing="false" text="%WINDOW_HOLD" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                                         <CheckBox fx:id="showpastnote" mnemonicParsing="false" text="%SHOW_PAST_NOTE" GridPane.columnIndex="3" GridPane.rowIndex="2" />
                                          <Label text="%EXTRA_NOTE" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                                          <NumericSpinner fx:id="extranotedepth" editable="true" GridPane.columnIndex="2" GridPane.rowIndex="3">
                                              <valueFactory>
@@ -396,6 +404,17 @@
                            <TextField fx:id="ipfsurl" prefHeight="25.0" prefWidth="200.0" />
                         </children>
                      </HBox>
+                    <CheckBox fx:id="enableHttp" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_HTTP" />
+                    <ComboBox fx:id="httpDownloadSource" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <GridPane hgap="10" vgap="5">
+                        <children>
+                            <Label text="Default Http Server URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <TextField fx:id="defaultDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            <Label text="Override Http Server URL" prefHeight="25.0" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                            <TextField fx:id="overrideDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+                        </children>
+                    </GridPane>
+
                <VBox prefHeight="150.0" prefWidth="100.0" visible="false">
                   <children>
                      <HBox prefHeight="31.0" prefWidth="780.0">

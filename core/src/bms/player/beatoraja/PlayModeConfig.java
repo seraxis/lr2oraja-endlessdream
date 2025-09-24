@@ -464,7 +464,7 @@ public class PlayModeConfig {
         /**
          * アナログスクラッチ停止閾値
          */
-        private int analogScratchThreshold = 100;
+        private int analogScratchThreshold = 50;
 
         private static final ControllerConfig IIDX_PS2 = new ControllerConfig(new int[] { BMKeys.BUTTON_4, BMKeys.BUTTON_7, BMKeys.BUTTON_3, BMKeys.BUTTON_8,
 				BMKeys.BUTTON_2, BMKeys.BUTTON_5, BMKeys.AXIS4_MINUS, BMKeys.AXIS3_MINUS, BMKeys.AXIS3_PLUS }, 

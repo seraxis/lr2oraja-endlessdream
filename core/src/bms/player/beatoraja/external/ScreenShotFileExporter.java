@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -83,8 +84,8 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			PixmapIO.writePNG(new FileHandle(path), pixmap);
 			Logger.getGlobal().info("スクリーンショット保存:" + path);
 			pixmap.dispose();
-			currentState.main.getMessageRenderer().addMessage("Screen shot saved : " + path, 2000, Color.GOLD, 0);
-			
+			ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
+
 			this.sendClipboard(currentState, path);
 			return true;
 		} catch (Exception e) {
@@ -115,7 +116,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			ImageTransferable imageTransferable = new ImageTransferable(output);
 			clipboard.setContents(imageTransferable, null);
 			Logger.getGlobal().info("スクリーンショット保存: Clipboard");
-			currentState.main.getMessageRenderer().addMessage("Screen shot saved : Clipboard", 2000, Color.GOLD, 0);
+			ImGuiNotify.info("Screen shot saved : Clipboard", 2000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

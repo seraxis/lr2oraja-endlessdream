@@ -9,8 +9,10 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.external.ScoreDataImporter;
 
+import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -103,6 +105,10 @@ public class PlayConfigurationView implements Initializable {
 	private ComboBox<Integer> fixhispeed;
 	@FXML
 	private Spinner<Integer> gvalue;
+	@FXML
+	private CheckBox enableConstant;
+	@FXML
+	private Spinner<Integer> constFadeinTime;
 	@FXML
 	private Spinner<Double> hispeedmargin;
 	@FXML
@@ -198,6 +204,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private CheckBox showhiddennote;
 	@FXML
+	private CheckBox showpastnote;
+	@FXML
 	private ComboBox<String> target;
 
 	@FXML
@@ -233,6 +241,15 @@ public class PlayConfigurationView implements Initializable {
 	private CheckBox enableIpfs;
 	@FXML
 	private TextField ipfsurl;
+
+	@FXML
+	private CheckBox enableHttp;
+	@FXML
+	private ComboBox<String> httpDownloadSource;
+	@FXML
+	private TextField defaultDownloadURL;
+	@FXML
+	private TextField overrideDownloadURL;
 
 	@FXML
 	private VBox skin;
@@ -315,6 +332,7 @@ public class PlayConfigurationView implements Initializable {
 		initComboBox(autosavereplay3, autosaves);
 		initComboBox(autosavereplay4, autosaves);
 
+		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCES.keySet());
 		notesdisplaytiming.setValueFactoryValues(PlayerConfig.JUDGETIMING_MIN, PlayerConfig.JUDGETIMING_MAX, 0, 1);
 		resourceController.init(this);
 
@@ -380,6 +398,11 @@ public class PlayConfigurationView implements Initializable {
 		enableIpfs.setSelected(config.isEnableIpfs());
 		ipfsurl.setText(config.getIpfsUrl());
 
+		enableHttp.setSelected(config.isEnableHttp());
+		httpDownloadSource.setValue(config.getDownloadSource());
+		defaultDownloadURL.setText(config.getDefaultDownloadURL());
+		overrideDownloadURL.setText(config.getOverrideDownloadURL());
+
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
 		} else {
@@ -421,8 +444,13 @@ public class PlayConfigurationView implements Initializable {
 	}
 
 	public void updatePlayer() {
-		player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), players.getValue());
-		playername.setText(player.getName());
+        try {
+            player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), players.getValue());
+        } catch (PlayerConfigException e) {
+            Logger.getGlobal().warning("Player config failed to load: " + e.getLocalizedMessage());
+			player = PlayerConfig.validatePlayerConfig("player1", new PlayerConfig());
+        }
+        playername.setText(player.getName());
 
 		videoController.updatePlayer(player);
 		musicselectController.updatePlayer(player);
@@ -471,6 +499,7 @@ public class PlayConfigurationView implements Initializable {
 		target.getItems().setAll(targets);
 		target.setValue(player.getTargetid());
 		showhiddennote.setSelected(player.isShowhiddennote());
+		showpastnote.setSelected(player.isShowpastnote());
 
 		irController.update(player);
 		streamController.update(player);
@@ -513,6 +542,10 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setEnableIpfs(enableIpfs.isSelected());
 		config.setIpfsUrl(ipfsurl.getText());
+
+		config.setEnableHttp(enableHttp.isSelected());
+		config.setDownloadSource(httpDownloadSource.getValue());
+		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
 		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
@@ -574,6 +607,7 @@ public class PlayConfigurationView implements Initializable {
 		player.setTargetid(target.getValue());
 
 		player.setShowhiddennote(showhiddennote.isSelected());
+		player.setShowpastnote(showpastnote.isSelected());
 
 		inputController.commit();
 		irController.commit();
@@ -623,6 +657,8 @@ public class PlayConfigurationView implements Initializable {
 			PlayConfig conf = player.getPlayConfig(Mode.valueOf(pc.name())).getPlayconfig();
 			conf.setHispeed(getValue(hispeed).floatValue());
 			conf.setDuration(getValue(gvalue));
+			conf.setEnableConstant(enableConstant.isSelected());
+			conf.setConstantFadeinTime(getValue(constFadeinTime));
 			conf.setHispeedMargin(getValue(hispeedmargin).floatValue());
 			conf.setFixhispeed(fixhispeed.getValue());
 			conf.setEnablelanecover(enableLanecover.isSelected());
@@ -641,6 +677,8 @@ public class PlayConfigurationView implements Initializable {
 		PlayConfig conf = player.getPlayConfig(Mode.valueOf(pc.name())).getPlayconfig();
 		hispeed.getValueFactory().setValue((double) conf.getHispeed());
 		gvalue.getValueFactory().setValue(conf.getDuration());
+		enableConstant.setSelected(conf.isEnableConstant());
+		constFadeinTime.getValueFactory().setValue(conf.getConstantFadeinTime());
 		hispeedmargin.getValueFactory().setValue((double) conf.getHispeedMargin());
 		fixhispeed.setValue(conf.getFixhispeed());
 		enableLanecover.setSelected(conf.isEnablelanecover());

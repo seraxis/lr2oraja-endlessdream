@@ -5,7 +5,13 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.exceptions.PlayerConfigException;
+import bms.player.beatoraja.modmenu.DownloadTaskMenu;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.modmenu.ImGuiRenderer;
+import bms.player.beatoraja.modmenu.SongManagerMenu;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -38,6 +44,10 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
+import de.damios.guacamole.gdx.graphics.ShaderCompatibilityHelper;
+import de.damios.guacamole.gdx.graphics.ShaderProgramFactory;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * アプリケーションのルートクラス
@@ -46,9 +56,10 @@ import bms.tool.mdprocessor.MusicDownloadProcessor;
  */
 public class MainController {
 
-	private static final String VERSION = "LR2oraja Endless Dream 0.2.1";
+	private static final String VERSION = "LR2oraja Endless Dream pre-release 0.3.1";
 
 	public static final boolean debug = false;
+	public static final int debugTextXpos = 10;
 
 	/**
 	 * 起動時間
@@ -70,7 +81,6 @@ public class MainController {
 	private PlayerResource resource;
 
 	private BitmapFont systemfont;
-	private MessageRenderer messageRenderer;
 
 	private MainState current;
 	
@@ -110,7 +120,8 @@ public class MainController {
 	private Thread screenshot;
 
 	private MusicDownloadProcessor download;
-	
+	private HttpDownloadProcessor httpDownloadProcessor;
+
 	private StreamController streamController;
 
 	public static final int offsetCount = SkinProperty.OFFSET_MAX + 1;
@@ -135,8 +146,12 @@ public class MainController {
 		}
 
 		if(player == null) {
-			player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), config.getPlayername());
-		}
+            try {
+                player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), config.getPlayername());
+            } catch (PlayerConfigException e) {
+                Logger.getGlobal().severe(e.getLocalizedMessage());
+            }
+        }
 		this.player = player;
 
 		this.bmsfile = f;
@@ -148,6 +163,16 @@ public class MainController {
 			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
 			if (ipfspath.toFile().exists() && !roots.contains(ipfspath.toString())) {
 				roots.add(ipfspath.toString());
+				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
+			}
+		}
+		if (config.isEnableHttp()) {
+			Path httpdlPath = Paths.get("http_download").toAbsolutePath();
+			if (!httpdlPath.toFile().exists())
+				httpdlPath.toFile().mkdirs();
+			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
+			if (httpdlPath.toFile().exists() && !roots.contains(httpdlPath.toString())) {
+				roots.add(httpdlPath.toString());
 				getConfig().setBmsroot(roots.toArray(new String[roots.size()]));
 			}
 		}
@@ -317,7 +342,7 @@ public class MainController {
 
 	public void create() {
 		final long t = System.currentTimeMillis();
-		sprite = new SpriteBatch();
+		sprite = SpriteBatchHelper.createSpriteBatch();
 		SkinLoader.initPixmapResourcePool(config.getSkinPixmapGen());
 
 
@@ -332,7 +357,6 @@ public class MainController {
 		} catch (GdxRuntimeException e) {
 			Logger.getGlobal().severe("System Font読み込み失敗");
 		}
-		messageRenderer = new MessageRenderer(config.getMessagefontpath());
 
 		input = new BMSPlayerInputProcessor(config, player);
 		switch(config.getAudioConfig().getDriver()) {
@@ -347,9 +371,10 @@ public class MainController {
 		resource = new PlayerResource(audio, config, player);
 		selector = new MusicSelector(this, songUpdated);
 		if(player.getRequestEnable()) {
-		    streamController = new StreamController(selector, (player.getRequestNotify() ? messageRenderer : null));
+		    streamController = new StreamController(selector);
 	        streamController.run();
 		}
+		SongManagerMenu.injectMusicSelector(selector);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
 		gresult = new CourseResult(this);
@@ -414,8 +439,14 @@ public class MainController {
 			download.start(null);
 		}
 
+		if (config.isEnableHttp()) {
+			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
+			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
+			DownloadTaskMenu.initialize(httpDownloadProcessor);
+		}
+
 		if(ir.length > 0) {
-			messageRenderer.addMessage(ir.length + " IR Connection Succeed" ,5000, Color.GREEN, 1);
+			ImGuiNotify.info("%d IR Connection Succeed", ir.length);
 
 			Thread irResendProcess = new Thread(() -> {
 				for (;;) {
@@ -433,7 +464,7 @@ public class MainController {
 								}
 								if(score.retry > getConfig().getIrSendCount()) {
 									removeIrSendStatus.add(score);
-									messageRenderer.addMessage("Failed to send a score for " + score.song.getTitle() + score.song.getSubtitle(),5000, Color.RED, 1);
+									ImGuiNotify.error(String.format("Failed to send a score for %s %s", score.song.getTitle(), score.song.getSubtitle()));
 								}
 							}
 							irSendStatus.removeAll(removeIrSendStatus);
@@ -480,30 +511,60 @@ public class MainController {
 			sprite.begin();
 			systemfont.setColor(Color.CYAN);
 			message.setLength(0);
-			systemfont.draw(sprite, message.append("FPS ").append(Gdx.graphics.getFramesPerSecond()), 10,
+			systemfont.draw(sprite, message.append("FPS ").append(Gdx.graphics.getFramesPerSecond()), debugTextXpos,
 					config.getResolution().height - 2);
-			if(debug) {
+					if(debug) {
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Skin Pixmap Images ").append(SkinLoader.getResource().size()), 10,
+				systemfont.draw(sprite, message.append("Skin Pixmap Images ").append(SkinLoader.getResource().size()), debugTextXpos,
 						config.getResolution().height - 26);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Total Memory Used(MB) ").append(Runtime.getRuntime().totalMemory() / (1024 * 1024)), 10,
+				systemfont.draw(sprite, message.append("Total Memory Used(MB) ").append(Runtime.getRuntime().totalMemory() / (1024 * 1024)), debugTextXpos,
 						config.getResolution().height - 50);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Total Free Memory(MB) ").append(Runtime.getRuntime().freeMemory() / (1024 * 1024)), 10,
+				systemfont.draw(sprite, message.append("Total Free Memory(MB) ").append(Runtime.getRuntime().freeMemory() / (1024 * 1024)), debugTextXpos,
 						config.getResolution().height - 74);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Max Sprite In Batch ").append(sprite.maxSpritesInBatch), 10,
+				systemfont.draw(sprite, message.append("Max Sprite In Batch ").append(sprite.maxSpritesInBatch), debugTextXpos,
 						config.getResolution().height - 98);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Skin Pixmap Resource Size ").append(SkinLoader.getResource().size()), 10,
+				systemfont.draw(sprite, message.append("Skin Pixmap Resource Size ").append(SkinLoader.getResource().size()), debugTextXpos,
 						config.getResolution().height - 122);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Stagefile Pixmap Resource Size ").append(selector.getStagefileResource().size()), 10,
+				systemfont.draw(sprite, message.append("Stagefile Pixmap Resource Size ").append(selector.getStagefileResource().size()), debugTextXpos,
 						config.getResolution().height - 146);
 				message.setLength(0);
-				systemfont.draw(sprite, message.append("Banner Pixmap Resource Size ").append(selector.getBannerResource().size()), 10,
+				systemfont.draw(sprite, message.append("Banner Pixmap Resource Size ").append(selector.getBannerResource().size()), debugTextXpos,
 						config.getResolution().height - 170);
+						if (current.getSkin() != null) {
+					message.setLength(0);
+					systemfont.draw(sprite, message.append("Skin Prepare Time ").append(current.getSkin().pcntPrepare), debugTextXpos,
+							config.getResolution().height - 194);
+					message.setLength(0);
+					systemfont.draw(sprite, message.append("Skin Draw Time ").append(current.getSkin().pcntDraw), debugTextXpos,
+							config.getResolution().height - 218);
+					var i = 0;
+					var l = current.getSkin().pcntmap.keySet().stream().mapToInt(c->c.getSimpleName().length()).max().orElse(1);
+					var f = "%" + l + "s";
+					message.setLength(0);
+					message.append(String.format(f,"SkinObject")).append(" num // prepare cur/avg/max // draw cur/avg/max");
+					systemfont.draw(sprite, message, debugTextXpos, config.getResolution().height - 242);
+					var entrys = current.getSkin().pcntmap.entrySet().stream()
+						.sorted((e1,e2) -> e1.getKey().getSimpleName().compareTo(e2.getKey().getSimpleName()))
+						.toList();
+					for (Map.Entry<Class, long[]> e : entrys) {
+						message.setLength(0);
+						message.append(String.format(f,e.getKey().getSimpleName())).append(" ")
+						.append(e.getValue()[0]).append(" // ")
+						.append(e.getValue()[1]/100).append(" / ")
+						.append(e.getValue()[2]/100000).append(" / ")
+						.append(e.getValue()[3]/100).append(" // ")
+						.append(e.getValue()[4]/100).append(" / ")
+						.append(e.getValue()[5]/100000).append(" / ")
+						.append(e.getValue()[6]/100);
+						systemfont.draw(sprite, message, debugTextXpos, config.getResolution().height - (266 + i * 24));
+						i++;
+					}
+				}
 			}
 
 			sprite.end();
@@ -511,11 +572,6 @@ public class MainController {
 		imGui.start();
 		imGui.render();
 		imGui.end();
-
-		// show message
-		sprite.begin();
-		messageRenderer.render(current, sprite, 100, config.getResolution().height - 2);
-		sprite.end();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
@@ -701,10 +757,6 @@ public class MainController {
 		return download;
 	}
 
-	public MessageRenderer getMessageRenderer() {
-		return messageRenderer;
-	}
-
 	public ImGuiRenderer getImGui() {
 		return imGui;
 	}
@@ -780,6 +832,14 @@ public class MainController {
 		timer.setMicroTimer(id, microtime);
 	}
 
+	public HttpDownloadProcessor getHttpDownloadProcessor() {
+		return httpDownloadProcessor;
+	}
+
+	public void setHttpDownloadProcessor(HttpDownloadProcessor httpDownloadProcessor) {
+		this.httpDownloadProcessor = httpDownloadProcessor;
+	}
+
 	public void switchTimer(int id, boolean on) {
 		timer.switchTimer(id, on);
 	}
@@ -841,9 +901,8 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.CYAN, 1);
+			ImGuiNotify.info(this.message);
 			getSongDatabase().updateSongDatas(path, config.getBmsroot(), false, getInfoDatabase());
-			message.stop();
 		}
 	}
 
@@ -862,13 +921,12 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.CYAN, 1);
+			ImGuiNotify.info(this.message);
 			TableData td = accessor.getAccessor().read();
 			if (td != null) {
 				accessor.getAccessor().write(td);
 				accessor.setTableData(td);
 			}
-			message.stop();
 		}
 	}
 
@@ -878,16 +936,14 @@ public class MainController {
 		}
 
 		public void run() {
-			Message message = messageRenderer.addMessage(this.message, Color.LIME, 1);
 			while (download != null && download.isDownload() && download.getMessage() != null) {
-				message.setText(download.getMessage());
+				ImGuiNotify.info(download.getMessage());
 				try {
 					sleep(100);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			message.stop();
 		}
 	}
 

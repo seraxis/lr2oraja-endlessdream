@@ -1,7 +1,5 @@
 package bms.player.beatoraja.pattern;
 
-import java.util.List;
-
 import bms.model.*;
 import bms.player.beatoraja.PlayerConfig;
 
@@ -22,13 +20,13 @@ public class PracticeModifier extends PatternModifier {
 	private long end;
 
 	public PracticeModifier(long start, long end) {
-		super(2);
+		super(AssistLevel.ASSIST);
 		this.start = start;
 		this.end = end;
 	}
 
 	@Override
-	public List<PatternModifyLog> modify(BMSModel model) {
+	public void modify(BMSModel model) {
 		int totalnotes = model.getTotalNotes();
 		final TimeLine[] tls = model.getAllTimeLines();
 		for (TimeLine tl : tls) {
@@ -39,8 +37,6 @@ public class PracticeModifier extends PatternModifier {
 			}
 		}
 		model.setTotal(model.getTotal() * model.getTotalNotes() / totalnotes);
-
-		return null;
 	}
 
 }

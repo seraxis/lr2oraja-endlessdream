@@ -112,14 +112,19 @@ public class RandomTrainerMenu {
     private static void dragAndDropKeyDisplay() {
         ImGui.text("Random Select");
         ImGui.sameLine();
-        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(196,196,196));
-        ImGui.text("(drag and drop to reorder lanes)");
-        ImGui.popStyleColor();
+//        ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(196,196,196));
+//        ImGui.text("(drag and drop to reorder lanes)");
+//        ImGui.popStyleColor();
+        helpMarker("Drag and drop to reorder lanes, right click to toggle random.");
         ImGui.newLine();
         for(int i = 0; i < LANE_ORDER.size(); i++) {
             ImGui.pushID(i);
             ImGui.sameLine();
-            if (Integer.parseInt(LANE_ORDER.get(i)) % 2 == 0) {
+            boolean toRandom = RandomTrainer.isLaneToRandom(LANE_ORDER.get(i).charAt(0));
+            if (toRandom) {
+                ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(180,100,140));
+                ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(230,230,230));
+            } else if (Integer.parseInt(LANE_ORDER.get(i)) % 2 == 0) {
                 ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(0,0,139));
                 ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(230,230,230));
             } else {
@@ -128,6 +133,8 @@ public class RandomTrainerMenu {
             }
             if (BLACK_WHITE_RANDOM_PERMUTATION.get()) {
                 ImGui.button("", 50, 80);
+            } else if (toRandom) {
+                ImGui.button("?", 50, 80);
             } else {
                 ImGui.button(LANE_ORDER.get(i), 50, 80);
             }
@@ -146,6 +153,13 @@ public class RandomTrainerMenu {
                 }
 
                 ImGui.endDragDropTarget();
+            }
+            if (ImGui.isItemClicked(1)) {
+                if (toRandom) {
+                    RandomTrainer.removeLaneToRandom(LANE_ORDER.get(i).charAt(0));
+                } else {
+                    RandomTrainer.setLaneToRandom(LANE_ORDER.get(i).charAt(0));
+                }
             }
             ImGui.popID();
 

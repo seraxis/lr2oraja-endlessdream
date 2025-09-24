@@ -1,10 +1,9 @@
 package bms.player.beatoraja.audio;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
+import java.nio.ShortBuffer;
 import java.util.logging.Logger;
 
 
@@ -17,193 +16,194 @@ import java.util.logging.Logger;
 public class MSADPCMDecoder {
 
     private static final int[] AdaptionTable = {
-        230, 230, 230, 230, 307, 409, 521, 614,
+        230, 230, 230, 230, 307, 409, 512, 614,
         768, 614, 512, 409, 307, 230, 230, 230
     };
 
     private static final int[] InitializationCoeff1 = {
-        256, 512, 0, 192, 240, 460, 392
+            64, 128, 0, 48, 60, 115, 98
     };
     private static final int[] InitializationCoeff2 = {
-        0, -256, 0, 64, 0, -208, -232
+            0, -64, 0, 16, 0, -52, -58
     };
 
-    private int[] AdaptCoeff1;
-    private int[] AdaptCoeff2;
+    private int[] adaptCoeff1;
+    private int[] adaptCoeff2;
 
-    private short[] InitialDelta = new short[2];
-    private short[] Sample1 = new short[2];
-    private short[] Sample2 = new short[2];
-
-    private short[] pcmBlock;
-    private final byte[]  adpcmBlock;
+    private int[] initialDelta;
+    private int[] sample1;
+    private int[] sample2;
+    private short[][] channelSamples;
 
     private final int samplesPerBlock;
     private final int channels;
-    private final int blocksize;
+    private final int blockSize;
     private final int sampleRate;
 
     public MSADPCMDecoder(int channels, int sampleRate, int blockAlign) {
         this.channels = channels;
         this.sampleRate = sampleRate;
-        this.blocksize = blockAlign;
-        this.samplesPerBlock = (blocksize - channels * 4) * (channels ^ 3) + 1;
-
-        pcmBlock        = new short[samplesPerBlock * channels];
-        adpcmBlock      = new byte[blocksize];
+        this.blockSize = blockAlign;
+        // sizeof(header) = 7
+        // each header contains two samples
+        // channels * 2 + (blockSize - channels * sizeof(header)) * 2 ==> (blockSize - channels * 6) * 2
+        this.samplesPerBlock = (blockSize - channels * 6) * 2 / channels;
     }
 
-    public ByteArrayOutputStream decode(ByteBuffer in, ByteArrayOutputStream out) throws IOException {
-        while (in.hasRemaining()) {
-            int samplesPerBlock = (blocksize - channels * 4) * (channels ^ 3) + 1;
-            int blockAdpcmSamples = samplesPerBlock;
-            int blockPcmSamples   = samplesPerBlock;
-            int currentBlockSize  = blocksize;
+    public ByteBuffer decode(ByteBuffer in) throws IOException {
+        // init decode context
+        adaptCoeff1 = new int[channels];
+        adaptCoeff2 = new int[channels];
+        initialDelta = new int[channels];
+        sample1 = new int[channels];
+        sample2 = new int[channels];
+        if (channels > 2)
+            channelSamples = new short[channels][samplesPerBlock];
 
-            int numSamples = (in.remaining() - 6 * channels) * 2 / channels;
-            if (currentBlockSize > in.remaining()) {
-                samplesPerBlock = (in.remaining() - channels * 4) * (channels ^ 3) + 1;
-            }
-
-            pcmBlock = new short[samplesPerBlock*channels];
-/*             if (currentBlockSize > in.remaining()) {
-                int numSamples = (in.remaining() - 6 * channels) * 2 / channels;
-                if (blockAdpcmSamples > numSamples) {
-                    blockAdpcmSamples = ((numSamples + 6) & ~7) + 1;
-                    currentBlockSize  = (blockAdpcmSamples - 1) / (channels ^ 3) + (channels * 4);
-                    blockPcmSamples   = numSamples;
-                }
-                Logger.getGlobal().warning("numSamples: " + numSamples );
-            } */
-/*             Logger.getGlobal().info("Good decode pass");
-            Logger.getGlobal().warning("block size: " +currentBlockSize);
-            Logger.getGlobal().warning("blockadpcm samples " + blockAdpcmSamples);
-            Logger.getGlobal().warning("in.remaining() " + in.remaining()); */
-            //Logger.getGlobal().warning("out.remaining() " + out.remaining());
-
-            if (in.remaining() < currentBlockSize) {
-                //Logger.getGlobal().severe("Malformed MS ADPCM block");
-                //throw new IOException("too few elements left in input buffer");
-                Logger.getGlobal().info("End runt block");
-                in.get(adpcmBlock, 0, in.remaining());
-                decode_block(pcmBlock, adpcmBlock, in.remaining());
-            } else {
-                in.get(adpcmBlock, 0, currentBlockSize);
-                decode_block(pcmBlock, adpcmBlock, currentBlockSize);
-            }
-
-
-            ByteBuffer bff = ByteBuffer.allocate(pcmBlock.length * 2);
-            bff.order(ByteOrder.LITTLE_ENDIAN);
-            bff.asShortBuffer().put(pcmBlock);
-            out.write(bff.array());
+        if ((in.remaining() % blockSize) != 0){
+            Logger.getGlobal().severe("Malformed MS ADPCM block");
+            throw new IOException("too few elements left in input buffer");
+            // Note: ffmpeg doesn't process incomplete blocks.
         }
+        int blockCount = in.remaining() / blockSize;
+        int blockSampleSize = samplesPerBlock * channels * 2;
+        ByteBuffer out = ByteBuffer.allocate(blockCount * blockSampleSize);
+        out.order(ByteOrder.LITTLE_ENDIAN);
 
-        Logger.getGlobal().info("Return hit");
+        while (in.hasRemaining()) {
+//            in.get(adpcmBlock, 0, blockSize);
+            ByteBuffer block = in.slice();
+            block.limit(blockSize);
+            block = block.order(ByteOrder.LITTLE_ENDIAN);
+            decode_block(out.asShortBuffer(), block);
+            in.position(in.position() + blockSize);
+            out.position(out.position() + blockSampleSize);
+        }
+//        Logger.getGlobal().info("Return hit");
+        out.flip();
         return out;
     }
-    
-    private void decode_block(short[] out, byte[] block_data, int inSize) throws IOException {
+
+    private void decode_block(ShortBuffer out, ByteBuffer blockData) throws IOException {
         //Logger.getGlobal().info("decoding block");
-        
-        AdaptCoeff1 = new int[channels];
-        AdaptCoeff2 = new int[channels];
-        
-        int outPtr = 0;
-        int inPtr = 0;
-        
-        /*
-         * Obtain ADPCM block preamble for all channels.
-         * Channels are interleaved for the block predictor.
-         * iDelta, Sample's 1 and 2 are all signed 16 bit Shorts in little endian
-         * 
-         * Here is an example block preamble layout for stereo
-         *    Byte          Description
-         *   ----------------------------------
-         *      0       left  channel block predictor
-         *      1       right channel block predictor 
-         *      2       left  channel idelta LOW     
-         *      3       left  channel idelta HIGH
-         *      4       right channel idelta LOW
-         *      5       right channel idelta HIGH
-         *      6       left  channel sample1 LOW    
-         *      7       left  channel sample1 HIGH
-         *      8       right channel sample1 LOW
-         *      9       right channel sample1 HIGH
-         *     10       left  channel sample2 LOW    
-         *     11       left  channel sample2 HIGH
-         *     12       right channel sample2 LOW
-         *     13       right channel sample2 HIGH
-         */
-        for (int ch = 0; ch < channels; ch++) {
-            int predictor = Byte.toUnsignedInt(block_data[inPtr]);
-            if (predictor > 6) {
-                Logger.getGlobal().warning("Malformed block header");
-                throw new IOException("Malformed block header. Expected range for predictor 0..6, found "+ predictor);
+
+        if (channels > 2) {
+            // When channels > 2, channels are NOT interleaved.
+            for (int ch = 0; ch < channels; ch++) {
+                int predictor = Byte.toUnsignedInt(blockData.get());
+                if (predictor > 6) {
+                    Logger.getGlobal().warning("Malformed block header");
+                    throw new IOException("Malformed block header. Expected range for predictor 0..6, found "+ predictor);
+                }
+
+                // Initialize the Adaption coefficients for each channel by indexing
+                // into the coeff. table with the predictor value (range 0..6)
+                adaptCoeff1[ch] = InitializationCoeff1[predictor];
+                adaptCoeff2[ch] = InitializationCoeff2[predictor];
+
+                initialDelta[ch] = blockData.getShort();
+
+                // Acquire initial uncompressed signed 16 bit PCM samples for initialization
+                sample1[ch] = blockData.getShort();
+
+                sample2[ch] = blockData.getShort();
+
+                int samplePtr = 0;
+                channelSamples[ch][samplePtr++] = (short) sample2[ch];
+                channelSamples[ch][samplePtr++] = (short) sample1[ch];
+
+                for (int n = (samplesPerBlock - 2) >> 1; n > 0; n--){
+                    int currentByte = Byte.toUnsignedInt(blockData.get());
+
+                    channelSamples[ch][samplePtr++] = expandNibble((currentByte & 0xFF) >> 4, ch);
+                    channelSamples[ch][samplePtr++] = expandNibble((currentByte & 0xFF) & 0xf, ch);
+                }
             }
-            inPtr += 1;
-            
-            // Initialize the Adaption coefficients for each channel by indexing
-            // into the coeff. table with the predictor value (range 0..6)
-            AdaptCoeff1[ch] = InitializationCoeff1[predictor];
-            AdaptCoeff2[ch] = InitializationCoeff2[predictor];
-        }
+            // interleave samples
+            for (int i = 0; i < samplesPerBlock; i++){
+                for (int j = 0; j < channels; j++){
+                    out.put(channelSamples[j][i]);
+                }
+            }
+        } else {
+            /*
+             * Obtain ADPCM block preamble for all channels.
+             * Channels are interleaved for the block predictor.
+             * iDelta, Sample's 1 and 2 are all signed 16 bit Shorts in little endian
+             *
+             * Here is an example block preamble layout for stereo
+             *    Byte          Description
+             *   ----------------------------------
+             *      0       left  channel block predictor
+             *      1       right channel block predictor
+             *      2       left  channel idelta LOW
+             *      3       left  channel idelta HIGH
+             *      4       right channel idelta LOW
+             *      5       right channel idelta HIGH
+             *      6       left  channel sample1 LOW
+             *      7       left  channel sample1 HIGH
+             *      8       right channel sample1 LOW
+             *      9       right channel sample1 HIGH
+             *     10       left  channel sample2 LOW
+             *     11       left  channel sample2 HIGH
+             *     12       right channel sample2 LOW
+             *     13       right channel sample2 HIGH
+             */
+            for (int ch = 0; ch < channels; ch++) {
+                int predictor = Byte.toUnsignedInt(blockData.get());
+                if (predictor > 6) {
+                    Logger.getGlobal().warning("Malformed block header");
+                    throw new IOException("Malformed block header. Expected range for predictor 0..6, found "+ predictor);
+                }
 
-        // TODO: Revisit this index maths
-        for (int ch = 0; ch < channels; ch++) {
-            ByteBuffer iDeltaBuf = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
-            iDeltaBuf.put(block_data[inPtr]);
-            iDeltaBuf.put(block_data[inPtr + 1]);
-            InitialDelta[ch] = iDeltaBuf.getShort(0); 
-            inPtr += 2;
-        }
+                // Initialize the Adaption coefficients for each channel by indexing
+                // into the coeff. table with the predictor value (range 0..6)
+                adaptCoeff1[ch] = InitializationCoeff1[predictor];
+                adaptCoeff2[ch] = InitializationCoeff2[predictor];
+            }
 
-        for (int ch = 0; ch < channels; ch++) {
+            for (int ch = 0; ch < channels; ch++) {
+                initialDelta[ch] = blockData.getShort();
+            }
+
             // Acquire initial uncompressed signed 16 bit PCM samples for initialization
-            ByteBuffer Sample1Buf = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
-            Sample1Buf.put(block_data[inPtr]);
-            Sample1Buf.put(block_data[inPtr + 1]);
-            Sample1[ch] = Sample1Buf.getShort(0);
-            inPtr += 2;
+            for (int ch = 0; ch < channels; ch++) {
+                sample1[ch] = blockData.getShort();
+            }
+
+            for (int ch = 0; ch < channels; ch++) {
+                sample2[ch] = blockData.getShort();
+            }
+
+            for (int ch = 0; ch < channels; ch++) {
+                out.put((short) sample2[ch]);
+            }
+
+            for (int ch = 0; ch < channels; ch++) {
+                out.put((short) sample1[ch]);
+            }
+
+            int ch = 0;
+
+            // for (n = (nb_samples - 2) >> (1 - stereo); n > 0; n--)
+            while (blockData.hasRemaining()) {
+                int currentByte = Byte.toUnsignedInt(blockData.get());
+
+                out.put(expandNibble((currentByte & 0xFF) >> 4, ch));
+                ch = (ch + 1) % channels;
+
+                out.put(expandNibble((currentByte & 0xFF) & 0xf, ch));
+                ch = (ch + 1) % channels;
+            }
         }
 
-        for (int ch = 0; ch < channels; ch++) {
-            ByteBuffer Sample2Buf = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
-            Sample2Buf.put(block_data[inPtr]);
-            Sample2Buf.put(block_data[inPtr + 1]);
-            Sample2[ch] = Sample2Buf.getShort(0);
-            inPtr += 2;
 
-        } 
-
-
-        for (int ch = 0; ch < channels; ch++) { 
-            out[outPtr++] = Sample2[ch];
-            out[outPtr++] = Sample1[ch]; 
-        }
-
-        int ch = 0;
-        
-        // for (n = (nb_samples - 2) >> (1 - stereo); n > 0; n--)
-        while (inPtr < inSize) {
-            // need larger type than byte to avoid signed byte being used
-            byte currentByte = block_data[inPtr++];
-
-            //Logger.getGlobal().info(String.format("0x%02X", currentByte));
-
-            
-            out[outPtr++] = expandNibble((currentByte & 0xFF) >> 4, ch);
-            ch = (ch + 1) % channels;
-
-            out[outPtr++] = expandNibble((currentByte & 0xFF) & 0xf, ch);
-            ch = (ch + 1) % channels;
-        }
         //Logger.getGlobal().info("===== BLOCK FINISH =====");
     }
     
 
     private short expandNibble(int nibble, int channel) {
-        int signed = 0;
+        int signed;
         if (nibble >= 8) {
             signed = nibble - 16;
         } else {
@@ -211,33 +211,20 @@ public class MSADPCMDecoder {
         }
         
 
-        short predictor = 0;
-        //Logger.getGlobal().info("Preditor reassign, channels: " + channel);
-        try {
-            //Logger.getGlobal().info("Sample1 + Sample2 " + Arrays.toString(Sample1) + " " + Arrays.toString(Sample2));
-            //Logger.getGlobal().info("AdaptCoeff1 + AdaptCoeff2 " + Arrays.toString(AdaptCoeff1) + " " + Arrays.toString(AdaptCoeff2));
-            //Logger.getGlobal().info("IntialDelta " + Arrays.toString(InitialDelta));
-            int result = (Sample1[channel] * AdaptCoeff1[channel]) + (Sample2[channel] * AdaptCoeff2[channel]);
-            predictor = clamp((result >> 8) + (signed * InitialDelta[channel]));
+        short predictor;
+        int result = (sample1[channel] * adaptCoeff1[channel]) + (sample2[channel] * adaptCoeff2[channel]);
+        predictor = clamp((result >> 6) + (signed * initialDelta[channel]));
 
-            Sample2[channel] = Sample1[channel];
-            Sample1[channel] = predictor;
-        } catch (Exception ex) {
-            Logger.getGlobal().warning("caught: " + ex);
-            throw ex;
+        sample2[channel] = sample1[channel];
+        sample1[channel] = predictor;
+
+        initialDelta[channel] = (AdaptionTable[nibble] * initialDelta[channel]) >> 8;
+        if (initialDelta[channel] < 16) {
+            initialDelta[channel] = 16;
         }
-
-        try {
-            //Logger.getGlobal().info("idelta reassign");
-            //Logger.getGlobal().info("signed " + signed);
-            InitialDelta[channel] = (short) Math.floor(AdaptionTable[nibble] * InitialDelta[channel] / 256);
-            if (InitialDelta[channel] < 16) {
-                InitialDelta[channel] = 16;
-            }
-
-        } catch (Exception ex) {
-            Logger.getGlobal().warning("caught: " + ex);
-            throw ex;
+        if (initialDelta[channel] > Integer.MAX_VALUE/768){
+            Logger.getGlobal().warning("idelta overflow");
+            initialDelta[channel] = Integer.MAX_VALUE/768;
         }
         return predictor;
     }

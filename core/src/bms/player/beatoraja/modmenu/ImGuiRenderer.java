@@ -35,8 +35,11 @@ public class ImGuiRenderer {
 
     private static ImBoolean SHOW_MOD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_RANDOM_TRAINER = new ImBoolean(false);
-
     private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
+    private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
+    private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
+    private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
+    private static ImBoolean SHOW_MISC_SETTING = new ImBoolean(false);
 
 
     public static void init() {
@@ -59,6 +62,12 @@ public class ImGuiRenderer {
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesJapanese());
+        // TODO: After ImGUI 1.92, manual glyph setup is no longer required. We can delete this garbage line after
+        // ImGui-java has upgraded to 1.92 or above
+        // This line is provided for "reverse difficult table lookup" feature. Because some difficult tables' symbol
+        // is not baked in above glyph ranges, this line manually adds them into the ranges. Otherwise, the symbol
+        // would be rendered as a '?' in ImGUI window.
+        rangesBuilder.addText("☆★▽▼δ白黒◆◎縦≡田⇒●∽");
 
         // Font config for additional fonts
         // This is a natively allocated struct so don't forget to call destroy after atlas is built
@@ -94,13 +103,30 @@ public class ImGuiRenderer {
 
             ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
+            ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
+            ImGui.checkbox("Show Song Manager Menu", SHOW_SONG_MANAGER);
+            ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
+            ImGui.checkbox("Show Misc Setting Menu", SHOW_MISC_SETTING);
+
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);
             }
             if (SHOW_RANDOM_TRAINER.get()) {
                 RandomTrainerMenu.show(SHOW_RANDOM_TRAINER);
             }
-
+            if (SHOW_JUDGE_TRAINER.get()) {
+                JudgeTrainerMenu.show(SHOW_JUDGE_TRAINER);
+            }
+            if (SHOW_SONG_MANAGER.get()) {
+                SongManagerMenu.show(SHOW_SONG_MANAGER);
+            }
+            // TODO: This menu should based on config. Should not be rendered if user doesn't flag the http download feature
+            if (SHOW_DOWNLOAD_MENU.get()) {
+                DownloadTaskMenu.show(SHOW_DOWNLOAD_MENU);
+            }
+            if (SHOW_MISC_SETTING.get()) {
+                MiscSettingMenu.show(SHOW_MISC_SETTING);
+            }
 
             if (ImGui.treeNode("Controller Input Debug Information")) {
                 float axis;
@@ -114,6 +140,8 @@ public class ImGuiRenderer {
             }
             ImGui.end();
         }
+
+        ImGuiNotify.renderNotifications();
     }
 
 

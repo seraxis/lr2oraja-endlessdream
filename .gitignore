@@ -13,7 +13,7 @@ songinfo.db
 config.json
 config_sys.json
 beatoraja.jar
-beatoraja_log.xml
+beatoraja_log.*
 /bin/
 b.bat
 /*.dll
