@@ -11,15 +11,14 @@ import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
-import javafx.scene.control.Toggle;
 
 import java.util.*;
 
 public class SkinWidgetManager {
     private static final double eps = 1e-5;
     private static final Object LOCK = new Object();
-    private static List<SkinWidget> widgets = new ArrayList<>();
-    private static final Map<String, List<Event<?>>> events = new HashMap<>();
+    private static final EventHistory eventHistory = new EventHistory();
+    private static final List<SkinWidget> widgets = new ArrayList<>();
 
     private static final ImFloat editingWidgetX = new ImFloat(0);
     private static final ImFloat editingWidgetY = new ImFloat(0);
@@ -29,7 +28,7 @@ public class SkinWidgetManager {
     public static void changeSkin(Skin skin) {
         synchronized (LOCK) {
             widgets.clear();
-            events.clear();
+            eventHistory.clear();
             if (skin == null) {
                 return ;
             }
@@ -124,10 +123,10 @@ public class SkinWidgetManager {
                         // If you want to implement a dynamic system, you can combine the event type & getter
                         // in a pair type: Pair<EventType, Function<SkinWidget, Float>
                         // The remaining things are trivial
-                        drawFloatValueColumn(1, dst.hasEvent(Event.EventType.CHANGE_X), dst.getDstX());
-                        drawFloatValueColumn(2, dst.hasEvent(Event.EventType.CHANGE_Y), dst.getDstY());
-                        drawFloatValueColumn(3, dst.hasEvent(Event.EventType.CHANGE_W), dst.getDstW());
-                        drawFloatValueColumn(4, dst.hasEvent(Event.EventType.CHANGE_H), dst.getDstH());
+                        drawFloatValueColumn(1, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_X), dst.getDstX());
+                        drawFloatValueColumn(2, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_Y), dst.getDstY());
+                        drawFloatValueColumn(3, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_W), dst.getDstW());
+                        drawFloatValueColumn(4, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_H), dst.getDstH());
 
                         ImGui.tableSetColumnIndex(5);
                         if (ImGui.button("Edit")) {
@@ -171,13 +170,13 @@ public class SkinWidgetManager {
             ImGui.tableSetupScrollFreeze(0, 1);
             ImGui.tableSetupColumn("Description");
             ImGui.tableHeadersRow();
-            List<Event<?>> flatEvents = events.values().stream().flatMap(Collection::stream).toList();
-            ImGuiListClipper.forEach(flatEvents.size(), new ImListClipperCallback() {
+            List<Event<?>> events = eventHistory.getEvents();
+            ImGuiListClipper.forEach(events.size(), new ImListClipperCallback() {
                 @Override
                 public void accept(int row) {
                     ImGui.pushID(row);
 
-                    Event<?> event = flatEvents.get(row);
+                    Event<?> event = events.get(row);
                     ImGui.tableNextRow();
 
                     ImGui.tableSetColumnIndex(0);
@@ -210,17 +209,7 @@ public class SkinWidgetManager {
         }
     }
 
-    /**
-     * Push one "change single field" event into list
-     *
-     * @param type event type
-     * @param previous previous value
-     * @param current current value
-     */
-    private static void pushChangeSingleFieldEvent(Event.EventType type, SkinWidgetDestination dst, float previous, float current) {
-        events.putIfAbsent(dst.name, new ArrayList<>());
-        events.get(dst.name).add(new ChangeSingleFieldEvent(type, dst, previous, current));
-    }
+
 
     // A simple wrapper class of SkinObject
     private static class SkinWidget {
@@ -235,27 +224,14 @@ public class SkinWidgetManager {
             this.destinations = destinations;
         }
 
-        public boolean hasMultipleDestinations() {
-            return destinations.size() > 1;
-        }
-
         public boolean isDrawingOnScreen() {
             return skinObject.draw && skinObject.visible;
         }
 
         public void toggleVisible() {
-            events.putIfAbsent(name, new ArrayList<>());
             boolean isVisibleBefore = skinObject.visible;
-            events.get(name).add(new ToggleVisibleEvent(this, isVisibleBefore));
+            eventHistory.pushEvent(new ToggleVisibleEvent(this, isVisibleBefore));
             skinObject.visible = !isVisibleBefore;
-        }
-
-        public boolean hasEvent(Event.EventType type) {
-            if (!events.containsKey(this.name)) {
-                return false;
-            }
-            List<Event<?>> events = SkinWidgetManager.events.get(this.name);
-            return events.stream().anyMatch(event -> event.type == type);
         }
     }
 
@@ -288,7 +264,7 @@ public class SkinWidgetManager {
         public void setDstX(float x) {
             float previous = this.getDstX();
             if (Math.abs(x - previous) > eps) {
-                pushChangeSingleFieldEvent(Event.EventType.CHANGE_X, this, previous, x);
+                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_X, this, previous, x));
             }
             destination.region.x = x;
         }
@@ -296,7 +272,7 @@ public class SkinWidgetManager {
         public void setDstY(float y) {
             float previous = this.getDstY();
             if (Math.abs(y - previous) > eps) {
-                pushChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this, previous, y);
+                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this, previous, y);
             }
             destination.region.y = y;
         }
@@ -304,7 +280,7 @@ public class SkinWidgetManager {
         public void setDstW(float w) {
             float previous = this.getDstW();
             if (Math.abs(w - previous) > eps) {
-                pushChangeSingleFieldEvent(Event.EventType.CHANGE_W, this, previous, w);
+                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_W, this, previous, w);
             }
             destination.region.width = w;
         }
@@ -312,17 +288,9 @@ public class SkinWidgetManager {
         public void setDstH(float h) {
             float previous = this.getDstH();
             if (Math.abs(h - previous) > eps) {
-                pushChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h);
+                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h);
             }
             destination.region.height = h;
-        }
-
-        public boolean hasEvent(Event.EventType type) {
-            if (!events.containsKey(this.name)) {
-                return false;
-            }
-            List<Event<?>> events = SkinWidgetManager.events.get(this.name);
-            return events.stream().anyMatch(event -> event.type == type);
         }
     }
 
@@ -349,6 +317,8 @@ public class SkinWidgetManager {
         public abstract void undo();
 
         public abstract String getDescription();
+
+        public abstract String getName();
     }
 
     /**
@@ -386,6 +356,11 @@ public class SkinWidgetManager {
             };
             return String.format("Changed %s's %s from %.4f to %.4f", handle.name, fieldName, previous, current);
         }
+
+        @Override
+        public String getName() {
+            return handle.name;
+        }
     }
 
     /**
@@ -409,6 +384,63 @@ public class SkinWidgetManager {
             return isVisibleBefore
                     ? String.format("Make %s widget invisible", handle.name)
                     : String.format("Make %s widget visible", handle.name);
+        }
+
+        @Override
+        public String getName() {
+            return handle.name;
+        }
+    }
+
+    /**
+     * A simple collections that holds all events, supporting:
+     * <ul>
+     *     <li> Push one event </li>
+     *     <li> Pop most recent events</li>
+     *     <li> Query specified widget has specific event or not </li>
+     * </ul>
+     *
+     * @apiNote Requires lock
+     */
+    private static class EventHistory {
+        private static final Map<String, List<Event<?>>> targetNameToEvents = new HashMap<>();
+        private static final List<Event<?>> eventStack = new ArrayList<>();
+
+        public void clear() {
+            targetNameToEvents.clear();
+            eventStack.clear();
+        }
+
+        public boolean hasEvent(String widgetName, Event.EventType eventType) {
+            if (!targetNameToEvents.containsKey(widgetName)) {
+                return false;
+            }
+            List<Event<?>> events = targetNameToEvents.get(widgetName);
+            return events.stream().anyMatch(event -> event.type == eventType);
+        }
+
+        public List<Event<?>> getEvents() {
+            return eventStack;
+        }
+
+        /**
+         * Push one "change single field" event into history
+         *
+         * @param type event type
+         * @param previous previous value
+         * @param current current value
+         */
+        private void pushChangeSingleFieldEvent(Event.EventType type, SkinWidgetDestination dst, float previous, float current) {
+            ChangeSingleFieldEvent event = new ChangeSingleFieldEvent(type, dst, previous, current);
+            targetNameToEvents.putIfAbsent(dst.name, new ArrayList<>());
+            targetNameToEvents.get(dst.name).add(event);
+            eventStack.add(event);
+        }
+
+        private void pushEvent(Event<?> event) {
+            targetNameToEvents.putIfAbsent(event.getName(), new ArrayList<>());
+            targetNameToEvents.get(event.getName()).add(event);
+            eventStack.add(event);
         }
     }
 }
