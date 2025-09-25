@@ -12,7 +12,10 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SkinWidgetManager {
     private static final double eps = 1e-5;
@@ -33,6 +36,8 @@ public class SkinWidgetManager {
                 return ;
             }
             SkinObject[] allSkinObjects = skin.getAllSkinObjects();
+            // NOTE: We're using skin object's name as id, we need to keep name is unique
+            Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
             for (SkinObject skinObject : allSkinObjects) {
                 SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
                 List<SkinWidgetDestination> destinations = new ArrayList<>();
@@ -40,7 +45,13 @@ public class SkinWidgetManager {
                     String combinedName = dsts.length == 1 ? skinObject.getName() : String.format("%s(%d)", skinObject.getName(), i);
                     destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
                 }
-                widgets.add(new SkinWidget(skinObject.getName(), skinObject, destinations));
+                String skinObjectName = skinObject.getName();
+                Integer count = duplicatedSkinObjectNameCount.getOrDefault(skinObjectName, 0);
+                if (count > 0) {
+                    skinObjectName += String.format("(%d)", count);
+                }
+                widgets.add(new SkinWidget(skinObjectName, skinObject, destinations));
+                duplicatedSkinObjectNameCount.compute(skinObject.getName(), (pk, pv) -> pv == null ? 1 : pv + 1);
             }
         }
     }
@@ -79,7 +90,7 @@ public class SkinWidgetManager {
             ImGui.tableSetupColumn("y");
             ImGui.tableSetupColumn("w");
             ImGui.tableSetupColumn("h");
-            ImGui.tableSetupColumn("OP");
+            ImGui.tableSetupColumn("Operation");
             ImGui.tableHeadersRow();
             for (SkinWidget widget : widgets) {
                 ImGui.tableNextRow();
@@ -208,8 +219,6 @@ public class SkinWidgetManager {
             ImGui.text(String.format("%.4f", value));
         }
     }
-
-
 
     // A simple wrapper class of SkinObject
     private static class SkinWidget {
