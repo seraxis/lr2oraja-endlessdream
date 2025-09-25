@@ -21,10 +21,10 @@ public class SkinWidgetManager {
     private static List<SkinWidget> widgets = new ArrayList<>();
     private static final Map<String, List<Event<?>>> events = new HashMap<>();
 
-    private static ImFloat editingWidgetX = new ImFloat(0);
-    private static ImFloat editingWidgetY = new ImFloat(0);
-    private static ImFloat editingWidgetW = new ImFloat(0);
-    private static ImFloat editingWidgetH = new ImFloat(0);
+    private static final ImFloat editingWidgetX = new ImFloat(0);
+    private static final ImFloat editingWidgetY = new ImFloat(0);
+    private static final ImFloat editingWidgetW = new ImFloat(0);
+    private static final ImFloat editingWidgetH = new ImFloat(0);
 
     public static void changeSkin(Skin skin) {
         synchronized (LOCK) {
@@ -87,11 +87,12 @@ public class SkinWidgetManager {
                 ImGui.pushID(widget.name);
 
                 ImGui.tableSetColumnIndex(0);
-                if (!widget.isDrawingOnScreen()) {
+                boolean isWidgetDrawingOnScreen = widget.isDrawingOnScreen();
+                if (!isWidgetDrawingOnScreen) {
                     ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(128, 128, 128));
                 }
                 boolean isOpen = ImGui.treeNodeEx(widget.name);
-                if (!widget.isDrawingOnScreen()) {
+                if (!isWidgetDrawingOnScreen) {
                     ImGui.popStyleColor();
                 }
 
@@ -111,7 +112,13 @@ public class SkinWidgetManager {
 
                         ImGui.tableNextRow();
                         ImGui.tableSetColumnIndex(0);
+                        if (!isWidgetDrawingOnScreen) {
+                            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(128, 128, 128));
+                        }
                         ImGui.text(dst.name);
+                        if (!isWidgetDrawingOnScreen) {
+                            ImGui.popStyleColor();
+                        }
 
                         // NOTE for further dev:
                         // If you want to implement a dynamic system, you can combine the event type & getter
