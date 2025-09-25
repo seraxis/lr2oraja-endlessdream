@@ -82,6 +82,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
     private Tab streamTab;
 	@FXML
+	private Tab webhookTab;
+	@FXML
 	private HBox controlPanel;
 
 	@FXML
@@ -251,6 +253,11 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private TextField overrideDownloadURL;
 
+    @FXML
+    private CheckBox enableWebhook;
+	@FXML
+	private TextField webhookUrl;
+
 	@FXML
 	private VBox skin;
 	@FXML
@@ -403,6 +410,9 @@ public class PlayConfigurationView implements Initializable {
 		defaultDownloadURL.setText(config.getDefaultDownloadURL());
 		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
+		webhookUrl.setText(config.getWebhookUrl());
+        enableWebhook.setSelected(config.getEnableWebhook());
+
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
 		} else {
@@ -549,6 +559,9 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
+
+		config.setWebhookUrl(webhookUrl.getText());
+        config.setEnableWebhook(enableWebhook.isSelected());
 
 		commitPlayer();
 
