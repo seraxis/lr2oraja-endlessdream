@@ -16,12 +16,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class SkinWidgetManager {
     private static final double eps = 1e-5;
     private static final Object LOCK = new Object();
     private static final EventHistory eventHistory = new EventHistory();
     private static final List<SkinWidget> widgets = new ArrayList<>();
+
+    private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
+
+    static {
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("ID", new ImBoolean(true), true, null, null));
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("x", new ImBoolean(true), false, SkinWidgetDestination::getDstX, Event.EventType.CHANGE_X));
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("y", new ImBoolean(true), false, SkinWidgetDestination::getDstY, Event.EventType.CHANGE_Y));
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("w", new ImBoolean(true), false, SkinWidgetDestination::getDstW, Event.EventType.CHANGE_W));
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("h", new ImBoolean(true), false, SkinWidgetDestination::getDstH, Event.EventType.CHANGE_H));
+        WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("Operation", new ImBoolean(true), true, null, null));
+    }
 
     private static final ImFloat editingWidgetX = new ImFloat(0);
     private static final ImFloat editingWidgetY = new ImFloat(0);
@@ -69,6 +81,9 @@ public class SkinWidgetManager {
                             if (ImGui.button("undo")) {
                                 eventHistory.undo();
                             }
+                            ImGui.sameLine();
+                            renderPreferColumnSetting();
+
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
@@ -84,18 +99,32 @@ public class SkinWidgetManager {
         }
     }
 
+    private static void renderPreferColumnSetting() {
+        if (ImGui.button("Columns")) {
+            ImGui.openPopup("PreferColumnSetting");
+        }
+
+        if (ImGui.beginPopup("PreferColumnSetting")) {
+            for (WidgetTableColumn column : WIDGET_TABLE_COLUMNS) {
+                if (column.persistent) {
+                    continue;
+                }
+                ImGui.checkbox(column.name, column.show);
+            }
+            ImGui.endPopup();
+        }
+    }
+
     /**
      * Render skin widgets as a table
      */
     private static void renderSkinWidgetsTable() {
-        if (ImGui.beginTable("Skin Widgets", 6, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+        // NOTE: This will create a snapshot for us, which can kinda prevent us step into race condition
+        List<WidgetTableColumn> showingColumns = WIDGET_TABLE_COLUMNS.stream().filter(column -> column.show.get()).toList();
+        int colSize = showingColumns.size();
+        if (ImGui.beginTable("Skin Widgets", colSize, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
             ImGui.tableSetupScrollFreeze(0, 1);
-            ImGui.tableSetupColumn("ID");
-            ImGui.tableSetupColumn("x");
-            ImGui.tableSetupColumn("y");
-            ImGui.tableSetupColumn("w");
-            ImGui.tableSetupColumn("h");
-            ImGui.tableSetupColumn("Operation");
+            showingColumns.forEach(column -> ImGui.tableSetupColumn(column.name));
             ImGui.tableHeadersRow();
             for (SkinWidget widget : widgets) {
                 ImGui.tableNextRow();
@@ -111,12 +140,12 @@ public class SkinWidgetManager {
                     ImGui.popStyleColor();
                 }
 
-                for (int i = 1; i <= 4; ++i) {
+                for (int i = 1; i <= colSize - 2; ++i) {
                     ImGui.tableSetColumnIndex(i);
                     ImGui.textDisabled("--");
                 }
 
-                ImGui.tableSetColumnIndex(5);
+                ImGui.tableSetColumnIndex(colSize - 1);
                 if (ImGui.button("Toggle")) {
                     widget.toggleVisible();
                 }
@@ -139,12 +168,12 @@ public class SkinWidgetManager {
                         // If you want to implement a dynamic system, you can combine the event type & getter
                         // in a pair type: Pair<EventType, Function<SkinWidget, Float>
                         // The remaining things are trivial
-                        drawFloatValueColumn(1, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_X), dst.getDstX());
-                        drawFloatValueColumn(2, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_Y), dst.getDstY());
-                        drawFloatValueColumn(3, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_W), dst.getDstW());
-                        drawFloatValueColumn(4, eventHistory.hasEvent(dst.name, Event.EventType.CHANGE_H), dst.getDstH());
+                        for (int i = 1; i <= colSize - 2;++i) {
+                            WidgetTableColumn column = showingColumns.get(i);
+                            drawFloatValueColumn(i, eventHistory.hasEvent(dst.name, column.changeEventType), column.getter.apply(dst));
+                        }
 
-                        ImGui.tableSetColumnIndex(5);
+                        ImGui.tableSetColumnIndex(colSize - 1);
                         if (ImGui.button("Edit")) {
                             editingWidgetX.set(dst.getDstX());
                             editingWidgetY.set(dst.getDstY());
@@ -219,6 +248,12 @@ public class SkinWidgetManager {
         } else {
             ImGui.text(String.format("%.4f", value));
         }
+    }
+
+    /**
+     * Represents one widget table's column
+     */
+    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent, Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
     }
 
     /**
