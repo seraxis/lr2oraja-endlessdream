@@ -2,10 +2,12 @@ package bms.player.beatoraja;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import bms.player.beatoraja.config.I18nMessage;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.*;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
@@ -43,6 +45,8 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
+
+import static bms.player.beatoraja.config.I18nMessage.*;
 
 /**
  * アプリケーションのルートクラス
@@ -549,6 +553,7 @@ public class MainController {
 			});
 			irResendProcess.start();
 		}
+		ImGuiNotify.info(getI18nMessage(TEST.WELCOME, "Endless Dream"));
 
         lastConfigSave = System.nanoTime();
 	}
@@ -1171,10 +1176,12 @@ public class MainController {
 			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
 			retry++;
 			if(send1.isSucceeded()) {
+				ImGuiNotify.success(getI18nMessage(IR.IR_SEND_SCORE_SUCCESS, song.getTitle()));
 				logger.info("IRスコア送信完了 : {}", song.getTitle());
 				isSent = true;
 				return true;
 			} else {
+				ImGuiNotify.error(getI18nMessage(IR.IR_SEND_SCORE_FAILED, send1.getMessage()));
 				logger.warn("IRスコア送信失敗 : {}", send1.getMessage());
 				return false;
 			}
