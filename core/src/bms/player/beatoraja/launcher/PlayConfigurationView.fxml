@@ -424,8 +424,20 @@
                         <CheckBox fx:id="enableWebhook" mnemonicParsing="false" prefHeight="25.0" text="Enable Discord Webhook on screenshot" />
                         <GridPane hgap="10" vgap="5">
                             <children>
+                                <Label text="Discord Webhook Name" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <TextField fx:id="webhookName" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            </children>
+                        </GridPane>
+                        <GridPane hgap="10" vgap="5">
+                            <children>
+                                <Label text="Discord Webhook Avatar" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <TextField fx:id="webhookAvatar" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                            </children>
+                        </GridPane>
+                        <GridPane hgap="10" vgap="5">
+                            <children>
                                 <Label text="Discord Webhook URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                <TextField fx:id="webhookUrl" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+                                <PasswordField fx:id="webhookUrl" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>
                     </VBox>

@@ -173,6 +173,8 @@ public class Config implements Validatable {
 	private boolean setClipboardScreenshot = false;
 	private String monitorName = "";
     private boolean enableWebhook = false;
+    private String webhookName = "";
+    private String webhookAvatar = "";
 	private String webhookUrl = "";
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
@@ -565,6 +567,14 @@ public class Config implements Validatable {
 	public void setMonitorName(String monitorName) {
 		this.monitorName = monitorName;
 	}
+
+    public String getWebhookName() { return webhookName; }
+
+    public void setWebhookName(String webhookName) { this.webhookName = webhookName; }
+
+    public String getWebhookAvatar() { return webhookAvatar; };
+
+    public void setWebhookAvatar(String webhookAvatar) { this.webhookAvatar = webhookAvatar; }
 
 	public String getWebhookUrl() {
 		return webhookUrl;

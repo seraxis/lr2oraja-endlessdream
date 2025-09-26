@@ -11,6 +11,11 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Logger;
@@ -87,6 +92,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
 
 			this.sendClipboard(currentState, path);
+            this.sendWebhook(currentState, path);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,7 +100,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 		pixmap.dispose();
 		return false;
 	}
-	
+
 	private void sendClipboard(MainState currentState, String path) {
 		if (!currentState.resource.getConfig().isSetClipboardWhenScreenshot()) {
 			// スクショのクリップボードコピーが有効でないなら終わる
@@ -121,6 +127,36 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			e.printStackTrace();
 		}
 	}
+
+    private void sendWebhook(MainState currentState, String path) {
+        if (
+                !currentState.resource.getConfig().getEnableWebhook() ||
+                currentState.resource.getConfig().getWebhookUrl().isEmpty()
+        ) {
+            // Webhook action not enabled or missing URL
+            return;
+        }
+
+        try {
+            String webhookName = currentState.resource.getConfig().getWebhookName();
+            String userName = webhookName.isEmpty()
+                    ? "Endless Dream"
+                    : webhookName.replaceAll("\"", "\\\"");
+
+            String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
+            String avatar = webhookAvatar.isEmpty()
+                    ? ""
+                    : webhookAvatar;
+
+            WebhookHandler handler = new WebhookHandler(currentState);
+            handler.sendWebhookWithImage(
+                    String.format("{\"username\": \"%s\", \"avatar_url\": \"%s\"}", userName, avatar),
+                    Paths.get(path)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 class ImageTransferable implements Transferable {
