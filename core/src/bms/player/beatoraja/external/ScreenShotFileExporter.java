@@ -132,18 +132,8 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
         }
 
         try {
-            String webhookName = currentState.resource.getConfig().getWebhookName();
-            String userName = webhookName.isEmpty()
-                    ? "Endless Dream"
-                    : webhookName.replaceAll("\"", "\\\"");
-
-            String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
-            String avatar = webhookAvatar.isEmpty()
-                    ? ""
-                    : webhookAvatar;
-
             WebhookHandler handler = new WebhookHandler(currentState);
-			WebhookWithImagePayload payload = new WebhookWithImagePayload(userName, avatar);
+			ScoreWebhookPayload payload = new ScoreWebhookPayload(currentState);
 			ObjectMapper om = new ObjectMapper();
 			handler.sendWebhookWithImage(
                     om.writeValueAsString(payload),
@@ -185,18 +175,25 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 		}
 	}
 
-	private static class WebhookWithImagePayload {
+	private static class ScoreWebhookPayload {
 		@JsonProperty("username")
 		private String userName;
 		@JsonProperty("avatar_url")
 		private String avatarUrl;
 
-		public WebhookWithImagePayload() {
+		public ScoreWebhookPayload() {
 		}
 
-		public WebhookWithImagePayload(String userName, String avatarUrl) {
-			this.userName = userName;
-			this.avatarUrl = avatarUrl;
+		public ScoreWebhookPayload(MainState currentState) {
+            String webhookName = currentState.resource.getConfig().getWebhookName();
+            this.userName = webhookName.isEmpty()
+                    ? "Endless Dream"
+                    : webhookName.replaceAll("\"", "\\\"");
+
+            String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
+            this.avatarUrl = webhookAvatar.isEmpty()
+                    ? ""
+                    : webhookAvatar;
 		}
 
 		public String getUserName() {
