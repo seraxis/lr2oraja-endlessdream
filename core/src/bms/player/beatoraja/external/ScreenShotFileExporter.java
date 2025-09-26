@@ -1,9 +1,25 @@
 package bms.player.beatoraja.external;
 
-import static bms.player.beatoraja.skin.SkinProperty.*;
+import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.config.KeyConfiguration;
+import bms.player.beatoraja.decide.MusicDecide;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.play.BMSPlayer;
+import bms.player.beatoraja.result.CourseResult;
+import bms.player.beatoraja.result.MusicResult;
+import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.skin.property.IntegerPropertyFactory;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
+import com.badlogic.gdx.utils.BufferUtils;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.awt.Image;
-import java.awt.Toolkit;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -11,29 +27,12 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Logger;
 
-import javax.imageio.ImageIO;
-
-import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
-import com.badlogic.gdx.utils.BufferUtils;
-
-import bms.player.beatoraja.MainState;
-import bms.player.beatoraja.config.KeyConfiguration;
-import bms.player.beatoraja.decide.MusicDecide;
-import bms.player.beatoraja.play.BMSPlayer;
-import bms.player.beatoraja.result.CourseResult;
-import bms.player.beatoraja.result.MusicResult;
-import bms.player.beatoraja.select.MusicSelector;
-import bms.player.beatoraja.skin.property.IntegerPropertyFactory;
-import bms.player.beatoraja.skin.property.StringPropertyFactory;
+import static bms.player.beatoraja.skin.SkinProperty.*;
 
 public class ScreenShotFileExporter implements ScreenShotExporter {
 
@@ -41,19 +40,19 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 	public boolean send(MainState currentState, byte[]  pixels) {
 		final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 		String stateName = "";
-		if(currentState instanceof MusicSelector) {
+		if (currentState instanceof MusicSelector) {
 			stateName = "_Music_Select";
 		} else if(currentState instanceof MusicDecide) {
 			stateName = "_Decide";
 		} if(currentState instanceof BMSPlayer) {
 			final String tablelevel = StringPropertyFactory.getStringProperty(STRING_TABLE_LEVEL).get(currentState);
-			if(tablelevel.length() > 0){
+			if (!tablelevel.isEmpty()) {
 				stateName = "_Play_" + tablelevel;
 			}else{
 				stateName = "_Play_LEVEL" + IntegerPropertyFactory.getIntegerProperty(NUMBER_PLAYLEVEL).get(currentState);
 			}
 			final String fulltitle = StringPropertyFactory.getStringProperty(STRING_FULLTITLE).get(currentState);
-			if(fulltitle.length() > 0) {
+			if (!fulltitle.isEmpty()) {
 				stateName += " " + fulltitle;
 			}
 		} else if(currentState instanceof MusicResult || currentState instanceof CourseResult) {
@@ -87,6 +86,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
 
 			this.sendClipboard(currentState, path);
+            this.sendWebhook(currentState, path);
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -94,7 +94,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 		pixmap.dispose();
 		return false;
 	}
-	
+
 	private void sendClipboard(MainState currentState, String path) {
 		if (!currentState.resource.getConfig().isSetClipboardWhenScreenshot()) {
 			// スクショのクリップボードコピーが有効でないなら終わる
@@ -121,36 +121,95 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 			e.printStackTrace();
 		}
 	}
-}
 
-class ImageTransferable implements Transferable {
-	private Image image;
+    private void sendWebhook(MainState currentState, String path) {
+        if (
+                !currentState.resource.getConfig().getEnableWebhook() ||
+                currentState.resource.getConfig().getWebhookUrl().isEmpty()
+        ) {
+            // Webhook action not enabled or missing URL
+            return;
+        }
 
-	public ImageTransferable(Image image) {
-		this.image = image;
-	}
+        try {
+            WebhookHandler handler = new WebhookHandler(currentState);
+			ScoreWebhookPayload payload = new ScoreWebhookPayload(currentState);
+			ObjectMapper om = new ObjectMapper();
+			handler.sendWebhookWithImage(
+                    om.writeValueAsString(payload),
+                    Paths.get(path)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public boolean isDataFlavorSupported(DataFlavor flavor) {
-		for (DataFlavor f : getTransferDataFlavors()) {
-			if (f.equals(flavor)) {
-				return true;
+	private static class ImageTransferable implements Transferable {
+		private Image image;
+
+		public ImageTransferable(Image image) {
+			this.image = image;
+		}
+
+		@Override
+		public boolean isDataFlavorSupported(DataFlavor flavor) {
+			for (DataFlavor f : getTransferDataFlavors()) {
+				if (f.equals(flavor)) {
+					return true;
+				}
 			}
+			return false;
 		}
-		return false;
+
+		@Override
+		public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+			if (flavor.equals(DataFlavor.imageFlavor)) {
+				return image;
+			}
+			throw new UnsupportedFlavorException(flavor);
+		}
+
+		@Override
+		public DataFlavor[] getTransferDataFlavors() {
+			return new DataFlavor[]{DataFlavor.imageFlavor};
+		}
 	}
 
-	@Override
-	public Object getTransferData(DataFlavor flavor)
-			throws UnsupportedFlavorException, IOException {
-		if (flavor.equals(DataFlavor.imageFlavor)) {
-			return image;
-		}
-		throw new UnsupportedFlavorException(flavor);
-	}
+	private static class ScoreWebhookPayload {
+		@JsonProperty("username")
+		private String userName;
+		@JsonProperty("avatar_url")
+		private String avatarUrl;
 
-	@Override
-	public DataFlavor[] getTransferDataFlavors() {
-		return new DataFlavor[] { DataFlavor.imageFlavor };
+		public ScoreWebhookPayload() {
+		}
+
+		public ScoreWebhookPayload(MainState currentState) {
+            String webhookName = currentState.resource.getConfig().getWebhookName();
+            this.userName = webhookName.isEmpty()
+                    ? "Endless Dream"
+                    : webhookName.replaceAll("\"", "\\\"");
+
+            String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
+            this.avatarUrl = webhookAvatar.isEmpty()
+                    ? ""
+                    : webhookAvatar;
+		}
+
+		public String getUserName() {
+			return userName;
+		}
+
+		public void setUserName(String userName) {
+			this.userName = userName;
+		}
+
+		public String getAvatarUrl() {
+			return avatarUrl;
+		}
+
+		public void setAvatarUrl(String avatarUrl) {
+			this.avatarUrl = avatarUrl;
+		}
 	}
 }
