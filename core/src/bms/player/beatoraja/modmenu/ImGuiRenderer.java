@@ -132,7 +132,10 @@ public class ImGuiRenderer {
                 DownloadTaskMenu.show(SHOW_DOWNLOAD_MENU);
             }
             if (SHOW_SKIN_WIDGET_MANAGER.get()) {
+                SkinWidgetManager.focus = true;
                 SkinWidgetManager.show(SHOW_SKIN_WIDGET_MANAGER);
+            } else {
+                SkinWidgetManager.focus = false;
             }
             if (SHOW_PERFORMANCE_MONITOR.get()) {
                 PerformanceMonitor.show(SHOW_PERFORMANCE_MONITOR);

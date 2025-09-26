@@ -28,6 +28,8 @@ public class SkinWidgetManager {
     private static final ImFloat editingWidgetW = new ImFloat(0);
     private static final ImFloat editingWidgetH = new ImFloat(0);
 
+    public static boolean focus = false;
+
     public static void changeSkin(Skin skin) {
         synchronized (LOCK) {
             widgets.clear();
@@ -64,6 +66,9 @@ public class SkinWidgetManager {
                 } else {
                     if (ImGui.beginTabBar("SkinWidgetsTabBar")) {
                         if (ImGui.beginTabItem("SkinWidgets")) {
+                            if (ImGui.button("undo")) {
+                                eventHistory.undo();
+                            }
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
@@ -177,7 +182,7 @@ public class SkinWidgetManager {
      * Render modification history
      */
     private static void renderHistoryTable() {
-        if (ImGui.beginTable("History", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+        if (ImGui.beginTable("History", 1, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
             ImGui.tableSetupScrollFreeze(0, 1);
             ImGui.tableSetupColumn("Description");
             ImGui.tableHeadersRow();
@@ -192,10 +197,6 @@ public class SkinWidgetManager {
 
                     ImGui.tableSetColumnIndex(0);
                     ImGui.text(event.getDescription());
-                    ImGui.tableSetColumnIndex(1);
-                    if (ImGui.button("Undo to here")) {
-                        ImGuiNotify.warning("TODO: MY DEAR PLEASE IMPLEMENT ME");
-                    }
 
                     ImGui.popID();
                 }
@@ -220,7 +221,11 @@ public class SkinWidgetManager {
         }
     }
 
-    // A simple wrapper class of SkinObject
+    /**
+     * A simple wrapper class of SkinObject
+     *
+     * @implNote setter functions must provide an extra argument to not trigger event system
+     */
     private static class SkinWidget {
         private final String name;
         // DON'T ACCESS THESE FIELDS DIRECTLY, USE GETTER/SETTER INSTEAD
@@ -238,13 +243,23 @@ public class SkinWidgetManager {
         }
 
         public void toggleVisible() {
+            toggleVisible(true);
+        }
+
+        public void toggleVisible(boolean createEvent) {
             boolean isVisibleBefore = skinObject.visible;
-            eventHistory.pushEvent(new ToggleVisibleEvent(this, isVisibleBefore));
+            if (createEvent) {
+                eventHistory.pushEvent(new ToggleVisibleEvent(this, isVisibleBefore));
+            }
             skinObject.visible = !isVisibleBefore;
         }
     }
 
-    // A simple wrapper class of SkinObject.SkinObjectDestination
+    /**
+     * A simple wrapper class of SkinObject.SkinObjectDestination
+     *
+     * @implNote setter functions must provide an extra argument to not trigger event system
+     */
     private static class SkinWidgetDestination {
         private final String name;
         private final SkinObject.SkinObjectDestination destination;
@@ -271,33 +286,49 @@ public class SkinWidgetManager {
         }
 
         public void setDstX(float x) {
+            setDstX(x, true);
+        }
+
+        public void setDstX(float x, boolean createEvent) {
             float previous = this.getDstX();
-            if (Math.abs(x - previous) > eps) {
+            if (createEvent && Math.abs(x - previous) > eps) {
                 eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_X, this, previous, x));
             }
             destination.region.x = x;
         }
 
         public void setDstY(float y) {
+            setDstY(y, true);
+        }
+
+        public void setDstY(float y, boolean createEvent) {
             float previous = this.getDstY();
-            if (Math.abs(y - previous) > eps) {
-                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this, previous, y);
+            if (createEvent && Math.abs(y - previous) > eps) {
+                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this, previous, y));
             }
             destination.region.y = y;
         }
 
         public void setDstW(float w) {
+            setDstW(w, true);
+        }
+
+        public void setDstW(float w, boolean createEvent) {
             float previous = this.getDstW();
-            if (Math.abs(w - previous) > eps) {
-                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_W, this, previous, w);
+            if (createEvent && Math.abs(w - previous) > eps) {
+                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_W, this, previous, w));
             }
             destination.region.width = w;
         }
 
         public void setDstH(float h) {
+            setDstH(h, true);
+        }
+
+        public void setDstH(float h, boolean createEvent) {
             float previous = this.getDstH();
-            if (Math.abs(h - previous) > eps) {
-                eventHistory.pushChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h);
+            if (createEvent && Math.abs(h - previous) > eps) {
+                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h));
             }
             destination.region.height = h;
         }
@@ -346,10 +377,10 @@ public class SkinWidgetManager {
         @Override
         public void undo() {
             switch (type) {
-                case CHANGE_X -> handle.setDstX(previous);
-                case CHANGE_Y -> handle.setDstY(previous);
-                case CHANGE_W -> handle.setDstW(previous);
-                case CHANGE_H -> handle.setDstH(previous);
+                case CHANGE_X -> handle.setDstX(previous, false);
+                case CHANGE_Y -> handle.setDstY(previous, false);
+                case CHANGE_W -> handle.setDstW(previous, false);
+                case CHANGE_H -> handle.setDstH(previous, false);
                 default -> { /* Intentionally do nothing */ }
             }
         }
@@ -385,7 +416,7 @@ public class SkinWidgetManager {
 
         @Override
         public void undo() {
-            handle.skinObject.draw = isVisibleBefore;
+            handle.toggleVisible(false);
         }
 
         @Override
@@ -412,6 +443,7 @@ public class SkinWidgetManager {
      * @apiNote Requires lock
      */
     private static class EventHistory {
+        // targetNameToEvents is only a read-only copy of eventStack, to make the query function easier to write
         private static final Map<String, List<Event<?>>> targetNameToEvents = new HashMap<>();
         private static final List<Event<?>> eventStack = new ArrayList<>();
 
@@ -432,24 +464,45 @@ public class SkinWidgetManager {
             return eventStack;
         }
 
-        /**
-         * Push one "change single field" event into history
-         *
-         * @param type event type
-         * @param previous previous value
-         * @param current current value
-         */
-        private void pushChangeSingleFieldEvent(Event.EventType type, SkinWidgetDestination dst, float previous, float current) {
-            ChangeSingleFieldEvent event = new ChangeSingleFieldEvent(type, dst, previous, current);
-            targetNameToEvents.putIfAbsent(dst.name, new ArrayList<>());
-            targetNameToEvents.get(dst.name).add(event);
-            eventStack.add(event);
-        }
-
         private void pushEvent(Event<?> event) {
             targetNameToEvents.putIfAbsent(event.getName(), new ArrayList<>());
             targetNameToEvents.get(event.getName()).add(event);
             eventStack.add(event);
+        }
+
+        /**
+         * Undo the most recent event
+         */
+        private void undo() {
+            undo(1);
+        }
+
+        /**
+         * Undo the most recent event multiple times
+         *
+         * @param times how many events to undo, do nothing if no event to undo
+         */
+        private void undo(int times) {
+            times = Math.abs(times);
+            if (times == 0) {
+                return;
+            }
+
+            for (int i = 0; i < times; ++i) {
+                if (eventStack.isEmpty()) {
+                    break;
+                }
+                int last = eventStack.size() - 1;
+                Event<?> lastEvent = eventStack.get(last);
+                eventStack.remove(last);
+                lastEvent.undo();
+            }
+
+            targetNameToEvents.clear();
+            for (Event<?> event : eventStack) {
+                targetNameToEvents.putIfAbsent(event.getName(), new ArrayList<>());
+                targetNameToEvents.get(event.getName()).add(event);
+            }
         }
     }
 }
