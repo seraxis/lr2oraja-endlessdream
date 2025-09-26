@@ -4,13 +4,11 @@ import java.util.Arrays;
 
 import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.Resolution;
-import bms.player.beatoraja.modmenu.ImGuiRenderer;
 import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.Input.Keys;
-import imgui.ImGui;
 
 /**
  * キーボード入力処理用クラス
