@@ -15,7 +15,6 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.utils.BufferUtils;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.imageio.ImageIO;
@@ -30,102 +29,104 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
 public class ScreenShotFileExporter implements ScreenShotExporter {
 
-	@Override
-	public boolean send(MainState currentState, byte[]  pixels) {
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-		String stateName = "";
-		if (currentState instanceof MusicSelector) {
-			stateName = "_Music_Select";
-		} else if(currentState instanceof MusicDecide) {
-			stateName = "_Decide";
-		} if(currentState instanceof BMSPlayer) {
-			final String tablelevel = StringPropertyFactory.getStringProperty(STRING_TABLE_LEVEL).get(currentState);
-			if (!tablelevel.isEmpty()) {
-				stateName = "_Play_" + tablelevel;
-			}else{
-				stateName = "_Play_LEVEL" + IntegerPropertyFactory.getIntegerProperty(NUMBER_PLAYLEVEL).get(currentState);
-			}
-			final String fulltitle = StringPropertyFactory.getStringProperty(STRING_FULLTITLE).get(currentState);
-			if (!fulltitle.isEmpty()) {
-				stateName += " " + fulltitle;
-			}
-		} else if(currentState instanceof MusicResult || currentState instanceof CourseResult) {
-			if(currentState instanceof MusicResult){
-				final String tablelevel = StringPropertyFactory.getStringProperty(STRING_TABLE_LEVEL).get(currentState);
-				if(tablelevel.length() > 0){
-					stateName += "_" + tablelevel + " ";
-				}else{
-					stateName += "_LEVEL" + IntegerPropertyFactory.getIntegerProperty(NUMBER_PLAYLEVEL).get(currentState) + " ";
-				}
-			}else{
-				stateName += "_";
-			}
-			final String fulltitle = StringPropertyFactory.getStringProperty(STRING_FULLTITLE).get(currentState);
-			if(fulltitle.length() > 0) stateName += fulltitle;
-			stateName += " " + ScreenShotExporter.getClearTypeName(currentState);
-			stateName += " " + ScreenShotExporter.getRankTypeName(currentState);
-		} else if(currentState instanceof KeyConfiguration) {
-			stateName = "_Config";
-		}
-		stateName = stateName.replace("\\", "￥").replace("/", "／").replace(":", "：").replace("*", "＊").replace("?", "？").replace("\"", "”").replace("<", "＜").replace(">", "＞").replace("|", "｜").replace("\t", " ");
-		stateName = "_LR2oraja" + stateName;
+    @Override
+    public boolean send(MainState currentState, byte[] pixels) {
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String stateName = "";
+        if (currentState instanceof MusicSelector) {
+            stateName = "_Music_Select";
+        } else if (currentState instanceof MusicDecide) {
+            stateName = "_Decide";
+        }
+        if (currentState instanceof BMSPlayer) {
+            final String tablelevel = StringPropertyFactory.getStringProperty(STRING_TABLE_LEVEL).get(currentState);
+            if (!tablelevel.isEmpty()) {
+                stateName = "_Play_" + tablelevel;
+            } else {
+                stateName = "_Play_LEVEL" + IntegerPropertyFactory.getIntegerProperty(NUMBER_PLAYLEVEL).get(currentState);
+            }
+            final String fulltitle = StringPropertyFactory.getStringProperty(STRING_FULLTITLE).get(currentState);
+            if (!fulltitle.isEmpty()) {
+                stateName += " " + fulltitle;
+            }
+        } else if (currentState instanceof MusicResult || currentState instanceof CourseResult) {
+            if (currentState instanceof MusicResult) {
+                final String tablelevel = StringPropertyFactory.getStringProperty(STRING_TABLE_LEVEL).get(currentState);
+                if (tablelevel.length() > 0) {
+                    stateName += "_" + tablelevel + " ";
+                } else {
+                    stateName += "_LEVEL" + IntegerPropertyFactory.getIntegerProperty(NUMBER_PLAYLEVEL).get(currentState) + " ";
+                }
+            } else {
+                stateName += "_";
+            }
+            final String fulltitle = StringPropertyFactory.getStringProperty(STRING_FULLTITLE).get(currentState);
+            if (fulltitle.length() > 0) stateName += fulltitle;
+            stateName += " " + ScreenShotExporter.getClearTypeName(currentState);
+            stateName += " " + ScreenShotExporter.getRankTypeName(currentState);
+        } else if (currentState instanceof KeyConfiguration) {
+            stateName = "_Config";
+        }
+        stateName = stateName.replace("\\", "￥").replace("/", "／").replace(":", "：").replace("*", "＊").replace("?", "？").replace("\"", "”").replace("<", "＜").replace(">", "＞").replace("|", "｜").replace("\t", " ");
+        stateName = "_LR2oraja" + stateName;
 
-		Pixmap pixmap = new Pixmap(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight(), Pixmap.Format.RGBA8888);
-		try {
-			String path = "screenshot/" + sdf.format(Calendar.getInstance().getTime()) + stateName +".png";
-			BufferUtils.copy(pixels, 0, pixmap.getPixels(), pixels.length);
-			PixmapIO.writePNG(new FileHandle(path), pixmap);
-			Logger.getGlobal().info("スクリーンショット保存:" + path);
-			pixmap.dispose();
-			ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
+        Pixmap pixmap = new Pixmap(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight(), Pixmap.Format.RGBA8888);
+        try {
+            String path = "screenshot/" + sdf.format(Calendar.getInstance().getTime()) + stateName + ".png";
+            BufferUtils.copy(pixels, 0, pixmap.getPixels(), pixels.length);
+            PixmapIO.writePNG(new FileHandle(path), pixmap);
+            Logger.getGlobal().info("スクリーンショット保存:" + path);
+            pixmap.dispose();
+            ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
 
-			this.sendClipboard(currentState, path);
+            this.sendClipboard(currentState, path);
             this.sendWebhook(currentState, path);
-			return true;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		pixmap.dispose();
-		return false;
-	}
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        pixmap.dispose();
+        return false;
+    }
 
-	private void sendClipboard(MainState currentState, String path) {
-		if (!currentState.resource.getConfig().isSetClipboardWhenScreenshot()) {
-			// スクショのクリップボードコピーが有効でないなら終わる
-			return;
-		}
-		try {
-			// バイナリ一致させるためにファイルからデータ取得
-			BufferedImage image = ImageIO.read(new File(path));
+    private void sendClipboard(MainState currentState, String path) {
+        if (!currentState.resource.getConfig().isSetClipboardWhenScreenshot()) {
+            // スクショのクリップボードコピーが有効でないなら終わる
+            return;
+        }
+        try {
+            // バイナリ一致させるためにファイルからデータ取得
+            BufferedImage image = ImageIO.read(new File(path));
 
-			// ARGBからRGBへ
-			int width = image.getWidth();
-			int height = image.getHeight();
-			BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-			int px[] = new int[width * height];
-			image.getRGB(0, 0, width, height, px, 0, width);
-			output.setRGB(0, 0, width, height, px, 0, width);
+            // ARGBからRGBへ
+            int width = image.getWidth();
+            int height = image.getHeight();
+            BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            int px[] = new int[width * height];
+            image.getRGB(0, 0, width, height, px, 0, width);
+            output.setRGB(0, 0, width, height, px, 0, width);
 
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			ImageTransferable imageTransferable = new ImageTransferable(output);
-			clipboard.setContents(imageTransferable, null);
-			Logger.getGlobal().info("スクリーンショット保存: Clipboard");
-			ImGuiNotify.info("Screen shot saved : Clipboard", 2000);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            ImageTransferable imageTransferable = new ImageTransferable(output);
+            clipboard.setContents(imageTransferable, null);
+            Logger.getGlobal().info("スクリーンショット保存: Clipboard");
+            ImGuiNotify.info("Screen shot saved : Clipboard", 2000);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void sendWebhook(MainState currentState, String path) {
         if (
                 !currentState.resource.getConfig().getEnableWebhook() ||
-                currentState.resource.getConfig().getWebhookUrl().isEmpty()
+                        currentState.resource.getConfig().getWebhookUrl().isEmpty()
         ) {
             // Webhook action not enabled or missing URL
             return;
@@ -133,9 +134,9 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 
         try {
             WebhookHandler handler = new WebhookHandler(currentState);
-			ScoreWebhookPayload payload = new ScoreWebhookPayload(currentState);
-			ObjectMapper om = new ObjectMapper();
-			handler.sendWebhookWithImage(
+            Map<String, Object> payload = handler.createWebhookPayload(currentState);
+            ObjectMapper om = new ObjectMapper();
+            handler.sendWebhookWithImage(
                     om.writeValueAsString(payload),
                     Paths.get(path)
             );
@@ -144,72 +145,34 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
         }
     }
 
-	private static class ImageTransferable implements Transferable {
-		private Image image;
+    private static class ImageTransferable implements Transferable {
+        private Image image;
 
-		public ImageTransferable(Image image) {
-			this.image = image;
-		}
+        public ImageTransferable(Image image) {
+            this.image = image;
+        }
 
-		@Override
-		public boolean isDataFlavorSupported(DataFlavor flavor) {
-			for (DataFlavor f : getTransferDataFlavors()) {
-				if (f.equals(flavor)) {
-					return true;
-				}
-			}
-			return false;
-		}
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            for (DataFlavor f : getTransferDataFlavors()) {
+                if (f.equals(flavor)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-		@Override
-		public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-			if (flavor.equals(DataFlavor.imageFlavor)) {
-				return image;
-			}
-			throw new UnsupportedFlavorException(flavor);
-		}
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (flavor.equals(DataFlavor.imageFlavor)) {
+                return image;
+            }
+            throw new UnsupportedFlavorException(flavor);
+        }
 
-		@Override
-		public DataFlavor[] getTransferDataFlavors() {
-			return new DataFlavor[]{DataFlavor.imageFlavor};
-		}
-	}
-
-	private static class ScoreWebhookPayload {
-		@JsonProperty("username")
-		private String userName;
-		@JsonProperty("avatar_url")
-		private String avatarUrl;
-
-		public ScoreWebhookPayload() {
-		}
-
-		public ScoreWebhookPayload(MainState currentState) {
-            String webhookName = currentState.resource.getConfig().getWebhookName();
-            this.userName = webhookName.isEmpty()
-                    ? "Endless Dream"
-                    : webhookName.replaceAll("\"", "\\\"");
-
-            String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
-            this.avatarUrl = webhookAvatar.isEmpty()
-                    ? ""
-                    : webhookAvatar;
-		}
-
-		public String getUserName() {
-			return userName;
-		}
-
-		public void setUserName(String userName) {
-			this.userName = userName;
-		}
-
-		public String getAvatarUrl() {
-			return avatarUrl;
-		}
-
-		public void setAvatarUrl(String avatarUrl) {
-			this.avatarUrl = avatarUrl;
-		}
-	}
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DataFlavor.imageFlavor};
+        }
+    }
 }

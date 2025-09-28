@@ -173,6 +173,7 @@ public class Config implements Validatable {
 	private boolean setClipboardScreenshot = false;
 	private String monitorName = "";
     private boolean enableWebhook = false;
+    private boolean enableRichWebhook = false;
     private String webhookName = "";
     private String webhookAvatar = "";
 	private String webhookUrl = "";
@@ -588,7 +589,11 @@ public class Config implements Validatable {
 
     public void setEnableWebhook(boolean enableWebhook) { this.enableWebhook = enableWebhook; }
 
-	public boolean validate() {
+    public boolean getEnableRichWebhook() { return enableRichWebhook; }
+
+    public void setEnableRichWebhook(boolean enableRichWebhook) { this.enableRichWebhook = enableRichWebhook; }
+
+    public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
 

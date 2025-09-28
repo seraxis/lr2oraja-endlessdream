@@ -422,6 +422,7 @@
                         <CheckBox fx:id="discord" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC" />
                         <CheckBox fx:id="clipboardScreenshot" mnemonicParsing="false" prefHeight="25.0" text="%CLIPBOARD_SCREENSHOT" />
                         <CheckBox fx:id="enableWebhook" mnemonicParsing="false" prefHeight="25.0" text="Enable Discord Webhook on screenshot" />
+                        <CheckBox fx:id="enableRichWebhook" mnemonicParsing="false" prefHeight="25.0" text="Enable Rich Discord Webhooks" />
                         <GridPane hgap="10" vgap="5">
                             <children>
                                 <Label text="Discord Webhook Name" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
