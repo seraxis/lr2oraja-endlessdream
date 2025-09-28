@@ -24,6 +24,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bms.player.beatoraja.launcher.PlayConfigurationView">
    <Hyperlink fx:id="newversion" text="" />
     <HBox fx:id="playerPanel" alignment="CENTER_LEFT" prefHeight="10.0" prefWidth="730.0">
@@ -390,6 +392,8 @@
                 </padding>
                 <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <CheckBox fx:id="usecim" mnemonicParsing="false" prefHeight="25.0" text="%CACHE_SKIN_IMAGE" />
+                    <CheckBox fx:id="discord" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC" />
+                    <CheckBox fx:id="clipboardScreenshot" mnemonicParsing="false" prefHeight="25.0" text="%CLIPBOARD_SCREENSHOT" />
 
                     <Button mnemonicParsing="false" onAction="#importScoreDataFromLR2" text="%IMPORT_LR2_SCORE">
                         <VBox.margin>
@@ -419,25 +423,33 @@
                         <VBox.margin>
                             <Insets top="10.0" />
                         </VBox.margin>
-                        <CheckBox fx:id="discord" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC" />
-                        <CheckBox fx:id="clipboardScreenshot" mnemonicParsing="false" prefHeight="25.0" text="%CLIPBOARD_SCREENSHOT" />
-                        <CheckBox fx:id="enableWebhook" mnemonicParsing="false" prefHeight="25.0" text="Enable Discord Webhook on screenshot" />
-                        <CheckBox fx:id="enableRichWebhook" mnemonicParsing="false" prefHeight="25.0" text="Enable Rich Discord Webhooks" />
+                        <HBox spacing="10" prefHeight="25.0">
+                            <Label text="%DISCORD_WEBHOOK_OPTION_LABEL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                            <ComboBox fx:id="webhookOption" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                                <items>
+                                    <FXCollections fx:factory="observableArrayList">
+                                        <String fx:value="Disabled"/>
+                                        <String fx:value="Image only"/>
+                                        <String fx:value="Rich embed"/>
+                                    </FXCollections>
+                                </items>
+                            </ComboBox>
+                        </HBox>
                         <GridPane hgap="10" vgap="5">
                             <children>
-                                <Label text="Discord Webhook Name" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <Label text="%DISCORD_WEBHOOK_USERNAME" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
                                 <TextField fx:id="webhookName" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>
                         <GridPane hgap="10" vgap="5">
                             <children>
-                                <Label text="Discord Webhook Avatar" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <Label text="%DISCORD_WEBHOOK_AVATAR" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
                                 <TextField fx:id="webhookAvatar" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>
                         <GridPane hgap="10" vgap="5">
                             <children>
-                                <Label text="Discord Webhook URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <Label text="%DISCORD_WEBHOOK_URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
                                 <PasswordField fx:id="webhookUrl" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
                             </children>
                         </GridPane>

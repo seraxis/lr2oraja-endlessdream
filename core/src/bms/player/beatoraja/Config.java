@@ -172,11 +172,11 @@ public class Config implements Validatable {
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
 	private String monitorName = "";
-    private boolean enableWebhook = false;
-    private boolean enableRichWebhook = false;
+    private int webhookOption = 0; // 0 - Off, 1 - Image, 2 - Rich
     private String webhookName = "";
     private String webhookAvatar = "";
 	private String webhookUrl = "";
+
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
@@ -585,13 +585,10 @@ public class Config implements Validatable {
 		this.webhookUrl = webhookUrl;
 	}
 
-    public boolean getEnableWebhook() { return enableWebhook; }
+    // 0 - Off, 1 - Image, 2 - Rich
+    public int getWebhookOption() { return webhookOption; }
 
-    public void setEnableWebhook(boolean enableWebhook) { this.enableWebhook = enableWebhook; }
-
-    public boolean getEnableRichWebhook() { return enableRichWebhook; }
-
-    public void setEnableRichWebhook(boolean enableRichWebhook) { this.enableRichWebhook = enableRichWebhook; }
+    public void setWebhookOption(int webhookOption) { this.webhookOption = webhookOption; }
 
     public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;

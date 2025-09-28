@@ -132,7 +132,7 @@ public class WebhookHandler {
         String webhookAvatar = currentState.resource.getConfig().getWebhookAvatar();
         payload.put("avatar_url", webhookAvatar.isEmpty() ? "" : webhookAvatar);
 
-        if (currentState.resource.getConfig().getEnableRichWebhook()) {
+        if (currentState.resource.getConfig().getWebhookOption() == 2) {
             Map<String, Object> embed = new HashMap<>();
             Map<String, String> author = new HashMap<>();
             author.put("name", "LR2Oraja Endless Dream");

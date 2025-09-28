@@ -252,9 +252,7 @@ public class PlayConfigurationView implements Initializable {
 	private TextField overrideDownloadURL;
 
     @FXML
-    private CheckBox enableWebhook;
-    @FXML
-    private CheckBox enableRichWebhook;
+    private ComboBox<String> webhookOption;
     @FXML
     private TextField webhookName;
     @FXML
@@ -417,8 +415,7 @@ public class PlayConfigurationView implements Initializable {
 		webhookUrl.setText(config.getWebhookUrl());
         webhookName.setText(config.getWebhookName());
         webhookAvatar.setText(config.getWebhookAvatar());
-        enableWebhook.setSelected(config.getEnableWebhook());
-        enableRichWebhook.setSelected(config.getEnableRichWebhook());
+        webhookOption.getSelectionModel().select(config.getWebhookOption());
 
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
@@ -570,8 +567,7 @@ public class PlayConfigurationView implements Initializable {
         config.setWebhookName(webhookName.getText());
         config.setWebhookAvatar(webhookAvatar.getText());
 		config.setWebhookUrl(webhookUrl.getText());
-        config.setEnableWebhook(enableWebhook.isSelected());
-        config.setEnableRichWebhook(enableRichWebhook.isSelected());
+        config.setWebhookOption(webhookOption.getSelectionModel().getSelectedIndex());
 
 		commitPlayer();
 
