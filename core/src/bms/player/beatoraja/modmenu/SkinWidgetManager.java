@@ -12,6 +12,7 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ public class SkinWidgetManager {
     private static final ImFloat editingWidgetY = new ImFloat(0);
     private static final ImFloat editingWidgetW = new ImFloat(0);
     private static final ImFloat editingWidgetH = new ImFloat(0);
+    private static final ImBoolean SHOW_CURSOR_POSITION = new ImBoolean(true);
 
     public static boolean focus = false;
 
@@ -83,6 +85,9 @@ public class SkinWidgetManager {
                             }
                             ImGui.sameLine();
                             renderPreferColumnSetting();
+                            ImGui.sameLine();
+                            ImGui.checkbox("Show Position", SHOW_CURSOR_POSITION);
+
 
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
@@ -92,6 +97,16 @@ public class SkinWidgetManager {
                             ImGui.endTabItem();
                         }
                         ImGui.endTabBar();
+                    }
+                    // Overlay cursor position
+                    if (SHOW_CURSOR_POSITION.get()) {
+                        ImGui.beginTooltip();
+                        ImGui.text(
+                                String.format("(%s, %s)",
+                                normalizeFloat(ImGui.getCursorScreenPosX()),
+                                normalizeFloat(ImGui.getCursorScreenPosY()))
+                        );
+                        ImGui.endTooltip();
                     }
                 }
             }
@@ -244,10 +259,18 @@ public class SkinWidgetManager {
     private static void drawFloatValueColumn(int index, boolean modified, float value) {
         ImGui.tableSetColumnIndex(index);
         if (modified) {
-            ImGui.textColored(ImColor.rgb(255, 0, 0), String.format("%.4f", value));
+            ImGui.textColored(ImColor.rgb(255, 0, 0), normalizeFloat(value));
         } else {
-            ImGui.text(String.format("%.4f", value));
+            ImGui.text(normalizeFloat(value));
         }
+    }
+
+    /**
+     * All float value in this widget shares a 4-width limitation
+     */
+    private static String normalizeFloat(float value) {
+        DecimalFormat df = new DecimalFormat("#.####");
+        return df.format(value);
     }
 
     /**
