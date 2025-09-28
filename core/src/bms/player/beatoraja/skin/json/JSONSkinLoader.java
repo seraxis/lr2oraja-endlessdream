@@ -347,7 +347,6 @@ public class JSONSkinLoader extends SkinLoader {
 				}
 
 				if (obj != null) {
-					obj.setName(dst.id);
 					setDestination(skin, obj, dst);
 					skin.add(obj);
 				}
