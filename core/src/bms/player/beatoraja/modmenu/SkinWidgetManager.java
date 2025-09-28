@@ -2,6 +2,7 @@ package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import com.badlogic.gdx.Gdx;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
@@ -18,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 
 public class SkinWidgetManager {
     private static final double eps = 1e-5;
@@ -103,8 +106,8 @@ public class SkinWidgetManager {
                         ImGui.beginTooltip();
                         ImGui.text(
                                 String.format("(%s, %s)",
-                                normalizeFloat(ImGui.getCursorScreenPosX()),
-                                normalizeFloat(ImGui.getCursorScreenPosY()))
+                                normalizeFloat(Gdx.input.getX()),
+                                normalizeFloat(windowHeight - Gdx.input.getY()))
                         );
                         ImGui.endTooltip();
                     }
