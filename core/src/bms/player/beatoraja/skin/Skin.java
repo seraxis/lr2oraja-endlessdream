@@ -307,7 +307,7 @@ public class Skin {
 			}
 
 			for (SkinObject obj : objectarray) {
-				if (obj.draw && obj.visible) {
+				if (obj.draw) {
 					obj.draw(renderer);
 				}
 			}

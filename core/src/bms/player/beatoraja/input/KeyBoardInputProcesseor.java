@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.Resolution;
-import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.utils.IntArray;
@@ -98,10 +97,7 @@ public class KeyBoardInputProcesseor extends BMSPlayerInputDevice implements Inp
 	}
 
 	public void poll(final long microtime) {
-		// NOTE: For further dev came here, it's better to wrap this variable instead of
-		// accessing imgui menu's field directly
-		boolean acceptInput = !textmode && !SkinWidgetManager.focus;
-		if (acceptInput) {
+		if (!textmode) {
 			for (int i = 0; i < keys.length; i++) {
 				if(keys[i] < 0) {
 					continue;
@@ -129,7 +125,7 @@ public class KeyBoardInputProcesseor extends BMSPlayerInputDevice implements Inp
 		
 		for (ControlKeys key : ControlKeys.values()) {
 			final boolean pressed = Gdx.input.isKeyPressed(key.keycode);
-			if (!(textmode && key.text) && pressed != keystate[key.keycode] && acceptInput) {
+			if (!(textmode && key.text) && pressed != keystate[key.keycode]) {
 				keystate[key.keycode] = pressed;
 				keytime[key.keycode] = microtime;
 				keymodifiers[key.keycode] = pressed ? currentlyHeldModifiers() : 0;
