@@ -93,7 +93,11 @@ public class BarManager {
 	void init() {
 		TableDataAccessor tdaccessor = new TableDataAccessor(select.resource.getConfig().getTablepath());
 
-		TableData[] unsortedtables = tdaccessor.readAll();
+        TableData[] unsortedtables;
+        try (var perf = PerformanceMetrics.get().Event("Saved table load")) {
+            unsortedtables = tdaccessor.readAll();
+        }
+
 		final List<TableData> sortedtables = new ArrayList<TableData>(unsortedtables.length);
 		
 		for(String url : select.resource.getConfig().getTableURL()) {

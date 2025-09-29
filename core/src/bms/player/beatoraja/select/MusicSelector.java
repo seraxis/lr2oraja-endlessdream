@@ -186,7 +186,9 @@ public final class MusicSelector extends MainState {
 		input.setMidiConfig(pc.getMidiConfig());
 		manager.updateBar();
 
-		loadSkin(SkinType.MUSIC_SELECT);
+        try (var perf = PerformanceMetrics.get().Event("Load skin: Select")) {
+            loadSkin(SkinType.MUSIC_SELECT);
+        }
 
 		// search text field
 		Rectangle searchRegion = ((MusicSelectSkin) getSkin()).getSearchTextRegion();

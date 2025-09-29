@@ -118,9 +118,12 @@ public class MainLoader extends Application {
             }
         }
 
-		for(SongData song : getScoreDatabaseAccessor().getSongDatas(SongUtils.illegalsongs)) {
-			MainLoader.putIllegalSong(song.getSha256());
-		}
+        try (var perf = PerformanceMetrics.get().Event("Illegal song read")) {
+            for (SongData song : getScoreDatabaseAccessor().getSongDatas(SongUtils.illegalsongs)) {
+                MainLoader.putIllegalSong(song.getSha256());
+            }
+        }
+
 		if(illegalSongs.size() > 0) {
 			JOptionPane.showMessageDialog(null, "This Application detects " + illegalSongs.size() + " illegal BMS songs. \n Remove them, update song database and restart.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);

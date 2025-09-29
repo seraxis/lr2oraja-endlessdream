@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
+import bms.player.beatoraja.PerformanceMetrics;
 
 /**
  * .fnt ファイルをソースとして持つスキン用テキスト
@@ -152,6 +153,12 @@ public class SkinTextBitmap extends SkinText {
 				for (int i = 0; i < _fontData.imagePaths.length; ++i) {
 					_regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));
 				}
+                try (var perf = PerformanceMetrics.get().Event(String.format("Font image load: %s", _fontPath.getFileName()))) {
+                    _regions = new Array<>(_fontData.imagePaths.length);
+                    for (int i = 0; i < _fontData.imagePaths.length; ++i) {
+                        _regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));
+                    }
+                }
 
 				_font = new BitmapFont(_fontData, _regions, true);
 
