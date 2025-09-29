@@ -648,7 +648,6 @@ public abstract class SkinObject extends DisposableObject {
 	public static class SkinObjectDestination {
 
 		public final long time;
-		public String name;
 		/**
 		 * 描画領域
 		 */
