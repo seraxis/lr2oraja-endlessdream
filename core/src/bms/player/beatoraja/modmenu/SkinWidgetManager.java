@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
@@ -220,16 +221,21 @@ public class SkinWidgetManager {
                             if ((ImGui.checkbox("Move", move_overlay_enabled)
                                  && move_overlay_enabled.get())
                                 || reset_move_overlay) {
-                                float w = editingWidgetW.get();
-                                float h = editingWidgetH.get();
-                                float x = editingWidgetX.get();
-                                float y = windowHeight - editingWidgetY.get() - h;
+                                float w = dst.getDstW();
+                                float h = dst.getDstH();
+                                float x = dst.getDstX();
+                                float y = windowHeight - dst.getDstY() - h;
                                 ImGui.setNextWindowPos(x, y);
                                 ImGui.setNextWindowSize(w, h);
                                 reset_move_overlay = false;
                             }
 
-                            if(move_overlay_enabled.get()){
+                            if (move_overlay_enabled.get()) {
+                                if (dst.movingState == 0) {
+                                    Rectangle clonedRegion = new Rectangle(dst.getDstX(), dst.getDstY(), dst.getDstW(), dst.getDstH());
+                                    dst.beforeMove = new SkinObject.SkinObjectDestination(0, clonedRegion, null, 0, 0);
+                                    dst.movingState = 1;
+                                }
                                 ImGui.pushStyleColor(ImGuiCol.WindowBg, 0, 0, 0, 0.4f);
                                 ImGui.pushStyleColor(ImGuiCol.Border, 0.2f, 0.4f, 1.f, 1.f);
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGrip, 1.f, .3f, .3f, 1.f);
@@ -248,20 +254,41 @@ public class SkinWidgetManager {
                                     float y = windowHeight - pos.y - h;
                                     ImGui.text(String.format("x = %.1f y = %.1f", x, y));
                                     ImGui.text(String.format("w = %.1f h = %.1f", w, h));
+                                    // NOTE: This approach is actually moving the "REAL" widget in-time, so we have to:
+                                    // Don't produce any change field events
+                                    // Make a true set when move is "submitted"
                                     dst.setDstX(x, false);
                                     dst.setDstY(y, false);
                                     dst.setDstW(w, false);
                                     dst.setDstH(h, false);
+                                }
+                                if (ImGui.isWindowFocused()) {
+                                    if (dst.movingState == 1) {
+                                        dst.movingState = 2;
+                                    }
+                                } else {
+                                    if (dst.movingState == 2) {
+                                        dst.movingState = 0;
+                                        dst.submitMovement();
+                                    }
                                 }
                                 ImGui.end();
                                 ImGui.popStyleColor();
                                 ImGui.popStyleColor();
                                 ImGui.popStyleColor();
                                 ImGui.popStyleColor();
+                            } else {
+                                dst.movingState = 0;
                             }
                             ImGui.endPopup();
+                        } else {
+                            // If user clicked the empty space while moving widgets, the whole popup would be closed too
+                            // So we have to catch the "escaping" widget here
+                            if (dst.movingState == 2) {
+                                dst.movingState = 0;
+                                dst.submitMovement();
+                            }
                         }
-
                         ImGui.popID();
                     }
                     ImGui.treePop();
@@ -372,10 +399,20 @@ public class SkinWidgetManager {
     private static class SkinWidgetDestination {
         private final String name;
         private final SkinObject.SkinObjectDestination destination;
+        private SkinObject.SkinObjectDestination beforeMove = null;
+        /**
+         * <ul>
+         *     <li>0: haven't started moving</li>
+         *     <li>1: user enabled the move feature, but hasn't move around</li>
+         *     <li>2: user has moved the widget</li>
+         * </ul>
+         */
+        private int movingState;
 
         public SkinWidgetDestination(String name, SkinObject.SkinObjectDestination destination) {
             this.name = name;
             this.destination = destination;
+            this.movingState = 0;
         }
 
         public float getDstX() {
@@ -440,6 +477,31 @@ public class SkinWidgetManager {
                 eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h));
             }
             destination.region.height = h;
+        }
+
+        /**
+         * Submit the move result, producing the event
+         */
+        public void submitMovement() {
+            if (beforeMove == null) {
+                ImGuiNotify.error("Cannot submit the move result because there's no original position");
+                return ;
+            }
+            float nextX = getDstX();
+            float nextY = getDstY();
+            float nextW = getDstW();
+            float nextH = getDstH();
+            // Reset the position, to mimic that we are never left the original position
+            setDstX(beforeMove.region.x, false);
+            setDstY(beforeMove.region.y, false);
+            setDstW(beforeMove.region.width, false);
+            setDstH(beforeMove.region.height, false);
+            // Truly move to the target position
+            setDstX(nextX);
+            setDstY(nextY);
+            setDstW(nextW);
+            setDstH(nextH);
+            beforeMove = null;
         }
     }
 
