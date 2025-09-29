@@ -6,6 +6,7 @@ import com.badlogic.gdx.Gdx;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
+import imgui.ImVec2;
 import imgui.callback.ImListClipperCallback;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiTableFlags;
@@ -44,6 +45,9 @@ public class SkinWidgetManager {
     private static final ImFloat editingWidgetW = new ImFloat(0);
     private static final ImFloat editingWidgetH = new ImFloat(0);
     private static final ImBoolean SHOW_CURSOR_POSITION = new ImBoolean(true);
+
+    private static final ImBoolean move_overlay_enabled = new ImBoolean(false);
+    private static boolean reset_move_overlay = false;
 
     public static boolean focus = false;
 
@@ -197,6 +201,7 @@ public class SkinWidgetManager {
                             editingWidgetY.set(dst.getDstY());
                             editingWidgetW.set(dst.getDstW());
                             editingWidgetH.set(dst.getDstH());
+                            reset_move_overlay = true;
                             ImGui.openPopup("Edit Skin Widget");
                         }
                         if (ImGui.beginPopup("Edit Skin Widget", ImGuiWindowFlags.AlwaysAutoResize)) {
@@ -210,6 +215,49 @@ public class SkinWidgetManager {
                                 dst.setDstW(editingWidgetW.get());
                                 dst.setDstH(editingWidgetH.get());
                                 ImGui.closeCurrentPopup();
+                            }
+
+                            if ((ImGui.checkbox("Move", move_overlay_enabled)
+                                 && move_overlay_enabled.get())
+                                || reset_move_overlay) {
+                                float w = editingWidgetW.get();
+                                float h = editingWidgetH.get();
+                                float x = editingWidgetX.get();
+                                float y = windowHeight - editingWidgetY.get() - h;
+                                ImGui.setNextWindowPos(x, y);
+                                ImGui.setNextWindowSize(w, h);
+                                reset_move_overlay = false;
+                            }
+
+                            if(move_overlay_enabled.get()){
+                                ImGui.pushStyleColor(ImGuiCol.WindowBg, 0, 0, 0, 0.4f);
+                                ImGui.pushStyleColor(ImGuiCol.Border, 0.2f, 0.4f, 1.f, 1.f);
+                                ImGui.pushStyleColor(ImGuiCol.ResizeGrip, 1.f, .3f, .3f, 1.f);
+                                ImGui.pushStyleColor(ImGuiCol.ResizeGripHovered, 1.f, 0.7f, .7f, 1.f);
+                                if (ImGui.begin("widget-overlay-popup",
+                                                move_overlay_enabled,
+                                                ImGuiWindowFlags.NoNav |
+                                                ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing |
+                                                ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse |
+                                                ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar)) {
+                                    ImVec2 pos = ImGui.getWindowPos();
+                                    ImVec2 size = ImGui.getWindowSize();
+                                    float w = size.x;
+                                    float h = size.y;
+                                    float x = pos.x;
+                                    float y = windowHeight - pos.y - h;
+                                    ImGui.text(String.format("x = %.1f y = %.1f", x, y));
+                                    ImGui.text(String.format("w = %.1f h = %.1f", w, h));
+                                    dst.setDstX(x, false);
+                                    dst.setDstY(y, false);
+                                    dst.setDstW(w, false);
+                                    dst.setDstH(h, false);
+                                }
+                                ImGui.end();
+                                ImGui.popStyleColor();
+                                ImGui.popStyleColor();
+                                ImGui.popStyleColor();
+                                ImGui.popStyleColor();
                             }
                             ImGui.endPopup();
                         }
