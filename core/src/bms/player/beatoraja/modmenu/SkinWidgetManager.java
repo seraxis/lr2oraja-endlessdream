@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
 import imgui.ImColor;
 import imgui.ImGui;
@@ -95,6 +96,10 @@ public class SkinWidgetManager {
                             renderPreferColumnSetting();
                             ImGui.sameLine();
                             ImGui.checkbox("Show Position", SHOW_CURSOR_POSITION);
+                            ImGui.sameLine();
+                            if (ImGui.button("export")) {
+                                exportChanges();
+                            }
 
 
                             renderSkinWidgetsTable();
@@ -341,6 +346,48 @@ public class SkinWidgetManager {
         } else {
             ImGui.text(normalizeFloat(value));
         }
+    }
+
+    /**
+     * Export all changes, currently it simply copies the change logs to clipboard
+     */
+    private static void exportChanges() {
+        List<String> changes = new ArrayList<>();
+        widgets.forEach(widget -> {
+            widget.destinations.forEach(dst -> {
+                boolean hasChangedX = false, hasChangedY = false, hasChangedW = false, hasChangedH = false;
+                for (Event<?> event : eventHistory.getEvents(dst.name)) {
+                    switch (event.type) {
+                        case CHANGE_X -> hasChangedX = true;
+                        case CHANGE_Y -> hasChangedY = true;
+                        case CHANGE_W -> hasChangedW = true;
+                        case CHANGE_H -> hasChangedH = true;
+                    }
+                }
+                if (!(hasChangedX || hasChangedY || hasChangedW || hasChangedH)) {
+                    return ;
+                }
+                StringBuilder sb = new StringBuilder("{dst=").append(dst.name);
+                if (hasChangedX) {
+                    sb.append(", x=").append(dst.getDstX());
+                }
+                if (hasChangedY) {
+                    sb.append(", y=").append(dst.getDstY());
+                }
+                if (hasChangedX) {
+                    sb.append(", w=").append(dst.getDstW());
+                }
+                if (hasChangedY) {
+                    sb.append(", h=").append(dst.getDstH());
+                }
+                sb.append("}");
+                changes.add(sb.toString());
+            });
+        });
+        String changeLogs = String.join("\n", changes);
+        Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
+        clipboard.setContents(changeLogs);
+        ImGuiNotify.info("Copied changes to clipboard");
     }
 
     /**
@@ -633,6 +680,10 @@ public class SkinWidgetManager {
 
         public List<Event<?>> getEvents() {
             return eventStack;
+        }
+
+        public List<Event<?>> getEvents(String name) {
+            return targetNameToEvents.getOrDefault(name, new ArrayList<>());
         }
 
         private void pushEvent(Event<?> event) {
