@@ -15,11 +15,22 @@ public class PerformanceMonitor {
 
     static HashMap<Integer, Vector<PerformanceMetrics.EventResult>> eventTree;
 
+    private record WatchStats(Float avg, Float std) {}
+    private static IdentityHashMap<String, WatchStats> watchData =
+        new IdentityHashMap<String, WatchStats>();
+    static long lastStatUpdate = 0;
+
     public static void show(ImBoolean showPerformanceMonitor) {
         if (eventTree == null) {
             reloadEventTree();
         }
+
         if (ImGui.begin("Performance Monitor", showPerformanceMonitor)) {
+            if (ImGui.collapsingHeader("Watch")) {
+                updateWatchData();
+                renderWatchData();
+            }
+
             if (ImGui.collapsingHeader("Events")) {
                 renderEventTable();
             }
@@ -27,8 +38,42 @@ public class PerformanceMonitor {
         ImGui.end();
     }
 
+    private static void updateWatchData() {
+        boolean update_stats = lastStatUpdate < (System.nanoTime() - 100000000L);
+        if (!update_stats)
+            return;
+        lastStatUpdate = System.nanoTime();
 
+        Set<String> names = PerformanceMetrics.get().getWatchNames();
+        for (String name : names) {
+            var record = PerformanceMetrics.get().getWatchRecords(name);
+            if (record.isEmpty()) {
+                watchData.put(name, new WatchStats(0.f, 0.f));
+                continue;
+            }
 
+            long sum = 0;
+            for (var sample : record) {
+                sum += sample.getValue();
+            }
+            float avg_ms = (sum / record.size()) / 1000.f;
+            float variance = 0;
+            for (var sample : record) {
+                float ms = sample.getValue() / 1000.f;
+                variance += (avg_ms - ms) * (avg_ms - ms);
+            }
+            variance /= record.size();
+            float std = (float)Math.sqrt(variance);
+            watchData.put(name, new WatchStats(avg_ms, std));
+        }
+    }
+
+    private static void renderWatchData() {
+        watchData.forEach((name, data) -> {
+            ImGui.text(name);
+            ImGui.text(String.format("avg = %.1fus, std = %.1fus", data.avg(), data.std()));
+        });
+    }
 
     public static void reloadEventTree() {
         // copy the vector to avoid constantly reading the events  while other threads might be writing
@@ -64,6 +109,7 @@ public class PerformanceMonitor {
         if (!eventTree.containsKey(groupId))
             return;
 
+		// TODO: toggle for sorting results by duration instead of chronologically
         Vector<PerformanceMetrics.EventResult> group = eventTree.get(groupId);
 
         for (var event : group) {

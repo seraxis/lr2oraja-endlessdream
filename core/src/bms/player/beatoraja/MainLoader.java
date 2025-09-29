@@ -229,8 +229,10 @@ public class MainLoader extends Application {
 				}
 
 				public void render() {
-					main.render();
-				}
+                    try (var perf = PerformanceMetrics.get().Watch("render")) {
+                        main.render();
+                    }
+                }
 
 				public void pause() {
 					main.pause();

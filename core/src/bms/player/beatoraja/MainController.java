@@ -577,6 +577,8 @@ public class MainController {
 		imGui.render();
 		imGui.end();
 
+        PerformanceMetrics.get().commit();
+
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
 			downloadIpfsMessageRenderer(download.getMessage());
