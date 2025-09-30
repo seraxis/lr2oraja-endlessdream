@@ -344,8 +344,7 @@ public class MainController {
             ImGuiRenderer.init();
         }
 
-
-		try {
+        try (var perf = PerformanceMetrics.get().Event("System font load")) {
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(config.getSystemfontpath()));
 			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 			parameter.size = 24;

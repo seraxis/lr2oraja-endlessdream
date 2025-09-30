@@ -22,9 +22,11 @@ public class PerformanceMonitor {
 
     public static void show(ImBoolean showPerformanceMonitor) {
         if (eventTree == null) {
+            // TODO: auto update regularly
             reloadEventTree();
         }
 
+        // TODO: render 'watch' times in the same table
         if (ImGui.begin("Performance Monitor", showPerformanceMonitor)) {
             if (ImGui.collapsingHeader("Watch")) {
                 updateWatchData();
@@ -78,8 +80,10 @@ public class PerformanceMonitor {
     public static void reloadEventTree() {
         // copy the vector to avoid constantly reading the events  while other threads might be writing
         eventTree = new HashMap<Integer, Vector<PerformanceMetrics.EventResult>>();
-        Vector<PerformanceMetrics.EventResult> events =
-            new Vector<PerformanceMetrics.EventResult>(PerformanceMetrics.get().eventResults);
+        Vector<PerformanceMetrics.EventResult> events;
+        synchronized (PerformanceMetrics.get().eventResults) {
+            events = new Vector<PerformanceMetrics.EventResult>(PerformanceMetrics.get().eventResults);
+        }
         for (var event : events) {
             if (!eventTree.containsKey(event.parent())) {
                 eventTree.put(event.parent(), new Vector<PerformanceMetrics.EventResult>());
@@ -91,9 +95,10 @@ public class PerformanceMonitor {
     }
 
     private static void renderEventTable() {
-        if (ImGui.beginTable("event-table", 2, ImGuiTableFlags.ScrollY)) {
-            ImGui.tableSetupColumn("Event", ImGuiTableColumnFlags.WidthStretch, 2.0f);
-            ImGui.tableSetupColumn("Time", ImGuiTableColumnFlags.WidthStretch, 1.0f);
+        if (ImGui.beginTable("event-table", 3, ImGuiTableFlags.ScrollY)) {
+            ImGui.tableSetupColumn("Event", ImGuiTableColumnFlags.WidthStretch, 3.0f);
+            ImGui.tableSetupColumn("Time", ImGuiTableColumnFlags.WidthStretch, 1.5f);
+            ImGui.tableSetupColumn("Thread", ImGuiTableColumnFlags.WidthStretch, 1.0f);
             ImGui.tableHeadersRow();
 
             ImGui.tableNextRow();
@@ -109,7 +114,7 @@ public class PerformanceMonitor {
         if (!eventTree.containsKey(groupId))
             return;
 
-		// TODO: toggle for sorting results by duration instead of chronologically
+        // TODO: toggle for sorting results by duration instead of chronologically
         Vector<PerformanceMetrics.EventResult> group = eventTree.get(groupId);
 
         for (var event : group) {
@@ -119,7 +124,9 @@ public class PerformanceMonitor {
                              : 0;
             boolean open = ImGui.treeNodeEx(event.name(), flags);
             ImGui.tableNextColumn();
-            ImGui.text(String.format("%12.2fms", event.duration() / 1000000.0));
+            ImGui.text(String.format("%9.2fms", event.duration() / 1000000.0));
+            ImGui.tableNextColumn();
+            ImGui.text(String.format("%s", event.thread()));
             ImGui.tableNextColumn();
             if (!leaf && open) {
                 renderEventTree(event.id());

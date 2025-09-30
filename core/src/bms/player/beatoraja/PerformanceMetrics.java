@@ -1,10 +1,13 @@
 package bms.player.beatoraja;
 
-import java.util.Vector;
-import java.util.Stack;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.ArrayDeque;
 import java.util.IdentityHashMap;
 import java.util.Set;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.util.Pair;
 
 public class PerformanceMetrics {
@@ -19,14 +22,11 @@ public class PerformanceMetrics {
     // relies on name identity, so only pass string literals as the name argument
     public WatchBlock Watch(String eventName) { return new WatchBlock(eventName); }
 
-    public record EventResult(String name, int id, int parent, long startTime, long duration) {}
+    public record EventResult(String name, int id, int parent, long startTime, long duration,
+                              String thread) {}
 
-    public Vector<EventResult> eventResults = new Vector<EventResult>();
-
-    public Stack<Integer> activeBlocks = new Stack<Integer>();
-
-    private IdentityHashMap<String, ArrayDeque<Pair<Long, Long>>> watchRecords =
-        new IdentityHashMap<String, ArrayDeque<Pair<Long, Long>>>();
+    public List<EventResult> eventResults =
+        Collections.synchronizedList(new ArrayList<EventResult>());
 
     public synchronized void submitWatchResult(String name, long time, long duration) {
         if (!watchRecords.containsKey(name)) {
@@ -53,30 +53,38 @@ public class PerformanceMetrics {
         return watchRecords.get(name);
     }
 
+    private ThreadLocal<Deque<Integer>> activeBlocks =
+        ThreadLocal.withInitial(() -> new ArrayDeque<Integer>());
+
     public class EventBlock implements AutoCloseable {
         private final String name;
         private final int id;
         private final int parent;
         private final long startTime;
 
-        private static int nextId = 1;
+        private static AtomicInteger nextId = new AtomicInteger(1);
 
         public EventBlock(String name) {
             this.name = name;
-            this.id = nextId;
-            nextId++;
-            parent = get().activeBlocks.empty() ? 0 : get().activeBlocks.peek();
-            get().activeBlocks.push(this.id);
+            this.id = nextId.getAndIncrement();
+            parent = get().activeBlocks.get().isEmpty() ? 0 : get().activeBlocks.get().peek();
+            get().activeBlocks.get().push(this.id);
             startTime = System.nanoTime();
         }
 
         @Override
         public void close() {
             var endTime = System.nanoTime();
-            get().activeBlocks.pop();
-            eventResults.add(new EventResult(name, id, parent, startTime, (endTime - startTime)));
+            get().activeBlocks.get().pop();
+            synchronized (eventResults) {
+                eventResults.add(new EventResult(name, id, parent, startTime, (endTime - startTime),
+                                                 Thread.currentThread().getName()));
+            }
         }
     }
+
+    private IdentityHashMap<String, ArrayDeque<Pair<Long, Long>>> watchRecords =
+        new IdentityHashMap<String, ArrayDeque<Pair<Long, Long>>>();
 
     public class WatchBlock implements AutoCloseable {
         private final String name;
