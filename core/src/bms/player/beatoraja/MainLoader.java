@@ -118,10 +118,8 @@ public class MainLoader extends Application {
             }
         }
 
-        try (var perf = PerformanceMetrics.get().Event("Illegal song read")) {
-            for (SongData song : getScoreDatabaseAccessor().getSongDatas(SongUtils.illegalsongs)) {
-                MainLoader.putIllegalSong(song.getSha256());
-            }
+        for (SongData song : getScoreDatabaseAccessor().getSongDatas(SongUtils.illegalsongs)) {
+            MainLoader.putIllegalSong(song.getSha256());
         }
 
 		if(illegalSongs.size() > 0) {

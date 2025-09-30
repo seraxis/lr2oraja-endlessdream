@@ -146,14 +146,12 @@ public class SkinTextBitmap extends SkinText {
 			float _pageWidth = 0;
 			float _pageHeight = 0;
 
-			try {
-				_fontData = new BitmapFont.BitmapFontData(new FileHandle(_fontPath.toFile()), false);
+			try (var perf = PerformanceMetrics.get().Event(String.format("Font load: %s", _fontPath.getFileName()))){
+                try (var perf_ = PerformanceMetrics.get().Event(String.format("description parse", _fontPath.getFileName()))) {
+                    _fontData = new BitmapFont.BitmapFontData(new FileHandle(_fontPath.toFile()), false);
+                }
 
-				_regions = new Array<>(_fontData.imagePaths.length);
-				for (int i = 0; i < _fontData.imagePaths.length; ++i) {
-					_regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));
-				}
-                try (var perf = PerformanceMetrics.get().Event(String.format("Font image load: %s", _fontPath.getFileName()))) {
+                try (var perf_ = PerformanceMetrics.get().Event(String.format("image load", _fontPath.getFileName()))) {
                     _regions = new Array<>(_fontData.imagePaths.length);
                     for (int i = 0; i < _fontData.imagePaths.length; ++i) {
                         _regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));

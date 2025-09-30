@@ -132,8 +132,10 @@ public abstract class MainState {
 	}
 
 	public void loadSkin(SkinType skinType) {
-		setSkin(SkinLoader.load(this, skinType));
-	}
+        try (var perf = PerformanceMetrics.get().Event("Load skin: " + skinType)) {
+            setSkin(SkinLoader.load(this, skinType));
+        }
+    }
 
 	public int getJudgeCount(int judge, boolean fast) {
 		ScoreData sd = score.getScoreData();
