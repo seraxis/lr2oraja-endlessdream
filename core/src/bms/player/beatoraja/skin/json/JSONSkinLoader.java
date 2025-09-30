@@ -327,7 +327,12 @@ public class JSONSkinLoader extends SkinLoader {
 				sourceMap.put(source.id, new SourceData(source.path));
 			}
 
-			for (JsonSkin.Destination dst : sk.destination) {
+            BitmapFontBatchLoader bmpFontLoader = new BitmapFontBatchLoader(sk, p, usecim, true);
+            try (var fontPerf = PerformanceMetrics.get().Event("Bitmap font preload")) {
+                bmpFontLoader.load();
+            }
+
+            for (JsonSkin.Destination dst : sk.destination) {
 				SkinObject obj = null;
 				try {
 					int id = Integer.parseInt(dst.id);
