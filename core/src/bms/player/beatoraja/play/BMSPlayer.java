@@ -263,6 +263,7 @@ public class BMSPlayer extends MainState {
 
 			// "Persist" some states in resource
 			resource.setFreqOn(true);
+			resource.setFreqValue(freq);
 			resource.setFreqString(FreqTrainerMenu.getFreqString());
 		}
 		if (autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY) {
@@ -291,7 +292,10 @@ public class BMSPlayer extends MainState {
 					assist = Math.max(assist, 2);
 					score = false;
 				}
+				resource.setOverrideJudgeRank(JudgeTrainer.getJudgeRank());
 				model.setJudgerank(overridingJudgeWindowRate);
+			} else {
+				resource.setOverrideJudgeRank(-1);
 			}
 
 			// Constant considered as assist in Endless Dream
@@ -1022,6 +1026,10 @@ public class BMSPlayer extends MainState {
 				}
 			}
 		}
+		if (resource.isFreqOn()) {
+			score.setRate(resource.getFreqValue());
+		}
+		score.setOverridejudge(resource.getOverrideJudgeRank());
 		score.setClear(clear.id);
 		score.setGauge(gauge.isTypeChanged() ? -1 : gauge.getType());
 		score.setOption(playinfo.randomoption + (model.getMode().player == 2
