@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.select.QueryScoreContext;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.TableData;
 import bms.player.beatoraja.song.SongData;
@@ -371,7 +372,7 @@ public class ContextMenuBar extends DirectoryBar {
         };
 
         selector.getScoreDataCache().readScoreDatas(collector, songs,
-                                                    selector.main.getPlayerConfig().getLnmode());
+                                                    QueryScoreContext.create(selector.main.getPlayerConfig().getLnmode()));
         return lamps;
     }
 

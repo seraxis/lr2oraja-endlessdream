@@ -1,10 +1,9 @@
 package bms.player.beatoraja.modmenu.setting.window;
 
-import bms.player.beatoraja.Config;
-import bms.player.beatoraja.MainState;
-import bms.player.beatoraja.PlayerConfig;
-import bms.player.beatoraja.ScoreData;
+import bms.player.beatoraja.*;
 import bms.player.beatoraja.config.KeyConfiguration;
+import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.JudgeTrainer;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import bms.player.beatoraja.modmenu.setting.widget.CheckboxWidget;
 import bms.player.beatoraja.modmenu.setting.widget.Label;
@@ -16,13 +15,12 @@ import bms.player.beatoraja.select.bar.SongBar;
 import bms.player.beatoraja.song.SongData;
 import bms.tool.util.Pair;
 import imgui.ImGui;
+import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Show the current song data & some misc selector settings
@@ -37,6 +35,18 @@ public class SongSettingsWindow extends BaseSettingWindow {
 	// NOTE: Ideally, this should be shown as an option in sort strategies, but it's really hard to hide the fact
 	//  that it's actually not, so current it's directly exposed to both users and internal modules.
 	private static final ImBoolean lastPlayedSort = new ImBoolean(false);
+	/**
+	 * Sort strategy
+	 */
+	private static ImInt sortStrategy = new ImInt(0);
+	/**
+	 * Whether show scores based on current selected mods or not
+	 */
+	private static ImBoolean showSelectedModdedScore = new ImBoolean(false);
+	/**
+	 * In-game local records cache, could be refactored into a fixed size one in the future
+	 */
+	private static Map<String, List<ScoreData>> localHistoryCache = new HashMap<>();
 
 	public SongSettingsWindow(Config config, PlayerConfig playerConfig) {
 		super(config, playerConfig);
@@ -95,6 +105,11 @@ public class SongSettingsWindow extends BaseSettingWindow {
 				ImGui.bulletText(reverseLookupData.get(i));
 				ImGui.popID();
 			}
+			ImGui.bulletText("Local History");
+			ImGui.combo("sort", sortStrategy, SortStrategy.items);
+			ImGui.checkbox("Show Selected Mods Scores", showSelectedModdedScore);
+			List<ScoreData> localHistory = loadLocalHistory(currentSongData.getSha256());
+			renderLocalHistoryTable(localHistory);
 		}
 
 		options.forEach(category -> {
@@ -148,5 +163,115 @@ public class SongSettingsWindow extends BaseSettingWindow {
 
 	public static void forceDisableLastPlayedSort() {
 		lastPlayedSort.set(false);
+	}
+
+	/**
+	 * Invalid a chart's local history cache
+	 */
+	public static void invalidCache(String sha256) {
+		localHistoryCache.remove(sha256);
+	}
+
+	/**
+	 * Load one chart's local history, currently it's not an async function because querying sqlite
+	 * is already pretty fast. We can do the refactor later if needed
+	 * Returned scores would be sorted by current sort strategy and filtered by current filtering settings
+	 */
+	private static List<ScoreData> loadLocalHistory(String sha256) {
+		List<ScoreData> snapshot = localHistoryCache.computeIfAbsent(sha256, s -> SettingMenu.mainRef.getPlayDataAccessor().readScoreDataLog(sha256));
+		SortStrategy strategy = SortStrategy.valueOf(sortStrategy.get());
+		snapshot.sort(strategy.getComparator());
+		if (showSelectedModdedScore.get()) {
+			Optional<Integer> freqValue = FreqTrainerMenu.isFreqTrainerEnabled() ? Optional.of(FreqTrainerMenu.getFreq()) : Optional.empty();
+			Optional<Integer> overrideJudge = JudgeTrainer.isActive() ? Optional.of(JudgeTrainer.getJudgeRank()) : Optional.empty();
+			return snapshot.stream().filter(score -> {
+				if (freqValue.isPresent() && !freqValue.get().equals(score.getRate())) {
+					return false;
+				}
+				if (overrideJudge.isPresent() && !overrideJudge.get().equals(score.getOverridejudge())) {
+					return false;
+				}
+				return true;
+			}).toList();
+		} else {
+			return snapshot;
+		}
+	}
+
+	/**
+	 * Render local records as a table
+	 *
+	 * @param localHistory local records
+	 */
+	private static void renderLocalHistoryTable(List<ScoreData> localHistory) {
+		if (ImGui.beginTable("Local History", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+			ImGui.tableSetupScrollFreeze(0, 1);
+			ImGui.tableSetupColumn("Clear");
+			ImGui.tableSetupColumn("Score");
+			ImGui.tableSetupColumn("Freq");
+			ImGui.tableSetupColumn("Judge");
+			ImGui.tableSetupColumn("Time");
+			ImGui.tableHeadersRow();
+			for (ScoreData scoreData : localHistory) {
+				ImGui.tableNextRow();
+				ImGui.pushID(scoreData.getDate());
+
+				ImGui.tableNextColumn();
+				ImGui.text(ClearType.getClearTypeByID(scoreData.getClear()).name());
+
+				ImGui.tableNextColumn();
+				ImGui.text("" + scoreData.getExscore());
+
+				ImGui.tableNextColumn();
+				int rate = scoreData.getRate();
+				String rateData = rate == 0 ? "/" : String.format("%.02fx", (rate / 100.0f));
+				ImGui.text(rateData);
+
+				ImGui.tableNextColumn();
+				int overrideJudge = scoreData.getOverridejudge();
+				String overrideJudgeDate = overrideJudge == -1 ? "/" : JudgeTrainer.JUDGE_OPTIONS[overrideJudge];
+				ImGui.text(overrideJudgeDate);
+
+				ImGui.tableNextColumn();
+				ImGui.text(simpleDateFormat.format(new Date(scoreData.getDate() * 1000)));
+
+				ImGui.popID();
+			}
+			ImGui.endTable();
+		}
+	}
+
+	private enum SortStrategy {
+		RECORD_TIME("Record Time", (lhs, rhs) -> (int) (rhs.getDate() - lhs.getDate())),
+		EX_SCORE("EX Score", (lhs, rhs) -> rhs.getExscore() - lhs.getExscore()),
+		;
+
+		private final String name;
+		private final Comparator<ScoreData> comparator;
+
+		SortStrategy(String name, Comparator<ScoreData> comparator) {
+			this.name = name;
+			this.comparator = comparator;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public Comparator<ScoreData> getComparator() {
+			return comparator;
+		}
+
+		public static SortStrategy valueOf(int i) {
+			String name = items[i];
+			for (SortStrategy value : SortStrategy.values()) {
+				if (value.getName().equals(name)) {
+					return value;
+				}
+			}
+			return null;
+		}
+
+		public static String[] items = Arrays.stream(SortStrategy.values()).map(SortStrategy::getName).toArray(String[]::new);
 	}
 }
