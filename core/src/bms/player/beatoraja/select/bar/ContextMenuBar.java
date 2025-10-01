@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.TableData;
+import bms.player.beatoraja.select.QueryScoreContext;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.select.MusicSelector;

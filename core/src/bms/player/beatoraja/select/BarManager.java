@@ -6,6 +6,9 @@ import java.io.BufferedInputStream;
 import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.JudgeTrainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
@@ -374,8 +377,9 @@ public class BarManager {
 			for (Bar b : newcurrentsongs) {
 				if (b instanceof SongBar) {
 					SongData sd = ((SongBar) b).getSongData();
-					if (sd != null && select.getScoreDataCache().existsScoreDataCache(sd, config.getLnmode())) {
-						b.setScore(select.getScoreDataCache().readScoreData(sd, config.getLnmode()));
+					QueryScoreContext ctx = QueryScoreContext.create(config.getLnmode());
+					if (sd != null && select.getScoreDataCache().existsScoreDataCache(sd, ctx)) {
+						b.setScore(select.getScoreDataCache().readScoreData(sd, ctx));
 					}
 				}
 			}
@@ -399,7 +403,7 @@ public class BarManager {
 						if (randomFolder.getFilter() != null) {
 							Set<String> filterKey = randomFolder.getFilter().keySet();
 							randomTargets = Stream.of(randomTargets).filter(r -> {
-								ScoreData scoreData = select.getScoreDataCache().readScoreData(r, config.getLnmode());
+								ScoreData scoreData = select.getScoreDataCache().readScoreData(r, QueryScoreContext.create(config.getLnmode()));
                                 return randomFolder.filterSong(scoreData);
 							}).toArray(SongData[]::new);
 						}
@@ -769,7 +773,7 @@ public class BarManager {
 				if (bar instanceof SongBar && ((SongBar) bar).existsSong()) {
 					SongData sd = ((SongBar) bar).getSongData();
 					if (bar.getScore() == null) {
-						bar.setScore(select.getScoreDataCache().readScoreData(sd, config.getLnmode()));
+						bar.setScore(select.getScoreDataCache().readScoreData(sd, QueryScoreContext.create(config.getLnmode())));
 					}
 					if (rival != null && bar.getRivalScore() == null) {
 						final ScoreData rivalScore = rival.readScoreData(sd, config.getLnmode());
