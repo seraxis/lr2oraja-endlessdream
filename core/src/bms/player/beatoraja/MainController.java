@@ -6,10 +6,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
-import bms.player.beatoraja.modmenu.DownloadTaskMenu;
-import bms.player.beatoraja.modmenu.ImGuiNotify;
-import bms.player.beatoraja.modmenu.ImGuiRenderer;
-import bms.player.beatoraja.modmenu.SongManagerMenu;
+import bms.player.beatoraja.modmenu.*;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
@@ -373,6 +370,7 @@ public class MainController {
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
+		MiscSettingMenu.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
 		gresult = new CourseResult(this);
