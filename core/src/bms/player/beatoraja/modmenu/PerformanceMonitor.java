@@ -8,6 +8,7 @@ import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiTableColumnFlags;
 import imgui.flag.ImGuiTreeNodeFlags;
 import imgui.type.ImBoolean;
+import imgui.type.ImFloat;
 
 import java.util.*;
 
@@ -94,7 +95,12 @@ public class PerformanceMonitor {
         }
     }
 
+    public static float[] filterShortThreshold = {1.0f};
+
     private static void renderEventTable() {
+        ImGui.setNextItemWidth(ImGui.getContentRegionAvail().x / 5.f);
+        ImGui.sliderFloat("Filter short events", filterShortThreshold, 0.0f, 4.0f);
+
         if (ImGui.beginTable("event-table", 3, ImGuiTableFlags.ScrollY)) {
             ImGui.tableSetupColumn("Event", ImGuiTableColumnFlags.WidthStretch, 3.0f);
             ImGui.tableSetupColumn("Time", ImGuiTableColumnFlags.WidthStretch, 1.5f);
@@ -118,13 +124,17 @@ public class PerformanceMonitor {
         Vector<PerformanceMetrics.EventResult> group = eventTree.get(groupId);
 
         for (var event : group) {
+            float duration_ms = (float)(event.duration() / 1000000.0);
+            if (duration_ms < filterShortThreshold[0])
+                continue;
+
             boolean leaf = !eventTree.containsKey(event.id());
             var flags = leaf ? ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen |
                                    ImGuiTreeNodeFlags.Bullet
                              : 0;
-            boolean open = ImGui.treeNodeEx(event.name(), flags);
+            boolean open = ImGui.treeNodeEx(event.id(), flags, event.name());
             ImGui.tableNextColumn();
-            ImGui.text(String.format("%9.2fms", event.duration() / 1000000.0));
+            ImGui.text(String.format("%9.2fms", duration_ms));
             ImGui.tableNextColumn();
             ImGui.text(String.format("%s", event.thread()));
             ImGui.tableNextColumn();
