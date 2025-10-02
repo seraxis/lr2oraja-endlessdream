@@ -33,6 +33,7 @@ public class MiscSettingMenu {
     private static final ImBoolean ENABLE_HIDDEN = new ImBoolean(false);
     private static final ImInt HIDDEN_VALUE = new ImInt(0);
     private static final ImBoolean ENABLE_LANECOVER = new ImBoolean(false);
+    private static final ImInt LANECOVER_VALUE = new ImInt(0);
     private static final ImFloat LANE_COVER_MARGIN_LOW = new ImFloat(0);
     private static final ImFloat LANE_COVER_MARGIN_HIGH = new ImFloat(0);
     private static final ImInt LANE_COVER_SWITCH_DURATION = new ImInt(0);
@@ -78,6 +79,9 @@ public class MiscSettingMenu {
 			if (ImGui.checkbox("Enable LaneCover", ENABLE_LANECOVER)) {
 				getPlayConfig().setEnablelanecover(ENABLE_LANECOVER.get());
 			}
+            if (ImGui.inputInt("Lane Cover Value", LANECOVER_VALUE)) {
+                getPlayConfig().setLanecover(LANECOVER_VALUE.get() / 1000f);
+            }
             if (ImGui.inputFloat("Lane Cover Margin(low)", LANE_COVER_MARGIN_LOW)) {
                 getPlayConfig().setLanecovermarginlow(LANE_COVER_MARGIN_LOW.get());
             }
@@ -124,6 +128,7 @@ public class MiscSettingMenu {
         HIDDEN_VALUE.set((int) (conf.getHidden() * 1000));
 
         ENABLE_LANECOVER.set(conf.isEnablelanecover());
+        LANECOVER_VALUE.set((int) (conf.getLanecover() * 1000));
         LANE_COVER_MARGIN_LOW.set(conf.getLanecovermarginlow());
         LANE_COVER_MARGIN_HIGH.set(conf.getLanecovermarginhigh());
         LANE_COVER_SWITCH_DURATION.set(conf.getLanecoverswitchduration());
