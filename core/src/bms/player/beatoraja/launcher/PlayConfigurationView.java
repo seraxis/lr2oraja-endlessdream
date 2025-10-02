@@ -356,13 +356,16 @@ public class PlayConfigurationView implements Initializable {
 						@Override
 						public void handle(ActionEvent event) {
 							Desktop desktop = Desktop.getDesktop();
-							URI uri;
-							try {
-								uri = new URI(downloadURL);
-								desktop.browse(uri);
-							} catch (Exception e) {
-								Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
-							}
+                            java.awt.EventQueue.invokeLater(() -> {
+                                try {
+                                    URI uri;
+                                    uri = new URI(downloadURL);
+                                    desktop.browse(uri);
+                                }
+                                catch (Exception e) {
+                                    Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
+                                }
+                            });
 						}
 					});
 				}
@@ -723,7 +726,22 @@ public class PlayConfigurationView implements Initializable {
 		Stage stage = (Stage) root.getScene().getWindow();
 		stage.setIconified(true);
 
-		MainLoader.play(null, bms.player.beatoraja.BMSPlayerMode.PLAY, true, config, player, songUpdated);
+        // On linux the main play/GL loop needs to run on a thread separate
+        // from the JavaFX thread; otherwise the launcher becomes uninteractable
+        // and certain calls such as opening the file manager, or the browser.
+        if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+            Runnable play =
+                () -> MainLoader.play(null,
+                                      bms.player.beatoraja.BMSPlayerMode.PLAY,
+                                      true,
+                                      config,
+                                      player,
+                                      songUpdated);
+            new Thread(play, "Play Thread").start();
+        }
+        else {
+            MainLoader.play(null, bms.player.beatoraja.BMSPlayerMode.PLAY, true, config, player, songUpdated);
+        }
 	}
 
     @FXML
