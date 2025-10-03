@@ -27,8 +27,8 @@ Development builds are created for every commit and published as [releases](http
 > [!NOTE]
 > As of 0.3.0 the Java version has changed from 8 to 17, please check the releases page to update your installations java version
 
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-windows-0.3.0.zip)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-linux-0.3.0.zip)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-windows-0.3.0.jar)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-linux-0.3.0.jar)
 - [**Macos Download (Apple Silicon)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-aarch64-0.3.0.jar)
 - [**Macos Download (Intel)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-0.3.0.jar)
 
