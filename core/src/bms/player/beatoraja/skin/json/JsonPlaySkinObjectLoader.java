@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Rectangle;
 import bms.player.beatoraja.play.*;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
+import bms.player.beatoraja.PerformanceMetrics;
 
 public class JsonPlaySkinObjectLoader extends JsonSkinObjectLoader<PlaySkin> {
 
@@ -32,6 +33,8 @@ public class JsonPlaySkinObjectLoader extends JsonSkinObjectLoader<PlaySkin> {
 		if(obj != null) {
 			return obj;
 		}
+
+        try (var perf = PerformanceMetrics.get().Event("Play object: " + dst.id)) {
 		
 		// note (playskin only)
 		if(sk.note != null && dst.id.equals(sk.note.id)) {
@@ -316,5 +319,6 @@ public class JsonPlaySkinObjectLoader extends JsonSkinObjectLoader<PlaySkin> {
 		}
 
 		return obj;
+        }
 	}
 }

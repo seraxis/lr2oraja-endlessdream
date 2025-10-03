@@ -340,10 +340,11 @@ public class MainController {
 		sprite = SpriteBatchHelper.createSpriteBatch();
 		SkinLoader.initPixmapResourcePool(config.getSkinPixmapGen());
 
+        try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
+            ImGuiRenderer.init();
+        }
 
-		ImGuiRenderer.init();
-
-		try {
+        try (var perf = PerformanceMetrics.get().Event("System font load")) {
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(config.getSystemfontpath()));
 			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 			parameter.size = 24;
@@ -353,7 +354,10 @@ public class MainController {
 			Logger.getGlobal().severe("System Font読み込み失敗");
 		}
 
-		input = new BMSPlayerInputProcessor(config, player);
+        try (var perf = PerformanceMetrics.get().Event("Input Processor constructor")) {
+			input = new BMSPlayerInputProcessor(config, player);
+		}
+
 		switch(config.getAudioConfig().getDriver()) {
 		case OpenAL:
 			audio = new GdxSoundDriver(config);
@@ -364,7 +368,10 @@ public class MainController {
 		}
 
 		resource = new PlayerResource(audio, config, player);
-		selector = new MusicSelector(this, songUpdated);
+        try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
+            selector = new MusicSelector(this, songUpdated);
+        }
+
 		if(player.getRequestEnable()) {
 		    streamController = new StreamController(selector);
 	        streamController.run();
@@ -568,6 +575,8 @@ public class MainController {
 		imGui.start();
 		imGui.render();
 		imGui.end();
+
+        PerformanceMetrics.get().commit();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){

@@ -257,7 +257,7 @@ public class JSONSkinLoader extends SkinLoader {
 
 	protected Skin loadJsonSkin(SkinHeader header, JsonSkin.Skin sk, SkinType type, SkinConfig.Property property, Path p){
 		Skin skin = null;
-		try {
+		try (var perf = PerformanceMetrics.get().Event("Load JSON skin")) {
 			Resolution src = HD;
 			for(Resolution r : Resolution.values()) {
 				if(sk.w == r.width && sk.h == r.height) {
