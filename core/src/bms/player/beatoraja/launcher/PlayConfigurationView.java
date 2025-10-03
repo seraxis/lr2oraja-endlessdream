@@ -251,6 +251,15 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private TextField overrideDownloadURL;
 
+    @FXML
+    private ComboBox<String> webhookOption;
+    @FXML
+    private TextField webhookName;
+    @FXML
+    private TextField webhookAvatar;
+	@FXML
+	private TextField webhookUrl;
+
 	@FXML
 	private VBox skin;
 	@FXML
@@ -403,6 +412,11 @@ public class PlayConfigurationView implements Initializable {
 		defaultDownloadURL.setText(config.getDefaultDownloadURL());
 		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
+		webhookUrl.setText(config.getWebhookUrl());
+        webhookName.setText(config.getWebhookName());
+        webhookAvatar.setText(config.getWebhookAvatar());
+        webhookOption.getSelectionModel().select(config.getWebhookOption());
+
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
 		} else {
@@ -549,6 +563,11 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
+
+        config.setWebhookName(webhookName.getText());
+        config.setWebhookAvatar(webhookAvatar.getText());
+		config.setWebhookUrl(webhookUrl.getText());
+        config.setWebhookOption(webhookOption.getSelectionModel().getSelectedIndex());
 
 		commitPlayer();
 
