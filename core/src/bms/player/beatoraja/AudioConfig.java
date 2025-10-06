@@ -52,6 +52,11 @@ public class AudioConfig implements Validatable {
 	 * BGノート音のボリューム
 	 */
 	private float bgvolume = 0.5f;
+	
+	/**
+	 * ラウドネス分析による自動音量正規化
+	 */
+	private boolean normalizeVolume = false;
 
 	/**
 	 * リザルト画面のサウンドをループ再生するか
@@ -141,6 +146,14 @@ public class AudioConfig implements Validatable {
 
 	public void setBgvolume(float bgvolume) {
 		this.bgvolume = bgvolume;
+	}
+	
+	public boolean isNormalizeVolume() {
+		return normalizeVolume;
+	}
+	
+	public void setNormalizeVolume(boolean normalizeVolume) {
+		this.normalizeVolume = normalizeVolume;
 	}
 
 	public boolean isLoopResultSound() {

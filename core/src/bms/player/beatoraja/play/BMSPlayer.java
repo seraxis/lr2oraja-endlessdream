@@ -6,10 +6,15 @@ import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.modmenu.JudgeTrainer;
 import bms.player.beatoraja.modmenu.RandomTrainer;
 import com.badlogic.gdx.utils.Array;
@@ -89,6 +94,10 @@ public class BMSPlayer extends MainState {
 
 	private RhythmTimerProcessor rhythm;
 	private long startpressedtime;
+
+	private float adjustedVolume = -1.f;
+	private boolean analysisChecked = false;
+	private Future<BMSLoudnessAnalyzer.AnalysisResult> analysisTask;
 
 	public BMSPlayer(MainController main, PlayerResource resource) {
 		super(main);
@@ -536,6 +545,39 @@ public class BMSPlayer extends MainState {
 						timer.setTimerOff(141);
 						lanerender.init(model);
 					}
+					
+					// Wait for the analysis to complete
+					if (!analysisChecked) {
+						adjustedVolume = -1.f;
+						analysisChecked = true;
+						analysisTask = resource.getAnalysisTask();
+						
+						if (analysisTask != null) {
+							try {
+								BMSLoudnessAnalyzer.AnalysisResult result = analysisTask.get(15, TimeUnit.SECONDS);
+								if (result.success) {
+									float configVolume = main.getConfig().getAudioConfig().getKeyvolume();
+									adjustedVolume = result.calculateAdjustedVolume(configVolume);
+									String message = String.format("Volume set to %.2f (%.2f LUFS)",
+										adjustedVolume, result.loudnessLUFS);
+									Logger.getGlobal().info(message);
+									// For demonstration purposes. Should probably be removed later.
+									ImGuiNotify.success(message, 1000);
+								} else {
+									Logger.getGlobal().warning("Analysis failed: " + result.errorMessage);
+									ImGuiNotify.warning("Loudness analysis failed");
+								}
+							} catch (TimeoutException e) {
+								ImGuiNotify.warning("Chart volume analysis timed out");
+								Logger.getGlobal().warning("Loudness analysis timed out after 15 seconds");
+								analysisTask.cancel(true);
+							} catch (Exception e) {
+								ImGuiNotify.warning("Failed to analyze chart volume");
+								Logger.getGlobal().warning("Loudness analysis error: " + e.getMessage());
+							}
+						}
+					}
+					
 					bga.prepare(this);
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
@@ -859,6 +901,10 @@ public class BMSPlayer extends MainState {
 
 	public int getState() {
 		return state;
+	}
+	
+	public float getAdjustedVolume() {
+		return adjustedVolume;
 	}
 
 	public LaneRenderer getLanerender() {
