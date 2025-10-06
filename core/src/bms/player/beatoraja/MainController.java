@@ -70,6 +70,8 @@ public class MainController {
 
 	private AudioDriver audio;
 
+	private BMSLoudnessAnalyzer loudnessAnalyzer;
+
 	private PlayerResource resource;
 
 	private BitmapFont systemfont;
@@ -367,7 +369,8 @@ public class MainController {
 //			break;
 		}
 
-		resource = new PlayerResource(audio, config, player);
+		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
+		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
         try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
             selector = new MusicSelector(this, songUpdated);
         }
@@ -715,6 +718,9 @@ public class MainController {
 		ShaderManager.dispose();
 		if (download != null) {
 			download.dispose();
+		}
+		if (loudnessAnalyzer != null) {
+			loudnessAnalyzer.shutdown();
 		}
 
 		Logger.getGlobal().info("全リソース破棄完了");

@@ -79,10 +79,14 @@ public class KeySoundProcessor {
 
 			while (!stop) {
 				final long time = player.timer.getNowMicroTime(TIMER_PLAY);
+				float volume = player.getAdjustedVolume();
+				if (volume < 0) {
+					volume = config.getAudioConfig().getBgvolume();
+				}
 				// BGレーン再生
 				while (p < timelines.length && timelines[p].getMicroTime() <= time) {
 					for (Note n : timelines[p].getBackGroundNotes()) {
-						audio.play(n, config.getAudioConfig().getBgvolume(), 0);
+						audio.play(n, volume, 0);
 					}
 					p++;
 				}
