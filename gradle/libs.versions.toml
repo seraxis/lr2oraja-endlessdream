@@ -19,6 +19,7 @@ java-discord = "2.0.1-all"
 xz = "1.10"
 shapedrawer = "2.5.0"
 guacamole = "0.3.5"
+ebur128java = "1.2.6-2"
 
 
 [libraries]
@@ -70,6 +71,7 @@ jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-data
 
 twitter4j = { group = "org.twitter4j" , name = "twitter4j-core", version.ref = "twitter4j" }
 javadiscord = { group = "club.minnced", name = "java-discord-rpc", version.ref = "java-discord" }
+ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "ebur128java" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]

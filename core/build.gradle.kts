@@ -94,6 +94,8 @@ dependencies {
     implementation(libs.shapedrawer)
     implementation(libs.guacamole)
 
+    implementation(libs.ebur128java)
+
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
     implementation(":luaj-jse:3.0.2-custom")
