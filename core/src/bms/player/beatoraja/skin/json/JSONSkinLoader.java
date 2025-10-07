@@ -4,6 +4,7 @@ import static bms.player.beatoraja.Resolution.*;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -91,8 +92,16 @@ public class JSONSkinLoader extends SkinLoader {
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
 			serializer.setSerializers(json, null, p);
-			sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
-			header = loadJsonSkinHeader(sk, p);
+			try{
+                sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
+            }
+			catch (Exception e) {
+                Logger.getGlobal().warning("Error parsing json, retrying with Shift JIS: " + p);
+                var stream = new InputStreamReader(new FileInputStream(p.toFile()),
+                                                   Charset.forName("Shift_JIS"));
+                sk = json.fromJson(JsonSkin.Skin.class, stream);
+            }
+            header = loadJsonSkinHeader(sk, p);
 		} catch (FileNotFoundException e) {
 			Logger.getGlobal().severe("JSONスキンファイルが見つかりません : " + p.toString());
 		}
@@ -236,8 +245,17 @@ public class JSONSkinLoader extends SkinLoader {
 				return getPath(p.getParent().toString() + "/" + path, filemap).getPath();
 			});
 
-			sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
-			skin = loadJsonSkin(header, sk, type, property, p);
+            try {
+                sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
+            }
+            catch (Exception e) {
+                Logger.getGlobal().warning("Error parsing json, retrying with Shift JIS: " + p);
+                var stream = new InputStreamReader(new FileInputStream(p.toFile()),
+                                                   Charset.forName("Shift_JIS"));
+                sk = json.fromJson(JsonSkin.Skin.class, stream);
+            }
+
+            skin = loadJsonSkin(header, sk, type, property, p);
 		} catch (FileNotFoundException e) {
 			Logger.getGlobal().severe("JSONスキンファイルが見つかりません : " + p.toString());
 		} catch (Throwable e) {
@@ -257,7 +275,7 @@ public class JSONSkinLoader extends SkinLoader {
 
 	protected Skin loadJsonSkin(SkinHeader header, JsonSkin.Skin sk, SkinType type, SkinConfig.Property property, Path p){
 		Skin skin = null;
-		try (var perf = PerformanceMetrics.get().Event("Load JSON skin")) {
+		try (var perf = PerformanceMetrics.get().Event("Load JSON skin: " + p)) {
 			Resolution src = HD;
 			for(Resolution r : Resolution.values()) {
 				if(sk.w == r.width && sk.h == r.height) {

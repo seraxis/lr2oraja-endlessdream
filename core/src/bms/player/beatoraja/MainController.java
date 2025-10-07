@@ -344,6 +344,7 @@ public class MainController {
 
         try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
             ImGuiRenderer.init();
+            SkinMenu.init(this, player);
         }
 
         try (var perf = PerformanceMetrics.get().Event("System font load")) {
