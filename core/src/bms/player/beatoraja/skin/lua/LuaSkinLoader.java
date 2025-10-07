@@ -66,7 +66,7 @@ public class LuaSkinLoader extends JSONSkinLoader {
 		}
 		header.setSkinConfigProperty(property);
 		
-		try {			
+		try (var perf = PerformanceMetrics.get().Event("Load Lua skin: " + p)) {
 			filemap = new ObjectMap<>();
 			for(SkinHeader.CustomFile customFile : header.getCustomFiles()) {
 				if(customFile.getSelectedFilename() != null) {
@@ -74,7 +74,7 @@ public class LuaSkinLoader extends JSONSkinLoader {
 				}
 			}
 
-            try (var perf = PerformanceMetrics.get().Event("Lua skin exec")) {
+            try (var perf_ = PerformanceMetrics.get().Event("Lua exec")) {
                 lua.exportSkinProperty(header, property, (String path) -> {
                     return getPath(p.getParent().toString() + "/" + path, filemap).getPath();
                 });
