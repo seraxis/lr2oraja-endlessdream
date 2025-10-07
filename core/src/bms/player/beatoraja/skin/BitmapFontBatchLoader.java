@@ -3,6 +3,7 @@ package bms.player.beatoraja.skin;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 import bms.player.beatoraja.PixmapResourcePool;
 import bms.player.beatoraja.skin.json.JsonSkin;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.utils.Array;
@@ -53,13 +55,19 @@ public class BitmapFontBatchLoader {
         // parse each font description file, queue up the resulting data
         Future<Boolean> parseTask = pool.submit(() -> {
             for (Path path : fontPaths.keySet()) {
-                BitmapFont.BitmapFontData fontData =
-                    new BitmapFont.BitmapFontData(new FileHandle(path.toFile()), false);
-                this.fontData.put(path, fontData);
                 try {
+                    BitmapFont.BitmapFontData fontData =
+                        new BitmapFont.BitmapFontData(new FileHandle(path.toFile()), false);
+                    this.fontData.put(path, fontData);
                     parsedFontData.put(fontData);
                 }
                 catch (InterruptedException e) {
+                    Logger.getGlobal().warning(e.getLocalizedMessage());
+                    e.printStackTrace();
+                }
+                catch (Exception e) {
+                    Logger.getGlobal().warning("Failed to load bitmap font description: " + path);
+                    Logger.getGlobal().warning(e.getLocalizedMessage());
                 }
             }
             return true;
@@ -82,16 +90,25 @@ public class BitmapFontBatchLoader {
                 if (nextFontData == null) continue;
                 for (String imagePath : nextFontData.imagePaths) {
                     pool.submit(() -> {
-                        resource.get(imagePath);
                         try {
-                            loadedImages.put(imagePath);
+                            if (resource.get(imagePath) != null) {
+                                loadedImages.put(imagePath);
+                            }
+                            else {
+                                Logger.getGlobal().warning("Failed to load bitmap font image: " +
+                                                           imagePath);
+                            }
                         }
                         catch (InterruptedException e) {
+                            Logger.getGlobal().warning(e.getLocalizedMessage());
+                            e.printStackTrace();
                         }
                     });
                 }
             }
             catch (InterruptedException e) {
+                Logger.getGlobal().warning(e.getLocalizedMessage());
+                e.printStackTrace();
             }
         }
 
@@ -108,15 +125,24 @@ public class BitmapFontBatchLoader {
                 loadedTextures.put(imagePath, new TextureRegion(texture));
             }
             catch (InterruptedException e) {
+                Logger.getGlobal().warning(e.getLocalizedMessage());
+                e.printStackTrace();
             }
         }
 
         for (Path path : fontPaths.keySet()) {
             var fontData = this.fontData.get(path);
+            if (fontData == null) continue;
 
             Array<TextureRegion> imageRegions = new Array<>(fontData.imagePaths.length);
             for (String imagePath : fontData.imagePaths) {
-                imageRegions.add(loadedTextures.get(imagePath));
+                if (loadedTextures.containsKey(imagePath)) {
+                    TextureRegion texture = loadedTextures.get(imagePath);
+                    imageRegions.add(texture);
+                }
+                else {
+                    imageRegions.add(new TextureRegion(new Texture(1, 1, Pixmap.Format.RGBA8888)));
+                }
             }
 
             float size = fontData.lineHeight;
@@ -134,7 +160,13 @@ public class BitmapFontBatchLoader {
             }
 
             CacheableBitmapFont fontCache = new CacheableBitmapFont();
-            fontCache.font = new BitmapFont(fontData, imageRegions, true);
+            try {
+                fontCache.font = new BitmapFont(fontData, imageRegions, true);
+            }
+            catch (Exception e) {
+                Logger.getGlobal().warning(e.getLocalizedMessage());
+                e.printStackTrace();
+            }
             fontCache.fontData = fontData;
             fontCache.regions = imageRegions;
             fontCache.type = fontPaths.get(path);
@@ -162,6 +194,8 @@ public class BitmapFontBatchLoader {
             return new fontSizes(size, scaleW, scaleH);
         }
         catch (Exception e) {
+            Logger.getGlobal().warning(e.getLocalizedMessage());
+            e.printStackTrace();
             return null;
         }
     }
