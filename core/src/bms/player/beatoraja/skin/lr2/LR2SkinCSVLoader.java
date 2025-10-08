@@ -290,7 +290,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (values[2] < fontlist.size && fontlist.get(values[2]) != null) {
 					text = new SkinTextImage(fontlist.get(values[2]), values[3]);
 				} else {
-					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2);
+					text = new SkinTextFont(Config.resolvePath("skin/default/VL-Gothic-Regular.ttf"), 0, 48, 2);
 				}
 				text.setAlign(values[4]);
 				text.setEditable(values[5] != 0);

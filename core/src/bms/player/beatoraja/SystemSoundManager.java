@@ -104,7 +104,7 @@ public class SystemSoundManager {
 		if(p != null) {
 			paths.addAll(AudioDriver.getPaths(p.resolve(type.path).toString()));			
 		}
-		paths.addAll(AudioDriver.getPaths(Paths.get("defaultsound").resolve(type.path).toString()));
+		paths.addAll(AudioDriver.getPaths(Config.resolvePath("defaultsound/" + type.path)));
 		return paths.toArray(Path.class);
 	}
 	

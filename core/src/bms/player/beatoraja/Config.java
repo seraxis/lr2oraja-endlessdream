@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
@@ -29,6 +30,11 @@ public class Config implements Validatable {
 	 * コンフィグパス(UTF-8)
 	 */
 	static final Path configpath = Paths.get("config_sys.json");	
+	
+	/**
+	 * Fallback search directory for default assets
+	 */
+	private static Path installpath = null;
 
 	/**
 	 * 選択中のプレイヤー名
@@ -193,6 +199,54 @@ public class Config implements Validatable {
 			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
 			"https://excln.github.io/table24k/table.html",
 	};
+
+	public static Path getInstallpath() {
+		if (installpath == null) {
+			String env = System.getenv("BEATORAJA_INSTALL_DIR");
+			if (env != null && !env.isEmpty()) {
+				Path p = Paths.get(env);
+				if (Files.exists(p) && Files.isDirectory(p)) {
+					installpath = p;
+                    Logger.getGlobal().info("Using install directory: " + installpath);
+				}
+			}
+		}
+		return installpath;
+	}
+
+	public static String resolvePath(String path) {
+        Path defaultDir = getInstallpath();
+        if (defaultDir == null) {
+        	return path;
+        }
+
+		try {
+			// Return absolute paths as-is
+            int separator = Math.max(path.indexOf('/'), path.indexOf('\\'));
+            String prefix = (separator > 0) ? path.substring(0, separator + 1) : path;
+
+			if (!path.startsWith(".") && Paths.get(prefix).isAbsolute()) {
+				return path;
+			}
+
+			// First, try to use files from the working directory
+			Path userPath = Paths.get(path);
+			if (Files.exists(userPath)) {
+				return path;
+			}
+
+			// If not found, try looking up in the default directory
+            Path defaultPath = defaultDir.resolve(path);
+            if (Files.exists(defaultPath)) {
+                return defaultPath.toString();
+            }
+		} catch (Exception e) {
+			Logger.getGlobal().warning("Path parse failed: " + path);
+		}
+
+		// Possible wildcard, return as-is
+		return path;
+	}
 
 	public Config() {
 	}
@@ -513,7 +567,7 @@ public class Config implements Validatable {
 	}
 
 	public String getSkinpath() {
-		return skinpath;
+		return resolvePath(skinpath);
 	}
 
 	public void setSkinpath(String skinpath) {
@@ -521,7 +575,7 @@ public class Config implements Validatable {
 	}
 
 	public String getSystemfontpath() {
-		return systemfontpath;
+		return resolvePath(systemfontpath);
 	}
 
 	public void setSystemfontpath(String systemfontpath) {
@@ -529,7 +583,7 @@ public class Config implements Validatable {
 	}
 
 	public String getMessagefontpath() {
-		return messagefontpath;
+		return resolvePath(messagefontpath);
 	}
 
 	public void setMessagefontpath(String messagefontpath) {

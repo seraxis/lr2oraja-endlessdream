@@ -812,7 +812,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 	}
 
 	private static void addJudgeDetail(Skin skin, int[] values, float srcw, float dstw, float srch, float dsth, int side) {
-		Texture tex = new Texture("skin/default/judgedetail.png");
+		Texture tex = new Texture(Config.resolvePath("skin/default/judgedetail.png"));
 
 		final float dw = dstw / 1280f;
 		final float dh = dsth / 720f;
@@ -975,7 +975,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 	}
 
 	private void makeDefaultLines(int index, int h, int r, int g, int b) {
-		Texture tex = new Texture("skin/default/system.png");
+		Texture tex = new Texture(Config.resolvePath("skin/default/system.png"));
 		int[] values = parseInt(linevalues[index % 2]);
 		SkinImage li = new SkinImage(new TextureRegion(tex, 0, 0, 1,1));
 		lines[index] = li;

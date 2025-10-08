@@ -241,7 +241,7 @@ public class BarManager {
 		try {
 			Json json = new Json();
 			CommandFolder[] cf = json.fromJson(CommandFolder[].class,
-					new BufferedInputStream(Files.newInputStream(Paths.get("folder/default.json"))));
+					new BufferedInputStream(Files.newInputStream(Paths.get(Config.resolvePath("folder/default.json")))));
 			Stream.of(cf).forEach(folder -> l.add(createCommandBar(select, folder)));
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -250,7 +250,7 @@ public class BarManager {
 		try {
 			ObjectMapper objectMapper = new ObjectMapper();
 			randomFolderList = objectMapper.readValue(
-					new BufferedInputStream(Files.newInputStream(Paths.get("random/default.json"))),
+					new BufferedInputStream(Files.newInputStream(Paths.get(Config.resolvePath("random/default.json")))),
 					new TypeReference<List<RandomFolder>>() {
 					});
 		} catch (Throwable e) {

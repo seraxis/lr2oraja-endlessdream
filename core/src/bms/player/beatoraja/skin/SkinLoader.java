@@ -52,19 +52,20 @@ public abstract class SkinLoader {
     public static Skin load(MainState state, SkinType skinType, SkinConfig sc) {
         final PlayerResource resource = state.resource;
         try {
-            if (sc.getPath().endsWith(".json")) {
+            String resolvedPath = Config.resolvePath(sc.getPath());
+            if (resolvedPath.endsWith(".json")) {
                 JSONSkinLoader sl = new JSONSkinLoader(state, resource.getConfig());
-                Skin skin = sl.loadSkin(Paths.get(sc.getPath()), skinType, sc.getProperties());
+                Skin skin = sl.loadSkin(Paths.get(resolvedPath), skinType, sc.getProperties());
                 SkinLoader.resource.disposeOld();
                 return skin;
-            } else if (sc.getPath().endsWith(".luaskin")) {
+            } else if (resolvedPath.endsWith(".luaskin")) {
                 LuaSkinLoader loader = new LuaSkinLoader(state, resource.getConfig());
-                Skin skin = loader.loadSkin(Paths.get(sc.getPath()), skinType, sc.getProperties());
+                Skin skin = loader.loadSkin(Paths.get(resolvedPath), skinType, sc.getProperties());
                 SkinLoader.resource.disposeOld();
                 return skin;
             } else {
                 LR2SkinHeaderLoader loader = new LR2SkinHeaderLoader(resource.getConfig());
-                SkinHeader header = loader.loadSkin(Paths.get(sc.getPath()), state, sc.getProperties());
+                SkinHeader header = loader.loadSkin(Paths.get(resolvedPath), state, sc.getProperties());
                 LR2SkinCSVLoader dloader = LR2SkinCSVLoader.getSkinLoader(skinType,  header.getResolution(), resource.getConfig());
                 header.setSourceResolution(dloader.src);
                 header.setDestinationResolution(dloader.dst);
@@ -86,6 +87,7 @@ public abstract class SkinLoader {
     }
 
     public static File getPath(String imagepath, ObjectMap<String, String> filemap) {
+        imagepath = Config.resolvePath(imagepath);
         File imagefile = new File(imagepath);
         for (String key : filemap.keys()) {
             if (imagepath.startsWith(key)) {

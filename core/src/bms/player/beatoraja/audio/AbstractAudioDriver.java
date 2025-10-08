@@ -1,6 +1,7 @@
 package bms.player.beatoraja.audio;
 
 import bms.model.*;
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.ResourcePool;
 
 import java.nio.file.InvalidPathException;
@@ -307,7 +308,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 				if (wavid < wavcount) {
 					p = dpath.resolve(wavlist[wavid]).toAbsolutePath();
 				} else {
-					p = Paths.get("defaultsound/landmine.wav").toAbsolutePath();
+					p = Paths.get(Config.resolvePath("defaultsound/landmine.wav")).toAbsolutePath();
 				}
 				for (Note note : waventry.getValue()) {
 					// 音切りあり・なし両方のデータが必要になるケースがある

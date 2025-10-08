@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
 
 import com.badlogic.gdx.Gdx;
@@ -191,7 +192,7 @@ public class ImGuiRenderer {
 
     private static byte[] loadFromResources(String name) {
         try {
-            return Files.readAllBytes(Gdx.files.internal(name).file().toPath());
+            return Files.readAllBytes(Gdx.files.internal(Config.resolvePath(name)).file().toPath());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
