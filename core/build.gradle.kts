@@ -95,6 +95,7 @@ dependencies {
     implementation(libs.guacamole)
 
     implementation(libs.ebur128java)
+    implementation(libs.jna)
 
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
