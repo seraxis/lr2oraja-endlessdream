@@ -328,7 +328,7 @@ public final class MusicSelectInputProcessor {
                 select.execute(MusicSelectCommand.SHOW_SONGS_ON_SAME_FOLDER);
             }
             if (input.isControlKeyPressed(ControlKeys.NUM9)) {
-                select.execute(MusicSelectCommand.SHOW_LEADERBOARD);
+                select.executeEvent(EventType.open_document);
             }
             // close folder
             if (property.isPressed(input, MusicSelectKey.FOLDER_CLOSE, true) || input.isControlKeyPressed(ControlKeys.LEFT)) {

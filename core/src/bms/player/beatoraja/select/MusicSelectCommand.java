@@ -172,7 +172,19 @@ public enum MusicSelectCommand {
 		if (current instanceof SongBar && ((SongBar) current).existsSong()
 		&& (bar.getDirectory().size ==0 || !(bar.getDirectory().last() instanceof SameFolderBar))) {
 			SongData sd = ((SongBar) current).getSongData();
-			bar.updateBar(new LeaderBoardBar(selector, sd));
+			bar.updateBar(new LeaderBoardBar(selector, sd, false));
+		}
+	}),
+	/**
+	 * Show LR2IR leaderboard
+	 */
+	SHOW_LR2IR_LEADERBOARD(selector -> {
+		final BarManager bar = selector.getBarManager();
+		Bar current = selector.getBarManager().getSelected();
+		if (current instanceof SongBar && ((SongBar) current).existsSong()
+		&& (bar.getDirectory().size ==0 || !(bar.getDirectory().last() instanceof SameFolderBar))) {
+			SongData sd = ((SongBar) current).getSongData();
+			bar.updateBar(new LeaderBoardBar(selector, sd, true));
 		}
 	});
 

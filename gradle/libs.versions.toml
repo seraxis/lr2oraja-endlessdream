@@ -66,6 +66,7 @@ sqlite = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite" }
 jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
+jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 twitter4j = { group = "org.twitter4j" , name = "twitter4j-core", version.ref = "twitter4j" }
 javadiscord = { group = "club.minnced", name = "java-discord-rpc", version.ref = "java-discord" }
@@ -76,4 +77,4 @@ lwjgl3 = ["lwjgl", "lwjgl-jemalloc", "lwjgl-glfw", "lwjgl-openal", "lwjgl-opengl
 imgui = ["imgui", "imgui-lwjgl3", "imgui-linux", "imgui-windows", "imgui-macos"]
 ffmpeg = ["javacv", "javacpp", "ffmpeg"]
 codecs = ["commons-codec", "jflac"]
-jackson = ["jackson-core", "jackson-databind", "jackson-annotations"]
+jackson = ["jackson-core", "jackson-databind", "jackson-annotations", "jackson-xml"]
