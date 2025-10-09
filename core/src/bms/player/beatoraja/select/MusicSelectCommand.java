@@ -158,6 +158,22 @@ public enum MusicSelectCommand {
 			bar.updateBar(new ContainerBar(current.getTitle(), songbars.toArray(new Bar[songbars.size()])));
 			selector.play(FOLDER_OPEN);
 		}
+	}),
+	/**
+	 * Show leaderboard in current primary ir service
+	 */
+	SHOW_LEADERBOARD(selector -> {
+		if (selector.main.getIRStatus().length == 0) {
+			ImGuiNotify.info("Haven't connected to any IR service");
+			return ;
+		}
+		final BarManager bar = selector.getBarManager();
+		Bar current = selector.getBarManager().getSelected();
+		if (current instanceof SongBar && ((SongBar) current).existsSong()
+		&& (bar.getDirectory().size ==0 || !(bar.getDirectory().last() instanceof SameFolderBar))) {
+			SongData sd = ((SongBar) current).getSongData();
+			bar.updateBar(new LeaderBoardBar(selector, sd));
+		}
 	});
 
 	public final Consumer<MusicSelector> function;

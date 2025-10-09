@@ -185,36 +185,6 @@ public final class RivalDataAccessor {
 	}
 	
 	private ScoreData[] convert(IRScoreData[] irscores) {
-		return Stream.of(irscores).map(irscore -> {
-			final ScoreData score = new ScoreData();
-			score.setSha256(irscore.sha256);
-			score.setMode(irscore.lntype);
-			score.setPlayer(irscore.player);
-			score.setClear(irscore.clear.id); 
-			score.setDate(irscore.date);
-			score.setEpg(irscore.epg);
-			score.setLpg(irscore.lpg);
-			score.setEgr(irscore.egr);
-			score.setLgr(irscore.lgr);
-			score.setEgd(irscore.egd);
-			score.setLgd(irscore.lgd);
-			score.setEbd(irscore.ebd);
-			score.setLbd(irscore.lbd);
-			score.setEpr(irscore.epr);
-			score.setLpr(irscore.lpr);
-			score.setEms(irscore.ems);
-			score.setLms(irscore.lms);
-			score.setCombo(irscore.maxcombo);
-			score.setNotes(irscore.notes);
-			score.setPassnotes(irscore.passnotes != 0 ? irscore.notes : irscore.passnotes);
-			score.setMinbp(irscore.minbp);
-			score.setAvgjudge(irscore.avgjudge);
-			score.setOption(irscore.option);
-			score.setSeed(irscore.seed);
-			score.setAssist(irscore.assist);
-			score.setGauge(irscore.gauge);
-			score.setDeviceType(irscore.deviceType);
-			return score;
-		}).toArray(ScoreData[]::new);
+		return Stream.of(irscores).map(IRScoreData::convertToScoreData).toArray(ScoreData[]::new);
 	}
 }
