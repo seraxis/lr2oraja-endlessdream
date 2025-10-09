@@ -1,6 +1,7 @@
 package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.ScoreData;
+import bms.player.beatoraja.select.MusicSelectCommand;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.SongBar;
 import bms.player.beatoraja.song.SongData;
@@ -53,7 +54,14 @@ public class SongManagerMenu {
                         ImGui.bulletText(currentReverseLookupList.get(i));
                         ImGui.popID();
                     }
-                    ImGui.endPopup();;
+                    ImGui.endPopup();
+                }
+                if (ImGui.button("Show Leaderboard")) {
+                    selector.execute(MusicSelectCommand.SHOW_LEADERBOARD);
+                }
+
+                if (ImGui.button("Show LR2IR Leaderboard")) {
+                    selector.execute(MusicSelectCommand.SHOW_LR2IR_LEADERBOARD);
                 }
             }
         }
