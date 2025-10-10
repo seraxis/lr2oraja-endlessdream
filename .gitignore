@@ -1,3 +1,5 @@
+.DS_*
+.java-version
 /assets/build/*
 /assets/player/*
 /assets/skin/*
