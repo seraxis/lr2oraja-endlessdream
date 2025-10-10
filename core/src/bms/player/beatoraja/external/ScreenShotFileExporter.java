@@ -26,11 +26,16 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
@@ -130,13 +135,27 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
         }
 
         try {
-            WebhookHandler handler = new WebhookHandler(currentState);
+            WebhookHandler handler = new WebhookHandler();
             Map<String, Object> payload = handler.createWebhookPayload(currentState);
             ObjectMapper om = new ObjectMapper();
-            handler.sendWebhookWithImage(
-                    om.writeValueAsString(payload),
-                    Paths.get(path)
-            );
+            String payloadAsString = om.writeValueAsString(payload);
+
+            List<URL> webhookUrls = Arrays.stream(currentState.resource.getConfig().getWebhookUrl()).map(url -> {
+                try {
+                    return new URL(url);
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList();
+
+            for (URL webhookUrl : webhookUrls) {
+                handler.sendWebhookWithImage(
+                        payloadAsString,
+                        Paths.get(path),
+                        webhookUrl
+                );
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

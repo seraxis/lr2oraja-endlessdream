@@ -25,22 +25,6 @@ import static bms.player.beatoraja.skin.SkinProperty.STRING_FULLTITLE;
 import static bms.player.beatoraja.skin.SkinProperty.STRING_TABLE_LEVEL;
 
 public class WebhookHandler {
-    private List<URL> webhookUrls;
-
-    public WebhookHandler(MainState currentState) {
-        try {
-            webhookUrls = Arrays.stream(currentState.resource.getConfig().getWebhookUrl()).map(url -> {
-				try {
-					return new URL(url);
-				} catch (MalformedURLException e) {
-					throw new RuntimeException(e);
-				}
-			}).toList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void writeMultipartField(OutputStream os, String boundary, String name, String value) throws IOException {
         os.write(("--" + boundary + "\r\n").getBytes("UTF-8"));
         os.write(("Content-Disposition: form-data; name=\"" + name + "\"\r\n").getBytes("UTF-8"));
@@ -60,32 +44,30 @@ public class WebhookHandler {
         os.write("\r\n".getBytes("UTF-8"));
     }
 
-    public void sendWebhookWithImage(String payload, Path imagePath) {
-        for (URL webhookUrl : webhookUrls) {
-            try {
-                HttpURLConnection webhook = (HttpURLConnection) webhookUrl.openConnection();
+    public void sendWebhookWithImage(String payload, Path imagePath, URL webhookUrl) {
+        try {
+            HttpURLConnection webhook = (HttpURLConnection) webhookUrl.openConnection();
 
-                String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
-                webhook.setRequestMethod("POST");
-                webhook.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-                webhook.setDoOutput(true);
+            String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+            webhook.setRequestMethod("POST");
+            webhook.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            webhook.setDoOutput(true);
 
-                try (OutputStream os = webhook.getOutputStream()) {
-                    writeMultipartField(os, boundary, "payload_json", payload);
+            try (OutputStream os = webhook.getOutputStream()) {
+                writeMultipartField(os, boundary, "payload_json", payload);
 
-                    writeMultipartFile(os, boundary, "files[0]", imagePath);
+                writeMultipartFile(os, boundary, "files[0]", imagePath);
 
-                    os.write(("--" + boundary + "--\r\n").getBytes("UTF-8"));
-                }
-
-                int responseCode = webhook.getResponseCode();
-                if (responseCode != HttpURLConnection.HTTP_OK) {
-                    ImGuiNotify.warning("Unexpected http response code when sending webhook: " + responseCode);
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
+                os.write(("--" + boundary + "--\r\n").getBytes("UTF-8"));
             }
+
+            int responseCode = webhook.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                ImGuiNotify.warning("Unexpected http response code when sending webhook: " + responseCode);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
