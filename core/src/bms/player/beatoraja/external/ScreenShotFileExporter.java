@@ -124,7 +124,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
     }
 
     private void sendWebhook(MainState currentState, String path) {
-        if (currentState.resource.getConfig().getWebhookOption() == 0 || currentState.resource.getConfig().getWebhookUrl().isEmpty()) {
+        if (currentState.resource.getConfig().getWebhookOption() == 0 || currentState.resource.getConfig().getWebhookUrl().length == 0) {
             // Webhook action not enabled or missing URL
             return;
         }
