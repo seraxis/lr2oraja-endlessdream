@@ -38,8 +38,7 @@ public class LeaderBoardBar extends DirectoryBar {
 			IRScoreData[] irScoreData = response.getData();
 			return IRPlayerBar.fromIRScoreData(irScoreData);
 		} else {
-			LR2IRConnection lr2IRConnection = new LR2IRConnection();
-			IRScoreData[] scoreData = lr2IRConnection.getScoreData(new IRChartData(songData));
+			IRScoreData[] scoreData = LR2IRConnection.getScoreData(new IRChartData(songData));
 			return IRPlayerBar.fromIRScoreData(scoreData);
 		}
 	}
