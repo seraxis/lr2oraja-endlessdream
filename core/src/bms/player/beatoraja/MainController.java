@@ -448,7 +448,7 @@ public class MainController {
 		if (config.isEnableHttp()) {
 			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
 			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
-			DownloadTaskMenu.initialize(httpDownloadProcessor);
+			DownloadTaskState.initialize(httpDownloadProcessor);
 		}
 
 		if(ir.length > 0) {
@@ -575,11 +575,13 @@ public class MainController {
 
 			sprite.end();
 		}
+
+		DownloadTaskState.update();
+        PerformanceMetrics.get().commit();
+
 		imGui.start();
 		imGui.render();
 		imGui.end();
-
-        PerformanceMetrics.get().commit();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){

@@ -1,43 +1,20 @@
 package bms.player.beatoraja.modmenu;
 
 import bms.tool.mdprocessor.DownloadTask;
-import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.player.beatoraja.modmenu.DownloadTaskState;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
 
 public class DownloadTaskMenu {
     public static final int MAXIMUM_TASK_NAME_LENGTH = 10;
-    private static final AtomicReference<List<DownloadTask>> downloadTaskSnapshot = new AtomicReference<>(new ArrayList<>());
-
-    /**
-     * @implNote Static in java is infectious, I cannot think of a better idea
-     */
-    public static void initialize(HttpDownloadProcessor httpDownloadProcessor) {
-        // The reason use a thread for updating snapshot of download tasks is ImGui's render
-        // function (show, in this class) is based on frame. I think we have to separate the
-        // state management and render part (Or maybe not? Still a question)
-        (new Thread(() -> {
-            while (true) {
-                try {
-                    List<DownloadTask> allTaskSnapshot = httpDownloadProcessor.getAllTaskSnapshot();
-                    DownloadTaskMenu.downloadTaskSnapshot.set(allTaskSnapshot);
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    // Do nothing
-                }
-            }
-        })).start();
-    }
 
     public static void show(ImBoolean showDownloadTasksWindow) {
         float relativeX = windowWidth * 0.455f;
@@ -45,14 +22,14 @@ public class DownloadTaskMenu {
         ImGui.setNextWindowPos(relativeX, relativeY, ImGuiCond.FirstUseEver);
 
         if (ImGui.begin("Download Tasks", showDownloadTasksWindow, ImGuiWindowFlags.AlwaysAutoResize)) {
-            List<DownloadTask> tasks = DownloadTaskMenu.downloadTaskSnapshot.get();
+            Map<Integer, DownloadTask> tasks = DownloadTaskState.runningDownloadTasks;
             if (tasks == null || tasks.isEmpty()) {
                 ImGui.text("No Download Task. Try selecting missing bms to submit new task!");
             } else {
-                for (int i = 0; i < tasks.size(); ++i) {
-                    DownloadTask downloadTask = tasks.get(i);
+                for (Integer taskId : tasks.keySet()) {
+                    DownloadTask downloadTask = tasks.get(taskId);
                     String taskName = downloadTask.getName().substring(0, Math.min(downloadTask.getName().length(), MAXIMUM_TASK_NAME_LENGTH));
-                    ImGui.pushID(i);
+                    ImGui.pushID(taskId);
                     float spacing = ImGui.getStyle().getItemInnerSpacingX();
 //                    ImGui.alignTextToFramePadding();
                     ImGui.bulletText(String.format("%s (%s)", taskName, downloadTask.getDownloadTaskStatus().getName()));
