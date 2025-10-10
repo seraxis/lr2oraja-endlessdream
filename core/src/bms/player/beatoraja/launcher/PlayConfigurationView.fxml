@@ -24,6 +24,10 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<?import javafx.scene.control.skin.TabPaneSkin.TabControlButtons?>
+<?import bms.player.beatoraja.launcher.EditableTableView?>
 <VBox fx:id="root" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bms.player.beatoraja.launcher.PlayConfigurationView">
    <Hyperlink fx:id="newversion" text="" />
     <HBox fx:id="playerPanel" alignment="CENTER_LEFT" prefHeight="10.0" prefWidth="730.0">
@@ -390,20 +394,21 @@
                 </padding>
                 <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <CheckBox fx:id="usecim" mnemonicParsing="false" prefHeight="25.0" text="%CACHE_SKIN_IMAGE" />
-                    <CheckBox fx:id="discord" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC" />
                     <CheckBox fx:id="clipboardScreenshot" mnemonicParsing="false" prefHeight="25.0" text="%CLIPBOARD_SCREENSHOT" />
+
                     <Button mnemonicParsing="false" onAction="#importScoreDataFromLR2" text="%IMPORT_LR2_SCORE">
                         <VBox.margin>
                             <Insets top="10.0" />
                         </VBox.margin>
                     </Button>
                     <CheckBox fx:id="enableIpfs" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_IPFS" />
-                    <HBox prefHeight="100.0" prefWidth="300.0">
+                    <HBox prefHeight="25.0" prefWidth="300.0">
                         <children>
                            <Label prefHeight="25.0" prefWidth="60.0" text="IPFS URL" />
                            <TextField fx:id="ipfsurl" prefHeight="25.0" prefWidth="200.0" />
                         </children>
                      </HBox>
+
                     <CheckBox fx:id="enableHttp" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_HTTP" />
                     <ComboBox fx:id="httpDownloadSource" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                     <GridPane hgap="10" vgap="5">
@@ -465,6 +470,12 @@
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                 <fx:include fx:id="stream" source="StreamConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             </AnchorPane>
+        </Tab>
+        <Tab fx:id="discordTab" closable="false" text="Discord">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="discord" source="DiscordConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+
         </Tab>
         <!-- <Tab fx:id="trainerTab" closable="false" text="Trainer">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">

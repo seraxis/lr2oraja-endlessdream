@@ -22,6 +22,8 @@ import bms.player.beatoraja.play.JudgeAlgorithm;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.song.*;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -81,6 +83,8 @@ public class PlayConfigurationView implements Initializable {
 	private Tab courseTab;
 	@FXML
     private Tab streamTab;
+	@FXML
+	private Tab discordTab;
 	@FXML
 	private HBox controlPanel;
 
@@ -272,6 +276,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
     private StreamEditorView streamController;
 	@FXML
+	private DiscordConfigurationView discordController;
+	@FXML
 	private TrainerView trainerController;
 
 	private Config config;
@@ -282,9 +288,6 @@ public class PlayConfigurationView implements Initializable {
 	private boolean songUpdated = false;
 
 	private RequestToken requestToken = null;
-
-	@FXML
-	public CheckBox discord;
 
 	@FXML
 	public CheckBox clipboardScreenshot;
@@ -335,6 +338,7 @@ public class PlayConfigurationView implements Initializable {
 		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCES.keySet());
 		notesdisplaytiming.setValueFactoryValues(PlayerConfig.JUDGETIMING_MIN, PlayerConfig.JUDGETIMING_MAX, 0, 1);
 		resourceController.init(this);
+		discordController.init(this);
 
 		checkNewVersion();
 		Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
@@ -387,12 +391,12 @@ public class PlayConfigurationView implements Initializable {
 		soundpath.setText(config.getSoundpath());
 
 		resourceController.update(config);
+		discordController.update(config);
 
 		skinController.update(config);
         // int b = Boolean.valueOf(config.getJKOC()).compareTo(false);
 
         usecim.setSelected(config.isCacheSkinImage());
-        discord.setSelected(config.isUseDiscordRPC());
         clipboardScreenshot.setSelected(config.isSetClipboardWhenScreenshot());
 
 		enableIpfs.setSelected(config.isEnableIpfs());
@@ -535,6 +539,7 @@ public class PlayConfigurationView implements Initializable {
 		config.setSoundpath(soundpath.getText());
 
 		resourceController.commit();
+		discordController.commit();
 
         // jkoc_hack is integer but *.setJKOC needs boolean type
 
@@ -547,7 +552,6 @@ public class PlayConfigurationView implements Initializable {
 		config.setDownloadSource(httpDownloadSource.getValue());
 		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
-		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
 
 		commitPlayer();
@@ -712,6 +716,7 @@ public class PlayConfigurationView implements Initializable {
 		otherTab.setDisable(true);
 		irTab.setDisable(true);
 		streamTab.setDisable(true);
+		discordTab.setDisable(true);
 		controlPanel.setDisable(true);
 
 		// Minimise the stage after start

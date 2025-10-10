@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import bms.player.beatoraja.launcher.EditableTableView?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
+<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bms.player.beatoraja.launcher.DiscordConfigurationView">
+    <padding>
+        <Insets left="10.0" top="10.0" />
+    </padding>
+    <HBox prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+        <VBox prefHeight="100.0" prefWidth="536.0" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets right="10.0" />
+            </padding>
+            <CheckBox fx:id="discordRichPresence" mnemonicParsing="false" prefHeight="25.0" text="%DISCORD_RPC"/>
+            <Label text="%DISCORD_WEBHOOK_OPTION_LABEL" prefHeight="25.0"/>
+            <ComboBox fx:id="webhookOption">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Disabled"/>
+                        <String fx:value="Image only"/>
+                        <String fx:value="Rich embed"/>
+                    </FXCollections>
+                </items>
+            </ComboBox>
+            <Label text="%DISCORD_WEBHOOK_USERNAME" prefHeight="25.0"/>
+            <TextField fx:id="webhookName" prefHeight="25.0" prefWidth="400"/>
+            <Label text="%DISCORD_WEBHOOK_AVATAR" prefHeight="25.0"/>
+            <TextField fx:id="webhookAvatar" prefHeight="25.0" prefWidth="400"/>
+        </VBox>
+        <VBox prefHeight="100.0" prefWidth="536.0" HBox.hgrow="ALWAYS">
+            <HBox>
+                <TextField fx:id="url" prefHeight="28.0" prefWidth="500.0" HBox.hgrow="ALWAYS"/>
+                <Button mnemonicParsing="false" onAction="#addWebhookURL" prefHeight="28.0" prefWidth="80.0"
+                        text="%+">
+                    <HBox.margin>
+                        <Insets left="10.0" right="10.0"/>
+                    </HBox.margin>
+                </Button>
+            </HBox>
+            <HBox VBox.vgrow="ALWAYS">
+                <EditableTableView fx:id="webhookURL" prefHeight="167.0" prefWidth="500.0" HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets top="8.0"/>
+                    </HBox.margin>
+                </EditableTableView>
+                <VBox prefHeight="185.0" prefWidth="100.0">
+                    <Button mnemonicParsing="false" onAction="#removeWebhookURL"
+                            prefHeight="28.0" prefWidth="80.0" text="%-">
+                        <VBox.margin>
+                            <Insets left="10.0" right="10.0" top="10.0"/>
+                        </VBox.margin>
+                    </Button>
+                    <Button mnemonicParsing="false" onAction="#moveWebhookURLUp"
+                            prefHeight="28.0" prefWidth="80.0" text="↑">
+                        <VBox.margin>
+                            <Insets left="10.0" right="10.0" top="10.0"/>
+                        </VBox.margin>
+                    </Button>
+                    <Button mnemonicParsing="false" onAction="#moveWebhookURLDown"
+                            prefHeight="28.0" prefWidth="80.0" text="↓">
+                        <VBox.margin>
+                            <Insets left="10.0" right="10.0" top="10.0"/>
+                        </VBox.margin>
+                    </Button>
+                </VBox>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>

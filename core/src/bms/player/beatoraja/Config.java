@@ -176,6 +176,14 @@ public class Config implements Validatable {
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
 	private String monitorName = "";
+    private int webhookOption = 0; // 0 - Off, 1 - Image, 2 - Rich
+    private String webhookName = "";
+    private String webhookAvatar = "";
+	/**
+	 * Discord webhook urls
+	 */
+	private String[] webhookUrl = new String[0];
+
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
@@ -576,7 +584,28 @@ public class Config implements Validatable {
 		this.monitorName = monitorName;
 	}
 
-	public boolean validate() {
+    public String getWebhookName() { return webhookName; }
+
+    public void setWebhookName(String webhookName) { this.webhookName = webhookName; }
+
+    public String getWebhookAvatar() { return webhookAvatar; };
+
+    public void setWebhookAvatar(String webhookAvatar) { this.webhookAvatar = webhookAvatar; }
+
+	public String[] getWebhookUrl() {
+		return webhookUrl;
+	}
+
+	public void setWebhookUrl(String[] webhookUrl) {
+		this.webhookUrl = webhookUrl;
+	}
+
+    // 0 - Off, 1 - Image, 2 - Rich
+    public int getWebhookOption() { return webhookOption; }
+
+    public void setWebhookOption(int webhookOption) { this.webhookOption = webhookOption; }
+
+    public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
 
