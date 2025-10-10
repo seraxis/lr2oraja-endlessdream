@@ -473,6 +473,7 @@ public class BarManager {
 
 	public void close() {
 		if(dir.size == 0) {
+            SongManagerMenu.forceDisableLastPlayedSort();
 			select.executeEvent(EventType.sort);
 			return;
 		}
