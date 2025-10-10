@@ -22,30 +22,35 @@ public class DownloadTaskMenu {
         ImGui.setNextWindowPos(relativeX, relativeY, ImGuiCond.FirstUseEver);
 
         if (ImGui.begin("Download Tasks", showDownloadTasksWindow, ImGuiWindowFlags.AlwaysAutoResize)) {
-            Map<Integer, DownloadTask> tasks = DownloadTaskState.runningDownloadTasks;
-            if (tasks == null || tasks.isEmpty()) {
+            Map<Integer, DownloadTask> running = DownloadTaskState.runningDownloadTasks;
+            Map<Integer, DownloadTask> expired = DownloadTaskState.expiredTasks;
+            if (running.isEmpty() && expired.isEmpty()) {
                 ImGui.text("No Download Task. Try selecting missing bms to submit new task!");
-            } else {
-                for (Integer taskId : tasks.keySet()) {
-                    DownloadTask downloadTask = tasks.get(taskId);
-                    String taskName = downloadTask.getName().substring(0, Math.min(downloadTask.getName().length(), MAXIMUM_TASK_NAME_LENGTH));
-                    ImGui.pushID(taskId);
-                    float spacing = ImGui.getStyle().getItemInnerSpacingX();
-//                    ImGui.alignTextToFramePadding();
-                    ImGui.bulletText(String.format("%s (%s)", taskName, downloadTask.getDownloadTaskStatus().getName()));
-                    ImGui.sameLine(0.0f, spacing);
-                    String errorMessage = downloadTask.getErrorMessage();
-                    if (errorMessage == null || errorMessage.isEmpty()) {
-                        ImGui.text(String.format("%s/%s", humanizeFileSize(downloadTask.getDownloadSize()), humanizeFileSize(downloadTask.getContentLength())));
-                    } else {
-                        ImGui.textColored(ImColor.rgb(255, 0, 0), errorMessage);
-                    }
-                    ImGui.newLine();
-                    ImGui.popID();
-                }
+            }
+            else {
+                for (Integer taskId : running.keySet()) { showTask(running.get(taskId)); }
+                for (Integer taskId : expired.keySet()) { showTask(expired.get(taskId)); }
             }
         }
         ImGui.end();
+    }
+
+    public static void showTask(DownloadTask downloadTask) {
+        int taskId = downloadTask.getId();
+        String taskName = downloadTask.getName().substring(0, Math.min(downloadTask.getName().length(), MAXIMUM_TASK_NAME_LENGTH));
+        ImGui.pushID(taskId);
+        float spacing = ImGui.getStyle().getItemInnerSpacingX();
+//        ImGui.alignTextToFramePadding();
+        ImGui.bulletText(String.format("%s (%s)", taskName, downloadTask.getDownloadTaskStatus().getName()));
+        ImGui.sameLine(0.0f, spacing);
+        String errorMessage = downloadTask.getErrorMessage();
+        if (errorMessage == null || errorMessage.isEmpty()) {
+            ImGui.text(String.format("%s/%s", humanizeFileSize(downloadTask.getDownloadSize()), humanizeFileSize(downloadTask.getContentLength())));
+        } else {
+            ImGui.textColored(ImColor.rgb(255, 0, 0), errorMessage);
+        }
+        ImGui.newLine();
+        ImGui.popID();
     }
 
     public static String humanizeFileSize(long bytes) {

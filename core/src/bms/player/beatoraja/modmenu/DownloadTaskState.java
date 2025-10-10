@@ -5,13 +5,12 @@ import bms.tool.mdprocessor.HttpDownloadProcessor;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
 
 public class DownloadTaskState {
-    public static Map<Integer, DownloadTask> runningDownloadTasks =
+    public static final Map<Integer, DownloadTask> runningDownloadTasks =
         new HashMap<Integer, DownloadTask>();
-    public static final Set<Integer> expiredTasks = new HashSet<Integer>();
+    public static final Map<Integer, DownloadTask> expiredTasks =
+        new HashMap<Integer, DownloadTask>();
 
     private static HttpDownloadProcessor httpDownloadProcessor;
 
@@ -38,7 +37,7 @@ public class DownloadTaskState {
         for (var taskEntry : tasks.entrySet()) {
             int id = taskEntry.getKey();
             DownloadTask task = taskEntry.getValue();
-            if (expiredTasks.contains(id)) {
+            if (expiredTasks.containsKey(id)) {
                 continue;
             }
 
@@ -49,10 +48,8 @@ public class DownloadTaskState {
             boolean expired = finished && (5000000000L < now - task.getTimeFinished());
 
             if (expired) {
-                if (runningDownloadTasks.containsKey(id)) {
-                    runningDownloadTasks.remove(id);
-                }
-                expiredTasks.add(id);
+                runningDownloadTasks.remove(id);
+                expiredTasks.put(id, task);
             }
             else {
                 runningDownloadTasks.put(id, task);
