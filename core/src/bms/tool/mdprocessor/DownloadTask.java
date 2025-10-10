@@ -8,10 +8,10 @@ public class DownloadTask {
     final private String name;
     final private String hash;
 
-    private volatile DownloadTaskStatus downloadTaskStatus;
-    private volatile long downloadSize;
-    private volatile long contentLength;
-    private volatile String errorMessage;
+    private DownloadTaskStatus downloadTaskStatus;
+    private long downloadSize;
+    private long contentLength;
+    private String errorMessage;
     private volatile long timeFinished;
 
     public DownloadTask(int id, String url, String name, String hash) {
@@ -39,10 +39,10 @@ public class DownloadTask {
     }
 
     public void setDownloadTaskStatus(DownloadTaskStatus downloadTaskStatus) {
-        this.downloadTaskStatus = downloadTaskStatus;
         if (downloadTaskStatus.value >= DownloadTask.DownloadTaskStatus.Extracted.getValue()) {
             timeFinished = System.nanoTime();
         }
+        this.downloadTaskStatus = downloadTaskStatus;
     }
 
     public long getDownloadSize() {

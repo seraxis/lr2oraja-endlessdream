@@ -295,18 +295,14 @@ public final class BarRenderer {
             // download progress bars
             for (int i = 0; i < barlength; i++) {
                 final BarArea ba = bararea[i];
-                if (ba.value == -1) {
-                    continue;
-                }
+                if (ba.value == -1) { continue; }
+                if (!(ba.sd instanceof SongBar)) { continue; }
 
-                if (!(ba.sd instanceof SongBar)) {
-                    continue;
-                }
                 var songBar = (SongBar)ba.sd;
+				var songMd5 = songBar.getSongData().getMd5();
                 for (var task : downloadTasks.values()) {
                     String md5 = task.getHash();
-                    if (md5 != songBar.getSongData().getMd5())
-                        continue;
+                    if (!md5.equals(songMd5)) { continue; }
                     final SkinDistributionGraph graph = baro.getGraph();
                     if (graph != null && graph.draw) {
                         graph.draw(sprite, songBar, task, ba.x, ba.y);
