@@ -175,7 +175,10 @@ public class Config implements Validatable {
     private int webhookOption = 0; // 0 - Off, 1 - Image, 2 - Rich
     private String webhookName = "";
     private String webhookAvatar = "";
-	private String webhookUrl = "";
+	/**
+	 * Discord webhook urls
+	 */
+	private String[] webhookUrl = new String[0];
 
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
@@ -577,11 +580,11 @@ public class Config implements Validatable {
 
     public void setWebhookAvatar(String webhookAvatar) { this.webhookAvatar = webhookAvatar; }
 
-	public String getWebhookUrl() {
+	public String[] getWebhookUrl() {
 		return webhookUrl;
 	}
 
-	public void setWebhookUrl(String webhookUrl) {
+	public void setWebhookUrl(String[] webhookUrl) {
 		this.webhookUrl = webhookUrl;
 	}
 

@@ -12,22 +12,30 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static bms.player.beatoraja.skin.SkinProperty.STRING_FULLTITLE;
 import static bms.player.beatoraja.skin.SkinProperty.STRING_TABLE_LEVEL;
 
 public class WebhookHandler {
-    URL webhookUrl;
+    private List<URL> webhookUrls;
 
     public WebhookHandler(MainState currentState) {
         try {
-            webhookUrl = new URL(currentState.resource.getConfig().getWebhookUrl());
+            webhookUrls = Arrays.stream(currentState.resource.getConfig().getWebhookUrl()).map(url -> {
+				try {
+					return new URL(url);
+				} catch (MalformedURLException e) {
+					throw new RuntimeException(e);
+				}
+			}).toList();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,29 +61,31 @@ public class WebhookHandler {
     }
 
     public void sendWebhookWithImage(String payload, Path imagePath) {
-        try {
-            HttpURLConnection webhook = (HttpURLConnection) this.webhookUrl.openConnection();
+        for (URL webhookUrl : webhookUrls) {
+            try {
+                HttpURLConnection webhook = (HttpURLConnection) webhookUrl.openConnection();
 
-            String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
-            webhook.setRequestMethod("POST");
-            webhook.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-            webhook.setDoOutput(true);
+                String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+                webhook.setRequestMethod("POST");
+                webhook.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                webhook.setDoOutput(true);
 
-            try (OutputStream os = webhook.getOutputStream()) {
-                writeMultipartField(os, boundary, "payload_json", payload);
+                try (OutputStream os = webhook.getOutputStream()) {
+                    writeMultipartField(os, boundary, "payload_json", payload);
 
-                writeMultipartFile(os, boundary, "files[0]", imagePath);
+                    writeMultipartFile(os, boundary, "files[0]", imagePath);
 
-                os.write(("--" + boundary + "--\r\n").getBytes("UTF-8"));
+                    os.write(("--" + boundary + "--\r\n").getBytes("UTF-8"));
+                }
+
+                int responseCode = webhook.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    ImGuiNotify.warning("Unexpected http response code when sending webhook: " + responseCode);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-            int responseCode = webhook.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                ImGuiNotify.warning("Unexpected http response code when sending webhook: " + responseCode);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
