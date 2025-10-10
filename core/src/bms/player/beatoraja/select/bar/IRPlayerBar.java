@@ -6,10 +6,10 @@ public class IRPlayerBar extends SelectableBar {
 	private final String title;
 	private final int lamp;
 
-	public IRPlayerBar(IRScoreData irScoreData) {
+	public IRPlayerBar(int rank, IRScoreData irScoreData) {
 		super();
 		setScore(irScoreData.convertToScoreData());
-		this.title = irScoreData.player;
+		this.title = rank + ". " + irScoreData.player;
 		this.lamp = irScoreData.clear.id;
 	}
 
@@ -26,7 +26,7 @@ public class IRPlayerBar extends SelectableBar {
 	public static IRPlayerBar[] fromIRScoreData(IRScoreData[] irScoreData) {
 		IRPlayerBar[] bars = new IRPlayerBar[irScoreData.length];
 		for (int i = 0; i < irScoreData.length; i++) {
-			bars[i] = new IRPlayerBar(irScoreData[i]);
+			bars[i] = new IRPlayerBar(i + 1, irScoreData[i]);
 		}
 		return bars;
 	}

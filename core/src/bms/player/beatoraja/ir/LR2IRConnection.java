@@ -26,6 +26,11 @@ import java.util.List;
  */
 public class LR2IRConnection {
 	private static final String IRUrl = "http://dream-pro.info/~lavalse/LR2IR/2";
+	private static ScoreDatabaseAccessor scoreDatabaseAccessor;
+
+	public static void setScoreDatabaseAccessor(ScoreDatabaseAccessor scoreDatabaseAccessor) {
+		LR2IRConnection.scoreDatabaseAccessor = scoreDatabaseAccessor;
+	}
 
 	private static Object convertXMLToObject(String xml, Class c) {
 		try {
@@ -39,7 +44,7 @@ public class LR2IRConnection {
 		return null;
 	}
 
-	private String makePOSTRequest(String uri, String data) {
+	private static String makePOSTRequest(String uri, String data) {
 		HttpURLConnection conn = null;
 		try {
 			URL url = new URL(IRUrl + uri);
@@ -79,7 +84,7 @@ public class LR2IRConnection {
 		}
 	}
 
-	public IRScoreData[] getScoreData(IRChartData chart) {
+	public static IRScoreData[] getScoreData(IRChartData chart) {
 		if (chart.md5 == null || chart.md5.isEmpty()) {
 			return new IRScoreData[0];
 		}
@@ -87,9 +92,7 @@ public class LR2IRConnection {
 		try {
 			String res = makePOSTRequest("/getrankingxml.cgi", lr2IRSongData.toUrlEncodedForm());
 			Ranking ranking = (Ranking) convertXMLToObject(res.substring(1).replace("<lastupdate></lastupdate>", ""), Ranking.class);
-			// TODO: pass non-null scoredb will add current user's score into it
-			IRScoreData[] scoreData = ranking.toBeatorajaScoreData(chart, null);
-			System.out.println("Retrieved data from LR2IR");
+			IRScoreData[] scoreData = ranking.toBeatorajaScoreData(chart);
 			return scoreData;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -126,7 +129,7 @@ public class LR2IRConnection {
 			this.score = score;
 		}
 
-		public IRScoreData[] toBeatorajaScoreData(IRChartData model, ScoreDatabaseAccessor scoredb) {
+		public IRScoreData[] toBeatorajaScoreData(IRChartData model) {
 			List<Score> scores = getScore();
 			List<IRScoreData> res = new ArrayList<>();
 			for (Score s : scores) {
@@ -158,8 +161,8 @@ public class LR2IRConnection {
             lastScoreData = null;
             lastChart = null;
         } else*/
-			if (scoredb != null) {
-				ScoreData s = scoredb.getScoreData(model.sha256, model.hasUndefinedLN ? model.lntype : 0);
+			if (scoreDatabaseAccessor != null) {
+				ScoreData s = scoreDatabaseAccessor.getScoreData(model.sha256, model.hasUndefinedLN ? model.lntype : 0);
 				if (s != null) {
 					s.setPlayer(null);
 					res.add(new IRScoreData(s));
