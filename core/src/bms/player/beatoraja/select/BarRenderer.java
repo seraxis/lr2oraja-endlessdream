@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import bms.player.beatoraja.CourseData.TrophyData;
 import bms.player.beatoraja.song.*;
 
+import bms.player.beatoraja.modmenu.DownloadTaskState;
+
 /**
  * 楽曲バー描画用クラス
  *
@@ -287,6 +289,31 @@ public final class BarRenderer {
 				}
 			}
 		}
+
+        var downloadTasks = DownloadTaskState.runningDownloadTasks;
+        if (!downloadTasks.isEmpty()) {
+            // download progress bars
+            for (int i = 0; i < barlength; i++) {
+                final BarArea ba = bararea[i];
+                if (ba.value == -1) {
+                    continue;
+                }
+
+                if (!(ba.sd instanceof SongBar)) {
+                    continue;
+                }
+                var songBar = (SongBar)ba.sd;
+                for (var task : downloadTasks.values()) {
+                    String md5 = task.getHash();
+                    if (md5 != songBar.getSongData().getMd5())
+                        continue;
+                    final SkinDistributionGraph graph = baro.getGraph();
+                    if (graph != null && graph.draw) {
+                        graph.draw(sprite, songBar, task, ba.x, ba.y);
+                    }
+                }
+            }
+        }
 
 		for (int i = 0; i < barlength; i++) {
 			final BarArea ba = bararea[i];
