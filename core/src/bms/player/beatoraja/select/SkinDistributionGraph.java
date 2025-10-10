@@ -173,7 +173,11 @@ public class SkinDistributionGraph extends SkinObject {
             percent = (float)task.getDownloadSize() / task.getContentLength();
             fg = currentImage[4];
             break;
-        case Success:
+        case Downloaded:
+            percent = 1.f;
+            fg = currentImage[4];
+            break;
+        case Extracted:
             percent = 1.f;
             fg = currentImage[6];
             break;

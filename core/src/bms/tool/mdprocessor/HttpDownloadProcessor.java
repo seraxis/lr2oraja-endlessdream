@@ -154,6 +154,7 @@ public class HttpDownloadProcessor {
             try {
                 extractCompressedFile(result.toFile(), null);
                 successfullyExtracted = true;
+                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Extracted);
             } catch (Exception e) {
                 e.printStackTrace();
                 ImGuiNotify.error(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
@@ -229,7 +230,7 @@ public class HttpDownloadProcessor {
                 task.setContentLength(contentLength);
             }
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Download successfully to %s", result));
-            task.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Success);
+            task.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloaded);
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getGlobal().info("[HttpDownloadProcessor] Failed to download file from url: " + e.getMessage());

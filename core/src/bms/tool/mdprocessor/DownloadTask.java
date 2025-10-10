@@ -40,7 +40,7 @@ public class DownloadTask {
 
     public void setDownloadTaskStatus(DownloadTaskStatus downloadTaskStatus) {
         this.downloadTaskStatus = downloadTaskStatus;
-        if (1 < downloadTaskStatus.value) {
+        if (downloadTaskStatus.value >= DownloadTask.DownloadTaskStatus.Extracted.getValue()) {
             timeFinished = System.nanoTime();
         }
     }
@@ -81,9 +81,10 @@ public class DownloadTask {
     public enum DownloadTaskStatus {
         Prepare(0, "Prepare"),
         Downloading(1, "Downloading"),
-        Success(2, "Success"),
-        Error(3, "Error"),
-        Cancel(4, "Cancel");
+        Downloaded(2, "Downloaded"),
+        Extracted(3, "Finished"),
+        Error(4, "Error"),
+        Cancel(5, "Cancel");
 
         private final int value;
         private final String name;

@@ -42,8 +42,10 @@ public class DownloadTaskState {
                 continue;
             }
 
-            boolean finished = (DownloadTask.DownloadTaskStatus.Downloading.getValue() <
-                                task.getDownloadTaskStatus().getValue());
+
+            DownloadTask.DownloadTaskStatus state = task.getDownloadTaskStatus();
+            boolean finished = task.getDownloadTaskStatus().getValue() >=
+                               DownloadTask.DownloadTaskStatus.Extracted.getValue();
             boolean expired = finished && (5000000000L < now - task.getTimeFinished());
 
             if (expired) {
