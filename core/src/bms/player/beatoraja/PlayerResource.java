@@ -128,7 +128,9 @@ public final class PlayerResource {
 	private String tablelevel = "";
 	private String tablefull;
 	private boolean freqOn;
+	private int freqValue;
 	private String freqString;
+	private int overrideJudgeRank;
 	// Full list of difficult tables that contains current song
 	private List<String> reverseLookup = new ArrayList<>();
 
@@ -612,5 +614,21 @@ public final class PlayerResource {
 
 	public void setFreqString(String freqString) {
 		this.freqString = freqString;
+	}
+
+	public int getFreqValue() {
+		return freqValue;
+	}
+
+	public void setFreqValue(int freqValue) {
+		this.freqValue = freqValue;
+	}
+
+	public int getOverrideJudgeRank() {
+		return overrideJudgeRank;
+	}
+
+	public void setOverrideJudgeRank(int overrideJudgeRank) {
+		this.overrideJudgeRank = overrideJudgeRank;
 	}
 }
