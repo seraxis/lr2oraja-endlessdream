@@ -576,7 +576,7 @@ public class MainController {
 			sprite.end();
 		}
 
-		DownloadTaskState.update();
+        if (config.isEnableHttp()) { DownloadTaskState.update(); }
         PerformanceMetrics.get().commit();
 
 		imGui.start();
