@@ -15,15 +15,18 @@ import java.util.*;
 public class PerformanceMonitor {
 
     static HashMap<Integer, Vector<PerformanceMetrics.EventResult>> eventTree;
+    static long lastEventUpdate = 0;
 
     private record WatchStats(Float avg, Float std) {}
     private static IdentityHashMap<String, WatchStats> watchData =
         new IdentityHashMap<String, WatchStats>();
     static long lastStatUpdate = 0;
 
+
     public static void show(ImBoolean showPerformanceMonitor) {
-        if (eventTree == null) {
-            // TODO: auto update regularly
+        long now = System.nanoTime();
+        if (eventTree == null || lastEventUpdate < (now - 500000000L)) {
+            lastEventUpdate = now;
             reloadEventTree();
         }
 
@@ -34,7 +37,7 @@ public class PerformanceMonitor {
                 renderWatchData();
             }
 
-            if (ImGui.collapsingHeader("Events")) {
+            if (ImGui.collapsingHeader("Events", ImGuiTreeNodeFlags.DefaultOpen)) {
                 renderEventTable();
             }
         }
