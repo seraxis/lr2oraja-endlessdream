@@ -15,6 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -168,7 +169,10 @@ public class LR2IRConnection {
 					res.add(new IRScoreData(s));
 				}
 			}
-			return res.toArray(new IRScoreData[0]);
+			return res.stream()
+					.sorted(Comparator.comparingInt(IRScoreData::getExscore).reversed())
+					.limit(50)
+					.toArray(IRScoreData[]::new);
 		}
 	}
 
