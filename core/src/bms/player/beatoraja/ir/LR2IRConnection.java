@@ -171,7 +171,6 @@ public class LR2IRConnection {
 			}
 			return res.stream()
 					.sorted(Comparator.comparingInt(IRScoreData::getExscore).reversed())
-					.limit(50)
 					.toArray(IRScoreData[]::new);
 		}
 	}
