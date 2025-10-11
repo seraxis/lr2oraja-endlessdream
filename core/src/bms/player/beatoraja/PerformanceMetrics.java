@@ -25,7 +25,7 @@ public class PerformanceMetrics {
     public record EventResult(String name, int id, int parent, long startTime, long duration,
                               String thread) {}
 
-    public List<EventResult> eventResults =
+    public final List<EventResult> eventResults =
         Collections.synchronizedList(new ArrayList<EventResult>());
 
     public synchronized void submitWatchResult(String name, long time, long duration) {
@@ -76,10 +76,8 @@ public class PerformanceMetrics {
         public void close() {
             var endTime = System.nanoTime();
             get().activeBlocks.get().pop();
-            synchronized (eventResults) {
-                eventResults.add(new EventResult(name, id, parent, startTime, (endTime - startTime),
-                                                 Thread.currentThread().getName()));
-            }
+            eventResults.add(new EventResult(name, id, parent, startTime, (endTime - startTime),
+                                             Thread.currentThread().getName()));
         }
     }
 
