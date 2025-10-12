@@ -384,7 +384,8 @@ public class BarManager {
 			}
 
 			Array<Bar> bars = new Array<Bar>();
-			if (select.main.getPlayerConfig().isRandomSelect()) {
+			if (select.main.getPlayerConfig().isRandomSelect()
+				&& !(bar instanceof ContextMenuBar)) {
 				try {
 					for (RandomFolder randomFolder : randomFolderList) {
 						SongData[] randomTargets = Stream.of(newcurrentsongs).filter(

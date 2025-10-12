@@ -163,14 +163,18 @@ public final class BarRenderer {
 					ba.value = 6;
 				} else if (sd instanceof CommandBar || sd instanceof ContainerBar) {
 					ba.value = 5;
-				} else {
+				} else if (sd instanceof ContextMenuBar.FunctionBar) {
+                    var fn = ((ContextMenuBar.FunctionBar)sd);
+                    ba.value = fn.getDisplayBarType();
+					ba.text = fn.getDisplayTextType();
+                } else {
 					ba.value = -1;
 				}
 			} else {
 				ba.value = -1;
 			}
 
-			if(ba.value != -1) {
+			if(ba.value != -1 && !(ba.sd instanceof ContextMenuBar.FunctionBar)) {
 				// Barの種類によってテキストを変える
 				// SongBarかFolderBarの場合は新規かどうかでさらに変える
 				// songstatus最終値 =
@@ -380,6 +384,14 @@ public final class BarRenderer {
 						? song.getDifficulty() : 0);
 				if (leveln != null) {
 					leveln.draw(sprite, time, song.getLevel(), select, ba.x, ba.y);
+				}
+			}
+			else if (ba.sd instanceof ContextMenuBar.FunctionBar
+					 && ((ContextMenuBar.FunctionBar) ba.sd).getLevel() != null) {
+				final int level = ((ContextMenuBar.FunctionBar) ba.sd).getLevel();
+				final SkinNumber leveln = baro.getBarlevel(0);
+				if (leveln != null) {
+					leveln.draw(sprite, time, level, select, ba.x, ba.y);
 				}
 			}
 		}

@@ -303,11 +303,23 @@ public final class MusicSelectInputProcessor {
                     // play
                     select.selectSong(BMSPlayerMode.PLAY);
                 } else if (property.isPressed(input, PRACTICE, true)) {
-                    // practice mode
-                    select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : BMSPlayerMode.PRACTICE);
+					if (current instanceof SongBar) {
+                        select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);
+                    }
+					else {
+						// practice mode
+                        select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY
+                                                               : BMSPlayerMode.PRACTICE);
+                    }
                 } else if (property.isPressed(input, AUTO, true)) {
-                    // auto play
-                    select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : BMSPlayerMode.AUTOPLAY);
+					if (current instanceof SongBar) {
+                        select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);
+                    }
+                    else {
+						// auto play
+                        select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY
+                                                               : BMSPlayerMode.AUTOPLAY);
+                    }
                 } else if (property.isPressed(input, MusicSelectKey.REPLAY, true)) {
                     // replay
                     select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : ((select.getSelectedReplay() >= 0) ? BMSPlayerMode.getReplayMode(select.getSelectedReplay()) : BMSPlayerMode.PLAY));
