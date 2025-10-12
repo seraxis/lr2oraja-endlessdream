@@ -56,13 +56,6 @@ public class SongManagerMenu {
                     }
                     ImGui.endPopup();
                 }
-                if (ImGui.button("Show Leaderboard")) {
-                    selector.execute(MusicSelectCommand.SHOW_LEADERBOARD);
-                }
-
-                if (ImGui.button("Show LR2IR Leaderboard")) {
-                    selector.execute(MusicSelectCommand.SHOW_LR2IR_LEADERBOARD);
-                }
             }
         }
         ImGui.end();
