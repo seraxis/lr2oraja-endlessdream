@@ -3,6 +3,7 @@ package bms.player.beatoraja.select;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.song.SongData;
+import bms.player.beatoraja.BMSPlayerMode;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Queue;
 import javafx.scene.input.Clipboard;
@@ -162,20 +163,29 @@ public enum MusicSelectCommand {
 	/**
 	 * Open context menu for the currently selected bar
 	 */
-	SHOW_CONTEXT_MENU(selector -> {
+    SHOW_CONTEXT_MENU(selector -> {
 		final BarManager bar = selector.getBarManager();
 		Bar current = selector.getBarManager().getSelected();
         boolean alreadyInContextMenu =
             bar.getDirectory().size > 0 && bar.getDirectory().last() instanceof ContextMenuBar;
-        if (current instanceof SongBar && !alreadyInContextMenu) {
+        if (current instanceof SongBar) {
             SongData song = ((SongBar)current).getSongData();
-            bar.updateBar(new ContextMenuBar(selector, song));
-            selector.play(FOLDER_OPEN);
+            if (!alreadyInContextMenu) {
+                bar.updateBar(new ContextMenuBar(selector, song));
+                selector.play(FOLDER_OPEN);
+            }
+            else { selector.selectSong(BMSPlayerMode.PLAY); }
         }
-	});
+        else if (current instanceof TableBar) {
+            if (!alreadyInContextMenu) {
+                bar.updateBar(new ContextMenuBar(selector, ((TableBar)current)));
+                selector.play(FOLDER_OPEN);
+            }
+            else if (selector.getBarManager().updateBar(current)) { selector.play(FOLDER_OPEN); }
+        }
+    });
 
-
-	public final Consumer<MusicSelector> function;
+    public final Consumer<MusicSelector> function;
 
 	private MusicSelectCommand(Consumer<MusicSelector> function) {
 		this.function = function;

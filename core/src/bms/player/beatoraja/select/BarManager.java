@@ -286,6 +286,9 @@ public class BarManager {
 			if (dir.size > 0) {
 				prevbar = dir.first();
 			}
+            if (prevbar instanceof ContextMenuBar) {
+                prevbar = ((ContextMenuBar)prevbar).getPrevious();
+            }
 			dir.clear();
 			sourcebars.clear();
 			l.addAll(new FolderBar(select, null, "e2977170").getChildren());
@@ -512,6 +515,8 @@ public class BarManager {
 	public float getSelectedPosition() {
 		return ((float) selectedindex) / currentsongs.length;
 	}
+
+    public TableBar[] getTables() { return tables.clone(); }
 
 	public void setSelectedPosition(float value) {
 		if (value >= 0 && value < 1) {

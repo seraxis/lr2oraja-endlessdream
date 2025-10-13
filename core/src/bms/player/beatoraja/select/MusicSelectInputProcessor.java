@@ -112,8 +112,7 @@ public final class MusicSelectInputProcessor {
             }
         }
 
-        if (input.isControlKeyPressed(ControlKeys.NUM4)
-                || (!input.startPressed() && !input.isSelectPressed() && !input.getControlKeyState(ControlKeys.NUM5) && property.isPressed(input, NEXT_REPLAY, true))) {
+        if (input.isControlKeyPressed(ControlKeys.NUM4)) {
             // change replay
             select.execute(MusicSelectCommand.NEXT_REPLAY);
         }
@@ -298,31 +297,40 @@ public final class MusicSelectInputProcessor {
             bar.input();
             select.setPanelState(0);
 
-            if (current instanceof SelectableBar) {
+            if (current instanceof ContextMenuBar.FunctionBar &&
+                (property.isPressed(input, PRACTICE, true) ||
+                 property.isPressed(input, AUTO, true) ||
+                 property.isPressed(input, REPLAY, true))) {
+                select.selectSong(BMSPlayerMode.PLAY);
+            }
+            else if ((current instanceof SongBar || current instanceof TableBar) &&
+                     (property.isPressed(input, PRACTICE, true) ||
+                      property.isPressed(input, AUTO, true))) {
+                select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);
+            }
+            else if (current instanceof SelectableBar) {
                 if (property.isPressed(input, PLAY, true) || input.isControlKeyPressed(ControlKeys.RIGHT) || input.isControlKeyPressed(ControlKeys.ENTER)) {
                     // play
                     select.selectSong(BMSPlayerMode.PLAY);
                 } else if (property.isPressed(input, PRACTICE, true)) {
-					if (current instanceof SongBar) {
-                        select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);
-                    }
-					else {
-						// practice mode
-                        select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY
-                                                               : BMSPlayerMode.PRACTICE);
-                    }
+                    // practice mode
+                    select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : BMSPlayerMode.PRACTICE);
                 } else if (property.isPressed(input, AUTO, true)) {
-					if (current instanceof SongBar) {
-                        select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);
-                    }
-                    else {
-						// auto play
-                        select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY
-                                                               : BMSPlayerMode.AUTOPLAY);
-                    }
+                    // auto play
+                    select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : BMSPlayerMode.AUTOPLAY);
                 } else if (property.isPressed(input, MusicSelectKey.REPLAY, true)) {
                     // replay
                     select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : ((select.getSelectedReplay() >= 0) ? BMSPlayerMode.getReplayMode(select.getSelectedReplay()) : BMSPlayerMode.PLAY));
+                }
+                else if (property.isPressed(input, NEXT_REPLAY, true)) {
+                    if (current instanceof ContextMenuBar.FunctionBar) {
+                        input.resetKeyChangedTime(1);
+                        select.getBarManager().close();
+					}
+                    else {
+                        // change replay
+                        select.execute(MusicSelectCommand.NEXT_REPLAY);
+                    }
                 }
             } else if (current instanceof DirectoryBar dirbar) {
                 if (property.isPressed(input, MusicSelectKey.FOLDER_OPEN, true) || input.isControlKeyPressed(ControlKeys.RIGHT) || input.isControlKeyPressed(ControlKeys.ENTER)) {

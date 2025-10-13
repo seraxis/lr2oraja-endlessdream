@@ -4,6 +4,7 @@ import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.select.bar.Bar;
 import bms.player.beatoraja.select.bar.DirectoryBar;
 import bms.player.beatoraja.select.bar.SongBar;
+import bms.player.beatoraja.select.bar.ContextMenuBar;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
 import bms.tool.mdprocessor.DownloadTask;
@@ -152,6 +153,20 @@ public class SkinDistributionGraph extends SkinObject {
                     x += ranks[i];
                 }
             }
+        }
+    }
+
+    public void draw(SkinObjectRenderer sprite, ContextMenuBar.FunctionBar current, float offsetx, float offsety) {
+        if (current == null) { return; }
+        int[] lamps = current.getLamps();
+        int count = 0;
+        for (int lamp : lamps) { count += lamp; }
+        if (count == 0) { return; }
+
+        for (int i = 10, x = 0; i >= 0; i--) {
+            sprite.draw(currentImage[i], region.x + x * region.width / count + offsetx,
+                        region.y + offsety, lamps[i] * region.width / count, region.height);
+            x += lamps[i];
         }
     }
 
