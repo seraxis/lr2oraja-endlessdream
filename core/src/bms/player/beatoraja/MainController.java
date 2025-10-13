@@ -375,7 +375,7 @@ public class MainController {
             selector = new MusicSelector(this, songUpdated);
         }
 
-		if(player.getRequestEnable()) {
+		if(player.isRequestEnabled()) {
 		    streamController = new StreamController(selector);
 	        streamController.run();
 		}

@@ -247,7 +247,7 @@ public final class PlayerConfig {
 	private String twitterAccessTokenSecret;
 
 	// -- Stream
-	private boolean requestEnable = false;
+	private boolean requestEnabled = false;
 	private boolean requestNotify = false;
 	private int maxRequestCount = 30;
 
@@ -318,15 +318,6 @@ public final class PlayerConfig {
 	public int getMisslayerDuration() {
 		return Math.max(misslayerDuration, 0);
 	}
-
-	// --Stream
-	public boolean getRequestEnable() {
-        return requestEnable;
-    }
-
-	public boolean getRequestNotify() {
-        return requestNotify;
-    }
 
 	public void validate() {
 		if(skin == null) {
