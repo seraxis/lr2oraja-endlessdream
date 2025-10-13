@@ -1,11 +1,14 @@
 package bms.player.beatoraja.ir;
 
+import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.ScoreDatabaseAccessor;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import javafx.util.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -28,6 +31,11 @@ import java.util.List;
 public class LR2IRConnection {
 	private static final String IRUrl = "http://dream-pro.info/~lavalse/LR2IR/2";
 	private static ScoreDatabaseAccessor scoreDatabaseAccessor;
+	private static MainController main;
+
+	public static void setMain(MainController main) {
+		LR2IRConnection.main = main;
+	}
 
 	public static void setScoreDatabaseAccessor(ScoreDatabaseAccessor scoreDatabaseAccessor) {
 		LR2IRConnection.scoreDatabaseAccessor = scoreDatabaseAccessor;
@@ -85,20 +93,32 @@ public class LR2IRConnection {
 		}
 	}
 
-	public static IRScoreData[] getScoreData(IRChartData chart) {
+	/**
+	 * Get LR2IR scores and personal score
+	 *
+	 * @param chart requested chart
+	 * @implNote Technically speaking, this class shouldn't have the access of local scores. But this makes the code
+	 * easier to assemble.
+	 * @return A pair, first is local score and second is scores from LR2IR. The first can be null.
+	 */
+	public static Pair<IRScoreData, IRScoreData[]> getScoreData(IRChartData chart) {
 		if (chart.md5 == null || chart.md5.isEmpty()) {
-			return new IRScoreData[0];
+			return new Pair<>(null, new IRScoreData[0]);
 		}
 		LR2IRSongData lr2IRSongData = new LR2IRSongData(chart.md5, "114328");
 		try {
 			String res = makePOSTRequest("/getrankingxml.cgi", lr2IRSongData.toUrlEncodedForm());
 			Ranking ranking = (Ranking) convertXMLToObject(res.substring(1).replace("<lastupdate></lastupdate>", ""), Ranking.class);
 			IRScoreData[] scoreData = ranking.toBeatorajaScoreData(chart);
-			return scoreData;
+			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lntype : 0);
+			if (localScore != null) {
+				localScore.setPlayer(StringPropertyFactory.getStringProperty(StringPropertyFactory.StringType.player.name()).get(main.getCurrentState()));
+			}
+			return new Pair<>(localScore == null ? null : new IRScoreData(localScore), scoreData);
 		} catch (Exception e) {
 			e.printStackTrace();
 			ImGuiNotify.error("Failed to get score data from LR2IR: " + e.getMessage());
-			return new IRScoreData[0];
+			return new Pair<>(null, new IRScoreData[0]);
 		}
 	}
 
@@ -162,13 +182,6 @@ public class LR2IRConnection {
             lastScoreData = null;
             lastChart = null;
         } else*/
-			if (scoreDatabaseAccessor != null) {
-				ScoreData s = scoreDatabaseAccessor.getScoreData(model.sha256, model.hasUndefinedLN ? model.lntype : 0);
-				if (s != null) {
-					s.setPlayer(null);
-					res.add(new IRScoreData(s));
-				}
-			}
 			return res.stream()
 					.sorted(Comparator.comparingInt(IRScoreData::getExscore).reversed())
 					.toArray(IRScoreData[]::new);

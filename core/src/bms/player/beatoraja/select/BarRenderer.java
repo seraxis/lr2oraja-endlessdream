@@ -149,7 +149,7 @@ public final class BarRenderer {
 				Bar sd = manager.currentsongs[index];
 				ba.sd = sd;
 
-				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar || sd instanceof IRPlayerBar) {
+				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar) {
 					ba.value = 2;
 				} else if (sd instanceof GradeBar) {
 					ba.value = ((GradeBar) sd).existsAllSongs() ? 3 : 4;
@@ -164,9 +164,11 @@ public final class BarRenderer {
 				} else if (sd instanceof CommandBar || sd instanceof ContainerBar) {
 					ba.value = 5;
 				} else if (sd instanceof ContextMenuBar.FunctionBar) {
-                    var fn = ((ContextMenuBar.FunctionBar)sd);
-                    ba.value = fn.getDisplayBarType();
+					var fn = ((ContextMenuBar.FunctionBar) sd);
+					ba.value = fn.getDisplayBarType();
 					ba.text = fn.getDisplayTextType();
+				} else if (sd instanceof IRPlayerBar) {
+					ba.value = ((IRPlayerBar) sd).isLocalScore() ? 3 : 2;
                 } else {
 					ba.value = -1;
 				}
