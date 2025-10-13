@@ -63,6 +63,12 @@ tasks {
 
 // versions and bundles defined in ../gradle/libs.versions.toml
 dependencies {
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
     implementation(libs.bundles.libgdx)
     
     implementation(libs.gdx.platform)  {

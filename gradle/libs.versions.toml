@@ -21,6 +21,7 @@ shapedrawer = "2.5.0"
 guacamole = "0.3.5"
 ebur128java = "1.2.6-2"
 jna = "5.13.0"
+lombok = "1.18.42"
 
 
 [libraries]
@@ -74,6 +75,7 @@ twitter4j = { group = "org.twitter4j" , name = "twitter4j-core", version.ref = "
 javadiscord = { group = "club.minnced", name = "java-discord-rpc", version.ref = "java-discord" }
 ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "ebur128java" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]
