@@ -3,7 +3,7 @@ import java.nio.file.FileSystems
 plugins {
     id("java-library")
     id("application")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.9"
     id("org.endlessdream.extra.multiplatform-convention")
 }
 
@@ -31,7 +31,7 @@ application {
 }
 
 tasks {
-    // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
+    // fat/uber-jar task provided by https://github.com/GradleUp/shadow
     shadowJar {
         val platformProp = System.getProperty("platform")
         val archProp = System.getProperty("arch")
