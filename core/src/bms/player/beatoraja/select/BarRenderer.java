@@ -292,6 +292,12 @@ public final class BarRenderer {
 					graph.draw(sprite, (DirectoryBar)ba.sd, ba.x, ba.y);
 				}
 			}
+			else if (ba.sd instanceof ContextMenuBar.FunctionBar) {
+				final SkinDistributionGraph graph = baro.getGraph();
+				if (graph != null && graph.draw) {
+					graph.draw(sprite, (ContextMenuBar.FunctionBar)ba.sd, ba.x, ba.y);
+				}
+			}
 		}
 
         var downloadTasks = DownloadTaskState.runningDownloadTasks;

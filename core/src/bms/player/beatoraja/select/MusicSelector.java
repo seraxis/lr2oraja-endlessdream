@@ -355,7 +355,7 @@ public final class MusicSelector extends MainState {
 		command.function.accept(this);
 	}
 
-	private void readChart(SongData song, Bar current) {
+	public void readChart(SongData song, Bar current) {
 		resource.clear();
 		if (resource.setBMSFile(Paths.get(song.getPath()), play)) {
 			// TODO 表名、フォルダ名をPlayerResource上でも重複実施している
