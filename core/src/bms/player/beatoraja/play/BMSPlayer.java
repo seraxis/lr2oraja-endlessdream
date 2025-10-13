@@ -462,6 +462,12 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
+		if (assist != 0) {
+			ImGuiNotify.warning("Next play would be considered as assist clear");
+		}
+		if (!score) {
+			ImGuiNotify.warning("Next play score wouldn't be recorded");
+		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
