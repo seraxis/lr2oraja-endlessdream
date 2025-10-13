@@ -8,6 +8,7 @@ import bms.player.beatoraja.ir.LR2IRConnection;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.song.SongData;
+import javafx.util.Pair;
 
 public class LeaderBoardBar extends DirectoryBar {
 	private final SongData songData;
@@ -28,6 +29,8 @@ public class LeaderBoardBar extends DirectoryBar {
 
 	@Override
 	public Bar[] getChildren() {
+		// NOTE: For further devs, the leaderboard's children is sorted by 'exscore', if you want to implement a
+		// different sort strategy, you need to change two 'fromIRScoreData' implementation
 		if (!fromLR2IR) {
 			MainController.IRStatus pir = selector.main.getIRStatus()[0];
 			IRResponse<IRScoreData[]> response = pir.connection.getPlayData(pir.player, new IRChartData(songData));
@@ -38,7 +41,12 @@ public class LeaderBoardBar extends DirectoryBar {
 			IRScoreData[] irScoreData = response.getData();
 			return IRPlayerBar.fromIRScoreData(irScoreData);
 		} else {
-			IRScoreData[] scoreData = LR2IRConnection.getScoreData(new IRChartData(songData));
+			Pair<IRScoreData, IRScoreData[]> scores = LR2IRConnection.getScoreData(new IRChartData(songData));
+			IRScoreData localScore = scores.getKey();
+			IRScoreData[] scoreData = scores.getValue();
+			if (localScore != null) {
+				return IRPlayerBar.fromIRScoreData(localScore, scoreData);
+			}
 			return IRPlayerBar.fromIRScoreData(scoreData);
 		}
 	}
