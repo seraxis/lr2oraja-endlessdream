@@ -160,7 +160,7 @@ public final class PlayerConfig {
 	public static final int GAUGEAUTOSHIFT_BESTCLEAR = 3;
 	public static final int GAUGEAUTOSHIFT_SELECT_TO_UNDER = 4;
 
-	private int autosavereplay[];
+	private int autoSaveReplay[];
 
 	/**
 	 * 7to9 スクラッチ鍵盤位置関係 0:OFF 1:SC1KEY2~8 2:SC1KEY3~9 3:SC2KEY3~9 4:SC8KEY1~7 5:SC9KEY1~7 6:SC9KEY2~8
@@ -180,17 +180,17 @@ public final class PlayerConfig {
 	/**
 	 * Guide SE
 	 */
-	private boolean isGuideSE = false;
+	private boolean guideSE = false;
 
 	/**
 	 * Window Hold
 	 */
-	private boolean isWindowHold = false;
+	private boolean windowHold = false;
 	
 	/**
 	 * Enable folder random select bar
 	 */
-	private boolean isRandomSelect = false;
+	private boolean randomSelect = false;
 
 	private SkinConfig[] skin = new SkinConfig[SkinType.getMaxSkinTypeID() + 1];
 	private SkinConfig[] skinHistory;
@@ -247,54 +247,40 @@ public final class PlayerConfig {
 	private String twitterAccessTokenSecret;
 
 	// -- Stream
-	private boolean enableRequest = false;
-	private boolean notifyRequest = false;
+	private boolean requestEnable = false;
+	private boolean requestNotify = false;
 	private int maxRequestCount = 30;
+
+	private boolean eventMode = false;
 
 	public PlayerConfig() {
 		validate();
 	}
 
 	public PlayModeConfig getPlayConfig(Mode modeId) {
-		switch (modeId != null ? modeId : Mode.BEAT_7K) {
-		case BEAT_5K:
-			return getMode5();
-		case BEAT_7K:
-			return getMode7();
-		case BEAT_10K:
-			return getMode10();
-		case BEAT_14K:
-			return getMode14();
-		case POPN_9K:
-			return getMode9();
-		case KEYBOARD_24K:
-			return getMode24();
-		case KEYBOARD_24K_DOUBLE:
-			return getMode24double();
-		default:
-			return getMode7();
-		}
+        return switch (modeId != null ? modeId : Mode.BEAT_7K) {
+            case BEAT_5K -> getMode5();
+            case BEAT_7K -> getMode7();
+            case BEAT_10K -> getMode10();
+            case BEAT_14K -> getMode14();
+            case POPN_9K -> getMode9();
+            case KEYBOARD_24K -> getMode24();
+            case KEYBOARD_24K_DOUBLE -> getMode24double();
+            default -> getMode7();
+        };
 	}
 
 	public PlayModeConfig getPlayConfig(int modeId) {
-		switch (modeId) {
-		case 7:
-			return getMode7();
-		case 5:
-			return getMode5();
-		case 14:
-			return getMode14();
-		case 10:
-			return getMode10();
-		case 9:
-			return getMode9();
-		case 25:
-			return getMode24();
-		case 50:
-			return getMode24double();
-		default:
-			return getMode7();
-		}
+        return switch (modeId) {
+            case 5 -> getMode5();
+			case 7 -> getMode7();
+			case 10 -> getMode10();
+			case 14 -> getMode14();
+			case 9 -> getMode9();
+			case 25 -> getMode24();
+            case 50 -> getMode24double();
+            default -> getMode7();
+        };
 	}
 
 	public PlayModeConfig getMode10() {
@@ -330,60 +316,16 @@ public final class PlayerConfig {
 	}
 
 	public int getMisslayerDuration() {
-		if(misslayerDuration < 0) {
-			misslayerDuration = 0;
-		}
-		return misslayerDuration;
-	}
-
-
-	public boolean isGuideSE() {
-		return isGuideSE;
-	}
-
-	public void setGuideSE(boolean isGuideSE) {
-		this.isGuideSE = isGuideSE;
-	}
-
-	public boolean isWindowHold() {
-		return isWindowHold;
-	}
-
-	public void setWindowHold(boolean isWindowHold) {
-		this.isWindowHold = isWindowHold;
-	}
-	
-	public boolean isRandomSelect() {
-		return isRandomSelect;
-	}
-	
-	public void setRandomSelect(boolean isRandomSelect) {
-		this.isRandomSelect = isRandomSelect;
-	}
-
-	public void setAutoSaveReplay(int autoSaveReplay[]){
-		this.autosavereplay = autoSaveReplay;
-	}
-
-	public int[] getAutoSaveReplay(){
-		return autosavereplay;
+		return Math.max(misslayerDuration, 0);
 	}
 
 	// --Stream
 	public boolean getRequestEnable() {
-        return enableRequest;
+        return requestEnable;
     }
 
 	public boolean getRequestNotify() {
-        return notifyRequest;
-    }
-
-    public void setRequestEnable(boolean requestEnable) {
-        this.enableRequest = requestEnable;
-    }
-
-    public void setRequestNotify(boolean notifyEnable) {
-        this.notifyRequest = notifyEnable;
+        return requestNotify;
     }
 
 	public void validate() {
@@ -456,11 +398,11 @@ public final class PlayerConfig {
 		scratchJudgeWindowRateGood = MathUtils.clamp(scratchJudgeWindowRateGood, 0, 400);
 		hranThresholdBPM = MathUtils.clamp(hranThresholdBPM, 1, 1000);
 		
-		if(autosavereplay == null) {
-			autosavereplay = new int[4];
+		if(autoSaveReplay == null) {
+			autoSaveReplay = new int[4];
 		}
-		if(autosavereplay.length != 4) {
-			autosavereplay = Arrays.copyOf(autosavereplay, 4);
+		if(autoSaveReplay.length != 4) {
+			autoSaveReplay = Arrays.copyOf(autoSaveReplay, 4);
 		}
 		sevenToNinePattern = MathUtils.clamp(sevenToNinePattern, 0, 6);
 		sevenToNineType = MathUtils.clamp(sevenToNineType, 0, 2);
@@ -653,7 +595,5 @@ public final class PlayerConfig {
 			e.printStackTrace();
 		}
 	}
-
-    private boolean eventMode = false;
 
 }
