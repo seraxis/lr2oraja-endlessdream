@@ -15,7 +15,6 @@ commons-dbutils = "1.6"
 sqlite = "3.42.0.0"
 jackson = "2.13.4"
 twitter4j = "4.0.4"
-java-discord = "2.0.1-all"
 xz = "1.10"
 shapedrawer = "2.5.0"
 guacamole = "0.3.5"
@@ -71,9 +70,10 @@ jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-an
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
 twitter4j = { group = "org.twitter4j" , name = "twitter4j-core", version.ref = "twitter4j" }
-javadiscord = { group = "club.minnced", name = "java-discord-rpc", version.ref = "java-discord" }
 ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "ebur128java" }
+
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
+jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]
@@ -82,3 +82,4 @@ imgui = ["imgui", "imgui-lwjgl3", "imgui-linux", "imgui-windows", "imgui-macos"]
 ffmpeg = ["javacv", "javacpp", "ffmpeg"]
 codecs = ["commons-codec", "jflac"]
 jackson = ["jackson-core", "jackson-databind", "jackson-annotations", "jackson-xml"]
+jna = ["jna", "jna-platform"]
