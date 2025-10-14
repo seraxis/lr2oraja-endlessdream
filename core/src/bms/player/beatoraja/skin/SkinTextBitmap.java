@@ -60,6 +60,7 @@ public class SkinTextBitmap extends SkinText {
 		float scale = this.size / source.getOriginalSize();
 		font.getData().setScale(scale);
 		final float x = (getAlign() == 2 ? region.x - region.width : (getAlign() == 1 ? region.x - region.width / 2 : region.x));
+		sprite.setBlend(this.getBlend());
 		if (source.getType() == SkinTextBitmapSource.TYPE_DISTANCE_FIELD ||
 				source.getType() == SkinTextBitmapSource.TYPE_COLORED_DISTANCE_FIELD) {
 			sprite.setType(SkinObjectRenderer.TYPE_DISTANCE_FIELD);
