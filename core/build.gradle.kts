@@ -83,19 +83,19 @@ dependencies {
     implementation(libs.bundles.codecs)
     implementation(libs.bundles.jackson)
 
+    implementation(libs.bundles.jna)
+
     implementation(libs.sqlite)
     implementation(libs.commons.compress)
     implementation(libs.commons.dbutils)
     implementation(libs.xz)
 
-    implementation(libs.javadiscord)
     implementation(libs.twitter4j)
 
     implementation(libs.shapedrawer)
     implementation(libs.guacamole)
 
     implementation(libs.ebur128java)
-    implementation(libs.jna)
 
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
