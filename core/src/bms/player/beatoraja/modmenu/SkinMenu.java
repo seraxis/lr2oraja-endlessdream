@@ -124,9 +124,7 @@ public class SkinMenu {
         }
 
         ImGui.sameLine();
-        ImGui.beginDisabled();
-        ImGui.text(String.format("> %s", currentSkin.getPath().toString()));
-        ImGui.endDisabled();
+        ImGui.textDisabled(String.format("> %s", currentSkin.getPath().toString()));
 
         boolean saveAvailable = dirtyConfig && !liveEditing.get();
         ImGui.beginDisabled(!saveAvailable);
@@ -151,9 +149,7 @@ public class SkinMenu {
                 switchCurrentSceneSkin(currentSkin);
                 ImGui.closeCurrentPopup();
             }
-            ImGui.beginDisabled();
-            ImGui.text("(click outside popup to close)");
-            ImGui.endDisabled();
+            ImGui.textDisabled("(click outside popup to close)");
             ImGui.endPopup();
         }
 
@@ -341,13 +337,23 @@ public class SkinMenu {
 
         ImGui.sameLine();
         ImGui.text(file.name);
-        ImGui.beginDisabled();
-        String normalizedPath = Paths.get(file.path).normalize().toString();
-        ImGui.text(String.format("  > %s", normalizedPath));
-        ImGui.endDisabled();
+        String normalizedPath =
+            file.path.replace("*", "_WILDCARDESCAPE_").replace("|", "_PIPEESCAPE_");
+        normalizedPath = Paths.get(normalizedPath).normalize().toString();
+        normalizedPath =
+            normalizedPath.replace("_WILDCARDESCAPE_", "*").replace("_PIPEESCAPE_", "|");
+        ImGui.textDisabled(String.format("  > %s", normalizedPath));
 
         ImGui.popID();
         ImGui.popStyleColor(2);
+    }
+
+    private static void spawnDragInt(String name, boolean offset, int[] value) {
+        if (offset) {
+            ImGui.dragInt(String.format("##%s", name), value, 0.166f, 0, 0, name + " = %d");
+            dirty(ImGui.isItemDeactivatedAfterEdit());
+        }
+        else { ImGui.dummy(100, 0); }
     }
 
     private static void skinConfigOffset(SkinHeader.CustomOffset offset) {
@@ -360,43 +366,19 @@ public class SkinMenu {
         ImGui.indent();
 
         if (offset.x || offset.w || offset.a) {
-            if (offset.x) {
-                ImGui.dragInt("##X", value.x, 0.166f, 0, 0, "X = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("X", offset.x, value.x);
             ImGui.sameLine();
-            if (offset.w) {
-                ImGui.dragInt("##W", value.w, 0.166f, 0, 0, "W = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("W", offset.w, value.w);
             ImGui.sameLine();
-            if (offset.a) {
-                ImGui.dragInt("##A", value.a, 0.166f, -255, 255, "a = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("a", offset.a, value.a);
         }
 
         if (offset.y || offset.h || offset.r) {
-            if (offset.y) {
-                ImGui.dragInt("##Y", value.y, 0.166f, 0, 0, "Y = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("Y", offset.y, value.y);
             ImGui.sameLine();
-            if (offset.h) {
-                ImGui.dragInt("##H", value.h, 0.166f, 0, 0, "H = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("H", offset.h, value.h);
             ImGui.sameLine();
-            if (offset.r) {
-                ImGui.dragInt("##R", value.r, 0.166f, 0, 0, "R = %d");
-                dirty(ImGui.isItemDeactivatedAfterEdit());
-            }
-            else { ImGui.dummy(100, 0); }
+            spawnDragInt("R", offset.r, value.r);
         }
 
         ImGui.unindent();
@@ -638,9 +620,9 @@ public class SkinMenu {
         }
 
         SkinConfig.Property property = new SkinConfig.Property();
-        property.setOption(options.toArray(new SkinConfig.Option[options.size()]));
-        property.setFile(files.toArray(new SkinConfig.FilePath[files.size()]));
-        property.setOffset(offsets.toArray(new SkinConfig.Offset[offsets.size()]));
+        property.setOption(options.toArray(new SkinConfig.Option[0]));
+        property.setFile(files.toArray(new SkinConfig.FilePath[0]));
+        property.setOffset(offsets.toArray(new SkinConfig.Offset[0]));
         return property;
     }
 
@@ -723,10 +705,6 @@ public class SkinMenu {
 }
 
 // known bugs
-// sometimes falls back to default skin after resetting (sets wrong default file names?)
-//   pretty bad, requires clearing the settings in the config json
-//   (happens with many skins, for example Rogan and ECFN)
-//   also caused by some particular custom file choices, such as "Off" bombs in hij_simple_play
 // occasionally appears to cause skins to load images wrong
 //   needs more testing / an exact reproduction (i might be imagining it)
 //   might also be related to improperly set custom image values

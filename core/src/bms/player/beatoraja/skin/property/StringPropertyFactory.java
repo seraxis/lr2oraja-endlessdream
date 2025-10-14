@@ -98,6 +98,8 @@ public class StringPropertyFactory {
 				return selector.getSelectedBar().getTitle();
 			} else if ((state instanceof MusicDecide || state instanceof CourseResult) && state.resource.getCoursetitle() != null) {
 				return state.resource.getCoursetitle();
+			} else if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof FunctionBar) {
+				return ((FunctionBar) selector.getSelectedBar()).getTitle();
 			}
 			final SongData song = state.resource.getSongdata();
 			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && state.resource.isFreqOn()) {
