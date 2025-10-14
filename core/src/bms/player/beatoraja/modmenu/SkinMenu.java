@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.io.IOException;
 import java.nio.file.*;
+import java.awt.Desktop;
 
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.json.JSONSkinLoader;
@@ -25,6 +26,7 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
 import imgui.flag.*;
+import com.badlogic.gdx.Gdx;
 
 public class SkinMenu {
     private static MainController main = null;
@@ -36,7 +38,7 @@ public class SkinMenu {
     }
 
     private static boolean ready = false;
-    private static ImBoolean liveEditing = new ImBoolean(false);
+    private static ImBoolean liveEditing = new ImBoolean(true);
     private static ImBoolean freezeTimers = new ImBoolean(false);
 
     private static MainState observedState;
@@ -70,6 +72,9 @@ public class SkinMenu {
         if (main == null) { return; }
         if (observedState != main.getCurrentState()) { invalidate(); }
         if (!ready) { refresh(); }
+
+        int windowHeight = Gdx.graphics.getHeight();
+        ImGui.setNextWindowSize(0.f, windowHeight * 0.3f, ImGuiCond.FirstUseEver);
 
         if (ImGui.begin("Skin", showSkinMenu)) {
             menuHeader();
@@ -107,6 +112,18 @@ public class SkinMenu {
             switchCurrentSceneSkin(skins.get(index));
         }
 
+        if (ImGui.button("Open##open-skin-location")) {
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(currentSkin.getPath().getParent().toFile());
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        ImGui.sameLine();
         ImGui.beginDisabled();
         ImGui.text(String.format("> %s", currentSkin.getPath().toString()));
         ImGui.endDisabled();
@@ -325,7 +342,8 @@ public class SkinMenu {
         ImGui.sameLine();
         ImGui.text(file.name);
         ImGui.beginDisabled();
-        ImGui.text(String.format("  > %s", file.path));
+        String normalizedPath = Paths.get(file.path).normalize().toString();
+        ImGui.text(String.format("  > %s", normalizedPath));
         ImGui.endDisabled();
 
         ImGui.popID();
@@ -508,7 +526,7 @@ public class SkinMenu {
         SkinConfig.Property savedProperties = null;
 
         SkinConfig liveConfig = playerConfig.getSkin()[header.getSkinType().getId()];
-        if (liveConfig != null && liveConfig.getPath().equals(skinPath)) {
+        if (liveConfig != null && skinPath.equals(liveConfig.getPath())) {
             savedProperties = liveConfig.getProperties();
         }
         else {
@@ -531,38 +549,6 @@ public class SkinMenu {
             for (var offset : savedProperties.getOffset()) {
                 setOffsets.put(offset.name, new Offset(offset.x, offset.y, offset.w, offset.h,
                                                        offset.r, offset.a));
-            }
-        }
-
-        for (var file : header.getCustomFiles()) {
-            List<String> fileSelection = parseCustomFile(file);
-
-            if (fileSelection == null) { continue; }
-
-            availableFiles.put(file.name, fileSelection);
-            String selection = null;
-
-            if (setFiles.containsKey(file.name)) { selection = setFiles.get(file.name); }
-
-            if (selection == null && file.def != null) {
-                // デフォルト値のファイル名またはそれに拡張子を付けたものが存在すれば使用する
-                for (String filename : fileSelection) {
-                    if (filename.equalsIgnoreCase(file.def)) {
-                        selection = filename;
-                        break;
-                    }
-                    int point = filename.lastIndexOf('.');
-                    if (point != -1 && filename.substring(0, point).equalsIgnoreCase(file.def)) {
-                        selection = filename;
-                        break;
-                    }
-                }
-            }
-
-            if (selection != null) { setFiles.put(file.name, selection); }
-            else {
-                // always valid due to inserted 'Random'
-                setFiles.put(file.name, fileSelection.get(0));
             }
         }
     }
@@ -604,13 +590,38 @@ public class SkinMenu {
         }
 
         for (var file : header.getCustomFiles()) {
+            List<String> fileSelection = parseCustomFile(file);
+            if (fileSelection == null) {
+                fileSelection = new ArrayList<String>();
+                fileSelection.add("Random");
+            }
+            availableFiles.put(file.name, fileSelection);
+
+            String selection = setFiles.get(file.name);
+            if (selection == null && file.def != null) {
+                // デフォルト値のファイル名またはそれに拡張子を付けたものが存在すれば使用する
+                for (String filename : fileSelection) {
+                    if (filename.equalsIgnoreCase(file.def)) {
+                        selection = filename;
+                        break;
+                    }
+                    int point = filename.lastIndexOf('.');
+                    if (point != -1 && filename.substring(0, point).equalsIgnoreCase(file.def)) {
+                        selection = filename;
+                        break;
+                    }
+                }
+            }
+
+            // fileSelection[0] always present due to inserted 'Random'
+            if (selection == null) { selection = fileSelection.get(0); }
+            setFiles.put(file.name, selection);
+
             SkinConfig.FilePath set = new SkinConfig.FilePath();
             set.name = file.name;
-            set.path = getFileSetting(file);
-            if (set.path != null) {
-                setFiles.put(set.name, set.path);
-                files.add(set);
-            }
+            set.path = selection;
+            setFiles.put(set.name, set.path);
+            files.add(set);
         }
 
         for (var offset : header.getCustomOffsets()) {
