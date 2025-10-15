@@ -2,17 +2,16 @@ package bms.player.beatoraja.select.bar;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.select.MusicSelector;
-import bms.player.beatoraja.select.MusicSelectCommand;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.model.Mode;
 
+import static bms.player.beatoraja.select.bar.FunctionBar.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.FOLDER_OPEN;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.OPTION_CHANGE;
 
@@ -378,19 +377,6 @@ public class ContextMenuBar extends DirectoryBar {
 
         return options.toArray(new Bar[0]);
     }
-
-    // bar appearance IDs
-    private static final int STYLE_SONG = 0;
-    private static final int STYLE_FOLDER = 1;
-    private static final int STYLE_TABLE = 2;
-    private static final int STYLE_COURSE = 3;
-    private static final int STYLE_MISSING = 4;
-    private static final int STYLE_SPECIAL = 5;
-    private static final int STYLE_SEARCH = 6;
-
-    private static final int STYLE_TEXT_PLAIN = 0;
-    private static final int STYLE_TEXT_NEW = 1;
-    private static final int STYLE_TEXT_MISSING = 8;
 }
 
 
