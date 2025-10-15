@@ -13,11 +13,7 @@ import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.result.AbstractResult;
 import bms.player.beatoraja.result.CourseResult;
 import bms.player.beatoraja.select.MusicSelector;
-import bms.player.beatoraja.select.bar.Bar;
-import bms.player.beatoraja.select.bar.DirectoryBar;
-import bms.player.beatoraja.select.bar.GradeBar;
-import bms.player.beatoraja.select.bar.RandomCourseBar;
-import bms.player.beatoraja.select.bar.ContextMenuBar;
+import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.utils.IntMap;
 
@@ -81,8 +77,8 @@ public class StringPropertyFactory {
 				return selector.getSelectedBar().getTitle();
 			} else if ((state instanceof MusicDecide || state instanceof CourseResult) && state.resource.getCoursetitle() != null) {
 				return state.resource.getCoursetitle();						
-			} else if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof ContextMenuBar.FunctionBar) {
-				return ((ContextMenuBar.FunctionBar) selector.getSelectedBar()).getTitle();
+			} else if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof FunctionBar) {
+				return ((FunctionBar) selector.getSelectedBar()).getTitle();
 			}
 			final SongData song = state.resource.getSongdata();
 			if (song != null && (state instanceof AbstractResult || state instanceof BMSPlayer) && state.resource.isFreqOn()) {
@@ -91,8 +87,8 @@ public class StringPropertyFactory {
 			return song != null ? song.getTitle() : "";
 		}),
         subtitle(11, (state) -> {
-			if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof ContextMenuBar.FunctionBar) {
-				return ((ContextMenuBar.FunctionBar) selector.getSelectedBar()).getSubtitle();
+			if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof FunctionBar) {
+				return ((FunctionBar) selector.getSelectedBar()).getSubtitle();
 			}
             final SongData song = state.resource.getSongdata();
 			return song != null ? song.getSubtitle() : "";

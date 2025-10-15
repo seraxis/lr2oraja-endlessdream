@@ -149,8 +149,8 @@ public class ContextMenuBar extends DirectoryBar {
                 selector.main.getSongDatabase().setSongDatas(new SongData[] {song});
                 selector.play(OPTION_CHANGE);
                 boolean isFav = 0 != (song.getFavorite() & SongData.FAVORITE_CHART);
-                self.displayBarType = isFav ? STYLE_COURSE : STYLE_MISSING;
-                self.displayTextType = isFav ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING;
+                self.setDisplayBarType(isFav ? STYLE_COURSE : STYLE_MISSING);
+                self.setDisplayTextType(isFav ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING);
             },
             "Favorite Chart", isFavChart ? STYLE_COURSE : STYLE_MISSING,
             isFavChart ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING);
@@ -165,8 +165,8 @@ public class ContextMenuBar extends DirectoryBar {
                 selector.main.getSongDatabase().setSongDatas(new SongData[] {song});
                 selector.play(OPTION_CHANGE);
                 boolean isFav = 0 != (song.getFavorite() & SongData.FAVORITE_SONG);
-                self.displayBarType = isFav ? STYLE_COURSE : STYLE_MISSING;
-                self.displayTextType = isFav ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING;
+                self.setDisplayBarType(isFav ? STYLE_COURSE : STYLE_MISSING);
+                self.setDisplayTextType(isFav ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING);
             },
             "Favorite Song", isFavSong ? STYLE_COURSE : STYLE_MISSING,
             isFavSong ? STYLE_TEXT_PLAIN : STYLE_TEXT_MISSING);
@@ -229,42 +229,42 @@ public class ContextMenuBar extends DirectoryBar {
             var title = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getTitle());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied song title to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy Title", STYLE_SEARCH, STYLE_TEXT_NEW);
             var md5 = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getMd5());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied MD5 to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy MD5", STYLE_SEARCH, STYLE_TEXT_NEW);
             var sha256 = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getSha256());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied SHA256 to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy SHA256", STYLE_SEARCH, STYLE_TEXT_NEW);
             var path = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getPath());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied song path to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy Path", STYLE_SEARCH, STYLE_TEXT_NEW);
             var urltext = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getUrl());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied URL to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy URL", STYLE_SEARCH, STYLE_TEXT_NEW);
             var appendUrltext = new FunctionBar((selector, self) -> {
                 Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
                 clipboard.setContents(song.getAppendurl());
-                self.displayTextType = STYLE_TEXT_PLAIN;
+                self.setDisplayTextType(STYLE_TEXT_PLAIN);
                 ImGuiNotify.info("Copied append URL to clipboard.");
                 selector.play(OPTION_CHANGE);
             }, "Copy Append URL", STYLE_SEARCH, STYLE_TEXT_NEW);
@@ -361,7 +361,7 @@ public class ContextMenuBar extends DirectoryBar {
         var name = new FunctionBar((selector, self) -> {
             Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
             clipboard.setContents(table.getTableData().getName());
-            self.displayTextType = STYLE_TEXT_PLAIN;
+            self.setDisplayTextType(STYLE_TEXT_PLAIN);
             ImGuiNotify.info("Copied table name to clipboard.");
             selector.play(OPTION_CHANGE);
         }, "Copy Table Name", STYLE_SEARCH, STYLE_TEXT_NEW);
@@ -370,53 +370,13 @@ public class ContextMenuBar extends DirectoryBar {
         var copyUrl = new FunctionBar((selector, self) -> {
             Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
             clipboard.setContents(table.getTableData().getUrl());
-            self.displayTextType = STYLE_TEXT_PLAIN;
+            self.setDisplayTextType(STYLE_TEXT_PLAIN);
             ImGuiNotify.info("Copied table URL to clipboard.");
             selector.play(OPTION_CHANGE);
         }, "Copy URL", STYLE_SEARCH, STYLE_TEXT_NEW);
         if (table.getTableData().getUrl() != null) options.add(copyUrl);
 
         return options.toArray(new Bar[0]);
-    }
-
-    public class FunctionBar extends SelectableBar {
-        private BiConsumer<MusicSelector, FunctionBar> function;
-        private String title;
-        private String subtitle;
-        private int displayBarType;
-        private int displayTextType;
-        private SongData song = null;
-        private Integer level = null;
-        private int[] lamps = new int[0];
-
-        public FunctionBar(BiConsumer<MusicSelector, FunctionBar> f, String title,
-                           int displayBarType) {
-            this(f, title, displayBarType, 0);
-        }
-
-        public FunctionBar(BiConsumer<MusicSelector, FunctionBar> f, String title,
-                           int displayBarType, int displayTextType) {
-            this.title = title;
-            this.function = f;
-            this.displayBarType = displayBarType;
-            this.displayTextType = displayTextType;
-        }
-
-        private void setFunction(BiConsumer<MusicSelector, FunctionBar> f) { this.function = f; }
-        private void setSongData(SongData song) { this.song = song; }
-        private void setSubtitle(String subtitle) { this.subtitle = subtitle; }
-        private void setLevel(int level) { this.level = level; }
-        private void setLamps(int[] lamps) { this.lamps = lamps; }
-
-        public void accept(MusicSelector selector) { this.function.accept(selector, this); }
-        public String getTitle() { return title; }
-        public String getSubtitle() { return subtitle; }
-        public Integer getLevel() { return level; }
-        public int getLamp(boolean dontCare) { return 0; }
-        public int[] getLamps() { return lamps; }
-
-        public int getDisplayBarType() { return displayBarType; }
-        public int getDisplayTextType() { return displayTextType; }
     }
 
     // bar appearance IDs
