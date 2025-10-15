@@ -93,7 +93,7 @@ public class CourseResult extends AbstractResult {
 			final int lnmode = uln ? config.getLnmode() : 0;
 			
         	for(IRStatus irc : ir) {
-    			boolean send = resource.isUpdateCourseScore() && resource.getCourseData().isRelease();
+    			boolean send = resource.isUpdateCourseScore() && !resource.isForceNoIRSend() && resource.getCourseData().isRelease();
     			switch(irc.config.getIrsend()) {
     			case IRConfig.IR_SEND_ALWAYS:
     				break;

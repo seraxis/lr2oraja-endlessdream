@@ -191,6 +191,12 @@ public class BMSPlayer extends MainState {
 		}
 
 		boolean score = true;
+		boolean forceNoIRSend = false;
+
+		// Don't send score on osu maps to IR services
+		if (model.isFromOSU()) {
+			forceNoIRSend = true;
+		}
 
 		// RANDOM構文処理
 		if (model.getRandom() != null && model.getRandom().length > 0) {
@@ -227,6 +233,9 @@ public class BMSPlayer extends MainState {
 			if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 				main.getAudioProcessor().setGlobalPitch(freq / 100f);
 			}
+
+			// Whenever using freq mode, score is forced to not send to IR service
+			forceNoIRSend = true;
 
 			// "Persist" some states in resource
 			resource.setFreqOn(true);
@@ -420,10 +429,11 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
-		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score);
+		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
 		resource.setUpdateCourseScore(resource.isUpdateCourseScore() && score);
+		resource.setForceNoIRSend(forceNoIRSend);
 		final int difficulty = resource.getSongdata() != null ? resource.getSongdata().getDifficulty() : 0;
 		resource.getSongdata().setBMSModel(model);
 		resource.getSongdata().setDifficulty(difficulty);
