@@ -10,6 +10,8 @@ import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.song.SongData;
 import javafx.util.Pair;
 
+import static bms.player.beatoraja.select.bar.FunctionBar.*;
+
 public class LeaderBoardBar extends DirectoryBar {
 	private final SongData songData;
 	private final String title;
@@ -113,8 +115,11 @@ public class LeaderBoardBar extends DirectoryBar {
 	 * @return a function bar, see below comments
 	 */
 	private FunctionBar createFunctionBar(int rank, IRScoreData scoreData, boolean isSelfScore) {
-		return new FunctionBar((selector, self) -> {
+		FunctionBar irScoreBar = new FunctionBar((selector, self) -> {
 			// TODO: Hijack/Inherit random seed, like LR2IR gbattle
-		}, String.format("%d. %s", rank, scoreData.player), isSelfScore ? 3 : 2);
-	}
+		}, String.format("%d. %s", rank, scoreData.player), isSelfScore ? STYLE_COURSE : STYLE_TABLE);
+        irScoreBar.setScore(scoreData.convertToScoreData());
+        irScoreBar.setLamp(scoreData.clear.id);
+        return irScoreBar;
+    }
 }

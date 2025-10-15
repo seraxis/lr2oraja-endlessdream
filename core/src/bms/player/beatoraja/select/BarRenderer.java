@@ -167,8 +167,6 @@ public final class BarRenderer {
 					var fn = ((FunctionBar) sd);
 					ba.value = fn.getDisplayBarType();
 					ba.text = fn.getDisplayTextType();
-				} else if (sd instanceof IRPlayerBar) {
-					ba.value = ((IRPlayerBar) sd).isLocalScore() ? 3 : 2;
                 } else {
 					ba.value = -1;
 				}
