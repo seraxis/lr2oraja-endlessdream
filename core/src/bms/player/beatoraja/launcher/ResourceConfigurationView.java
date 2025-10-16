@@ -28,9 +28,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
+import javafx.util.Pair;
 
 public class ResourceConfigurationView implements Initializable {
 
@@ -56,11 +54,17 @@ public class ResourceConfigurationView implements Initializable {
 	void init(PlayConfigurationView main) {
 		this.main = main;
 
-        TableColumn<TableInfo,String> nameColumn = new TableColumn<TableInfo,String>("STATUS/NAME");
+        TableColumn<TableInfo,String> nameColumn = new TableColumn<TableInfo,String>("NAME/STATUS");
         nameColumn.setCellValueFactory((p) -> p.getValue().nameStatusProperty());
         nameColumn.setSortable(false);
         nameColumn.setMinWidth(180);
         nameColumn.setMinWidth(0);
+
+		TableColumn<TableInfo,String> commentColumn = new TableColumn<TableInfo,String>("COMMENT");
+		commentColumn.setCellValueFactory((p) -> p.getValue().commentProperty());
+		commentColumn.setSortable(false);
+		commentColumn.setMinWidth(180);
+		commentColumn.setMinWidth(0);
 
 		TableColumn<TableInfo,String> urlColumn = new TableColumn<TableInfo,String>("URL");
 		urlColumn.setCellValueFactory((p) -> p.getValue().urlProperty());
@@ -68,7 +72,7 @@ public class ResourceConfigurationView implements Initializable {
 		urlColumn.setMinWidth(300);
 		urlColumn.setMinWidth(0);
 	  
- 		tableurl.getColumns().setAll(nameColumn, urlColumn);
+ 		tableurl.getColumns().setAll(nameColumn, commentColumn, urlColumn);
  		tableurl.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 	}
 
@@ -435,8 +439,69 @@ public class ResourceConfigurationView implements Initializable {
 	}
 
  	private static class TableInfo {
-        public Map<String, String> tableNames = Map.ofEntries(
-                Map.entry("", "")
+        public Map<String, Pair<String, String>> tableNameComment = Map.ofEntries(
+				// Java string literals are UTF-16 by default, my apologies for escape code spaghetti
+				//
+				// An entry is defined by (TableURL --- > [ TableName, TableDescription ])
+				// sl,st,stardust,starlight
+                Map.entry("https://mqppppp.neocities.org/StardustTable.html", new Pair<String, String>("Stardust", "Beginner \u26061-\u26067")),
+				Map.entry("https://djkuroakari.github.io/starlighttable.html", new Pair<String, String>("Stardust", "Intermediate \u26067-\u260612")),
+				Map.entry("https://stellabms.xyz/sl/table.html", new Pair<String, String>("Satellite", "Insane \u260611-\u260519")),
+				Map.entry("https://stellabms.xyz/st/table.html", new Pair<String, String>("Stella", "High Insane to Overjoy \u260519-\u2605\u26057")),
+				// the insanes
+				Map.entry("https://darksabun.club/table/archive/normal1/", new Pair<String, String>("\u901a\u5e38\u96e3\u6613\u5ea6\u8868 (Normal 1)", "Beginner to Intermediate \u26061-\u260612")),
+				Map.entry("https://darksabun.club/table/archive/insane1/", new Pair<String, String>("\u767a\u72c2BMS\u96e3\u6613\u5ea6\u8868 (Insane 1)", "Insane \u26051-\u260525")),
+				Map.entry("http://rattoto10.jounin.jp/table.html", new Pair<String, String>("NEW GENERATION \u901a\u5e38 (Normal 2)", "Post 2016 Normal Table \u26061-\u260612")),
+				Map.entry("http://rattoto10.jounin.jp/table_insane.html", new Pair<String, String>("NEW GENERATION \u767a\u72c2 (Insane 2)", "Post 2016 Insane Table \u26051-\u260525")),
+				// overjoy
+				Map.entry("https://rattoto10.jounin.jp/table_overjoy.html", new Pair<String, String>("NEW GENERATION overjoy", "New overjoy. \u2605\u26050-\u2605\u26057")),
+				// stream + chordjack
+				Map.entry("https://lets-go-time-hell.github.io/code-stream-table/", new Pair<String, String>("16分乱 (16th streams)", "Chordstream focus. Satellite difficulty")),
+				Map.entry("https://lets-go-time-hell.github.io/Arm-Shougakkou-table/", new Pair<String, String>("ウーデオシ小学校 (Ude table)", "Chordjack/wide chords focus. Satellite difficulty")),
+				Map.entry("https://su565fx.web.fc2.com/Gachimijoy/gachimijoy.html", new Pair<String, String>("gachimijoy", "Hard chordjack. \u2605\u26050-\u2605\u26057")),
+				// stellaverse quirked up
+				Map.entry("https://stellabms.xyz/so/table.html", new Pair<String, String>("Solar", "Gimmick chart focus. Satellite difficulty")),
+				Map.entry("https://stellabms.xyz/sn/table.html", new Pair<String, String>("Supernova", "Gimmick chart focus. Stella difficulty")),
+				// osu
+				Map.entry("https://air-afother.github.io/osu-table/", new Pair<String, String>("osu!", "Table for osu! star rating")),
+				// AI
+				Map.entry("https://bms.hexlataia.xyz/tables/ai.html", new Pair<String, String>("Hex's AI", "Algorithmically assigned difficulty. Insane and LN range")),
+				// Library
+				Map.entry("https://bms.hexlataia.xyz/tables/db.html", new Pair<String, String>("発狂難易度データベース (Hex's DB)", "Manually assigned difficulty. Insane \u26050-\u260525+")),
+				Map.entry("https://bms.hexlataia.xyz/tables/olduploader.html", new Pair<String, String>("旧アプロダ表 (Hex's Old uploader)", "Manually assigned difficulty. Mostly Insane \u260610-\u260525+ with LN + Scratch ratings")),
+				Map.entry("https://stellabms.xyz/upload.html", new Pair<String, String>("Stella Uploader", "Stellaverse uploader. Insane \u26051-\u260525+")),
+				Map.entry("https://exturbow.github.io/github.io/index.html", new Pair<String, String>("BMS図書館 (Turbow's Toshokan)", "Rates BMS event submissions. Wide difficulty \u26061-\u260525+")),
+				//Map.entry("http://upl.konjiki.jp/", new Pair<String, String>("差分アップローダー (Black train uploader)", "Manually assigned difficulty. Insane \u26050-\u260525+")),
+				// beginner
+				Map.entry("http://fezikedifficulty.futene.net/list.html", new Pair<String, String>("池田的 (Ikeda's Beginner)", "Beginner focused table. 19 levels \u26061-\u260611+")),
+				// LN
+				Map.entry("https://ladymade-star.github.io/luminous/table.html", new Pair<String, String>("Luminous", "Newer LN table. ◆1-◆26")),
+				Map.entry("https://vinylhouse.web.fc2.com/lntougou/difficulty.html", new Pair<String, String>("Longnote統合表", "◆1-◆27")),
+				Map.entry("http://flowermaster.web.fc2.com/lrnanido/gla/LN.html", new Pair<String, String>("LN難易度", "◆1-◆26")),
+				Map.entry("https://skar-wem.github.io/ln/", new Pair<String, String>("LN Curtain", "Full/inverse LN charts. ◆1-◆25")),
+				Map.entry("http://cerqant.web.fc2.com/zindy/table.html", new Pair<String, String>("zindy LN", "Difficult shield stair patterns. Hard LN ◆15-◆25")),
+				Map.entry("https://notepara.com/glassist/lnoj", new Pair<String, String>("LNoverjoy", "Hard LN table. ◆15-◆25")),
+				// Scratch
+				Map.entry("https://egret9.github.io/Scramble/", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("http://minddnim.web.fc2.com/sara/3rd_hard/bms_sara_3rd_hard.html", new Pair<String, String>("皿難易度表(3rd) (Sara 3rd)", "Scratch table")),
+				// delay
+				Map.entry("https://lets-go-time-hell.github.io/Delay-joy-table/", new Pair<String, String>("ディレイjoy (delayjoy)", "Delay focus. Wide difficulty with heavy stella bias")),
+				Map.entry("https://kamikaze12345.github.io/github.io/delaytrainingtable/table.html", new Pair<String, String>("DELAY Training Table", "Very wide comprehensive delay table. \u26051-\u2605\u26057")),
+				Map.entry("https://wrench616.github.io/Delay/", new Pair<String, String>("Delay小学校", "Intermediate delay table. \u26051-\u260524")),
+				// High Diff
+				Map.entry("https://darksabun.club/table/archive/old-overjoy/", new Pair<String, String>("Overjoy (旧) (Old overjoy)", "Newer scratch table")),
+				Map.entry("https://monibms.github.io/Dystopia/dystopia.html", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("https://www.firiex.com/tables/joverjoy", new Pair<String, String>("Scramble", "Newer scratch table")),
+				// Hard Judge
+				Map.entry("https://plyfrm.github.io/table/timing/", new Pair<String, String>("Timing Table (VHard Table)", "Newer scratch table")),
+				// Artst search
+				Map.entry("https://plyfrm.github.io/table/bmssearch/index.html", new Pair<String, String>("BMSSearch Artists", "Newer scratch table")),
+				// DP
+				Map.entry("https://stellabms.xyz/dp/table.html", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("https://stellabms.xyz/dpst/table.html", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("https://deltabms.yaruki0.net/table/data/dpdelta_head.json", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("https://deltabms.yaruki0.net/table/data/insane_head.json", new Pair<String, String>("Scramble", "Newer scratch table")),
+				Map.entry("http://ereter.net/dpoverjoy/", new Pair<String, String>("Scramble", "Newer scratch table"))
         );
 
 		public StringProperty url;
@@ -454,9 +519,24 @@ public class ResourceConfigurationView implements Initializable {
 			return nameStatus; 
 		}
 
+		public StringProperty comment;
+		public void setComment(String value) { commentProperty().set(value); }
+		public String commentStatus() { return commentProperty().get(); }
+		public StringProperty commentProperty() {
+			if (comment == null) comment = new SimpleStringProperty(this, "comment");
+			return comment;
+		}
+
 		public TableInfo(String url) {
 			setUrl(url);
-			setNameStatus("");
+			Pair<String, String> nameComment = tableNameComment.get(url);
+			if (nameComment == null) {
+				setNameStatus("");
+				setComment("");
+			} else {
+				setNameStatus(nameComment.getKey());
+				setComment(nameComment.getValue());
+			}
 		}
 
 		public static String[] toUrlArray(List<TableInfo> list) {

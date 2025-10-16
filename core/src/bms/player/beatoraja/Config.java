@@ -184,25 +184,118 @@ public class Config implements Validatable {
 	 */
 	private String[] webhookUrl = new String[0];
 
+	/**
+	 * Bank of available tables
+	 *
+	 * A users tableurl list is subtracted from this list to avoid unintentional duplicate table entries
+	 */
     private static final String[] AVAILABLE_TABLEURL = {
-            
-    };
+			//
+			// Default list
+			//
+			// stardust, starlight, satellite, stella
+			"https://mqppppp.neocities.org/StardustTable.html",
+			"https://djkuroakari.github.io/starlighttable.html",
+			"https://stellabms.xyz/sl/table.html",
+			"https://stellabms.xyz/st/table.html",
+			// normal 1/2 insane 1/2
+			"https://darksabun.club/table/archive/normal1/",
+			"https://darksabun.club/table/archive/insane1/",
+			"http://rattoto10.jounin.jp/table.html",
+			"http://rattoto10.jounin.jp/table_insane.html",
+			// overjoy
+			"https://rattoto10.jounin.jp/table_overjoy.html",
+			//
+			// Optional list
+			//
+			// stream + chordjack
+			"https://lets-go-time-hell.github.io/code-stream-table/",
+			"https://lets-go-time-hell.github.io/Arm-Shougakkou-table/",
+			"https://su565fx.web.fc2.com/Gachimijoy/gachimijoy.html",
+			// stellaverse quirked up
+			"https://stellabms.xyz/so/table.html",
+			"https://stellabms.xyz/sn/table.html",
+			// osu
+			"https://air-afother.github.io/osu-table/",
+			// AI
+			"https://bms.hexlataia.xyz/tables/ai.html",
+			// Library
+			"https://bms.hexlataia.xyz/tables/db.html",
+			"https://stellabms.xyz/upload.html",
+			"https://exturbow.github.io/github.io/index.html",
+			"https://bms.hexlataia.xyz/tables/olduploader.html",
+			"http://upl.konjiki.jp/",
+			// beginner
+			"http://fezikedifficulty.futene.net/list.html",
+			// LN
+			"https://ladymade-star.github.io/luminous/table.html",
+			"https://vinylhouse.web.fc2.com/lntougou/difficulty.html",
+			"http://flowermaster.web.fc2.com/lrnanido/gla/LN.html",
+			"https://skar-wem.github.io/ln/",
+			"http://cerqant.web.fc2.com/zindy/table.html",
+			"https://notepara.com/glassist/lnoj",
+			// Scratch
+			"https://egret9.github.io/Scramble/",
+			"http://minddnim.web.fc2.com/sara/3rd_hard/bms_sara_3rd_hard.html",
+			// delay
+			"https://lets-go-time-hell.github.io/Delay-joy-table/",
+			"https://kamikaze12345.github.io/github.io/delaytrainingtable/table.html",
+			"https://wrench616.github.io/Delay/",
+			// high difficulty
+			"https://darksabun.club/table/archive/old-overjoy/",
+			"https://monibms.github.io/Dystopia/dystopia.html",
+			"https://www.firiex.com/tables/joverjoy",
+			// hard judge
+			"https://plyfrm.github.io/table/timing/",
+			// artist search
+			"https://plyfrm.github.io/table/bmssearch/index.html",
+			// DP
+			"https://stellabms.xyz/dp/table.html",
+			"https://stellabms.xyz/dpst/table.html",
+			"https://deltabms.yaruki0.net/table/data/dpdelta_head.json",
+			"https://deltabms.yaruki0.net/table/data/insane_head.json",
+			"http://ereter.net/dpoverjoy/",
+			// Does anyone play these
+			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
+			"https://excln.github.io/table24k/table.html",
 
-	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
-			"http://bmsnormal2.syuriken.jp/table_insane.html",
+			// Stella Extensions
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-fullcombo.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-fullcombo.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-fullcombo.html",
+			// Walkure
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=easy",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=normal",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=hard",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=fc",
-			"https://stellabms.xyz/sl/table.html",
-			"https://stellabms.xyz/st/table.html",
+			// mocha
 			"https://mocha-repository.info/table/dpn_header.json",
 			"https://mocha-repository.info/table/dpi_header.json",
-			"https://stellabms.xyz/dp/table.html",
-			"https://stellabms.xyz/dpst/table.html",
 			"https://mocha-repository.info/table/ln_header.json",
-			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
-			"https://excln.github.io/table24k/table.html",
+    };
+
+	private static final String[] DEFAULT_TABLEURL = {
+			// stardust, starlight, satellite, stella
+			"https://mqppppp.neocities.org/StardustTable.html",
+			"https://djkuroakari.github.io/starlighttable.html",
+			"https://stellabms.xyz/sl/table.html",
+			"https://stellabms.xyz/st/table.html",
+			// normal 1/2 insane 1/2
+			"https://darksabun.club/table/archive/normal1/",
+			"https://darksabun.club/table/archive/insane1/",
+			"http://rattoto10.jounin.jp/table.html",
+			"http://rattoto10.jounin.jp/table_insane.html",
+			// overjoy
+			"http://lr2.sakura.ne.jp/overjoy.php"
 	};
 
 	public Config() {
