@@ -29,9 +29,13 @@ public class SelectedBMSMessage {
         this.itemModeEnabled = itemModeEnabled;
     }
 
-    public SelectedBMSMessage(BMSModel model) {
-        this(0, model.getMD5(), model.getTitle(), model.getArtist(), 0, 0, false);
-        // TODO: random seed, option, gauge, items are not supported
+    public SelectedBMSMessage(BMSModel model, long randomSeed, int option) {
+        // TODO: random seed, items are not supported. Although we passed the random seed here, it's not a LR2 seed but
+        // a raja seed, it needs to be transformed
+        // NOTE: Gauge isn't synced everytime, considering 99% raja users are using auto-shift, there's no reason
+        // to sync an initial gauge value. Also LR2 has a different gauge system definition, it's tedious to handle
+        // the assist clear & ex-hard etc
+        this((int) randomSeed, model.getMD5(), model.getTitle(), model.getArtist(), option, 0, false);
     }
 
     public SelectedBMSMessage(Value value) {

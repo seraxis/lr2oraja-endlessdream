@@ -617,7 +617,7 @@ public class BMSPlayer extends MainState {
 			case STATE_WAIT -> {
 				if (!firedWaitingReady) {
 					firedWaitingReady = true;
-					Client.send(ClientToServer.CTS_SELECTED_BMS, new SelectedBMSMessage(model).pack());
+					Client.send(ClientToServer.CTS_SELECTED_BMS, new SelectedBMSMessage(model, playinfo.randomoptionseed, playinfo.randomoption).pack());
 					Client.send(ClientToServer.CTS_LOADING_COMPLETE, "".getBytes());
 					Client.acceptNextAllReady((allReady) -> this.allReady = allReady);
 				}

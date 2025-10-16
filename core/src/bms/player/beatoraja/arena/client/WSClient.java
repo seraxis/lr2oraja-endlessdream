@@ -34,7 +34,6 @@ public class WSClient extends WebSocketClient {
     public void onOpen(ServerHandshake serverHandshake) {
         Client.connected.set(true);
         send(ClientToServer.CTS_USERNAME, Client.userName.get().getBytes());
-        // TODO: setup pacemaker here
         ImGuiNotify.info(String.format("Successfully connected to %s", Client.host));
     }
 
@@ -77,7 +76,6 @@ public class WSClient extends WebSocketClient {
         ServerToClient ev = ServerToClient.from(id);
         byte[] data = new byte[bytes.remaining()];
         bytes.get(data, 0, data.length);
-        Logger.getGlobal().info("Received: " + new String(data));
         Value value;
         try (MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(data)) {
             value = unpacker.unpackValue();
