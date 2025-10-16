@@ -75,7 +75,7 @@
 			</HBox>
 			<HBox VBox.vgrow="ALWAYS">
 				<EditableTableView fx:id="tableurl" prefHeight="167.0"
-					prefWidth="500.0" HBox.hgrow="ALWAYS">
+					prefWidth="200.0" HBox.hgrow="ALWAYS">
 					<HBox.margin>
 						<Insets top="5.0" />
 					</HBox.margin>
@@ -100,6 +100,12 @@
 						</VBox.margin>
 					</Button>
 				</VBox>
+                <EditableTableView fx:id="available_tables" prefHeight="167.0"
+                                   prefWidth="200.0" HBox.hgrow="ALWAYS">
+                    <HBox.margin>
+                        <Insets top="5.0" />
+                    </HBox.margin>
+                </EditableTableView>
 			</HBox>
 			<HBox>
 			    <Button mnemonicParsing="false" onAction="#refreshLocalTableInfo" prefHeight="25.0" prefWidth="190.0" text="%TABLES_CHECK_STATUS">
