@@ -12,6 +12,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.arena.client.Client;
+import bms.player.beatoraja.arena.enums.ClientToServer;
+import bms.player.beatoraja.arena.network.SelectedBMSMessage;
 import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
 import bms.player.beatoraja.modmenu.ImGuiNotify;

@@ -2,7 +2,7 @@ package bms.player.beatoraja.select;
 
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.SpriteBatchHelper;
-import bms.player.beatoraja.input.KeyBoardInputProcessor.ControlKeys;
+import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.SearchWordBar;
 
 import java.util.logging.Logger;

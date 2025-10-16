@@ -6,7 +6,7 @@ import com.badlogic.gdx.Gdx;
 
 public class MouseScratchInput {
     private final BMSPlayerInputProcessor bmsPlayerInputProcessor;
-    private final KeyBoardInputProcessor keyboardInputProcessor;
+    private final KeyBoardInputProcesseor keyboardInputProcessor;
     
     private int[] keys;
     private int[] control;
@@ -44,7 +44,7 @@ public class MouseScratchInput {
      */
     private int mouseScratchDistance = 150;
 
-    public MouseScratchInput(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyBoardInputProcessor keyboardInputProcessor, KeyboardConfig config) {
+    public MouseScratchInput(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyBoardInputProcesseor keyboardInputProcessor, KeyboardConfig config) {
         this.bmsPlayerInputProcessor = bmsPlayerInputProcessor;
         this.keyboardInputProcessor = keyboardInputProcessor;
         this.setConfig(config);

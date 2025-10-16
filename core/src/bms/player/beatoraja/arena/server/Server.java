@@ -125,7 +125,10 @@ public class Server extends WebSocketServer {
             }
             case CTS_PLAYER_SCORE -> {
                 Score score = new Score(value);
-                state.getPeer(clientAddress).ifPresent(peer -> peer.setScore(score));
+                state.getPeer(clientAddress).ifPresent(peer -> {
+                    peer.setScore(score);
+                    broadcast(ServerToClient.STC_PLAYERS_SCORE, new ScoreMessage(score, clientAddress).pack());
+                });
             }
             case CTS_CHART_CANCELLED -> {
                 state.getPeer(clientAddress).ifPresent(peer -> {
