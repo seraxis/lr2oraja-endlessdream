@@ -32,11 +32,17 @@ public class BitmapFontBatchLoader {
 		this.useMipMaps = useMipMaps;
 
         for (JsonSkin.Font font : skin.font) {
-            Path path = skinPath.getParent().resolve(font.path);
-			boolean validPath = path.toString().toLowerCase().endsWith(".fnt");
-            boolean alreadyCached = BitmapFontCache.Has(path);
-            if (!validPath || alreadyCached) continue;
-            fontPaths.put(path, font.type);
+            try {
+                Path path = skinPath.getParent().resolve(font.path);
+                boolean validPath = path.toString().toLowerCase().endsWith(".fnt");
+                boolean alreadyCached = BitmapFontCache.Has(path);
+                if (!validPath || alreadyCached) continue;
+                fontPaths.put(path, font.type);
+            }
+            catch (IllegalArgumentException e) {
+                Logger.getGlobal().warning("Skin attempted to load a font with an invalid path: " +
+                                           e.getMessage());
+            }
         }
     }
 
