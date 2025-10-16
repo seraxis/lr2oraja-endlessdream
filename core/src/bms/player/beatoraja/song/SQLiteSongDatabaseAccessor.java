@@ -143,7 +143,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	public SongData[] getSongDatas(String key, String value) {
 		try {
 			final List<SongData> m = qr.query("SELECT * FROM song WHERE " + key + " = ?", songhandler, value);
-			return Validatable.removeInvalidElements(m).toArray(new SongData[m.size()]);
+			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
@@ -192,7 +192,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			    return bIndex - aIndex;
             }).collect(Collectors.toList());
 
-			SongData[] validated = Validatable.removeInvalidElements(sorted).toArray(new SongData[m.size()]);
+			SongData[] validated = Validatable.removeInvalidElements(sorted).toArray(new SongData[0]);
 			return validated;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -227,7 +227,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			}
 			stmt.execute("DETACH DATABASE scorelogdb");				
 			stmt.execute("DETACH DATABASE scoredb");
-			return Validatable.removeInvalidElements(m).toArray(new SongData[m.size()]);
+			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch(Throwable e) {
 			e.printStackTrace();			
 		}
@@ -241,7 +241,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			List<SongData> m = qr.query(
 					"SELECT * FROM song WHERE rtrim(title||' '||subtitle||' '||artist||' '||subartist||' '||genre) LIKE ?"
 							+ " GROUP BY sha256",songhandler, "%" + text + "%");
-			return Validatable.removeInvalidElements(m).toArray(new SongData[m.size()]);
+			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
 			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
 		}
