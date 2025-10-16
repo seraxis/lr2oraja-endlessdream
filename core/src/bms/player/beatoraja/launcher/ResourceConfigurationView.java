@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.List;
 
@@ -39,6 +40,8 @@ public class ResourceConfigurationView implements Initializable {
 	private TextField url;
 	@FXML
 	private EditableTableView<TableInfo> tableurl;
+    @FXML
+    private EditableTableView<TableInfo> available_tables;
 	@FXML
 	private CheckBox updatesong;
 
@@ -53,19 +56,19 @@ public class ResourceConfigurationView implements Initializable {
 	void init(PlayConfigurationView main) {
 		this.main = main;
 
+        TableColumn<TableInfo,String> nameColumn = new TableColumn<TableInfo,String>("STATUS/NAME");
+        nameColumn.setCellValueFactory((p) -> p.getValue().nameStatusProperty());
+        nameColumn.setSortable(false);
+        nameColumn.setMinWidth(180);
+        nameColumn.setMinWidth(0);
+
 		TableColumn<TableInfo,String> urlColumn = new TableColumn<TableInfo,String>("URL");
 		urlColumn.setCellValueFactory((p) -> p.getValue().urlProperty());
 		urlColumn.setSortable(false);
-		urlColumn.setMinWidth(560);
+		urlColumn.setMinWidth(300);
 		urlColumn.setMinWidth(0);
-
-		TableColumn<TableInfo,String> nameColumn = new TableColumn<TableInfo,String>("STATUS/NAME");
-		nameColumn.setCellValueFactory((p) -> p.getValue().nameStatusProperty());
-		nameColumn.setSortable(false);
-		nameColumn.setMinWidth(200);
-		nameColumn.setMinWidth(0);
 	  
- 		tableurl.getColumns().setAll(urlColumn, nameColumn);
+ 		tableurl.getColumns().setAll(nameColumn, urlColumn);
  		tableurl.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 	}
 
@@ -432,6 +435,10 @@ public class ResourceConfigurationView implements Initializable {
 	}
 
  	private static class TableInfo {
+        public Map<String, String> tableNames = Map.ofEntries(
+                Map.entry("", "")
+        );
+
 		public StringProperty url;
 		public void setUrl(String value) { urlProperty().set(value); }
 		public String getUrl() { return urlProperty().get(); }

@@ -184,6 +184,9 @@ public class Config implements Validatable {
 	 */
 	private String[] webhookUrl = new String[0];
 
+    private static final String[] AVAILABLE_TABLEURL = {
+            
+    };
 
 	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
 			"http://bmsnormal2.syuriken.jp/table_insane.html",
