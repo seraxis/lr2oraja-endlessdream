@@ -115,12 +115,10 @@ public class WSClient extends WebSocketClient {
                 //		gui::main_window::AddToLog("[#] Item mode enabled!");
                 //	}
 
-                // TODO: Setup same random seed here
-                //	if (!(state.host == state.remoteId)) { // If not host (!= is not overloaded!!!)
-                //		std::cout << "[+] Received random" << std::endl;
-                //		hooks::random::received_random = true;
-                //		hooks::random::current_seed = selectedBms.randomSeed;
-                //	}
+                if (!Client.state.getHost().equals(Client.state.getRemoteId())) {
+                    Logger.getGlobal().severe("[+] Received random: " + selectedBMSMessage.getRandomSeed());
+                    Client.state.setRandomSeed(selectedBMSMessage.getRandomSeed());
+                }
                 SongDatabaseAccessor songDataAccessor = MainLoader.getScoreDatabaseAccessor();
                 String[] queryHash = new String[1];
                 queryHash[0] = md5;

@@ -7,6 +7,7 @@ import bms.player.beatoraja.song.SongData;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientState {
     private Address remoteId;
@@ -18,6 +19,8 @@ public class ClientState {
     private SongData currentSongData;
     // For auto-select once
     private Boolean autoSelectFlag = false;
+    // Random seed
+    private final AtomicInteger randomSeed = new AtomicInteger();
 
     public Map<Address, Peer> getPeers() {
         return peers;
@@ -65,6 +68,14 @@ public class ClientState {
 
     public void setAutoSelectFlag(Boolean autoSelectFlag) {
         this.autoSelectFlag = autoSelectFlag;
+    }
+
+    public int getRandomSeed() {
+        return randomSeed.get();
+    }
+
+    public void setRandomSeed(int randomSeed) {
+        this.randomSeed.set(randomSeed);
     }
 
     public Optional<Integer> getMaxScore() {
