@@ -305,8 +305,8 @@ public final class MusicSelector extends MainState {
 				}
 			}
             play = null;
-            if (current instanceof ContextMenuBar.FunctionBar) {
-                ((ContextMenuBar.FunctionBar)current).accept(this);
+            if (current instanceof FunctionBar) {
+                ((FunctionBar)current).accept(this);
             }
         }
 	}

@@ -1,6 +1,7 @@
 .DS_*
 .java-version
 /assets/build/*
+/assets/http_download/
 /assets/player/*
 /assets/skin/*
 !/assets/skin/default/

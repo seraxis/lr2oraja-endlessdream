@@ -297,7 +297,7 @@ public final class MusicSelectInputProcessor {
             bar.input();
             select.setPanelState(0);
 
-            if (current instanceof ContextMenuBar.FunctionBar &&
+            if (current instanceof FunctionBar &&
                 (property.isPressed(input, PRACTICE, true) ||
                  property.isPressed(input, AUTO, true) ||
                  property.isPressed(input, REPLAY, true))) {
@@ -323,7 +323,7 @@ public final class MusicSelectInputProcessor {
                     select.selectSong(config.isEventMode() ? BMSPlayerMode.PLAY : ((select.getSelectedReplay() >= 0) ? BMSPlayerMode.getReplayMode(select.getSelectedReplay()) : BMSPlayerMode.PLAY));
                 }
                 else if (property.isPressed(input, NEXT_REPLAY, true)) {
-                    if (current instanceof ContextMenuBar.FunctionBar) {
+                    if (current instanceof FunctionBar) {
                         input.resetKeyChangedTime(1);
                         select.getBarManager().close();
 					}

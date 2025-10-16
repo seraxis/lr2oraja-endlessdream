@@ -131,6 +131,7 @@ public final class PlayerResource {
 	private String tablefull;
 	private boolean freqOn;
 	private String freqString;
+	private boolean forceNoIRSend;
 	// Full list of difficult tables that contains current song
 	private List<String> reverseLookup = new ArrayList<>();
 
@@ -214,6 +215,9 @@ public final class PlayerResource {
 		BMSModel model = decoder.decode(info);
 		if (model == null) {
 			return null;
+		}
+		if (decoder instanceof OSUDecoder) {
+			model.setFromOSU(true);
 		}
 
 		marginTime = BMSModelUtils.setStartNoteTime(model, 1000);
@@ -624,7 +628,15 @@ public final class PlayerResource {
 	public void setFreqString(String freqString) {
 		this.freqString = freqString;
 	}
-	
+
+	public boolean isForceNoIRSend() {
+		return forceNoIRSend;
+	}
+
+	public void setForceNoIRSend(boolean forceNoIRSend) {
+		this.forceNoIRSend = forceNoIRSend;
+	}
+
 	public Future<BMSLoudnessAnalyzer.AnalysisResult> getAnalysisTask() {
 		return analysisTask;
 	}

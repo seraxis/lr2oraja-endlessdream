@@ -149,7 +149,7 @@ public final class BarRenderer {
 				Bar sd = manager.currentsongs[index];
 				ba.sd = sd;
 
-				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar || sd instanceof IRPlayerBar) {
+				if (sd instanceof TableBar || sd instanceof HashBar || sd instanceof ExecutableBar) {
 					ba.value = 2;
 				} else if (sd instanceof GradeBar) {
 					ba.value = ((GradeBar) sd).existsAllSongs() ? 3 : 4;
@@ -163,9 +163,9 @@ public final class BarRenderer {
 					ba.value = 6;
 				} else if (sd instanceof CommandBar || sd instanceof ContainerBar) {
 					ba.value = 5;
-				} else if (sd instanceof ContextMenuBar.FunctionBar) {
-                    var fn = ((ContextMenuBar.FunctionBar)sd);
-                    ba.value = fn.getDisplayBarType();
+				} else if (sd instanceof FunctionBar) {
+					var fn = ((FunctionBar) sd);
+					ba.value = fn.getDisplayBarType();
 					ba.text = fn.getDisplayTextType();
                 } else {
 					ba.value = -1;
@@ -174,7 +174,7 @@ public final class BarRenderer {
 				ba.value = -1;
 			}
 
-			if(ba.value != -1 && !(ba.sd instanceof ContextMenuBar.FunctionBar)) {
+			if(ba.value != -1 && !(ba.sd instanceof FunctionBar)) {
 				// Barの種類によってテキストを変える
 				// SongBarかFolderBarの場合は新規かどうかでさらに変える
 				// songstatus最終値 =
@@ -292,10 +292,10 @@ public final class BarRenderer {
 					graph.draw(sprite, (DirectoryBar)ba.sd, ba.x, ba.y);
 				}
 			}
-			else if (ba.sd instanceof ContextMenuBar.FunctionBar) {
+			else if (ba.sd instanceof FunctionBar) {
 				final SkinDistributionGraph graph = baro.getGraph();
 				if (graph != null && graph.draw) {
-					graph.draw(sprite, (ContextMenuBar.FunctionBar)ba.sd, ba.x, ba.y);
+					graph.draw(sprite, (FunctionBar)ba.sd, ba.x, ba.y);
 				}
 			}
 		}
@@ -392,9 +392,9 @@ public final class BarRenderer {
 					leveln.draw(sprite, time, song.getLevel(), select, ba.x, ba.y);
 				}
 			}
-			else if (ba.sd instanceof ContextMenuBar.FunctionBar
-					 && ((ContextMenuBar.FunctionBar) ba.sd).getLevel() != null) {
-				final int level = ((ContextMenuBar.FunctionBar) ba.sd).getLevel();
+			else if (ba.sd instanceof FunctionBar
+					 && ((FunctionBar) ba.sd).getLevel() != null) {
+				final int level = ((FunctionBar) ba.sd).getLevel();
 				final SkinNumber leveln = baro.getBarlevel(0);
 				if (leveln != null) {
 					leveln.draw(sprite, time, level, select, ba.x, ba.y);
