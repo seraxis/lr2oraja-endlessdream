@@ -25,7 +25,7 @@ public class LR2RandomPattern {
 	 * Convert Raja seed to LR2 seed
 	 */
 	public static int fromRajaToLR2Seed(long randomSeed) {
-		return LR2RandomTable.GetSeed7K(getRajaLaneOrder(randomSeed, false));
+		return LR2RandomTable.getSeed7K(Integer.parseInt(getRajaLaneOrder(randomSeed, false)));
 	}
 
 	/**

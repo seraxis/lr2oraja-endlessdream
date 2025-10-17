@@ -1,7 +1,11 @@
 package bms.player.beatoraja.pattern;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.HashMap;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -10,18 +14,20 @@ import java.util.logging.Logger;
  * @see bms.player.beatoraja.modmenu.RandomTrainer
  */
 public class LR2RandomTable {
-	private static Properties prop = new Properties();
+	private static HashMap<Integer, Integer> randomSeedMap;
 
-	public static int GetSeed7K(String in) {
-		if (prop.isEmpty()) {
+	public static int getSeed7K(int in) {
+		if (randomSeedMap == null) {
+			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			try {
-				prop.load(LR2RandomTable.class.getClassLoader().getResourceAsStream("resources/lr2randomtable.properties"));
-			} catch (Exception e) {
+				ObjectInputStream ois = new ObjectInputStream(cl.getResourceAsStream("resources/lr2randomtable.dat"));
+				randomSeedMap = (HashMap<Integer, Integer>) ois.readObject();
+				ois.close();
+			} catch (IOException | ClassNotFoundException e) {
 				e.printStackTrace();
-				Logger.getGlobal().severe("Failed to load lr2 random table: " + e.getMessage());
+				Logger.getGlobal().severe("Failed to load lr2 random table data: " + e.getMessage());
 			}
 		}
-		String r = (String) prop.get(in);
-		return r == null ? 0xFFFF : Integer.parseInt(r);
+		return randomSeedMap.getOrDefault(in, 0xFFFF);
 	}
 }
