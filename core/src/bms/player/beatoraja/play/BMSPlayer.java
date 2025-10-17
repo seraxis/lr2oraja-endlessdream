@@ -379,7 +379,10 @@ public class BMSPlayer extends MainState {
 					if (RandomTrainer.isActive()) {
 						Logger.getGlobal().info("RandomTrainer: Disabled during arena session");
 					}
-					pm.setSeed(Client.state.getRandomSeed());
+					int lr2Seed = Client.state.getRandomSeed();
+					long rajaSeed = LR2RandomPattern.fromLR2SeedToRaja(lr2Seed);
+					Logger.getGlobal().info(String.format("Arena: Applying random seed from host, converting from %d to %d", lr2Seed, rajaSeed));
+					pm.setSeed(rajaSeed);
 				} else {
 					if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
 						HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();

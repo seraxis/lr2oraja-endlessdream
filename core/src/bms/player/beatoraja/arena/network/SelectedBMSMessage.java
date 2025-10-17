@@ -1,6 +1,7 @@
 package bms.player.beatoraja.arena.network;
 
 import bms.model.BMSModel;
+import bms.player.beatoraja.pattern.LR2RandomPattern;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.value.ArrayValue;
@@ -30,12 +31,12 @@ public class SelectedBMSMessage {
     }
 
     public SelectedBMSMessage(BMSModel model, long randomSeed, int option) {
-        // TODO: random seed, items are not supported. Although we passed the random seed here, it's not a LR2 seed but
-        // a raja seed, it needs to be transformed
+        // TODO: items are not supported.
+        // NOTE: We need to convert a Raja seed to LR2 seed
         // NOTE: Gauge isn't synced everytime, considering 99% raja users are using auto-shift, there's no reason
         // to sync an initial gauge value. Also LR2 has a different gauge system definition, it's tedious to handle
         // the assist clear & ex-hard etc
-        this((int) randomSeed, model.getMD5(), model.getTitle(), model.getArtist(), option, 0, false);
+        this(LR2RandomPattern.fromRajaToLR2Seed(randomSeed), model.getMD5(), model.getTitle(), model.getArtist(), option, 0, false);
     }
 
     public SelectedBMSMessage(Value value) {
