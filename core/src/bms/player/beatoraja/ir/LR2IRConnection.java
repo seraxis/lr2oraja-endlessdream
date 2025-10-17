@@ -15,11 +15,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.URL;
+import java.net.URI;
+import java.time.Duration;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.ToIntFunction;
 
 /**
  * Original repo from https://github.com/SayakaIsBaka/lr2ir-read-only
@@ -96,15 +102,15 @@ public class LR2IRConnection {
 	 * easier to assemble.
 	 * @return A pair, first is local score and second is scores from LR2IR. The first can be null.
 	 */
-	public static Pair<IRScoreData, IRScoreData[]> getScoreData(IRChartData chart) {
+	public static Pair<IRScoreData, LeaderboardEntry[]> getScoreData(IRChartData chart) {
 		if (chart.md5 == null || chart.md5.isEmpty()) {
-			return new Pair<>(null, new IRScoreData[0]);
+			return new Pair<>(null, new LeaderboardEntry[0]);
 		}
 		LR2IRSongData lr2IRSongData = new LR2IRSongData(chart.md5, "114328");
 		try {
 			String res = makePOSTRequest("/getrankingxml.cgi", lr2IRSongData.toUrlEncodedForm());
 			Ranking ranking = (Ranking) convertXMLToObject(res.substring(1).replace("<lastupdate></lastupdate>", ""), Ranking.class);
-			IRScoreData[] scoreData = ranking.toBeatorajaScoreData(chart);
+			LeaderboardEntry[] scoreData = ranking.toBeatorajaScoreData(chart);
 			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lntype : 0);
 			if (localScore != null) {
 				// This is intentional behaivor, see IRScoreData's player definition
@@ -115,9 +121,35 @@ public class LR2IRConnection {
 		} catch (Exception e) {
 			e.printStackTrace();
 			ImGuiNotify.error("Failed to get score data from LR2IR: " + e.getMessage());
-			return new Pair<>(null, new IRScoreData[0]);
+			return new Pair<>(null, new LeaderboardEntry[0]);
 		}
 	}
+
+    public static LR2GhostData getGhostData(String MD5, long scoreId) {
+        String api = "/getghost.cgi?songmd5=" + MD5 + "&mode=top&targetid=" + scoreId;
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                                      .uri(URI.create(IRUrl + api))
+                                      .timeout(Duration.ofSeconds(5))
+                                      .GET()
+                                      .build();
+            HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+            int status = response.statusCode();
+            if(status != HttpURLConnection.HTTP_OK){
+                throw new RuntimeException("Unexpected http response code: " + status);
+            }
+
+            String body = response.body();
+            return LR2GhostData.parse(body);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            ImGuiNotify.error(String.format("Failed to load ghost data."));
+            return null;
+        }
+    }
 
 	public static class LR2IRSongData {
 		public String md5;
@@ -147,9 +179,9 @@ public class LR2IRConnection {
 			this.score = score;
 		}
 
-		public IRScoreData[] toBeatorajaScoreData(IRChartData model) {
+		public LeaderboardEntry[] toBeatorajaScoreData(IRChartData model) {
 			List<Score> scores = getScore();
-			List<IRScoreData> res = new ArrayList<>();
+			List<LeaderboardEntry> res = new ArrayList<>();
 			for (Score s : scores) {
 				ScoreData tmp = new ScoreData(model.mode);
 				tmp.setSha256(model.sha256);
@@ -160,7 +192,7 @@ public class LR2IRConnection {
 				tmp.setEpg(s.getPg());
 				tmp.setEgr(s.getGr());
 				tmp.setMinbp(s.getMinbp());
-				res.add(new IRScoreData(tmp));
+                res.add(LeaderboardEntry.newEntryLR2IR(new IRScoreData(tmp), s.getId()));
 			}
         /*if (lastScoreData != null && lastChart != null && lastChart.sha256.equals(model.sha256)) {
             System.out.println(lastScoreData.player);
@@ -179,10 +211,12 @@ public class LR2IRConnection {
             lastScoreData = null;
             lastChart = null;
         } else*/
-			return res.stream()
-					.sorted(Comparator.comparingInt(IRScoreData::getExscore).reversed())
-					.toArray(IRScoreData[]::new);
-		}
+            ToIntFunction<LeaderboardEntry> leaderboardScore =
+                (entry -> entry.getIrScore().getExscore());
+            return res.stream()
+                .sorted(Comparator.comparingInt(leaderboardScore).reversed())
+                .toArray(LeaderboardEntry[]::new);
+        }
 	}
 
 	public static class Score {

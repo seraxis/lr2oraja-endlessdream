@@ -110,10 +110,14 @@ public class BMSPlayer extends MainState {
 		playinfo.doubleoption = config.getDoubleoption();
 
 		RandomTrainer randomtrainer = new RandomTrainer();
+        Optional<GhostBattlePlay.Settings> ghostBattle = GhostBattlePlay.consume();
 
 		ReplayData HSReplay = null;
 
-		if(resource.getChartOption() != null) {
+        if(ghostBattle.isPresent()) {
+			playinfo.randomoption = ghostBattle.get().random().ordinal();
+        }
+		else if(resource.getChartOption() != null) {
 			ReplayData chartOption = resource.getChartOption();
 			playinfo.randomoption = chartOption.randomoption;
 			playinfo.randomoptionseed = chartOption.randomoptionseed;
@@ -285,6 +289,11 @@ public class BMSPlayer extends MainState {
 				mods.add(new ExtraNoteModifier(config.getExtranoteType(), config.getExtranoteDepth(), config.isExtranoteScratch()));
 			}
 
+            // maybe we skip all that for gbattle
+            if (ghostBattle.isPresent()){
+                mods = new Array<PatternModifier>();
+            }
+
 			for(PatternModifier mod : mods) {
 				mod.modify(model);
 				if(mod.getAssistLevel() != PatternModifier.AssistLevel.NONE) {
@@ -369,7 +378,13 @@ public class BMSPlayer extends MainState {
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {
-				if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
+                if (ghostBattle.isPresent()) {
+					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
+                    Integer pattern = ghostBattle.get().lanes();
+					Logger.getGlobal().info("Ghost battle - fixing lane pattern to " + pattern);
+					pm.setSeed(seedmap.get(pattern));
+                }
+                else if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
 					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
 					pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
@@ -512,8 +527,13 @@ public class BMSPlayer extends MainState {
 			} else {
 				resource.setTargetScoreData(resource.getRivalScoreData());
 			}
-			getScoreDataProperty().setTargetScore(score.getExscore(), score.decodeGhost(), resource.getTargetScoreData() != null ? resource.getTargetScoreData().getExscore() : 0 , null, model.getTotalNotes());
-		}
+            ScoreData target = resource.getTargetScoreData();
+            getScoreDataProperty().setTargetScore(
+                score.getExscore(), score.decodeGhost(),
+                target != null ? target.getExscore() : 0,
+                target != null ? target.decodeGhost() : null,
+                model.getTotalNotes());
+        }
 	}
 
 	@Override
