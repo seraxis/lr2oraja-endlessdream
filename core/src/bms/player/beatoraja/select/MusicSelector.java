@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import bms.player.beatoraja.arena.client.Client;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;

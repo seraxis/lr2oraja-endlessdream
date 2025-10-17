@@ -57,7 +57,6 @@ public class Client {
         if (connected.get()) {
             connected.set(false);
             state = new ClientState();
-            // TODO: what is pacemaker
             // hooks::pacemaker::Destroy(); // Restore original bytes for pacemaker
             ImGuiNotify.info("Disconnected from the server");
         }

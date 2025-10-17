@@ -12,7 +12,6 @@ import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
-import bms.player.beatoraja.pattern.Random;
 import bms.player.beatoraja.skin.SkinNoteDistributionGraph;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
 
