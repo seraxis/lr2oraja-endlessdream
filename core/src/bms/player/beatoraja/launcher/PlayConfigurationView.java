@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
@@ -26,12 +25,10 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
@@ -294,10 +291,6 @@ public class PlayConfigurationView implements Initializable {
 
 	@FXML
 	public CheckBox clipboardScreenshot;
-
-    private static Stage loadingBarStage;
-
-    private static AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
 
 	static void initComboBox(ComboBox<Integer> combo, final String[] values) {
 		combo.setCellFactory((param) -> new OptionListCell(values));
@@ -776,21 +769,24 @@ public class PlayConfigurationView implements Initializable {
 	 */
 	public void loadBMS(String updatepath, boolean updateAll) {
 		commit();
-        isUpdateInProgress.set(true);
+
+		final Stage loadingBarStage = new Stage();
         Runnable progressRunnable = () -> {
+			// JavaFX UI code must be run inside a Platform run context
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    Stage loadingBarStage = new Stage();
                     loadingBarStage.setResizable(false);
+					// This modality freezes the launcher/primary stage
                     loadingBarStage.initModality(Modality.APPLICATION_MODAL);
                     loadingBarStage.setTitle("Loading BMS...");
+					// This prevents users from seeing typical windowing system buttons
                     loadingBarStage.initStyle(StageStyle.UNDECORATED);
 
                     ProgressBar progressBar = new ProgressBar();
                     progressBar.setPrefWidth(300);
 
-                    Label messageLabel = new Label("Loading BMS. Please wait.");
+                    Label messageLabel = new Label("Loading BMS. Please wait warmly...");
 
                     VBox root = new VBox(10);
                     root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -798,19 +794,15 @@ public class PlayConfigurationView implements Initializable {
 
                     Scene scene = new Scene(root);
                     loadingBarStage.setScene(scene);
-                    loadingBarStage.show();
 
-                    while (isUpdateInProgress.get()) {
-                        try {
-                            Thread.sleep(50);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    loadingBarStage.hide();
+					// Prevents closing. This has the side effect of preventing windowing system close requests but
+					// the application can still be force killed by the user if necessary
+					loadingBarStage.setOnCloseRequest(Event::consume);
+                    loadingBarStage.show();
                 }
             });
         };
+
         Runnable loadBMSRunnable = () -> {
             try {
                 SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
@@ -820,12 +812,20 @@ public class PlayConfigurationView implements Initializable {
                 songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
                 Logger.getGlobal().info("song.db更新完了");
                 songUpdated = true;
-                isUpdateInProgress.set(false);
 
+				// Once again, JavaFX UI code must be run inside a Platform context. Hide progress bar and resume
+				// normal launcher behaviour
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						loadingBarStage.hide();
+					}
+				});
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         };
+
         new Thread(progressRunnable).start();
         new Thread(loadBMSRunnable).start();
 	}
