@@ -1,6 +1,10 @@
 package bms.player.beatoraja.launcher;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.IntStream;
+
+import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
 
 /**
@@ -79,6 +83,19 @@ public class EditableTableView<T> extends TableView<T>{
 			}
 		}
 		getSelectionModel().selectIndices(-1, indices);
+	}
+
+	public void moveSelectedItemsIn(EditableTableView<T> tableurl) {
+		ObservableList<Integer> indices = getSelectionModel().getSelectedIndices();
+		if (indices.isEmpty()) return;
+		indices.sort(Integer::compare);
+		Collections.reverse(indices);
+		for (Integer index : indices) {
+			T item = getItems().get(index);
+			tableurl.getItems().add(0, item);
+			getItems().remove(index);
+		}
+
 	}
 
 	public void moveSelectedItemTop() {
