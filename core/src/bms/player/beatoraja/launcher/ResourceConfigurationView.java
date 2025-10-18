@@ -618,12 +618,12 @@ public class ResourceConfigurationView implements Initializable {
 			// overjoy
 			Map.entry("https://rattoto10.jounin.jp/table_overjoy.html", new Pair<String, String>("NEW GENERATION overjoy", "New overjoy. \u2605\u26050-\u2605\u26057")),
 			// stream + chordjack
-			Map.entry("https://lets-go-time-hell.github.io/code-stream-table/", new Pair<String, String>("16\u5206\u4e71 (16th streams)", "Chordstream focus. Satellite difficulty")),
+			Map.entry("https://lets-go-time-hell.github.io/code-stream-table/", new Pair<String, String>("16\u5206\u4e71 (16th streams)", "Chordstream focus. Wide difficulty \u260611-\u260520+")),
 			Map.entry("https://lets-go-time-hell.github.io/Arm-Shougakkou-table/", new Pair<String, String>("\u30a6\u30fc\u30c7\u30aa\u30b7\u5c0f\u5b66\u6821 (Ude table)", "Chordjack/wide chords focus. Satellite difficulty")),
 			Map.entry("https://su565fx.web.fc2.com/Gachimijoy/gachimijoy.html", new Pair<String, String>("gachimijoy", "Hard chordjack. \u2605\u26050-\u2605\u26057")),
 			// stellaverse quirked up
-			Map.entry("https://stellabms.xyz/so/table.html", new Pair<String, String>("Solar", "Gimmick chart focus. Satellite difficulty")),
-			Map.entry("https://stellabms.xyz/sn/table.html", new Pair<String, String>("Supernova", "Gimmick chart focus. Stella difficulty")),
+			Map.entry("https://stellabms.xyz/so/table.html", new Pair<String, String>("Solar", "Insane-style charts. Satellite difficulty")),
+			Map.entry("https://stellabms.xyz/sn/table.html", new Pair<String, String>("Supernova", "Insane-style charts. Stella difficulty")),
 			// osu
 			Map.entry("https://air-afother.github.io/osu-table/", new Pair<String, String>("osu!", "Table for osu! star rating")),
 			// AI
