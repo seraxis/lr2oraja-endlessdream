@@ -84,37 +84,4 @@ public class EditableTableView<T> extends TableView<T>{
 		}
 		getSelectionModel().selectIndices(-1, indices);
 	}
-
-	public void moveSelectedItemsIn(EditableTableView<T> tableurl) {
-		ObservableList<Integer> indices = getSelectionModel().getSelectedIndices();
-		if (indices.isEmpty()) return;
-		indices.sort(Integer::compare);
-		Collections.reverse(indices);
-		for (Integer index : indices) {
-			T item = getItems().get(index);
-			tableurl.getItems().add(0, item);
-			getItems().remove(index);
-		}
-
-	}
-
-	public void moveSelectedItemTop() {
-		final int index = getSelectionModel().getSelectedIndex();
-		if(index > 0) {
-			T item = getSelectionModel().getSelectedItem();
-			getItems().remove(index);
-			getItems().add(0, item);
-			getSelectionModel().select(0);
-		}
-	}
-
-	public void moveSelectedItemBottom() {
-		final int index = getSelectionModel().getSelectedIndex();
-		if(index >= 0 && index < getItems().size() - 1) {
-			T item = getSelectionModel().getSelectedItem();
-			getItems().remove(index);
-			getItems().add(item);
-			getSelectionModel().select(getItems().size() - 1);
-		}
-	}
 }

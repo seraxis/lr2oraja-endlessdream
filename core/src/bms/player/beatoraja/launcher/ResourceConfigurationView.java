@@ -15,6 +15,8 @@ import bms.player.beatoraja.TableDataAccessor;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -25,6 +27,9 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Pair;
 
 public class ResourceConfigurationView implements Initializable {
@@ -94,6 +99,18 @@ public class ResourceConfigurationView implements Initializable {
 
 		available_tables.getColumns().setAll(aNameColumn, aCommentColumn, aUrlColumn);
 		available_tables.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+		// Clear selection in one table if another is selected
+		tableurl.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				available_tables.getSelectionModel().clearSelection();
+			}
+		});
+		available_tables.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+			if (newValue != null) {
+				tableurl.getSelectionModel().clearSelection();
+			}
+		});
 	}
 
     public void update(Config config) {
@@ -463,12 +480,22 @@ public class ResourceConfigurationView implements Initializable {
 		tableurl.moveSelectedItemsDown();
 	}
 
-	public void moveTableURLIn() {
-		available_tables.moveSelectedItemsIn(tableurl);
-	}
+	public void moveTableURLIn() { transferSelection(available_tables, tableurl); }
 
-	public void moveTableURLOut() {
-		tableurl.moveSelectedItemsDown();
+	public void moveTableURLOut() { transferSelection(tableurl, available_tables); }
+
+	public <T> void transferSelection(EditableTableView<T> source, EditableTableView<T> destination) {
+		ObservableList<T> selection = source.getSelectionModel().getSelectedItems();
+		// When a JavaFX ObservableList is changed it's handlers are invoked, and thus due to
+		// implementation specifics cannot be reversed in place. This copy bypasses this limitation.
+		//
+		// https://stackoverflow.com/questions/27348231/fxcollections-reverse-throwing-unsupportedoperationexception
+        List<T> copy = new ArrayList<T>(selection);
+		Collections.reverse(copy);
+		for (T item : copy) {
+			destination.getItems().add(0,  item);
+		}
+		source.removeSelectedItems();
 	}
 
 	// Subtract members of the latter from the former
