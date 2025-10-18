@@ -487,12 +487,12 @@
         <VBox.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="20.0" />
         </VBox.margin>
-        <Button mnemonicParsing="false" onAction="#start" prefHeight="25.0" prefWidth="120.0" text="%START">
+        <Button alignment="CENTER" mnemonicParsing="false" onAction="#start" prefHeight="25.0" prefWidth="120.0" text="%START">
          <HBox.margin>
             <Insets left="10.0" />
          </HBox.margin>
         </Button>
-        <Button mnemonicParsing="false" onAction="#loadDiffBMS" prefHeight="25.0" prefWidth="200.0" text="%UPDATE_DATABASE">
+        <Button alignment="CENTER" mnemonicParsing="false" onAction="#loadDiffBMS" prefHeight="25.0" prefWidth="200.0" text="%UPDATE_DATABASE">
             <HBox.margin>
                 <Insets left="10.0" />
             </HBox.margin>
@@ -502,7 +502,7 @@
                 <Insets left="10.0" />
             </HBox.margin>
         </Button>
-        <Button mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="108.0" text="%EXIT">
+        <Button alignment="CENTER" mnemonicParsing="false" onAction="#exit" prefHeight="25.0" prefWidth="108.0" text="%EXIT">
             <HBox.margin>
                 <Insets left="10.0" />
             </HBox.margin>
