@@ -65,7 +65,7 @@
 		<VBox prefHeight="100.0" prefWidth="536.0" HBox.hgrow="ALWAYS">
 			<HBox>
 				<TextField fx:id="url" prefHeight="28.0" prefWidth="500.0"
-					HBox.hgrow="ALWAYS" />
+					 />
 				<Button mnemonicParsing="false" onAction="#addTableURL"
 					prefHeight="31.0" prefWidth="80.0" text="%+">
 					<HBox.margin>
@@ -99,11 +99,23 @@
 							<Insets left="10.0" right="10.0" top="10.0" />
 						</VBox.margin>
 					</Button>
+					<Button mnemonicParsing="false" onAction="#moveTableURLIn"
+							prefHeight="31.0" prefWidth="80.0" text="←">
+						<VBox.margin>
+							<Insets left="10.0" right="10.0" top="10.0" />
+						</VBox.margin>
+					</Button>
+					<Button mnemonicParsing="false" onAction="#moveTableURLOut"
+							prefHeight="31.0" prefWidth="80.0" text="→">
+						<VBox.margin>
+							<Insets left="10.0" right="10.0" top="10.0" />
+						</VBox.margin>
+					</Button>
 				</VBox>
                 <EditableTableView fx:id="available_tables" prefHeight="167.0"
                                    prefWidth="200.0" HBox.hgrow="ALWAYS">
                     <HBox.margin>
-                        <Insets top="5.0" />
+                        <Insets top="5.0" right="10.0" />
                     </HBox.margin>
                 </EditableTableView>
 			</HBox>

@@ -138,6 +138,8 @@ public class Config implements Validatable {
 	 * 難易度表URL
 	 */
 	private String[] tableURL = DEFAULT_TABLEURL;
+
+	private String[] availableURL = AVAILABLE_TABLEURL;
 	/**
 	 * BGA表示
 	 */
@@ -224,7 +226,7 @@ public class Config implements Validatable {
 			"https://stellabms.xyz/upload.html",
 			"https://exturbow.github.io/github.io/index.html",
 			"https://bms.hexlataia.xyz/tables/olduploader.html",
-			"http://upl.konjiki.jp/",
+			//"http://upl.konjiki.jp/",
 			// beginner
 			"http://fezikedifficulty.futene.net/list.html",
 			// LN
@@ -250,15 +252,12 @@ public class Config implements Validatable {
 			// artist search
 			"https://plyfrm.github.io/table/bmssearch/index.html",
 			// DP
+			"https://yaruki0.net/DPlibrary/",
 			"https://stellabms.xyz/dp/table.html",
 			"https://stellabms.xyz/dpst/table.html",
 			"https://deltabms.yaruki0.net/table/data/dpdelta_head.json",
 			"https://deltabms.yaruki0.net/table/data/insane_head.json",
 			"http://ereter.net/dpoverjoy/",
-			// Does anyone play these
-			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
-			"https://excln.github.io/table24k/table.html",
-
 			// Stella Extensions
 			"https://notmichaelchen.github.io/stella-table-extensions/satellite-easy.html",
 			"https://notmichaelchen.github.io/stella-table-extensions/satellite-normal.html",
@@ -277,10 +276,6 @@ public class Config implements Validatable {
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=normal",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=hard",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=fc",
-			// mocha
-			"https://mocha-repository.info/table/dpn_header.json",
-			"https://mocha-repository.info/table/dpi_header.json",
-			"https://mocha-repository.info/table/ln_header.json",
     };
 
 	private static final String[] DEFAULT_TABLEURL = {
@@ -295,7 +290,7 @@ public class Config implements Validatable {
 			"http://rattoto10.jounin.jp/table.html",
 			"http://rattoto10.jounin.jp/table_insane.html",
 			// overjoy
-			"http://lr2.sakura.ne.jp/overjoy.php"
+			"https://rattoto10.jounin.jp/table_overjoy.html"
 	};
 
 	public Config() {
@@ -363,6 +358,14 @@ public class Config implements Validatable {
 
 	public void setTableURL(String[] tableURL) {
 		this.tableURL = tableURL;
+	}
+
+	public String[] getAvailableURL() {
+		return availableURL;
+	}
+
+	public void setAvailableURL(String[] availableURL) {
+		this.availableURL = availableURL;
 	}
 
 	public boolean isFolderlamp() {
