@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.TableDataAccessor;
@@ -22,9 +23,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
+import javafx.scene.input.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
@@ -109,6 +108,30 @@ public class ResourceConfigurationView implements Initializable {
 		available_tables.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 			if (newValue != null) {
 				tableurl.getSelectionModel().clearSelection();
+			}
+		});
+
+		// Ctrl+C listener
+		tableurl.setOnKeyPressed(e -> {
+			if (e.isControlDown() && e.getCode().equals(KeyCode.C)) {
+				Clipboard clipboard = Clipboard.getSystemClipboard();
+				ClipboardContent content = new ClipboardContent();
+				String selection = tableurl.getSelectionModel().getSelectedItems().stream()
+						.map(TableInfo::getUrl)
+						.collect(Collectors.joining("\n"));
+				content.putString(selection);
+				clipboard.setContent(content);
+			}
+		});
+		available_tables.setOnKeyPressed(e -> {
+			if (e.isControlDown() && e.getCode().equals(KeyCode.C)) {
+				Clipboard clipboard = Clipboard.getSystemClipboard();
+				ClipboardContent content = new ClipboardContent();
+				String selection = available_tables.getSelectionModel().getSelectedItems().stream()
+						.map(TableInfo::getUrl)
+						.collect(Collectors.joining("\n"));
+				content.putString(selection);
+				clipboard.setContent(content);
 			}
 		});
 	}
@@ -469,15 +492,27 @@ public class ResourceConfigurationView implements Initializable {
 
     @FXML
 	public void removeTableURL() {
-		tableurl.removeSelectedItems();
+		if (tableurl.getSelectionModel().getSelectedItems().isEmpty()) {
+			available_tables.removeSelectedItems();
+		} else {
+			tableurl.removeSelectedItems();
+		}
 	}
 
 	public void moveTableURLUp() {
-		tableurl.moveSelectedItemsUp();
+		if (tableurl.getSelectionModel().getSelectedItems().isEmpty()) {
+			available_tables.moveSelectedItemsUp();
+		} else {
+			tableurl.moveSelectedItemsUp();
+		}
 	}
 
 	public void moveTableURLDown() {
-		tableurl.moveSelectedItemsDown();
+		if (tableurl.getSelectionModel().getSelectedItems().isEmpty()) {
+			available_tables.moveSelectedItemsDown();
+		} else {
+			tableurl.moveSelectedItemsDown();
+		}
 	}
 
 	public void moveTableURLIn() { transferSelection(available_tables, tableurl); }
@@ -496,6 +531,7 @@ public class ResourceConfigurationView implements Initializable {
 			destination.getItems().add(0,  item);
 		}
 		source.removeSelectedItems();
+		source.getSelectionModel().clearSelection();
 	}
 
 	// Subtract members of the latter from the former
