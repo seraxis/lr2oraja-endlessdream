@@ -381,6 +381,7 @@ public class MainController {
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
+		ArenaMenu.setMusicSelector(selector);
 		MiscSettingMenu.setMain(this);
 		LR2IRConnection.setMain(this);
 		decide = new MusicDecide(this);

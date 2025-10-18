@@ -12,6 +12,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.arena.client.Client;
+import bms.player.beatoraja.arena.enums.ClientToServer;
+import bms.player.beatoraja.arena.network.SelectedBMSMessage;
 import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
@@ -86,6 +89,7 @@ public class BMSPlayer extends MainState {
 	public static final int STATE_FAILED = 5;
 	public static final int STATE_FINISHED = 6;
 	public static final int STATE_ABORTED = 7;
+	public static final int STATE_WAIT = 8;
 
 	private long prevtime;
 
@@ -94,6 +98,8 @@ public class BMSPlayer extends MainState {
 
 	private RhythmTimerProcessor rhythm;
 	private long startpressedtime;
+	private boolean firedWaitingReady = false;
+	private boolean allReady = false;
 
 	private float adjustedVolume = -1.f;
 	private boolean analysisChecked = false;
@@ -369,10 +375,20 @@ public class BMSPlayer extends MainState {
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {
-				if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
-					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
-					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
-					pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+				if (Client.connected.get() && !Client.state.getHost().equals(Client.state.getRemoteId())) {
+					if (RandomTrainer.isActive()) {
+						Logger.getGlobal().info("RandomTrainer: Disabled during arena session");
+					}
+					int lr2Seed = Client.state.getRandomSeed();
+					long rajaSeed = LR2RandomPattern.fromLR2SeedToRaja(lr2Seed);
+					Logger.getGlobal().info(String.format("Arena: Applying random seed from host, converting from %d to %d", lr2Seed, rajaSeed));
+					pm.setSeed(rajaSeed);
+				} else {
+					if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
+						HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
+						Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+						pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+					}
 				}
 				playinfo.randomoptionseed = pm.getSeed();
 			}
@@ -555,13 +571,13 @@ public class BMSPlayer extends MainState {
 						timer.setTimerOff(141);
 						lanerender.init(model);
 					}
-					
+
 					// Wait for the analysis to complete
 					if (!analysisChecked) {
 						adjustedVolume = -1.f;
 						analysisChecked = true;
 						analysisTask = resource.getAnalysisTask();
-						
+
 						if (analysisTask != null) {
 							try {
 								BMSLoudnessAnalyzer.AnalysisResult result = analysisTask.get(15, TimeUnit.SECONDS);
@@ -587,21 +603,39 @@ public class BMSPlayer extends MainState {
 							}
 						}
 					}
-					
+
 					bga.prepare(this);
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
 					final long cmem = Runtime.getRuntime().freeMemory();
 					Logger.getGlobal().info("current free memory : " + (cmem / (1024 * 1024)) + "MB , disposed : "
 							+ ((cmem - mem) / (1024 * 1024)) + "MB");
-					state = STATE_READY;
-					timer.setTimerOn(TIMER_READY);
-					play(PLAY_READY);
-					Logger.getGlobal().info("STATE_READYに移行");
+					if (Client.connected.get()) {
+						state = STATE_WAIT;
+					} else {
+						state = STATE_READY;
+						timer.setTimerOn(TIMER_READY);
+						play(PLAY_READY);
+						Logger.getGlobal().info("STATE_READYに移行");
+					}
 				}
 				if(!timer.isTimerOn(TIMER_PM_CHARA_1P_NEUTRAL) || !timer.isTimerOn(TIMER_PM_CHARA_2P_NEUTRAL)){
 					timer.setTimerOn(TIMER_PM_CHARA_1P_NEUTRAL);
 					timer.setTimerOn(TIMER_PM_CHARA_2P_NEUTRAL);
+				}
+			}
+			case STATE_WAIT -> {
+				if (!firedWaitingReady) {
+					firedWaitingReady = true;
+					Client.send(ClientToServer.CTS_SELECTED_BMS, new SelectedBMSMessage(model, playinfo.randomoptionseed, playinfo.randomoption).pack());
+					Client.send(ClientToServer.CTS_LOADING_COMPLETE, "".getBytes());
+					Client.acceptNextAllReady((allReady) -> this.allReady = allReady);
+				}
+				if (this.allReady) {
+					state = STATE_READY;
+					timer.setTimerOn(TIMER_READY);
+					play(PLAY_READY);
+					Logger.getGlobal().info("STATE_READYに移行");
 				}
 			}
 			// practice mode
@@ -912,7 +946,7 @@ public class BMSPlayer extends MainState {
 	public int getState() {
 		return state;
 	}
-	
+
 	public float getAdjustedVolume() {
 		return adjustedVolume;
 	}
@@ -1047,6 +1081,18 @@ public class BMSPlayer extends MainState {
 			practice.saveProperty();
 			timer.setTimerOn(TIMER_FADEOUT);
 			state = STATE_PRACTICE_FINISHED;
+			return;
+		}
+		if (state == STATE_WAIT) {
+			// Is there a risk that we send the cancel event before sending the loading complete one? idk
+			Client.send(ClientToServer.CTS_CHART_CANCELLED, "".getBytes());
+			main.getAudioProcessor().setGlobalPitch(1f);
+			timer.setTimerOn(TIMER_FADEOUT);
+			if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+				state = STATE_ABORTED;
+			} else {
+				state = STATE_PRACTICE_FINISHED;
+			}
 			return;
 		}
 		if (state == STATE_PRELOAD || state == STATE_READY) {
