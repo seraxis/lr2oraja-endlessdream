@@ -392,7 +392,7 @@ public class BMSPlayerInputProcessor {
 
 	public boolean isActivated(KeyCommand key) {
 		final int MASK_CTRL = KeyBoardInputProcesseor.MASK_CTRL;
-		final int MASK_CTRL_SHIFT = KeyBoardInputProcesseor.MASK_CTRL| KeyBoardInputProcesseor.MASK_SHIFT;
+		final int MASK_CTRL_SHIFT = KeyBoardInputProcesseor.MASK_CTRL|KeyBoardInputProcesseor.MASK_SHIFT;
 
 		switch(key) {
 		case SHOW_FPS:
