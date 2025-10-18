@@ -84,6 +84,7 @@ public class ResourceConfigurationView implements Initializable {
 
     @FXML
 	public void refreshLocalTableInfo() {
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		// Functions in ResourceConfigurationView are not run on the JavaFX Application Thread and so this little
 		// workaround has to be performed here to allow the progress bar to function as expected.
 		final Stage[] loadingBarStage = new Stage[1];
@@ -96,14 +97,14 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].setResizable(false);
 					// This modality freezes the launcher/primary stage
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
-					loadingBarStage[0].setTitle("Loading Table Info...");
+					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
 					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
 
-					Label messageLabel = new Label("Loading Table Info. Please wait warmly...");
+					Label messageLabel = new Label(bundle.getString("PROGRESS_TABLE_LABEL"));
 
 					VBox root = new VBox(10);
 					root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -146,6 +147,7 @@ public class ResourceConfigurationView implements Initializable {
     @FXML
 	public void loadAllTables() {
 		commit();
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		try {
 			Files.createDirectories(Paths.get(config.getTablepath()));
 		} catch (IOException e) {
@@ -161,14 +163,14 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].setResizable(false);
 					// This modality freezes the launcher/primary stage
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
-					loadingBarStage[0].setTitle("Loading Table Info...");
+					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
 					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
 
-					Label messageLabel = new Label("Loading Table Info. Please wait warmly...");
+					Label messageLabel = new Label(bundle.getString("PROGRESS_TABLE_LABEL"));
 
 					VBox root = new VBox(10);
 					root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -219,6 +221,7 @@ public class ResourceConfigurationView implements Initializable {
     @FXML
 	public void loadSelectedTables() {
 		commit();
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		try {
 			Files.createDirectories(Paths.get(config.getTablepath()));
 		} catch (IOException e) {
@@ -234,14 +237,14 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].setResizable(false);
 					// This modality freezes the launcher/primary stage
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
-					loadingBarStage[0].setTitle("Loading Table Info...");
+					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
 					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
 
-					Label messageLabel = new Label("Loading Table Info. Please wait warmly...");
+					Label messageLabel = new Label(bundle.getString("PROGRESS_TABLE_LABEL"));
 
 					VBox root = new VBox(10);
 					root.setStyle("-fx-padding: 20; -fx-alignment: center;");
@@ -281,6 +284,7 @@ public class ResourceConfigurationView implements Initializable {
     @FXML
 	public void loadNewTables() {
 		commit();
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		try {
 			Files.createDirectories(Paths.get(config.getTablepath()));
 		} catch (IOException e) {
@@ -296,14 +300,14 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].setResizable(false);
 					// This modality freezes the launcher/primary stage
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
-					loadingBarStage[0].setTitle("Loading Table Info...");
+					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
 					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
 
-					Label messageLabel = new Label("Loading Table Info. Please wait warmly...");
+					Label messageLabel = new Label(bundle.getString("PROGRESS_TABLE_LABEL"));
 
 					VBox root = new VBox(10);
 					root.setStyle("-fx-padding: 20; -fx-alignment: center;");

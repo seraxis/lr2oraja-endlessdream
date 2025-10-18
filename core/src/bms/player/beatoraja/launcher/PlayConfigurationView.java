@@ -770,6 +770,7 @@ public class PlayConfigurationView implements Initializable {
 	public void loadBMS(String updatepath, boolean updateAll) {
 		commit();
 
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		final Stage loadingBarStage = new Stage();
         Runnable progressRunnable = () -> {
 			// JavaFX UI code must be run inside a Platform run context
@@ -779,14 +780,14 @@ public class PlayConfigurationView implements Initializable {
                     loadingBarStage.setResizable(false);
 					// This modality freezes the launcher/primary stage
                     loadingBarStage.initModality(Modality.APPLICATION_MODAL);
-                    loadingBarStage.setTitle("Loading BMS...");
+                    loadingBarStage.setTitle(bundle.getString("PROGRESS_BMS_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
                     loadingBarStage.initStyle(StageStyle.UNDECORATED);
 
                     ProgressBar progressBar = new ProgressBar();
                     progressBar.setPrefWidth(300);
 
-                    Label messageLabel = new Label("Loading BMS. Please wait warmly...");
+                    Label messageLabel = new Label(bundle.getString("PROGRESS_BMS_LABEL"));
 
                     VBox root = new VBox(10);
                     root.setStyle("-fx-padding: 20; -fx-alignment: center;");
