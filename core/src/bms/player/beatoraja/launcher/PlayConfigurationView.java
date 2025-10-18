@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
@@ -27,16 +28,18 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
+import javafx.stage.*;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Stage;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -291,6 +294,10 @@ public class PlayConfigurationView implements Initializable {
 
 	@FXML
 	public CheckBox clipboardScreenshot;
+
+    private static Stage loadingBarStage;
+
+    private static AtomicBoolean isUpdateInProgress = new AtomicBoolean(false);
 
 	static void initComboBox(ComboBox<Integer> combo, final String[] values) {
 		combo.setCellFactory((param) -> new OptionListCell(values));
@@ -769,17 +776,58 @@ public class PlayConfigurationView implements Initializable {
 	 */
 	public void loadBMS(String updatepath, boolean updateAll) {
 		commit();
-		try {
-			SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
-			SongInformationAccessor infodb = config.isUseSongInfo() ?
-					new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
-			Logger.getGlobal().info("song.db更新開始");
-			songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
-			Logger.getGlobal().info("song.db更新完了");
-			songUpdated = true;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+        isUpdateInProgress.set(true);
+        Runnable progressRunnable = () -> {
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    Stage loadingBarStage = new Stage();
+                    loadingBarStage.setResizable(false);
+                    loadingBarStage.initModality(Modality.APPLICATION_MODAL);
+                    loadingBarStage.setTitle("Loading BMS...");
+                    loadingBarStage.initStyle(StageStyle.UNDECORATED);
+
+                    ProgressBar progressBar = new ProgressBar();
+                    progressBar.setPrefWidth(300);
+
+                    Label messageLabel = new Label("Loading BMS. Please wait.");
+
+                    VBox root = new VBox(10);
+                    root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+                    root.getChildren().addAll(messageLabel, progressBar);
+
+                    Scene scene = new Scene(root);
+                    loadingBarStage.setScene(scene);
+                    loadingBarStage.show();
+
+                    while (isUpdateInProgress.get()) {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    loadingBarStage.hide();
+                }
+            });
+        };
+        Runnable loadBMSRunnable = () -> {
+            try {
+                SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
+                SongInformationAccessor infodb = config.isUseSongInfo() ?
+                        new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
+                Logger.getGlobal().info("song.db更新開始");
+                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
+                Logger.getGlobal().info("song.db更新完了");
+                songUpdated = true;
+                isUpdateInProgress.set(false);
+
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        };
+        new Thread(progressRunnable).start();
+        new Thread(loadBMSRunnable).start();
 	}
 
     @FXML
