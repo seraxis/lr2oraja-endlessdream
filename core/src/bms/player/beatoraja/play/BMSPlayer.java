@@ -193,9 +193,9 @@ public class BMSPlayer extends MainState {
 		boolean score = true;
 		boolean forceNoIRSend = false;
 
-		// Don't send score on osu maps to IR services
+		// Allow osu score submission
 		if (model.isFromOSU()) {
-			forceNoIRSend = true;
+			forceNoIRSend = false;
 		}
 
 		// RANDOM構文処理

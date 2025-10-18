@@ -99,7 +99,7 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
 					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
-					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
+					loadingBarStage[0].initStyle(StageStyle.UTILITY);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
@@ -165,7 +165,7 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
 					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
-					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
+					loadingBarStage[0].initStyle(StageStyle.UTILITY);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
@@ -239,7 +239,7 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
 					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
-					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
+					loadingBarStage[0].initStyle(StageStyle.UTILITY);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);
@@ -302,7 +302,7 @@ public class ResourceConfigurationView implements Initializable {
 					loadingBarStage[0].initModality(Modality.APPLICATION_MODAL);
 					loadingBarStage[0].setTitle(bundle.getString("PROGRESS_TABLE_TITLE"));
 					// This prevents users from seeing typical windowing system buttons
-					loadingBarStage[0].initStyle(StageStyle.UNDECORATED);
+					loadingBarStage[0].initStyle(StageStyle.UTILITY);
 
 					ProgressBar progressBar = new ProgressBar();
 					progressBar.setPrefWidth(300);

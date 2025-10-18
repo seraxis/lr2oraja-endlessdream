@@ -781,8 +781,7 @@ public class PlayConfigurationView implements Initializable {
 					// This modality freezes the launcher/primary stage
                     loadingBarStage.initModality(Modality.APPLICATION_MODAL);
                     loadingBarStage.setTitle(bundle.getString("PROGRESS_BMS_TITLE"));
-					// This prevents users from seeing typical windowing system buttons
-                    loadingBarStage.initStyle(StageStyle.UNDECORATED);
+                    loadingBarStage.initStyle(StageStyle.UTILITY);
 
                     ProgressBar progressBar = new ProgressBar();
                     progressBar.setPrefWidth(300);
