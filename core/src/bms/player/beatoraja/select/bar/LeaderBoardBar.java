@@ -7,10 +7,12 @@ import bms.player.beatoraja.ir.IRScoreData;
 import bms.player.beatoraja.ir.LR2IRConnection;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import bms.player.beatoraja.song.SongData;
 import javafx.util.Pair;
 
-import static bms.player.beatoraja.select.bar.FunctionBar.*;
+import static bms.player.beatoraja.select.bar.FunctionBar.STYLE_COURSE;
+import static bms.player.beatoraja.select.bar.FunctionBar.STYLE_TABLE;
 
 public class LeaderBoardBar extends DirectoryBar {
 	private final SongData songData;
@@ -58,12 +60,13 @@ public class LeaderBoardBar extends DirectoryBar {
 	 *
 	 * @param irScoreData ir scores, should be ordered by exscore. More specifically, the score has larger exscore
 	 *                    should be positioned before a smaller one
+	 * @implNote IRScoreData's player field would be an empty string when it represents the player's own score
 	 * @return bars
 	 */
 	public FunctionBar[] fromIRScoreData(IRScoreData[] irScoreData) {
 		FunctionBar[] bars = new FunctionBar[irScoreData.length];
 		for (int i = 0; i < irScoreData.length; i++) {
-			bars[i] = createFunctionBar(i + 1, irScoreData[i], false);
+			bars[i] = createFunctionBar(i + 1, irScoreData[i], irScoreData[i].player.isEmpty());
 		}
 		return bars;
 	}
@@ -117,9 +120,17 @@ public class LeaderBoardBar extends DirectoryBar {
 	private FunctionBar createFunctionBar(int rank, IRScoreData scoreData, boolean isSelfScore) {
 		FunctionBar irScoreBar = new FunctionBar((selector, self) -> {
 			// TODO: Hijack/Inherit random seed, like LR2IR gbattle
-		}, String.format("%d. %s", rank, scoreData.player), isSelfScore ? STYLE_COURSE : STYLE_TABLE);
+		},
+				String.format("%d. %s", rank, isSelfScore ? getCurrentPlayerName() : scoreData.player),
+				isSelfScore ? STYLE_COURSE : STYLE_TABLE
+		);
         irScoreBar.setScore(scoreData.convertToScoreData());
         irScoreBar.setLamp(scoreData.clear.id);
         return irScoreBar;
     }
+
+	private String getCurrentPlayerName() {
+		return StringPropertyFactory.getStringProperty(StringPropertyFactory.StringType.player.name())
+				.get(super.selector.main.getCurrentState());
+	}
 }
