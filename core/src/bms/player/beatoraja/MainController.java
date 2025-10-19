@@ -518,43 +518,44 @@ public class MainController {
 			sprite.begin();
 			systemfont.setColor(Color.CYAN);
 			message.setLength(0);
+			int height = config.getRealResolutionHeight();
 			systemfont.draw(sprite, message.append("FPS ").append(Gdx.graphics.getFramesPerSecond()), debugTextXpos,
-					config.getResolution().height - 2);
+					height - 2);
 					if(debug) {
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Skin Pixmap Images ").append(SkinLoader.getResource().size()), debugTextXpos,
-						config.getResolution().height - 26);
+						height - 26);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Total Memory Used(MB) ").append(Runtime.getRuntime().totalMemory() / (1024 * 1024)), debugTextXpos,
-						config.getResolution().height - 50);
+						height - 50);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Total Free Memory(MB) ").append(Runtime.getRuntime().freeMemory() / (1024 * 1024)), debugTextXpos,
-						config.getResolution().height - 74);
+						height - 74);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Max Sprite In Batch ").append(sprite.maxSpritesInBatch), debugTextXpos,
-						config.getResolution().height - 98);
+						height - 98);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Skin Pixmap Resource Size ").append(SkinLoader.getResource().size()), debugTextXpos,
-						config.getResolution().height - 122);
+						height - 122);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Stagefile Pixmap Resource Size ").append(selector.getStagefileResource().size()), debugTextXpos,
-						config.getResolution().height - 146);
+						height - 146);
 				message.setLength(0);
 				systemfont.draw(sprite, message.append("Banner Pixmap Resource Size ").append(selector.getBannerResource().size()), debugTextXpos,
-						config.getResolution().height - 170);
+						height - 170);
 						if (current.getSkin() != null) {
 					message.setLength(0);
 					systemfont.draw(sprite, message.append("Skin Prepare Time ").append(current.getSkin().pcntPrepare), debugTextXpos,
-							config.getResolution().height - 194);
+							height - 194);
 					message.setLength(0);
 					systemfont.draw(sprite, message.append("Skin Draw Time ").append(current.getSkin().pcntDraw), debugTextXpos,
-							config.getResolution().height - 218);
+							height - 218);
 					var i = 0;
 					var l = current.getSkin().pcntmap.keySet().stream().mapToInt(c->c.getSimpleName().length()).max().orElse(1);
 					var f = "%" + l + "s";
 					message.setLength(0);
 					message.append(String.format(f,"SkinObject")).append(" num // prepare cur/avg/max // draw cur/avg/max");
-					systemfont.draw(sprite, message, debugTextXpos, config.getResolution().height - 242);
+					systemfont.draw(sprite, message, debugTextXpos, height - 242);
 					var entrys = current.getSkin().pcntmap.entrySet().stream()
 						.sorted((e1,e2) -> e1.getKey().getSimpleName().compareTo(e2.getKey().getSimpleName()))
 						.toList();
@@ -568,7 +569,7 @@ public class MainController {
 						.append(e.getValue()[4]/100).append(" / ")
 						.append(e.getValue()[5]/100000).append(" / ")
 						.append(e.getValue()[6]/100);
-						systemfont.draw(sprite, message, debugTextXpos, config.getResolution().height - (266 + i * 24));
+						systemfont.draw(sprite, message, debugTextXpos, height - (266 + i * 24));
 						i++;
 					}
 				}

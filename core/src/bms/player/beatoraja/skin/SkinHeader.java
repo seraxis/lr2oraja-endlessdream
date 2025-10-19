@@ -1,5 +1,6 @@
 package bms.player.beatoraja.skin;
 
+import bms.player.beatoraja.CustomizableResolution;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.SkinConfig;
 
@@ -67,7 +68,7 @@ public class SkinHeader {
 
 	private Resolution sourceResolution;
 	
-	private Resolution destinationResolution;
+	private CustomizableResolution destinationResolution;
 	
 	public SkinType getSkinType() {
 		return mode;
@@ -228,11 +229,11 @@ public class SkinHeader {
 		this.sourceResolution = sourceResolution;
 	}
 
-	public Resolution getDestinationResolution() {
+	public CustomizableResolution getDestinationResolution() {
 		return destinationResolution;
 	}
 
-	public void setDestinationResolution(Resolution destinationResolution) {
+	public void setDestinationResolution(CustomizableResolution destinationResolution) {
 		this.destinationResolution = destinationResolution;
 	}
 

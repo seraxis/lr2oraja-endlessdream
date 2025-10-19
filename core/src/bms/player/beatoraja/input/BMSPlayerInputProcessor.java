@@ -33,7 +33,7 @@ public class BMSPlayerInputProcessor {
 	private KeyLogger keylog = new KeyLogger();
 
 	public BMSPlayerInputProcessor(Config config, PlayerConfig player) {
-		Resolution resolution = config.getResolution();
+		CustomizableResolution resolution = config.getRealResolution();
 		kbinput = new KeyBoardInputProcesseor(this, player.getMode14().getKeyboardConfig(), resolution);
 		// Gdx.input.setInputProcessor(kbinput);
 		Controllers.preferredManager = "bms.player.beatoraja.controller.Lwjgl3ControllerManager";

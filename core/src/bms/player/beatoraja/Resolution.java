@@ -31,7 +31,7 @@ public enum Resolution {
 	 */
 	public final int height;
 
-	private Resolution(int width, int height) {
+	Resolution(int width, int height) {
 		this.width = width;
 		this.height = height;
 	}
