@@ -382,7 +382,6 @@ public class MainController {
 		}
 		SongManagerMenu.injectMusicSelector(selector);
 		MiscSettingMenu.setMain(this);
-		LR2IRConnection.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
 		gresult = new CourseResult(this);

@@ -31,11 +31,6 @@ import java.util.List;
 public class LR2IRConnection {
 	private static final String IRUrl = "http://dream-pro.info/~lavalse/LR2IR/2";
 	private static ScoreDatabaseAccessor scoreDatabaseAccessor;
-	private static MainController main;
-
-	public static void setMain(MainController main) {
-		LR2IRConnection.main = main;
-	}
 
 	public static void setScoreDatabaseAccessor(ScoreDatabaseAccessor scoreDatabaseAccessor) {
 		LR2IRConnection.scoreDatabaseAccessor = scoreDatabaseAccessor;
@@ -112,7 +107,9 @@ public class LR2IRConnection {
 			IRScoreData[] scoreData = ranking.toBeatorajaScoreData(chart);
 			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lntype : 0);
 			if (localScore != null) {
-				localScore.setPlayer(StringPropertyFactory.getStringProperty(StringPropertyFactory.StringType.player.name()).get(main.getCurrentState()));
+				// This is intentional behaivor, see IRScoreData's player definition
+				// and how we use this feature in LeaderBoardBar
+				localScore.setPlayer("");
 			}
 			return new Pair<>(localScore == null ? null : new IRScoreData(localScore), scoreData);
 		} catch (Exception e) {
