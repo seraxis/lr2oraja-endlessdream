@@ -98,6 +98,7 @@ public final class PlayerConfig {
 	 * LNモード
 	 */
 	private int lnmode = 0;
+	private boolean forcedcnendings = false;
 	/**
 	 * スクロール追加/削除モード
 	 */
@@ -719,6 +720,14 @@ public final class PlayerConfig {
 
 	public void setShowhiddennote(boolean showhiddennote) {
 		this.showhiddennote = showhiddennote;
+	}
+
+	public boolean isForcedCNEndings() {
+		return forcedcnendings;
+	}
+
+	public void setForcedCNEndings(boolean forcedcnendings) {
+		this.forcedcnendings = forcedcnendings;
 	}
 
 	public boolean isShowpastnote() {

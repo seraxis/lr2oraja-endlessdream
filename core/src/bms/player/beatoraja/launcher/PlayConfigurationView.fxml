@@ -192,6 +192,7 @@
                                          <ComboBox fx:id="gaugeop" prefWidth="150.0" GridPane.columnIndex="3" GridPane.rowIndex="7" />
                                          <Label text="%LNTYPE" GridPane.rowIndex="8" />
                                          <ComboBox fx:id="lntype" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                         <CheckBox fx:id="forcedcnendings" mnemonicParsing="false" text="%FORCED_CN_ENDINGS" GridPane.columnIndex="2" GridPane.rowIndex="8" GridPane.columnSpan="2" />
                                          <CheckBox fx:id="customjudge" mnemonicParsing="false" text="%EXPAND_JUDGE" GridPane.columnIndex="0" GridPane.rowIndex="10" />
                                          <HBox prefHeight="30.0" prefWidth="723.0" GridPane.columnIndex="1" GridPane.rowIndex="10" GridPane.columnSpan="3">
                                          <Label text="KEY PG" prefWidth="60.0"/>
