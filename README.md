@@ -4,7 +4,7 @@
 
 <div align="center" style="line-height: 1;">
 
-[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns)](https://discord.gg/HutCHCZHns)
+[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns?theme=default-inverted)](https://discord.gg/HutCHCZHns)
 
 </div>
 
@@ -85,6 +85,6 @@ If you'd like to test IR dependent changes, set the `useIR` system property to `
 ```
 
 ## Contributing
-Please state the impact your changes will have on drop-in compatibility with an upstream beatoraja install.
+Consider joining the Discord server. It's the place where most communication and collaboration happens.
 
-TBD
+Please state the impact your changes will have on the drop-in compatibility of Endless Dream with the latest beatoraja distribution when it is a relevant factor to your feature submission.
