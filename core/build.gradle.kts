@@ -43,6 +43,25 @@ tasks {
             true -> platformProp.plus("-").plus(archVariant).plus(libs.versions.endlessdream.get())
             false -> "".plus(libs.versions.endlessdream.get())
         }
+
+        // Include IR JAR in uberjar
+        val runDirProp = System.getProperty("runDir")
+        val useIRProp = System.getProperty("useIR")
+        when(runDirProp != null
+                && gradle.startParameter.taskNames.any() { it.contains("runShadow") }
+                && useIRProp.toBoolean()
+        ) {
+            true -> {
+                println("Including IR jars")
+                val runDir = FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
+                val irJars : FileTree = fileTree(runDir.resolve("./ir")) {
+                    include("*.jar")
+                }
+                from(irJars)
+            }
+            false -> { println("Skipping IR jar inclusion") }
+        }
+
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
         archiveClassifier.set(classifierPlatform)

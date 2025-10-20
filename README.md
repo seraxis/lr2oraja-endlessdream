@@ -77,6 +77,8 @@ Click 'More Actions' next to the run configurations panel in the window bar, Edi
 
 ![Run box clearly shown in the edit configuration menu](https://media.discordapp.net/attachments/1409976036963385547/1418936266514235483/idea64_bmidlXWb16.png?ex=68cfeee0&is=68ce9d60&hm=344ce793bff0fc3cdc47cc2b1a1692ec3a119b50e698a77c9c305508c1c6854e&=&format=webp&quality=lossless&width=547&height=208)
 
+If you'd like to test IR dependent changes, set the `useIR` system property to `true` (e.g. `-DuseIR=true`).
+
 **Windows:**
 ```powershell
 .\gradlew.bat core:runShadow -Dplatform=windows -DrunDir="C:\beatoraja0.8.8"
