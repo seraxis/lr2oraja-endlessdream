@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.arena.client.ArenaBar;
 import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
@@ -79,6 +80,10 @@ public class BarManager {
 	 * 検索結果バー一覧
 	 */
 	private final Array<SearchWordBar> search = new Array<SearchWordBar>();
+	/**
+	 * Arena lobby selection
+	 */
+	private final Array<ArenaBar> arenaBars = new Array<>();
 	/**
 	 * ランダムコース結果バー一覧
 	 */
@@ -300,6 +305,7 @@ public class BarManager {
 			l.addAll(tables);
 			l.addAll(commands);
 			l.addAll(search);
+			l.addAll(arenaBars);
 		} else if (bar instanceof DirectoryBar) {
 			showInvisibleCharts = ((DirectoryBar)bar).isShowInvisibleChart();
 			if(dir.indexOf((DirectoryBar) bar, true) != -1) {
@@ -556,6 +562,13 @@ public class BarManager {
 			search.removeIndex(0);
 		}
 		search.add(bar);
+	}
+
+	public void replaceArenaSelection(ArenaBar bar) {
+		if (!arenaBars.isEmpty()) {
+			arenaBars.clear();
+		}
+		arenaBars.add(bar);
 	}
 
 	public void addRandomCourse(GradeBar bar, String dirString) {

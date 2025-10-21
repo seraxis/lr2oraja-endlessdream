@@ -5,6 +5,9 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import bms.player.beatoraja.arena.client.Client;
+import bms.player.beatoraja.arena.enums.ClientToServer;
+import bms.player.beatoraja.arena.network.Score;
 import com.badlogic.gdx.utils.FloatArray;
 
 import bms.model.*;
@@ -766,6 +769,8 @@ public class JudgeManager {
                 }
             }           
         }
+        // NOTE: Hook for Arena
+        Client.send(ClientToServer.CTS_PLAYER_SCORE, new Score(score).pack());
     }
 
     public long[] getRecentJudges() {
