@@ -116,6 +116,24 @@ public class BMSPlayer extends MainState {
 
         if(ghostBattle.isPresent()) {
 			playinfo.randomoption = ghostBattle.get().random().ordinal();
+            if (config.getRandom() == bms.player.beatoraja.pattern.Random.MIRROR.ordinal()) {
+                ImGuiNotify.info(String.format("Ghost Battle: Mirroring pattern."));
+                switch (ghostBattle.get().random()) {
+                case IDENTITY:
+                    playinfo.randomoption = bms.player.beatoraja.pattern.Random.MIRROR.ordinal();
+                    break;
+                case MIRROR:
+                    playinfo.randomoption = bms.player.beatoraja.pattern.Random.IDENTITY.ordinal();
+                    break;
+                case RANDOM:
+                    StringBuilder pattern =  new StringBuilder();
+                    pattern.append(ghostBattle.get().lanes());
+                    Integer reversed = Integer.parseInt(pattern.reverse().toString());
+                    ghostBattle = Optional.of(
+                        new GhostBattlePlay.Settings(ghostBattle.get().random(), reversed));
+                    break;
+                }
+            }
         }
 		else if(resource.getChartOption() != null) {
 			ReplayData chartOption = resource.getChartOption();
