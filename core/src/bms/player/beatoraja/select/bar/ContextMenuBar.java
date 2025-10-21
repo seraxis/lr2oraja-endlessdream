@@ -214,6 +214,13 @@ public class ContextMenuBar extends DirectoryBar {
         }, "Open LR2IR page", STYLE_FOLDER);
         if (song.getMd5() != null) options.add(lr2irPage);
 
+        var chartViewer = new FunctionBar((selector, self) -> {
+            String urlBase = "https://bms-score-viewer.pages.dev/view?md5=";
+            boolean success = ContextMenuBar.browserOpen(urlBase + song.getMd5());
+            selector.play(success ? FOLDER_OPEN : OPTION_CHANGE);
+        }, "Open Chart Viewer", STYLE_FOLDER);
+        if (song.getMd5() != null) options.add(chartViewer);
+
         var meta = new FunctionBar((selector, self) -> {
             if (!showMeta) {
                 showMeta = true;
