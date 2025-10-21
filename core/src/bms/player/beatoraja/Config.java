@@ -7,12 +7,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 
+import bms.player.beatoraja.system.RobustFile;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import com.badlogic.gdx.utils.SerializationException;
 
 /**
  * 各種設定項目。config.jsonで保持される
@@ -751,16 +754,31 @@ public class Config implements Validatable {
 	}
 
 	public static Config read() throws PlayerConfigException {
-		Config config = null;
+        RobustFile.Parser<Config> parser = (byte[] data) -> {
+            Json json = new Json();
+            json.setIgnoreUnknownFields(true);
+            try {
+                String ss = new String(data, StandardCharsets.UTF_8);
+                Config config = json.fromJson(Config.class, ss);
+                if (config == null) { throw new SerializationException("(unknown error)"); }
+                return config;
+            }
+            catch (SerializationException e) {
+                throw new ParseException("Configの読み込み失敗 - Path : " + configpath +
+                                             " , Log : " + e.getLocalizedMessage(),
+                                         0);
+            }
+        };
+
+        Config config = null;
 		if (Files.exists(configpath)) {
-			Json json = new Json();
-			json.setIgnoreUnknownFields(true);
-			try (Reader reader = new InputStreamReader(new FileInputStream(configpath.toFile()), StandardCharsets.UTF_8)) {
-				config = json.fromJson(Config.class, reader);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} else if(Files.exists(configpath_old)) {
+            try {
+                config = RobustFile.load(configpath, parser);
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if(Files.exists(configpath_old)) {
 			// 旧コンフィグ読み込み。そのうち削除
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
@@ -786,13 +804,14 @@ public class Config implements Validatable {
 		Json json = new Json();
 		json.setUsePrototypes(false);
 		json.setOutputType(OutputType.json);
-		try (Writer writer = new OutputStreamWriter(new FileOutputStream(configpath.toFile()), StandardCharsets.UTF_8)) {
-			writer.write(json.prettyPrint(config));
-			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        String configJson = json.prettyPrint(config);
+        try {
+            RobustFile.write(configpath, configJson.getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 	public int getIrSendCount() {
 		return irSendCount;
