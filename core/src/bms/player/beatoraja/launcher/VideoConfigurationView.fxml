@@ -28,13 +28,13 @@
         <Label text="%CUSTOM_RESOLUTION_WIDTH" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="optionLabel" />
         <NumericSpinner fx:id="customResolutionWidth" editable="true" GridPane.rowIndex="4" GridPane.columnIndex="1" >
             <valueFactory>
-                <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="1280" max="9999999" min="0"/>
+                <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="1280" max="10000" min="320"/>
             </valueFactory>
         </NumericSpinner>
         <Label text="%CUSTOM_RESOLUTION_HEIGHT" GridPane.rowIndex="4" GridPane.columnIndex="2" styleClass="optionLabel" />
         <NumericSpinner fx:id="customResolutionHeight" editable="true" GridPane.rowIndex="4" GridPane.columnIndex="3" >
             <valueFactory>
-                <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="720" max="9999999" min="0"/>
+                <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="720" max="10000" min="240"/>
             </valueFactory>
         </NumericSpinner>
 
