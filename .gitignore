@@ -11,6 +11,7 @@
 /assets/course/*
 /assets/favorite/*
 /assets/layout.ini
+/assets/*.json.bak
 songdata.db
 songinfo.db
 config.json
