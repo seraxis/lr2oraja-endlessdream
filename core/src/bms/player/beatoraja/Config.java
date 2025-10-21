@@ -376,6 +376,13 @@ public class Config implements Validatable {
 		this.folderlamp = folderlamp;
 	}
 
+	/**
+	 * If you want to get current resolution, use getRealResolution instead. This function is preserved for only
+	 * compatibility.
+	 *
+	 * @return A predefined resolution
+	 */
+	@Deprecated
 	public Resolution getResolution() {
 		return resolution;
 	}

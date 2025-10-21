@@ -195,7 +195,7 @@ public final class MusicSelector extends MainState {
 			if(search != null) {
 				search.dispose();
 			}
-			search = new SearchTextField(this, resource.getConfig().getResolution());
+			search = new SearchTextField(this, resource.getConfig().getRealResolution());
 			setStage(search);
 		}
 	}
