@@ -13,7 +13,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Spinner;
 import javafx.util.Pair;
 
-import java.awt.*;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;

@@ -1,6 +1,10 @@
 package bms.player.beatoraja.skin;
 
-import bms.player.beatoraja.*;
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.Resolution;
+import bms.player.beatoraja.ShaderManager;
+import bms.player.beatoraja.CustomizableResolution;
 import bms.player.beatoraja.SkinConfig.Offset;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.BooleanProperty;
