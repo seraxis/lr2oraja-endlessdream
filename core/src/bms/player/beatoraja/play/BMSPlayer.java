@@ -292,6 +292,12 @@ public class BMSPlayer extends MainState {
 				model.setJudgerank(overridingJudgeWindowRate);
 			}
 
+			// Constant considered as assist in Endless Dream
+			// This is a community discussion result, see https://github.com/seraxis/lr2oraja-endlessdream/issues/42
+			if (config.getPlayConfig(model.getMode()).getPlayconfig().isEnableConstant()) {
+				assist = Math.max(assist, 2);
+			}
+
 			Array<PatternModifier> mods = new Array<PatternModifier>();
 
 			if(config.getScrollMode() > 0) {
