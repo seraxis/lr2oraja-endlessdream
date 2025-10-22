@@ -463,10 +463,10 @@ public class BMSPlayer extends MainState {
 		}
 
 		if (assist != 0) {
-			ImGuiNotify.warning("Next play would be considered as assist clear");
+			ImGuiNotify.warning("Assist options enabled. Next play will be saved as an assist clear");
 		}
 		if (!score) {
-			ImGuiNotify.warning("Next play score wouldn't be recorded");
+			ImGuiNotify.warning("Score nullifying options enabled. Next play will not be saved");
 		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
