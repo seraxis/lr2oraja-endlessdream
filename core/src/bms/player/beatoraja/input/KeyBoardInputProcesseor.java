@@ -2,6 +2,7 @@ package bms.player.beatoraja.input;
 
 import java.util.Arrays;
 
+import bms.player.beatoraja.CustomizableResolution;
 import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.modmenu.SkinWidgetManager;
@@ -39,7 +40,7 @@ public class KeyBoardInputProcesseor extends BMSPlayerInputDevice implements Inp
 	/**
 	 * 画面の解像度。マウスの入力イベント処理で使用
 	 */
-	private Resolution resolution;
+	private CustomizableResolution resolution;
 
 	/**
 	 * 各キーのon/off状態
@@ -58,7 +59,7 @@ public class KeyBoardInputProcesseor extends BMSPlayerInputDevice implements Inp
 	 */
 	private int duration;
 
-	public KeyBoardInputProcesseor(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyboardConfig config, Resolution resolution) {
+	public KeyBoardInputProcesseor(BMSPlayerInputProcessor bmsPlayerInputProcessor, KeyboardConfig config, CustomizableResolution resolution) {
 		super(bmsPlayerInputProcessor, Type.KEYBOARD);
 		this.mouseScratchInput = new MouseScratchInput(bmsPlayerInputProcessor, this, config);
 		this.setConfig(config);

@@ -13,11 +13,8 @@ import bms.player.beatoraja.exceptions.PlayerConfigException;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import imgui.ImGui;
-import imgui.ImGuiIO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -27,7 +24,6 @@ import javafx.scene.layout.VBox;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 
-import bms.player.beatoraja.AudioConfig.DriverType;
 import bms.player.beatoraja.ir.IRConnectionManager;
 import bms.player.beatoraja.launcher.PlayConfigurationView;
 import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
@@ -141,8 +137,8 @@ public class MainLoader extends Application {
             if (System.getProperty("os.name").toLowerCase().contains("mac")) {
                 gdxConfig.setOpenGLEmulation(Lwjgl3ApplicationConfiguration.GLEmulation.GL30, 3, 2);
             }
-            final int w = config.getResolution().width;
-            final int h = config.getResolution().height;
+            final int w = config.getRealResolutionWidth();
+            final int h = config.getRealResolutionHeight();
             String targetMonitorName = config.getMonitorName();
             Graphics.Monitor targetMonitor = null;
 			Graphics.DisplayMode gdxDisplayMode;

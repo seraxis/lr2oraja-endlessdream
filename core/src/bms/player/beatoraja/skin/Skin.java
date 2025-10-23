@@ -4,6 +4,7 @@ import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.ShaderManager;
+import bms.player.beatoraja.CustomizableResolution;
 import bms.player.beatoraja.SkinConfig.Offset;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.BooleanProperty;
@@ -101,7 +102,7 @@ public class Skin {
 	public Skin(SkinHeader header) {
 		this.header = header;
 		Resolution org = header.getSourceResolution();
-		Resolution dst = header.getDestinationResolution();
+		CustomizableResolution dst = header.getDestinationResolution();
 		width = dst.width;
 		height = dst.height;
 		dw = ((float)dst.width) / org.width;

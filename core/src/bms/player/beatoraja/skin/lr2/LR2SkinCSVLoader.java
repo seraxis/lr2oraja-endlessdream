@@ -45,7 +45,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 	/**
 	 * 描画サイズ
 	 */
-	public final Resolution dst;
+	public final CustomizableResolution dst;
 	boolean usecim;
 	String skinpath;
 
@@ -57,7 +57,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 
 	public LR2SkinCSVLoader(Resolution src, Config c) {
 		this.src = src;
-		this.dst = c.getResolution();
+		this.dst = c.getRealResolution();
 		usecim = c.isCacheSkinImage();
 		skinpath = c.getSkinpath();
 
