@@ -1065,11 +1065,18 @@ public final class PlayerConfig {
 		}
 	}
 
-	public static void write(String playerpath, PlayerConfig player) {
+    public static String getConfigJson(PlayerConfig player) {
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
         json.setUsePrototypes(false);
-        String configJson = json.prettyPrint(player);
+        return json.prettyPrint(player);
+    }
+
+    public static void write(String playerpath, PlayerConfig player) {
+        write(playerpath, player, getConfigJson(player));
+    }
+
+	public static void write(String playerpath, PlayerConfig player, String configJson) {
         try {
             Path path = Paths.get(playerpath + "/" + player.getId() + "/" + configpath);
             RobustFile.write(path, configJson.getBytes(StandardCharsets.UTF_8));
