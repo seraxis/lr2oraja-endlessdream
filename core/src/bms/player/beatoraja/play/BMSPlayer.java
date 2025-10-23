@@ -292,6 +292,12 @@ public class BMSPlayer extends MainState {
 				model.setJudgerank(overridingJudgeWindowRate);
 			}
 
+			// Constant considered as assist in Endless Dream
+			// This is a community discussion result, see https://github.com/seraxis/lr2oraja-endlessdream/issues/42
+			if (config.getPlayConfig(model.getMode()).getPlayconfig().isEnableConstant()) {
+				assist = Math.max(assist, 2);
+			}
+
 			Array<PatternModifier> mods = new Array<PatternModifier>();
 
 			if(config.getScrollMode() > 0) {
@@ -462,6 +468,12 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
+		if (assist != 0) {
+			ImGuiNotify.warning("Assist options enabled. Next play will be saved as an assist clear");
+		}
+		if (!score) {
+			ImGuiNotify.warning("Score nullifying options enabled. Next play will not be saved");
+		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
