@@ -450,6 +450,7 @@ public class MainController {
 			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
 			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
 			DownloadTaskState.initialize(httpDownloadProcessor);
+			DownloadTaskMenu.setProcessor(httpDownloadProcessor);
 		}
 
 		if(ir.length > 0) {
