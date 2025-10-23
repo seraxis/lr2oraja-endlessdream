@@ -800,11 +800,18 @@ public class Config implements Validatable {
 		return config;
 	}
 
-	public static void write(Config config) {
-		Json json = new Json();
-		json.setUsePrototypes(false);
-		json.setOutputType(OutputType.json);
-        String configJson = json.prettyPrint(config);
+    public static String getConfigJson(Config config) {
+        Json json = new Json();
+        json.setUsePrototypes(false);
+        json.setOutputType(OutputType.json);
+        return json.prettyPrint(config);
+    }
+
+    public static void write(Config config) {
+        write(config, getConfigJson(config));
+    }
+
+    public static void write(Config config, String configJson) {
         try {
             RobustFile.write(configpath, configJson.getBytes(StandardCharsets.UTF_8));
         }

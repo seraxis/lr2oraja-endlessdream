@@ -501,6 +501,8 @@ public class MainController {
 			});
 			irResendProcess.start();
 		}
+
+        lastConfigSave = System.nanoTime();
 	}
 
 	private long prevtime;
@@ -590,6 +592,8 @@ public class MainController {
 
 			sprite.end();
 		}
+
+        periodicConfigSave();
 
         if (config.isEnableHttp()) { DownloadTaskState.update(); }
         PerformanceMetrics.get().commit();
@@ -760,6 +764,36 @@ public class MainController {
 		PlayerConfig.write(config.getPlayerpath(), player);
 		Logger.getGlobal().info("設定情報を保存");
 	}
+
+    private long lastConfigSave = 0;
+    private Thread configWrite;
+
+    private void periodicConfigSave() {
+        // let's not start anything heavy during play
+        if (current instanceof BMSPlayer) { return; }
+
+        // save once every 5 minutes
+        long now = System.nanoTime();
+        if ((now - lastConfigSave) < 5 * 60 * 1000000000L) { return; }
+
+        if (configWrite != null && configWrite.isAlive()) {
+            Logger.getGlobal().severe("Couldn't write config files - save process is stuck.");
+            return;
+        }
+
+        lastConfigSave = now;
+
+        // the write are quite slow but we can do them on a separate thread;
+        // we still serialize the configs into json on the
+        // main thread to avoid multithreading issues
+        final String configJson = Config.getConfigJson(config);
+        final String playerConfigJson = PlayerConfig.getConfigJson(player);
+        configWrite = new Thread(() -> {
+            Config.write(config, configJson);
+            PlayerConfig.write(config.getPlayerpath(), player, playerConfigJson);
+        });
+        configWrite.start();
+    }
 
 	public void exit() {
 		Gdx.app.exit();
