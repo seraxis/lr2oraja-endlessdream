@@ -58,7 +58,8 @@ public class DownloadTaskMenu {
                 ImGui.pushID(task.getId());
 
                 ImGui.tableSetColumnIndex(0);
-                ImGui.text(task.getName());
+                String taskName = task.getName().substring(0, Math.min(task.getName().length(), MAXIMUM_TASK_NAME_LENGTH));
+                ImGui.text(String.format("%s (%s)", taskName, task.getDownloadTaskStatus().getName()));
 
                 ImGui.tableSetColumnIndex(1);
                 String errorMessage = task.getErrorMessage();
@@ -80,24 +81,6 @@ public class DownloadTaskMenu {
 
             ImGui.endTable();
         }
-    }
-
-    public static void showTask(DownloadTask downloadTask) {
-        int taskId = downloadTask.getId();
-        String taskName = downloadTask.getName().substring(0, Math.min(downloadTask.getName().length(), MAXIMUM_TASK_NAME_LENGTH));
-        ImGui.pushID(taskId);
-        float spacing = ImGui.getStyle().getItemInnerSpacingX();
-//        ImGui.alignTextToFramePadding();
-        ImGui.bulletText(String.format("%s (%s)", taskName, downloadTask.getDownloadTaskStatus().getName()));
-        ImGui.sameLine(0.0f, spacing);
-        String errorMessage = downloadTask.getErrorMessage();
-        if (errorMessage == null || errorMessage.isEmpty()) {
-            ImGui.text(String.format("%s/%s", humanizeFileSize(downloadTask.getDownloadSize()), humanizeFileSize(downloadTask.getContentLength())));
-        } else {
-            ImGui.textColored(ImColor.rgb(255, 0, 0), errorMessage);
-        }
-        ImGui.newLine();
-        ImGui.popID();
     }
 
     public static String humanizeFileSize(long bytes) {
