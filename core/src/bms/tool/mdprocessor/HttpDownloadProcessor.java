@@ -133,16 +133,34 @@ public class HttpDownloadProcessor {
             return;
         }
 
+        executeDownloadTask(downloadTask);
+    }
+
+    /**
+     * Execute the download task, which are chained steps:
+     * <ol>
+     *     <li>Download the archive file from url</li>
+     *     <li>Extract the package</li>
+     *     <li>Update download directory</li>
+     *     <li>Delete the archive file</li>
+     * </ol>
+     *
+     * @param downloadTask task
+     */
+    public void executeDownloadTask(DownloadTask downloadTask) {
         executor.submit(() -> {
+            String taskName = downloadTask.getName();
+            String downloadURL = downloadTask.getUrl();
+            String hash = downloadTask.getHash();
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Trying to kick new download task[%s](%s)", taskName, downloadURL));
             downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloading);
             Path result = null;
             // 1) Download file from remote http server
             try {
-                result = downloadFileFromURL(downloadTask, String.format("%s.7z", md5));
+                result = downloadFileFromURL(downloadTask, String.format("%s.7z", hash));
             } catch (Exception e) {
                 e.printStackTrace();
-                ImGuiNotify.error(String.format("Failed downloading from %s due to %s", sourceName, e.getMessage()));
+                ImGuiNotify.error(String.format("Failed downloading from %s due to %s", httpDownloadSource.getName(), e.getMessage()));
             }
             if (result == null) {
                 // Download failed, skip the remaining steps
@@ -177,12 +195,20 @@ public class HttpDownloadProcessor {
     }
 
     /**
+     * Retry a download task
+     */
+    public void retryDownloadTask(DownloadTask downloadTask) {
+        downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Prepare);
+        executeDownloadTask(downloadTask);
+    }
+
+    /**
      * Download a file from url (no intermediate file protection)
      *
      * @param fallbackFileName fallback file name if remote server's response doesn't contain a valid file name
      * @return result file path, null if failed
      */
-    private Path downloadFileFromURL(DownloadTask task, String fallbackFileName) throws FileNotFoundException {
+    private Path downloadFileFromURL(DownloadTask task, String fallbackFileName) {
         HttpURLConnection conn = null;
         InputStream is = null;
         FileOutputStream fos = null;
