@@ -25,6 +25,7 @@ import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.external.*;
+import bms.player.beatoraja.obs.*;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.ir.*;
@@ -117,6 +118,9 @@ public class MainController {
 	private HttpDownloadProcessor httpDownloadProcessor;
 
 	private StreamController streamController;
+
+	private ObsListener obsListener;
+	private ObsWsClient obsClient;
 
 	public static final int offsetCount = SkinProperty.OFFSET_MAX + 1;
 	private final SkinOffset[] offset = new SkinOffset[offsetCount];
@@ -228,6 +232,12 @@ public class MainController {
 		if(config.isUseDiscordRPC()) {
 			stateListener.add(new DiscordListener());
 		}
+
+		if(config.isUseObsWs()) {
+			obsListener = new ObsListener(config);
+			obsClient = obsListener.getObsClient();
+			stateListener.add(obsListener);
+		}
 	}
 
 	public SkinOffset getOffset(int index) {
@@ -330,6 +340,25 @@ public class MainController {
 
 	public MainState getCurrentState() {
 		return current;
+	}
+
+	public static MainStateType getStateType(MainState state) {
+		if (state instanceof KeyConfiguration) {
+			return MainStateType.CONFIG;
+		} else if (state instanceof BMSPlayer) {
+			return MainStateType.PLAY;
+		} else if (state instanceof MusicSelector) {
+			return MainStateType.MUSICSELECT;
+		} else if (state instanceof SkinConfiguration) {
+			return MainStateType.SKINCONFIG;
+		} else if (state instanceof CourseResult) {
+			return MainStateType.COURSERESULT;
+		} else if (state instanceof MusicDecide) {
+			return MainStateType.DECIDE;
+		} else if (state instanceof MusicResult) {
+			return MainStateType.RESULT;
+		}
+		return null;
 	}
 
 	public void setPlayMode(BMSPlayerMode auto) {
@@ -674,6 +703,11 @@ public class MainController {
                     	new ScreenShotFileExporter().send(current, pixels);
                     });
                     screenshot.start();
+                    if (config.isUseObsWs() && obsClient != null) {
+                      if (!obsClient.isRecording()) {
+                        obsClient.saveLastRecording();
+                      }
+                    }
                 }
             }
 

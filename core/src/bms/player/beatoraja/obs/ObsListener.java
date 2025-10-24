@@ -1,0 +1,116 @@
+package bms.player.beatoraja.obs;
+
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import bms.player.beatoraja.Config;
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.MainState.MainStateType;
+import bms.player.beatoraja.MainStateListener;
+import bms.player.beatoraja.launcher.ObsConfigurationView;
+
+public class ObsListener implements MainStateListener {
+
+	private final Config config;
+	private final ObsWsClient obsClient;
+
+	private MainStateType lastStateType;
+	private ScheduledFuture<?> scheduledStopTask;
+
+	private Boolean instantStopRecord = false;
+
+	public ObsListener(Config config) {
+		this.config = config;
+		ObsWsClient client = null;
+		try {
+			client = new ObsWsClient(config);
+			client.connectAsync();
+		} catch (Exception e) {
+			System.err.println("Failed to initialize OBS client: " + e.getMessage());
+		}
+		this.obsClient = client;
+	}
+
+	public ObsWsClient getObsClient() {
+		return obsClient;
+	}
+
+	public void triggerReplay() {
+		if (obsClient == null || !obsClient.isConnected()) {
+			return;
+		}
+		if (obsClient.isRecording()) {
+			obsClient.restartRecording();
+		}
+		triggerStateChange(MainStateType.MUSICSELECT);
+		obsClient.scheduler.schedule(() -> triggerStateChange(MainStateType.PLAY), 1000, TimeUnit.MILLISECONDS);
+	}
+
+	public void triggerStateChange(MainStateType stateType) {
+		final String scene = config.getObsScene(stateType.name());
+		final String action = config.getObsAction(stateType.name());
+
+		if (scheduledStopTask != null && !scheduledStopTask.isDone()) {
+			scheduledStopTask.cancel(false);
+			try {
+				instantStopRecord = true;
+				obsClient.requestStopRecord();
+			} catch (Exception e) {
+				System.err.println("Failed to send early StopRecord: " + e.getMessage());
+			}
+			scheduledStopTask = null;
+		}
+
+		try {
+			if (scene != null && !scene.isEmpty() && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
+				obsClient.setScene(scene);
+			}
+			if (action != null && !action.isEmpty() && !action.equals(ObsConfigurationView.ACTION_NONE)) {
+				if (action.equals("StopRecord")) {
+					int delay = config.getObsWsRecStopWait();
+					if (instantStopRecord) {
+						instantStopRecord = false;
+						delay = 0;
+					}
+					scheduledStopTask = obsClient.scheduler.schedule(
+							() -> {
+								obsClient.requestStopRecord();
+								scheduledStopTask = null;
+							},
+							delay,
+							TimeUnit.MILLISECONDS);
+				} else {
+					obsClient.sendRequest(action);
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to send OBS request: " + e.getMessage());
+		}
+	}
+
+	@Override
+	public void update(MainState currentState, int status) {
+		if (obsClient == null) {
+			return;
+		}
+
+		final MainStateType currentStateType = MainController.getStateType(currentState);
+		if (currentStateType == null) {
+			return;
+		}
+		if (currentStateType == MainStateType.PLAY && lastStateType == MainStateType.PLAY) {
+			triggerReplay();
+		} else if (currentStateType != lastStateType) {
+			triggerStateChange(currentStateType);
+		}
+
+		lastStateType = currentStateType;
+	}
+
+	public void close() {
+		if (obsClient != null) {
+			obsClient.close();
+		}
+	}
+}

@@ -12,6 +12,9 @@ import java.text.ParseException;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.system.RobustFile;
+import java.util.Map;
+import java.util.HashMap;
+
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
@@ -191,6 +194,19 @@ public class Config implements Validatable {
 	 * Discord webhook urls
 	 */
 	private String[] webhookUrl = new String[0];
+
+	/**
+	 * OBS WebSocket Control
+	 */
+	private boolean useObsWs = false;
+	private String obsWsHost = "localhost";
+	private int obsWsPort = 4455;
+	private boolean obsWsAuth = false;
+	private String obsWsPass = "";
+	private int obsWsRecStopWait = 5000;
+	private int obsWsRecMode = 0;
+	private Map<String, String> obsScenes = new HashMap<>();
+	private Map<String, String> obsActions = new HashMap<>();
 
 	/**
 	 * Bank of available tables
@@ -520,7 +536,39 @@ public class Config implements Validatable {
 	public void setUseDiscordRPC(boolean useDiscordRPC) {
 		this.useDiscordRPC = useDiscordRPC;
 	}
+
+	public boolean isUseObsWs() {
+		return useObsWs;
+	}
+
+	public void setUseObsWs(boolean useObsWs) {
+		this.useObsWs = useObsWs;
+	}
+
+	public boolean isObsWsUseAuth() {
+		return obsWsAuth;
+	}
 	
+	public void setObsWsUseAuth(boolean obsWsAuth) {
+		this.obsWsAuth = obsWsAuth;
+	}
+
+	public Map<String, String> getObsScenes() {
+		return obsScenes;
+	}
+
+	public void setObsScenes(Map<String, String> obsScenes) {
+		this.obsScenes = obsScenes;
+	}
+
+	public Map<String, String> getObsActions() {
+		return obsActions;
+	}
+
+	public void setObsActions(Map<String, String> obsActions) {
+		this.obsActions = obsActions;
+	}
+
 	public boolean isSetClipboardWhenScreenshot() {
 		return setClipboardScreenshot;
 	}
@@ -709,6 +757,56 @@ public class Config implements Validatable {
     public int getWebhookOption() { return webhookOption; }
 
     public void setWebhookOption(int webhookOption) { this.webhookOption = webhookOption; }
+
+	public String getObsWsHost() { return obsWsHost; }
+
+	public void setObsWsHost(String obsWsHost) { this.obsWsHost = obsWsHost; }
+
+	public int getObsWsPort() { return obsWsPort; }
+
+	public void setObsWsPort(int obsWsPort) {
+		this.obsWsPort = Math.max(0, Math.min(obsWsPort, 65535));
+	}
+
+	public String getObsWsPass() { return obsWsPass; }
+
+	public void setObsWsPass(String obsWsPass) { this.obsWsPass = obsWsPass; }
+
+	public int getObsWsRecStopWait() { return obsWsRecStopWait; }
+
+	public void setObsWsRecStopWait(int obsWsRecStopWait) {
+		this.obsWsRecStopWait = Math.max(0, Math.min(obsWsRecStopWait, 10000));
+	}
+
+	public int getObsWsRecMode() { return obsWsRecMode; }
+
+	public void setObsWsRecMode(int obsWsRecMode) {
+		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, 1));
+	}
+
+	public String getObsScene(String stateName) {
+		return obsScenes.get(stateName);
+	}
+
+	public void setObsScene(String stateName, String sceneName) {
+		if (sceneName == null || sceneName.isEmpty()) {
+			obsScenes.remove(stateName);
+		} else {
+			obsScenes.put(stateName, sceneName);
+		}
+	}
+
+	public String getObsAction(String stateName) {
+		return obsActions.get(stateName);
+	}
+
+	public void setObsAction(String stateName, String actionName) {
+		if (actionName == null || actionName.isEmpty()) {
+			obsActions.remove(stateName);
+		} else {
+			obsActions.put(stateName, actionName);
+		}
+	}
 
     public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
