@@ -47,21 +47,31 @@ public class ObsListener implements MainStateListener {
 		obsClient.scheduler.schedule(() -> triggerStateChange(MainStateType.PLAY), 1000, TimeUnit.MILLISECONDS);
 	}
 
-	public void triggerStateChange(MainStateType stateType) {
+	private synchronized Boolean cancelScheduledStop() {
+		if (scheduledStopTask != null && !scheduledStopTask.isDone()) {
+			scheduledStopTask.cancel(false);
+			scheduledStopTask = null;
+			return true;
+		}
+		return false;
+	}
+
+	public synchronized void triggerStateChange(MainStateType stateType) {
+		if (obsClient == null || !obsClient.isConnected()) {
+			return;
+		}
+
 		final String scene = config.getObsScene(stateType.name());
 		final String action = config.getObsAction(stateType.name());
 
-		if (scheduledStopTask != null && !scheduledStopTask.isDone()) {
-			scheduledStopTask.cancel(false);
+		if (cancelScheduledStop()) {
+			instantStopRecord = true;
 			try {
-				instantStopRecord = true;
 				obsClient.requestStopRecord();
 			} catch (Exception e) {
 				System.err.println("Failed to send early StopRecord: " + e.getMessage());
 			}
-			scheduledStopTask = null;
 		}
-
 		try {
 			if (scene != null && !scene.isEmpty() && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
 				obsClient.setScene(scene);

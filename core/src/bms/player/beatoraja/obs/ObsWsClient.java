@@ -138,6 +138,7 @@ public class ObsWsClient {
 							isIdentified = true;
 							sendRequest("GetVersion");
 							sendRequest("GetSceneList");
+							sendRequest("GetRecordStatus");
 							break;
 						case 5: // Event
 							handleEvent(json);
@@ -211,17 +212,20 @@ public class ObsWsClient {
 								case "OBS_WEBSOCKET_OUTPUT_STOPPED":
 									isRecording = false;
 									notifyMessage = "Recording stopped";
-									if (restartRecording) {
-										restartRecording = false;
-										if (recordingMode != ObsRecordingMode.KEEP_ALL) {
-											File file = new File(outputPath);
-											if (file.exists() && file.isFile()) {
-												if (file.delete()) {
-													notifyMessage += " and discarded";
-												}
+									synchronized (this) {
+										if (restartRecording) {
+											restartRecording = false;
+											if (recordingMode != ObsRecordingMode.KEEP_ALL) {
+												final String pathToDelete = outputPath;
+												scheduler.execute(() -> {
+													File file = new File(pathToDelete);
+													if (file.exists() && file.isFile()) {
+														file.delete();
+													}
+												});
 											}
+											scheduler.schedule(this::requestStartRecord, 500, TimeUnit.MILLISECONDS);
 										}
-										scheduler.schedule(this::requestStartRecord, 500, TimeUnit.MILLISECONDS);
 									}
 									lastOutputPath = outputPath;
 									break;
@@ -234,12 +238,14 @@ public class ObsWsClient {
 											notifyMessage += ", last recording saved";
 										} else {
 											if (lastOutputPath != null && !lastOutputPath.isBlank()) {
-												File file = new File(lastOutputPath);
-												if (file.exists() && file.isFile()) {
-													if (file.delete()) {
-														notifyMessage += ", last recording deleted";
+												final String pathToDelete = lastOutputPath;
+												scheduler.execute(() -> {
+													File file = new File(pathToDelete);
+													if (file.exists() && file.isFile()) {
+														file.delete();
 													}
-												}
+												});
+												notifyMessage += ", last recording deleted";
 											}
 										}
 									}
@@ -341,6 +347,11 @@ public class ObsWsClient {
 						onScenesReceived.accept(sceneNames);
 					}
 					break;
+				case "GetRecordStatus":
+					if (responseData.has("outputActive")) {
+						isRecording = responseData.get("outputActive").asBoolean();
+					}
+					break;
 			}
 		} catch (Exception e) {
 			System.err.println("Error handling request response: " + e.getMessage());
@@ -405,16 +416,26 @@ public class ObsWsClient {
 		});
 	}
 
+	private boolean canSendRequest() {
+		return isConnected && isIdentified && !isReconnecting;
+	}
+
 	public void requestStartRecord() {
+		if (!canSendRequest() || isRecording) {
+			return;
+		}
 		sendRequest("StartRecord");
 	}
 
 	public void requestStopRecord() {
+		if (!canSendRequest() || !isRecording) {
+			return;
+		}
 		sendRequest("StopRecord");
 	}
 
 	public void saveLastRecording() {
-		if (!isConnected || !isIdentified) {
+		if (!canSendRequest()) {
 			return;
 		}
 
@@ -425,7 +446,7 @@ public class ObsWsClient {
 	}
 
 	public void setScene(String sceneName) {
-		if (!isConnected || !isIdentified) {
+		if (!canSendRequest()) {
 			return;
 		}
 		try {
@@ -448,7 +469,7 @@ public class ObsWsClient {
 	}
 
 	public void sendRequest(String requestType) {
-		if (!isConnected || !isIdentified) {
+		if (!canSendRequest()) {
 			return;
 		}
 		try {
@@ -484,8 +505,16 @@ public class ObsWsClient {
 		return isRecording;
 	}
 
-	public void restartRecording() {
+	public synchronized void restartRecording() {
+		if (!canSendRequest() || restartRecording) {
+			return;
+		}
+		if (!isRecording) {
+			requestStartRecord();
+			return;
+		}
 		restartRecording = true;
+		requestStopRecord();
 	}
 
 	public void setAutoReconnect(boolean enabled) {
