@@ -240,6 +240,12 @@ public class MainController {
 		}
 	}
 
+	public void saveLastRecording() {
+		if (config.isUseObsWs() && obsClient != null) {
+			obsClient.saveLastRecording();
+		}
+	}
+
 	public SkinOffset getOffset(int index) {
 		return offset[index];
 	}
@@ -703,11 +709,7 @@ public class MainController {
                     	new ScreenShotFileExporter().send(current, pixels);
                     });
                     screenshot.start();
-                    if (config.isUseObsWs() && obsClient != null) {
-                      if (!obsClient.isRecording()) {
-                        obsClient.saveLastRecording();
-                      }
-                    }
+                    this.saveLastRecording();
                 }
             }
 

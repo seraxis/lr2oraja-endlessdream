@@ -59,9 +59,10 @@ public class ObsWsClient {
 	private static final double RECONNECT_BACKOFF_MULTIPLIER = 1.25;
 	private int currentReconnectDelay = INITIAL_RECONNECT_DELAY_MS;
 
-	public enum ObsRecordingMode {
-		DEFAULT(0),
-		MANUALSAVE(1);
+	public static enum ObsRecordingMode {
+		KEEP_ALL(0),
+		ON_SCREENSHOT(1),
+		ON_REPLAY(2);
 
 		private int value;
 
@@ -83,7 +84,7 @@ public class ObsWsClient {
 		}
 	}
 
-	private ObsRecordingMode recordingMode = ObsRecordingMode.DEFAULT;
+	private ObsRecordingMode recordingMode = ObsRecordingMode.KEEP_ALL;
 	private String outputPath = "";
 	private String lastOutputPath = "";
 
@@ -212,7 +213,7 @@ public class ObsWsClient {
 									notifyMessage = "Recording stopped";
 									if (restartRecording) {
 										restartRecording = false;
-										if (recordingMode == ObsRecordingMode.MANUALSAVE) {
+										if (recordingMode != ObsRecordingMode.KEEP_ALL) {
 											File file = new File(outputPath);
 											if (file.exists() && file.isFile()) {
 												if (file.delete()) {
@@ -227,7 +228,7 @@ public class ObsWsClient {
 								case "OBS_WEBSOCKET_OUTPUT_STARTED":
 									isRecording = true;
 									notifyMessage = "Recording started";
-									if (recordingMode == ObsRecordingMode.MANUALSAVE) {
+									if (recordingMode != ObsRecordingMode.KEEP_ALL) {
 										if (saveRequested) {
 											saveRequested = false;
 											notifyMessage += ", last recording saved";
@@ -413,9 +414,13 @@ public class ObsWsClient {
 	}
 
 	public void saveLastRecording() {
-		if (!this.saveRequested) {
+		if (!isConnected || !isIdentified) {
+			return;
+		}
+
+		if (!this.saveRequested && recordingMode != ObsRecordingMode.KEEP_ALL) {
 			this.saveRequested = true;
-			ImGuiNotify.info("OBS: Last recording will be kept.");
+			ImGuiNotify.info("OBS: Recording will be kept.");
 		}
 	}
 

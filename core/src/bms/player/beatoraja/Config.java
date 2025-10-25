@@ -781,7 +781,7 @@ public class Config implements Validatable {
 	public int getObsWsRecMode() { return obsWsRecMode; }
 
 	public void setObsWsRecMode(int obsWsRecMode) {
-		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, 1));
+		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, 2));
 	}
 
 	public String getObsScene(String stateName) {
