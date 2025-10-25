@@ -41,13 +41,6 @@
 			GridPane.columnIndex="1" GridPane.rowIndex="3" maxWidth="250"/>
 	</GridPane>
 
-	<HBox spacing="15" alignment="CENTER_LEFT">
-		<Button fx:id="obsWsConnectButton" text="%OBSWS_CONNECT"
-			onAction="#connect" prefWidth="120"/>
-		<Label fx:id="obsWsConnectLabel" text=""/>
-	</HBox>
-
-	<Separator/>
 
 	<GridPane hgap="15" vgap="12">
 		<columnConstraints>
@@ -70,6 +63,16 @@
 
 	<Separator/>
 
-	<VBox fx:id="listContainer" spacing="10"/>
+  <HBox spacing="15" alignment="CENTER_LEFT">
+    <Button fx:id="obsWsConnectButton" text="%OBSWS_CONNECT"
+      onAction="#connect" prefWidth="120">
+      <tooltip>
+        <Tooltip text="Connect to OBS and get scenes to adjust settings below." />
+      </tooltip>
+    </Button>
+    <Label fx:id="obsWsConnectLabel" text=""/>
+  </HBox>
+
+	<VBox fx:id="listContainer" spacing="5"/>
 </VBox>
 

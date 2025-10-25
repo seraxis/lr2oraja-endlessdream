@@ -73,11 +73,13 @@ public class ObsConfigurationView implements Initializable {
 
 		final ComboBox<String> sceneBox = new ComboBox<>();
 		sceneBox.setDisable(true);
+    sceneBox.setMinWidth(150);
 		sceneBox.getItems().add(SCENE_NONE);
 		sceneBoxes.put(state, sceneBox);
 
 		final ComboBox<String> actionBox = new ComboBox<>();
-		actionBox.setDisable(true);
+		//actionBox.setDisable(true);
+    actionBox.setMinWidth(150);
 		actionBoxes.put(state, actionBox);
 
 		row.getChildren().addAll(label, sceneBox, actionBox);
@@ -251,7 +253,7 @@ public class ObsConfigurationView implements Initializable {
 
 				actionBox.getItems().setAll(ACTION_NONE);
 				actionBox.getItems().addAll(ObsWsClient.OBS_ACTIONS.keySet());
-				actionBox.setDisable(false);
+				//actionBox.setDisable(false);
 
 				if (savedActionLabel != null && !savedActionLabel.isEmpty() &&
 						ObsWsClient.OBS_ACTIONS.keySet().contains(savedActionLabel)) {
