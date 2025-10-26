@@ -37,7 +37,7 @@ public class ObsListener implements MainStateListener {
 		return obsClient;
 	}
 
-	public void triggerReplay() {
+	private void triggerReplay() {
 		if (obsClient == null || !obsClient.isConnected()) {
 			return;
 		}
