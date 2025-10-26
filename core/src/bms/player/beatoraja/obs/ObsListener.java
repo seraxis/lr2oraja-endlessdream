@@ -74,10 +74,10 @@ public class ObsListener implements MainStateListener {
 			}
 		}
 		try {
-			if (scene != null && !scene.isEmpty() && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
+			if (scene != null && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
 				obsClient.setScene(scene);
 			}
-			if (action != null && !action.isEmpty() && !action.equals(ObsConfigurationView.ACTION_NONE)) {
+			if (action != null && !action.equals(ObsConfigurationView.ACTION_NONE)) {
 				if (action.equals("StopRecord")) {
 					int delay = config.getObsWsRecStopWait();
 					if (instantStopRecord) {
