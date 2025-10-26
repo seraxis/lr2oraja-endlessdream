@@ -326,7 +326,7 @@ public class MusicResult extends AbstractResult {
 				main.getPlayDataAccessor().wrireReplayData(rd, resource.getBMSModel(),
 						resource.getPlayerConfig().getLnmode(), index);
 				saveReplay[index] = ReplayStatus.SAVED;
-				main.saveLastRecording();
+				main.saveLastRecording("replay");
 			}
 		}
 	}

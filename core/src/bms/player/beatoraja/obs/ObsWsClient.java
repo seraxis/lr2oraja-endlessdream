@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -43,7 +44,6 @@ public class ObsWsClient {
 	private final AtomicLong requestIdCounter = new AtomicLong(0);
 	private final URI serverUri;
 
-	private Runnable onOpenHandler;
 	private Runnable onCloseHandler;
 	private Consumer<Exception> onErrorHandler;
 	private Consumer<ObsVersionInfo> onVersionReceived;
@@ -72,6 +72,15 @@ public class ObsWsClient {
 
 		public int getValue() {
 			return value;
+		}
+
+		public static ObsRecordingMode fromString(String str) {
+			for (ObsRecordingMode mode : ObsRecordingMode.values()) {
+				if (mode.name().equals(str)) {
+					return mode;
+				}
+			}
+			throw new IllegalArgumentException("No matching enum for value: " + str);
 		}
 
 		public static ObsRecordingMode fromValue(int value) {
@@ -113,10 +122,6 @@ public class ObsWsClient {
 				}
 
 				System.out.println("Connected to OBS WebSocket");
-
-				if (onOpenHandler != null) {
-					onOpenHandler.run();
-				}
 			}
 
 			@Override
@@ -124,7 +129,7 @@ public class ObsWsClient {
 				try {
 					JsonNode json = objectMapper.readTree(message);
 					if (!json.has("op")) {
-						System.err.println("Received malformed JSON (no op): " + message);
+						Logger.getGlobal().warning("Received malformed JSON (no op): " + message);
 						return;
 					}
 
@@ -148,7 +153,7 @@ public class ObsWsClient {
 							break;
 					}
 				} catch (Exception e) {
-					System.err.println("Error processing message: " + e.getMessage());
+					Logger.getGlobal().warning("Error processing message: " + e.getMessage());
 				}
 
 				if (customMessageHandler != null) {
@@ -174,7 +179,7 @@ public class ObsWsClient {
 			@Override
 			public void onError(Exception ex) {
 				if (ex != null && ex.getMessage() != null && !ex.getMessage().isEmpty()) {
-					System.err.println("OBS WebSocket error: " + ex.getMessage());
+					Logger.getGlobal().warning("OBS WebSocket error: " + ex.getMessage());
 				}
 
 				if (onErrorHandler != null) {
@@ -187,84 +192,85 @@ public class ObsWsClient {
 	private void handleEvent(JsonNode json) {
 		try {
 			JsonNode d = json.get("d");
-			if (d != null && d.has("eventType") && d.has("eventData")) {
-				String eventType = d.get("eventType").asText();
-				JsonNode eventData = d.get("eventData");
+			if (d == null || !d.has("eventType") || !d.has("eventData")) {
+				return;
+			}
+			String eventType = d.get("eventType").asText();
+			JsonNode eventData = d.get("eventData");
 
-				switch (eventType) {
-					case "ExitStarted":
-						System.out.println("OBS is shutting down");
-						close();
-						break;
-					case "AuthenticationFailure":
-					case "AuthenticationFailed":
-						System.err.println("OBS authentication failed!");
-						autoReconnect = false;
-						close();
-						break;
-					case "RecordStateChanged":
-						if (eventData.has("outputState")) {
-							String outputState = eventData.get("outputState").asText();
-							outputPath = eventData.has("outputPath") ? eventData.get("outputPath").asText() : "";
-							String notifyMessage = "";
+			switch (eventType) {
+				case "ExitStarted":
+				Logger.getGlobal().info("OBS is shutting down");
+					close();
+					break;
+				case "AuthenticationFailure":
+				case "AuthenticationFailed":
+					Logger.getGlobal().warning("OBS authentication failed!");
+					autoReconnect = false;
+					close();
+					break;
+				case "RecordStateChanged":
+					if (eventData.has("outputState")) {
+						String outputState = eventData.get("outputState").asText();
+						outputPath = eventData.has("outputPath") ? eventData.get("outputPath").asText() : "";
+						String notifyMessage = "";
 
-							switch (outputState) {
-								case "OBS_WEBSOCKET_OUTPUT_STOPPED":
-									isRecording = false;
-									notifyMessage = "Recording stopped";
-									synchronized (this) {
-										if (restartRecording) {
-											restartRecording = false;
-											if (recordingMode != ObsRecordingMode.KEEP_ALL) {
-												final String pathToDelete = outputPath;
-												scheduler.execute(() -> {
-													File file = new File(pathToDelete);
-													if (file.exists() && file.isFile()) {
-														file.delete();
-													}
-												});
-											}
-											scheduler.schedule(this::requestStartRecord, 500, TimeUnit.MILLISECONDS);
+						switch (outputState) {
+							case "OBS_WEBSOCKET_OUTPUT_STOPPED":
+								isRecording = false;
+								notifyMessage = "Recording stopped";
+								synchronized (this) {
+									if (restartRecording) {
+										restartRecording = false;
+										if (recordingMode != ObsRecordingMode.KEEP_ALL) {
+											final String pathToDelete = outputPath;
+											scheduler.execute(() -> {
+												File file = new File(pathToDelete);
+												if (file.exists() && file.isFile()) {
+													file.delete();
+												}
+											});
+										}
+										scheduler.schedule(this::requestStartRecord, 500, TimeUnit.MILLISECONDS);
+									}
+								}
+								lastOutputPath = outputPath;
+								break;
+							case "OBS_WEBSOCKET_OUTPUT_STARTED":
+								isRecording = true;
+								notifyMessage = "Recording started";
+								if (recordingMode != ObsRecordingMode.KEEP_ALL) {
+									if (saveRequested) {
+										saveRequested = false;
+										notifyMessage += ", last recording saved";
+									} else {
+										if (lastOutputPath != null && !lastOutputPath.isBlank()) {
+											final String pathToDelete = lastOutputPath;
+											scheduler.execute(() -> {
+												File file = new File(pathToDelete);
+												if (file.exists() && file.isFile()) {
+													file.delete();
+												}
+											});
+											notifyMessage += ", last recording deleted";
 										}
 									}
-									lastOutputPath = outputPath;
-									break;
-								case "OBS_WEBSOCKET_OUTPUT_STARTED":
-									isRecording = true;
-									notifyMessage = "Recording started";
-									if (recordingMode != ObsRecordingMode.KEEP_ALL) {
-										if (saveRequested) {
-											saveRequested = false;
-											notifyMessage += ", last recording saved";
-										} else {
-											if (lastOutputPath != null && !lastOutputPath.isBlank()) {
-												final String pathToDelete = lastOutputPath;
-												scheduler.execute(() -> {
-													File file = new File(pathToDelete);
-													if (file.exists() && file.isFile()) {
-														file.delete();
-													}
-												});
-												notifyMessage += ", last recording deleted";
-											}
-										}
-									}
-									break;
-							}
-
-							if (notifyMessage.length() > 0) {
-								ImGuiNotify.info(String.format("OBS: %s.", notifyMessage));
-							}
-
-							if (onRecordStateChanged != null) {
-								onRecordStateChanged.accept(outputState);
-							}
+								}
+								break;
 						}
-						break;
-				}
+
+						if (notifyMessage.length() > 0) {
+							ImGuiNotify.info(String.format("OBS: %s.", notifyMessage));
+						}
+
+						if (onRecordStateChanged != null) {
+							onRecordStateChanged.accept(outputState);
+						}
+					}
+					break;
 			}
 		} catch (Exception e) {
-			System.err.println("Error handling event: " + e.getMessage());
+			Logger.getGlobal().warning("Error handling event: " + e.getMessage());
 		}
 	}
 
@@ -278,7 +284,7 @@ public class ObsWsClient {
 
 			if (authRequired) {
 				if (password == null || password.isEmpty()) {
-					System.err.println("Authentication required but no password provided");
+					Logger.getGlobal().warning("Authentication required but no password provided");
 					autoReconnect = false;
 					close();
 					return;
@@ -303,7 +309,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(identify));
 		} catch (Exception e) {
-			System.err.println("Error sending Identify: " + e.getMessage());
+			Logger.getGlobal().warning("Error sending Identify: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -354,7 +360,7 @@ public class ObsWsClient {
 					break;
 			}
 		} catch (Exception e) {
-			System.err.println("Error handling request response: " + e.getMessage());
+			Logger.getGlobal().warning("Error handling request response: " + e.getMessage());
 		}
 	}
 
@@ -399,7 +405,7 @@ public class ObsWsClient {
 			}
 		} catch (Exception e) {
 			if (autoReconnect) {
-				System.err.println("Initial connection failed: " + e.getMessage());
+				Logger.getGlobal().warning("Initial connection failed: " + e.getMessage());
 				scheduleReconnect();
 			} else {
 				throw e;
@@ -434,15 +440,18 @@ public class ObsWsClient {
 		sendRequest("StopRecord");
 	}
 
-	public void saveLastRecording() {
+	public void saveLastRecording(String reason) {
 		if (!canSendRequest()) {
 			return;
 		}
 
-		if (!this.saveRequested && recordingMode != ObsRecordingMode.KEEP_ALL) {
-			this.saveRequested = true;
-			ImGuiNotify.info("OBS: Recording will be kept.");
+		final ObsRecordingMode reasonMode = ObsRecordingMode.fromString(reason);
+		if (this.saveRequested || recordingMode == ObsRecordingMode.KEEP_ALL || reasonMode != recordingMode) {
+			return;
 		}
+
+		this.saveRequested = true;
+		ImGuiNotify.info("OBS: Recording will be kept.");
 	}
 
 	public void setScene(String sceneName) {
@@ -464,7 +473,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(request));
 		} catch (Exception e) {
-			System.err.println("Error setting scene: " + e.getMessage());
+			Logger.getGlobal().warning("Error setting scene: " + e.getMessage());
 		}
 	}
 
@@ -483,7 +492,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(request));
 		} catch (Exception e) {
-			System.err.println("Error sending request: " + e.getMessage());
+			Logger.getGlobal().warning("Error sending request: " + e.getMessage());
 		}
 	}
 
@@ -552,10 +561,6 @@ public class ObsWsClient {
 			}
 		}
 		return null;
-	}
-
-	public void setOnOpen(Runnable handler) {
-		this.onOpenHandler = handler;
 	}
 
 	public void setOnClose(Runnable handler) {

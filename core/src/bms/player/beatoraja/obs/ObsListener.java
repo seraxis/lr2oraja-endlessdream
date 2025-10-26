@@ -2,6 +2,7 @@ package bms.player.beatoraja.obs;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
@@ -27,7 +28,7 @@ public class ObsListener implements MainStateListener {
 			client = new ObsWsClient(config);
 			client.connectAsync();
 		} catch (Exception e) {
-			System.err.println("Failed to initialize OBS client: " + e.getMessage());
+			Logger.getGlobal().warning("Failed to initialize OBS client: " + e.getMessage());
 		}
 		this.obsClient = client;
 	}
@@ -69,7 +70,7 @@ public class ObsListener implements MainStateListener {
 			try {
 				obsClient.requestStopRecord();
 			} catch (Exception e) {
-				System.err.println("Failed to send early StopRecord: " + e.getMessage());
+				Logger.getGlobal().warning("Failed to send early StopRecord: " + e.getMessage());
 			}
 		}
 		try {
@@ -95,7 +96,7 @@ public class ObsListener implements MainStateListener {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("Failed to send OBS request: " + e.getMessage());
+			Logger.getGlobal().warning("Failed to send OBS request: " + e.getMessage());
 		}
 	}
 

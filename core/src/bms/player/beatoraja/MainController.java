@@ -240,9 +240,9 @@ public class MainController {
 		}
 	}
 
-	public void saveLastRecording() {
+	public void saveLastRecording(String reason) {
 		if (config.isUseObsWs() && obsClient != null) {
-			obsClient.saveLastRecording();
+			obsClient.saveLastRecording(reason);
 		}
 	}
 
@@ -709,7 +709,7 @@ public class MainController {
                     	new ScreenShotFileExporter().send(current, pixels);
                     });
                     screenshot.start();
-                    this.saveLastRecording();
+                    this.saveLastRecording("screenshot");
                 }
             }
 
