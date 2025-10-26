@@ -314,7 +314,7 @@ public class CourseResult extends AbstractResult {
 				main.getPlayDataAccessor().wrireReplayData(rd, resource.getCourseBMSModels(),
 						resource.getPlayerConfig().getLnmode(), index, resource.getConstraint());
 				saveReplay[index] = ReplayStatus.SAVED;
-				main.saveLastRecording("replay");
+				main.saveLastRecording("ON_REPLAY");
 			}
 		}
 	}

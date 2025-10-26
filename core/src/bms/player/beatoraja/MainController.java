@@ -709,7 +709,7 @@ public class MainController {
                     	new ScreenShotFileExporter().send(current, pixels);
                     });
                     screenshot.start();
-                    this.saveLastRecording("screenshot");
+                    this.saveLastRecording("ON_SCREENSHOT");
                 }
             }
 
