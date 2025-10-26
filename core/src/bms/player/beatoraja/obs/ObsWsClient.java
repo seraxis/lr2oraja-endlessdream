@@ -384,6 +384,7 @@ public class ObsWsClient {
 				}
 
 			} catch (Exception e) {
+				// Reconnect delay will be reset once succesfully connected
 				currentReconnectDelay = Math.min(
 						(int) (currentReconnectDelay * RECONNECT_BACKOFF_MULTIPLIER),
 						MAX_RECONNECT_DELAY_MS);
