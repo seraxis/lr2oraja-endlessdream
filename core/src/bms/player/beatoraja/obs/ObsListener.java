@@ -17,9 +17,8 @@ public class ObsListener implements MainStateListener {
 	private final ObsWsClient obsClient;
 
 	private MainStateType lastStateType;
-	private ScheduledFuture<?> scheduledStopTask;
 
-	private Boolean instantStopRecord = false;
+	private volatile ScheduledFuture<?> scheduledStopTask;
 
 	public ObsListener(Config config) {
 		this.config = config;
@@ -48,11 +47,12 @@ public class ObsListener implements MainStateListener {
 		obsClient.scheduler.schedule(() -> triggerStateChange(MainStateType.PLAY), 1000, TimeUnit.MILLISECONDS);
 	}
 
-	private synchronized Boolean cancelScheduledStop() {
-		if (scheduledStopTask != null && !scheduledStopTask.isDone()) {
-			scheduledStopTask.cancel(false);
+	private synchronized boolean cancelScheduledStop() {
+		ScheduledFuture<?> task = scheduledStopTask;
+		if (task != null && !task.isDone()) {
+			boolean cancelled = task.cancel(true);
 			scheduledStopTask = null;
-			return true;
+			return cancelled;
 		}
 		return false;
 	}
@@ -65,14 +65,16 @@ public class ObsListener implements MainStateListener {
 		final String scene = config.getObsScene(stateType.name());
 		final String action = config.getObsAction(stateType.name());
 
-		if (cancelScheduledStop()) {
-			instantStopRecord = true;
+		// If a StopRecord action was already scheduled, StopRecord immediately
+		boolean stopRecordNow = cancelScheduledStop();
+		if (stopRecordNow) {
 			try {
 				obsClient.requestStopRecord();
 			} catch (Exception e) {
 				Logger.getGlobal().warning("Failed to send early StopRecord: " + e.getMessage());
 			}
 		}
+
 		try {
 			if (scene != null && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
 				obsClient.setScene(scene);
@@ -80,17 +82,21 @@ public class ObsListener implements MainStateListener {
 			if (action != null && !action.equals(ObsConfigurationView.ACTION_NONE)) {
 				if (action.equals("StopRecord")) {
 					int delay = config.getObsWsRecStopWait();
-					if (instantStopRecord) {
-						instantStopRecord = false;
-						delay = 0;
+					// We already executed StopRecord above
+					if (stopRecordNow) {
+						return;
 					}
-					scheduledStopTask = obsClient.scheduler.schedule(
-							() -> {
-								obsClient.requestStopRecord();
+					scheduledStopTask = obsClient.scheduler.schedule(() -> {
+						try {
+							obsClient.requestStopRecord();
+						} catch (Exception e) {
+							Logger.getGlobal().warning("Failed to stop recording: " + e.getMessage());
+						} finally {
+							synchronized (ObsListener.this) {
 								scheduledStopTask = null;
-							},
-							delay,
-							TimeUnit.MILLISECONDS);
+							}
+						}
+					}, delay, TimeUnit.MILLISECONDS);
 				} else {
 					obsClient.sendRequest(action);
 				}
@@ -110,6 +116,7 @@ public class ObsListener implements MainStateListener {
 		if (currentStateType == null) {
 			return;
 		}
+
 		if (currentStateType == MainStateType.PLAY && lastStateType == MainStateType.PLAY) {
 			triggerReplay();
 		} else if (currentStateType != lastStateType) {
@@ -120,6 +127,13 @@ public class ObsListener implements MainStateListener {
 	}
 
 	public void close() {
+		synchronized (this) {
+			ScheduledFuture<?> task = scheduledStopTask;
+			if (task != null && !task.isDone()) {
+				task.cancel(false);
+				scheduledStopTask = null;
+			}
+		}
 		if (obsClient != null) {
 			obsClient.close();
 		}

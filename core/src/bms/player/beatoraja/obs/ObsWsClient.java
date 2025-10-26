@@ -120,8 +120,6 @@ public class ObsWsClient {
 					reconnectTask.cancel(false);
 					reconnectTask = null;
 				}
-
-				System.out.println("Connected to OBS WebSocket");
 			}
 
 			@Override
