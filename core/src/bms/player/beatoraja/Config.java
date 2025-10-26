@@ -1,6 +1,7 @@
 package bms.player.beatoraja;
 
 import static bms.player.beatoraja.Resolution.*;
+import static bms.player.beatoraja.obs.ObsWsClient.ObsRecordingMode;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -781,7 +782,7 @@ public class Config implements Validatable {
 	public int getObsWsRecMode() { return obsWsRecMode; }
 
 	public void setObsWsRecMode(int obsWsRecMode) {
-		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, 2));
+		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, ObsRecordingMode.values().length - 1));
 	}
 
 	public String getObsScene(String stateName) {
