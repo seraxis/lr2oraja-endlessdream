@@ -766,7 +766,7 @@ public class Config implements Validatable {
 	public int getObsWsPort() { return obsWsPort; }
 
 	public void setObsWsPort(int obsWsPort) {
-		this.obsWsPort = Math.max(0, Math.min(obsWsPort, 65535));
+		this.obsWsPort = MathUtils.clamp(obsWsPort, 0, 65535);
 	}
 
 	public String getObsWsPass() { return obsWsPass; }
@@ -776,13 +776,13 @@ public class Config implements Validatable {
 	public int getObsWsRecStopWait() { return obsWsRecStopWait; }
 
 	public void setObsWsRecStopWait(int obsWsRecStopWait) {
-		this.obsWsRecStopWait = Math.max(0, Math.min(obsWsRecStopWait, 10000));
+		this.obsWsRecStopWait = MathUtils.clamp(obsWsRecStopWait, 0, 10000);
 	}
 
 	public int getObsWsRecMode() { return obsWsRecMode; }
 
 	public void setObsWsRecMode(int obsWsRecMode) {
-		this.obsWsRecMode = Math.max(0, Math.min(obsWsRecMode, ObsRecordingMode.values().length - 1));
+		this.obsWsRecMode = MathUtils.clamp(obsWsRecMode, 0, ObsRecordingMode.values().length - 1);
 	}
 
 	public String getObsScene(String stateName) {
