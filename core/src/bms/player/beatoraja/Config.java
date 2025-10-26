@@ -206,8 +206,8 @@ public class Config implements Validatable {
 	private String obsWsPass = "";
 	private int obsWsRecStopWait = 5000;
 	private int obsWsRecMode = 0;
-	private Map<String, String> obsScenes = new HashMap<>();
-	private Map<String, String> obsActions = new HashMap<>();
+	private HashMap<String, String> obsScenes = new HashMap<>();
+	private HashMap<String, String> obsActions = new HashMap<>();
 
 	/**
 	 * Bank of available tables
@@ -554,19 +554,19 @@ public class Config implements Validatable {
 		this.obsWsAuth = obsWsAuth;
 	}
 
-	public Map<String, String> getObsScenes() {
+	public HashMap<String, String> getObsScenes() {
 		return obsScenes;
 	}
 
-	public void setObsScenes(Map<String, String> obsScenes) {
+	public void setObsScenes(HashMap<String, String> obsScenes) {
 		this.obsScenes = obsScenes;
 	}
 
-	public Map<String, String> getObsActions() {
+	public HashMap<String, String> getObsActions() {
 		return obsActions;
 	}
 
-	public void setObsActions(Map<String, String> obsActions) {
+	public void setObsActions(HashMap<String, String> obsActions) {
 		this.obsActions = obsActions;
 	}
 
