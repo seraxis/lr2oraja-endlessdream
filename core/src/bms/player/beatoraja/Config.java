@@ -441,7 +441,7 @@ public class Config implements Validatable {
 	}
 
 	public boolean isShowNoSongExistingBar() {
-		return showNoSongExistingBar;
+		return showNoSongExistingBar || isEnableHttp();
 	}
 
 	public void setShowNoSongExistingBar(boolean showNoExistingSongBar) {
