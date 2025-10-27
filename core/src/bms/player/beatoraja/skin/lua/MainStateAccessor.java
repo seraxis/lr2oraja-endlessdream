@@ -36,12 +36,7 @@ public class MainStateAccessor {
 		table.set("event_index", this.new event_index());
 
 		// Endless Dream flag
-		table.set("is_endlessdream", new ZeroArgFunction() {
-			@Override
-			public LuaValue call() {
-				return LuaBoolean.TRUE;
-			}
-		});
+		table.set("is_endlessdream", LuaBoolean.TRUE);
 
 		// Endless Dream only properties
 		table.set("current_bgm_path", new ZeroArgFunction() {
