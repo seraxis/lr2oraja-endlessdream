@@ -62,6 +62,10 @@ public class BooleanPropertyFactory {
 			result = getBooleanProperty0(id);
 		}
 
+		if (result == null) {
+			result = EndlessDreamPropertyFactory.getBooleanProperty(id);
+		}
+
 		if (result != null) {
 			if(optionid < 0) {
 				final BooleanProperty dc = result;
@@ -680,6 +684,10 @@ public class BooleanPropertyFactory {
 		private BooleanType(int id, BooleanProperty property) {
 			this.id = id;
 			this.property = property;
+		}
+
+		public int getId() {
+			return id;
 		}
 	}
 }
