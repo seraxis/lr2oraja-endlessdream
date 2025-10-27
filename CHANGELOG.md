@@ -26,7 +26,7 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
-# Prerelease
+# 0.3.1 Prerelease
 
 New features:
 - Song manager now lets you sort songs by least recently played first. (#96)
@@ -34,8 +34,13 @@ New features:
 - New launcher option (Music Select tab) to entirely skip the decide screen (#88)
 - Can now configure the lane cover, lift, and hidden in-game (misc settings) (#102)
 - Added basic support for sending scores to Discord via webhooks (#97)
-- In-game LR2IR leaderboard viewing (#109)
+- In-game leaderboards for beatoraja IR and for LR2IR (read-only) (#109)
 - Automatically normalizing volume per-chart  (#105)
+- In-game skin widget manager (#79)
+- Song select context menu, accessed with former autoplay and practice keys (#119)
+- Live skin configuration (#107)
+- New difficulty table management UI, allows adding from a built-in list of popular tables (#130)
+- Ghost battle against LR2IR scores; accessed through the new in-game LR2IR leaderboard (#131)
 
 Behavior changes:
 - Changed the default analog scratch threshold from 100 to 50 (9b3a17b6f0d0a82b1c878a561f039e94cea76b36)
@@ -46,12 +51,18 @@ Behavior changes:
 - Improved audio when changing between scenes (#92)
 - Music preview generated with the preview generator tool will now have lower priority (#91)
 - Skins with large bitmap fonts will now load faster (#106)
+- Currently downloading songs now display a progress bar (#110)
+- Launcher: loading tables and BMS files will display a progress window. (#129) Please wait warmly...
 
 Bug fixes:
 - Fixed a crash when launching borderless without a set monitor (31f81b8cf87094cda152387cca74a9de5002ee4d)
 - Fixed several issues with loading osu files ([parser #2](https://github.com/seraxis/jbms-parser/pull/2))
 - On Linux, fixed opening chart folders with F3, the broken new version download link,
   and the launcher becoming non-functional after starting the game (#98)
+- Fixed Discord rich presence on macOS (#127)
+- Fixed bitmap font text display incorrectly becoming transparent when the previously
+  displayed skin element made use of a blending mode. (fdc1d787a584af88f82c76756fa6d0be4ee48c2b)
+- Fixed a crash caused by incorrect entries in some difficulty tables. (#128)
 
 Known issues:
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case
