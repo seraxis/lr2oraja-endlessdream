@@ -33,7 +33,7 @@ public class SongManagerMenu {
             String lastPlayRecordTime = currentScoreData.map(scoreData -> {
                 Date date = new Date(scoreData.getDate() * 1000L);
                 return simpleDateFormat.format(date);
-            }).orElse("No Data");
+            }).orElse("Not played");
             ImGui.text("current picking: " + songName);
 
             ImGui.text("Last played: " + lastPlayRecordTime);
