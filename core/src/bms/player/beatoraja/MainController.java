@@ -467,7 +467,7 @@ public class MainController {
 		}
 
 		if(ir.length > 0) {
-			ImGuiNotify.info("%d IR Connection Succeed", ir.length);
+			ImGuiNotify.info(String.format("%d IR Connection Succeed", ir.length));
 
 			Thread irResendProcess = new Thread(() -> {
 				for (;;) {
