@@ -35,6 +35,29 @@ public class MainStateAccessor {
 		table.set("event_exec", this.new event_exec());
 		table.set("event_index", this.new event_index());
 
+		// Endless Dream flag
+		table.set("is_endlessdream", new ZeroArgFunction() {
+			@Override
+			public LuaValue call() {
+				return LuaBoolean.TRUE;
+			}
+		});
+
+		// Endless Dream only properties
+		table.set("current_bgm_path", new ZeroArgFunction() {
+			@Override
+			public LuaValue call() {
+				return LuaString.valueOf(state.main.getSoundManager().getBGMPath().toString());
+			}
+		});
+
+		table.set("current_sound_path", new ZeroArgFunction() {
+			@Override
+			public LuaValue call() {
+				return LuaString.valueOf(state.main.getSoundManager().getSoundPath().toString());
+			}
+		});
+
 		// 具体的な数値の取得・設定など
 		table.set("rate", new ZeroArgFunction() {
 			@Override
