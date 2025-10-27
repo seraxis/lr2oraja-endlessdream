@@ -396,7 +396,9 @@ public final class MusicSelectInputProcessor {
         }
 
         if (input.isControlKeyPressed(ControlKeys.ESCAPE)) {
-            select.main.exit();
+            boolean isTopLevel = select.getBarManager().getDirectory().isEmpty();
+            if (isTopLevel) { select.main.exit(); }
+            else { select.getBarManager().close(); }
         }
     }
 }
