@@ -7,7 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
+import java.util.logging.Logger;
 
 import bms.player.beatoraja.system.RobustFile;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 import com.badlogic.gdx.utils.SerializationException;
+
 
 /**
  * 各種設定項目。config.jsonで保持される
@@ -776,6 +779,7 @@ public class Config implements Validatable {
                 config = RobustFile.load(configpath, parser);
             }
             catch (IOException e) {
+                writeBackupConfigFile();
                 e.printStackTrace();
             }
         } else if(Files.exists(configpath_old)) {
@@ -792,6 +796,16 @@ public class Config implements Validatable {
 			config = new Config();
 		}
 		return validateConfig(config);
+	}
+
+	private static void writeBackupConfigFile() {
+		try {
+            Path configBackupPath = configpath.resolveSibling("config_sys_backup.json");
+			Files.copy(configpath, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
+			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+		} catch (IOException e) {
+			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+		}
 	}
 
 	public static Config validateConfig(Config config) throws PlayerConfigException {
