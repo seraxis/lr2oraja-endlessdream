@@ -418,6 +418,20 @@ public class MainController {
 		});
 		polling.start();
 
+        String lnModeName = switch (player.getLnmode()) {
+            case 1 -> "CN";
+            case 2 -> "HCN";
+            default -> "LN";
+        };
+        if (!lnModeName.equals("LN")) {
+            // give them a really insistent warning
+            String lnWarning = "Long Note mode is " + lnModeName + ".\n"
+                               + "This is not recommended.\n"
+                               + "Your scores may be incompatible with IR.\n"
+                               + "You may change this in play options.";
+            ImGuiNotify.warning(lnWarning, 8000);
+        }
+
 		Array<String> targetlist = new Array<String>(player.getTargetlist());
 		for(int i = 0;i < rivals.getRivalCount();i++) {
 			targetlist.add("RIVAL_" + (i + 1));
