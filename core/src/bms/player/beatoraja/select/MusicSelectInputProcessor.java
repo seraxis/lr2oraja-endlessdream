@@ -97,9 +97,11 @@ public final class MusicSelectInputProcessor {
             select.executeEvent(EventType.sort);
         }
         // LNモードの切り替え
-        if (input.isControlKeyPressed(ControlKeys.NUM3)) {
-            select.executeEvent(EventType.lnmode);
-        }
+        // endless dream - switching ln disabled in-game
+        // you can only change this in configuration
+        // if (input.isControlKeyPressed(ControlKeys.NUM3)) {
+        //     select.executeEvent(EventType.lnmode);
+        // }
 
         final MusicSelectKeyProperty property = MusicSelectKeyProperty.values()[config.getMusicselectinput()];
 
