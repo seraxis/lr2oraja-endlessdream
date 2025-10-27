@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.function.ToIntFunction;
 
 /**
@@ -37,6 +39,8 @@ import java.util.function.ToIntFunction;
 public class LR2IRConnection {
 	private static final String IRUrl = "http://dream-pro.info/~lavalse/LR2IR/2";
 	private static ScoreDatabaseAccessor scoreDatabaseAccessor;
+
+    private static Map<String, LeaderboardEntry[]> lr2IRRankingCache = new HashMap<>();
 
 	public static void setScoreDatabaseAccessor(ScoreDatabaseAccessor scoreDatabaseAccessor) {
 		LR2IRConnection.scoreDatabaseAccessor = scoreDatabaseAccessor;
@@ -108,9 +112,17 @@ public class LR2IRConnection {
 		}
 		LR2IRSongData lr2IRSongData = new LR2IRSongData(chart.md5, "114328");
 		try {
-			String res = makePOSTRequest("/getrankingxml.cgi", lr2IRSongData.toUrlEncodedForm());
-			Ranking ranking = (Ranking) convertXMLToObject(res.substring(1).replace("<lastupdate></lastupdate>", ""), Ranking.class);
-			LeaderboardEntry[] scoreData = ranking.toBeatorajaScoreData(chart);
+            String requestURL = lr2IRSongData.toUrlEncodedForm();
+            LeaderboardEntry[] scoreData;
+            if (lr2IRRankingCache.containsKey(requestURL)) {
+                scoreData = lr2IRRankingCache.get(requestURL);
+            }
+            else {
+                String res = makePOSTRequest("/getrankingxml.cgi", requestURL);
+                Ranking ranking = (Ranking)convertXMLToObject(res.substring(1).replace("<lastupdate></lastupdate>", ""), Ranking.class);
+                scoreData = ranking.toBeatorajaScoreData(chart);
+                lr2IRRankingCache.put(requestURL, scoreData);
+            }
 			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lntype : 0);
 			if (localScore != null) {
 				// This is intentional behaivor, see IRScoreData's player definition
