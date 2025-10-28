@@ -39,19 +39,7 @@ public class MainStateAccessor {
 		table.set("is_endlessdream", LuaBoolean.TRUE);
 
 		// Endless Dream only properties
-		table.set("current_bgm_path", new ZeroArgFunction() {
-			@Override
-			public LuaValue call() {
-				return LuaString.valueOf(state.main.getSoundManager().getBGMPath().toString());
-			}
-		});
-
-		table.set("current_sound_path", new ZeroArgFunction() {
-			@Override
-			public LuaValue call() {
-				return LuaString.valueOf(state.main.getSoundManager().getSoundPath().toString());
-			}
-		});
+		EndlessDreamPropertyFactory.initialize(table);
 
 		// 具体的な数値の取得・設定など
 		table.set("rate", new ZeroArgFunction() {
