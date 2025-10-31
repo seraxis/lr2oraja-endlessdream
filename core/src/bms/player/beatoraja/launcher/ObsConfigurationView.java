@@ -42,6 +42,7 @@ public class ObsConfigurationView implements Initializable {
 	private VBox listContainer;
 
 	private Config config;
+	private String status;
 	private ObsWsClient obsCfgClient;
 
 	private final List<String> states = new ArrayList<>();
@@ -173,7 +174,7 @@ public class ObsConfigurationView implements Initializable {
 
 	@FXML
 	private void connect() {
-		setConnectionStatus("Connecting...");
+		setConnectionStatus("connecting", "Connecting...");
 
 		new Thread(() -> {
 			try {
@@ -206,17 +207,17 @@ public class ObsConfigurationView implements Initializable {
 	}
 
 	private void handleObsError(final Exception ex) {
-		setConnectionStatus("Failed to connect!");
+		setConnectionStatus("connect_fail", "Failed to connect!");
 	}
 
 	private void handleObsClose() {
-		if ("Connecting...".equals(obsWsConnectLabel.getText())) {
-			setConnectionStatus("Authentication failed!");
+		if (status == "connecting") {
+			setConnectionStatus("auth_fail", "Authentication failed!");
 		}
 	}
 
 	private void handleVersionReceived(final ObsVersionInfo version) {
-		setConnectionStatus(version.toString());
+		setConnectionStatus("version_received", version.toString());
 	}
 
 	private void handleScenesReceived(final List<String> scenes) {
@@ -261,8 +262,9 @@ public class ObsConfigurationView implements Initializable {
 		});
 	}
 
-	private void setConnectionStatus(final String status) {
-		Platform.runLater(() -> obsWsConnectLabel.setText(status));
+	private void setConnectionStatus(final String status, final String labelText) {
+		this.status = status;
+		Platform.runLater(() -> obsWsConnectLabel.setText(labelText));
 	}
 
 	private void resetConnectionStatus() {
