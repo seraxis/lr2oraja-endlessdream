@@ -211,7 +211,7 @@ public class ObsConfigurationView implements Initializable {
 	}
 
 	private void handleObsClose() {
-		if (status == "connecting") {
+		if (status.equals("connecting")) {
 			setConnectionStatus("auth_fail", "Authentication failed!");
 		}
 	}
