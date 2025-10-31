@@ -240,6 +240,14 @@ public class MainController {
 		}
 	}
 
+	public boolean hasObsListener() {
+		return obsListener != null;
+	}
+
+	public ObsListener getObsListener() {
+		return obsListener;
+	}
+
 	public void saveLastRecording(String reason) {
 		if (config.isUseObsWs() && obsClient != null) {
 			obsClient.saveLastRecording(reason);

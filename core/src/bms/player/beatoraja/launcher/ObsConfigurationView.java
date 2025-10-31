@@ -1,6 +1,7 @@
 package bms.player.beatoraja.launcher;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,9 @@ public class ObsConfigurationView implements Initializable {
 	private Config config;
 	private ObsWsClient obsCfgClient;
 
-	private final Map<MainStateType, ComboBox<String>> sceneBoxes = new HashMap<>();
-	private final Map<MainStateType, ComboBox<String>> actionBoxes = new HashMap<>();
+	private final List<String> states = new ArrayList<>();
+	private final Map<String, ComboBox<String>> sceneBoxes = new HashMap<>();
+	private final Map<String, ComboBox<String>> actionBoxes = new HashMap<>();
 
 	public static final String SCENE_NONE = "(No Change)";
 	public static final String ACTION_NONE = "(Do Nothing)";
@@ -58,25 +60,30 @@ public class ObsConfigurationView implements Initializable {
 
 	public void init(final PlayConfigurationView main) {
 		for (final MainStateType state : MainStateType.values()) {
-			createStateRow(state);
+			states.add(state.name());
+			createStateRow(state.name());
+			if (state.name().equals("PLAY")) {
+				states.add("PLAY_ENDED");
+				createStateRow("PLAY_ENDED");
+			}
 		}
 	}
 
-	private void createStateRow(final MainStateType state) {
+	private void createStateRow(final String stateName) {
 		final HBox row = new HBox(10);
 
-		final Label label = new Label(state.name());
+		final Label label = new Label(stateName);
 		label.setMinWidth(100);
 
 		final ComboBox<String> sceneBox = new ComboBox<>();
 		sceneBox.setDisable(true);
 		sceneBox.setMinWidth(150);
 		sceneBox.getItems().add(SCENE_NONE);
-		sceneBoxes.put(state, sceneBox);
+		sceneBoxes.put(stateName, sceneBox);
 
 		final ComboBox<String> actionBox = new ComboBox<>();
 		actionBox.setMinWidth(150);
-		actionBoxes.put(state, actionBox);
+		actionBoxes.put(stateName, actionBox);
 
 		row.getChildren().addAll(label, sceneBox, actionBox);
 		listContainer.getChildren().add(row);
@@ -97,12 +104,11 @@ public class ObsConfigurationView implements Initializable {
 	}
 
 	private void loadSavedSelections() {
-		for (final MainStateType state : MainStateType.values()) {
-			final String stateName = state.name();
+		for (final String state : states) {
 
 			final ComboBox<String> sceneBox = sceneBoxes.get(state);
 			if (sceneBox != null) {
-				final String savedScene = config.getObsScene(stateName);
+				final String savedScene = config.getObsScene(state);
 				if (savedScene != null && !savedScene.isEmpty()) {
 					sceneBox.setValue(savedScene);
 				} else {
@@ -112,7 +118,7 @@ public class ObsConfigurationView implements Initializable {
 
 			final ComboBox<String> actionBox = actionBoxes.get(state);
 			if (actionBox != null) {
-				final String savedAction = config.getObsAction(stateName);
+				final String savedAction = config.getObsAction(state);
 				final String savedActionLabel = ObsWsClient.getActionLabel(savedAction);
 				if (savedActionLabel != null && !savedActionLabel.isEmpty()) {
 					actionBox.setValue(savedActionLabel);
@@ -138,16 +144,14 @@ public class ObsConfigurationView implements Initializable {
 		if (obsCfgClient == null || !obsCfgClient.isConnected())
 			return;
 
-		for (final MainStateType state : MainStateType.values()) {
-			final String stateName = state.name();
-
+		for (final String state : states) {
 			final ComboBox<String> sceneBox = sceneBoxes.get(state);
 			if (sceneBox != null) {
 				final String value = sceneBox.getValue();
 				if (value == null || value.equals(SCENE_NONE)) {
-					config.setObsScene(stateName, "");
+					config.setObsScene(state, "");
 				} else {
-					config.setObsScene(stateName, value);
+					config.setObsScene(state, value);
 				}
 			}
 
@@ -155,11 +159,11 @@ public class ObsConfigurationView implements Initializable {
 			if (actionBox != null) {
 				final String value = actionBox.getValue();
 				if (value == null || value.equals(ACTION_NONE)) {
-					config.setObsAction(stateName, "");
+					config.setObsAction(state, "");
 				} else {
 					final String req = ObsWsClient.OBS_ACTIONS.get(value);
 					if (req != null)
-						config.setObsAction(stateName, req);
+						config.setObsAction(state, req);
 				}
 			}
 		}
@@ -217,12 +221,11 @@ public class ObsConfigurationView implements Initializable {
 
 	private void handleScenesReceived(final List<String> scenes) {
 		Platform.runLater(() -> {
-			for (final Map.Entry<MainStateType, ComboBox<String>> entry : sceneBoxes.entrySet()) {
-				final MainStateType state = entry.getKey();
+			for (final Map.Entry<String, ComboBox<String>> entry : sceneBoxes.entrySet()) {
 				final ComboBox<String> sceneBox = entry.getValue();
 
 				final String previousValue = sceneBox.getValue();
-				final String savedScene = config.getObsScene(state.name());
+				final String savedScene = config.getObsScene(entry.getKey());
 
 				sceneBox.getItems().setAll(SCENE_NONE);
 				sceneBox.getItems().addAll(scenes);
@@ -237,12 +240,11 @@ public class ObsConfigurationView implements Initializable {
 				}
 			}
 
-			for (final Map.Entry<MainStateType, ComboBox<String>> entry : actionBoxes.entrySet()) {
-				final MainStateType state = entry.getKey();
+			for (final Map.Entry<String, ComboBox<String>> entry : actionBoxes.entrySet()) {
 				final ComboBox<String> actionBox = entry.getValue();
 
 				final String previousValue = actionBox.getValue();
-				final String savedActionLabel = ObsWsClient.getActionLabel(config.getObsAction(state.name()));
+				final String savedActionLabel = ObsWsClient.getActionLabel(config.getObsAction(entry.getKey()));
 
 				actionBox.getItems().setAll(ACTION_NONE);
 				actionBox.getItems().addAll(ObsWsClient.OBS_ACTIONS.keySet());

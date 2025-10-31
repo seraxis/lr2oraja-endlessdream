@@ -190,5 +190,16 @@ public abstract class MainState {
 	
 	public enum MainStateType {
 		MUSICSELECT,DECIDE,PLAY,RESULT,COURSERESULT,CONFIG,SKINCONFIG;
+
+		public static MainStateType fromString(String name) {
+			if (name == null)
+				return null;
+			for (MainStateType state : MainStateType.values()) {
+				if (state.name().equalsIgnoreCase(name)) {
+					return state;
+				}
+			}
+			return null;
+		}
 	}
 }

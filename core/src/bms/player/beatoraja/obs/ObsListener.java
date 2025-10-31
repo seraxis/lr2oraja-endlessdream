@@ -57,13 +57,21 @@ public class ObsListener implements MainStateListener {
 		return false;
 	}
 
+	public synchronized void triggerPlayEnded() {
+		triggerStateChange("PLAY_ENDED");
+	}
+
 	public synchronized void triggerStateChange(MainStateType stateType) {
+		triggerStateChange(stateType.name());
+	}
+
+	public synchronized void triggerStateChange(String stateName) {
 		if (obsClient == null || !obsClient.isConnected()) {
 			return;
 		}
 
-		final String scene = config.getObsScene(stateType.name());
-		final String action = config.getObsAction(stateType.name());
+		final String scene = config.getObsScene(stateName);
+		final String action = config.getObsAction(stateName);
 
 		// If a StopRecord action was already scheduled, StopRecord immediately
 		boolean stopRecordNow = cancelScheduledStop();
