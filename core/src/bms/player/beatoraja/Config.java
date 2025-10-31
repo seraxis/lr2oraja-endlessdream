@@ -202,7 +202,6 @@ public class Config implements Validatable {
 	private boolean useObsWs = false;
 	private String obsWsHost = "localhost";
 	private int obsWsPort = 4455;
-	private boolean obsWsAuth = false;
 	private String obsWsPass = "";
 	private int obsWsRecStopWait = 5000;
 	private int obsWsRecMode = 0;
@@ -546,14 +545,6 @@ public class Config implements Validatable {
 		this.useObsWs = useObsWs;
 	}
 
-	public boolean isObsWsUseAuth() {
-		return obsWsAuth;
-	}
-	
-	public void setObsWsUseAuth(boolean obsWsAuth) {
-		this.obsWsAuth = obsWsAuth;
-	}
-
 	public HashMap<String, String> getObsScenes() {
 		return obsScenes;
 	}
@@ -769,7 +760,12 @@ public class Config implements Validatable {
 		this.obsWsPort = MathUtils.clamp(obsWsPort, 0, 65535);
 	}
 
-	public String getObsWsPass() { return obsWsPass; }
+	public String getObsWsPass() {
+		if (obsWsPass.isBlank()) {
+			return null;
+		}
+		return obsWsPass;
+	}
 
 	public void setObsWsPass(String obsWsPass) { this.obsWsPass = obsWsPass; }
 

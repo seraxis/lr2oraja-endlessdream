@@ -30,8 +30,6 @@ public class ObsConfigurationView implements Initializable {
 	@FXML
 	private Spinner<Integer> obsWsPort;
 	@FXML
-	private CheckBox obsWsAuth;
-	@FXML
 	private PasswordField obsWsPass;
 	@FXML
 	private Label obsWsConnectLabel;
@@ -59,8 +57,6 @@ public class ObsConfigurationView implements Initializable {
 	}
 
 	public void init(final PlayConfigurationView main) {
-		obsWsPass.disableProperty().bind(obsWsAuth.selectedProperty().not());
-
 		for (final MainStateType state : MainStateType.values()) {
 			createStateRow(state);
 		}
@@ -92,7 +88,6 @@ public class ObsConfigurationView implements Initializable {
 		obsWsEnabled.setSelected(config.isUseObsWs());
 		obsWsHost.setText(config.getObsWsHost());
 		obsWsPort.getValueFactory().setValue(config.getObsWsPort());
-		obsWsAuth.setSelected(config.isObsWsUseAuth());
 		obsWsPass.setText(config.getObsWsPass());
 		obsWsRecStopWait.getValueFactory().setValue(config.getObsWsRecStopWait());
 		obsWsRecMode.getSelectionModel().select(config.getObsWsRecMode());
@@ -132,7 +127,6 @@ public class ObsConfigurationView implements Initializable {
 		config.setUseObsWs(obsWsEnabled.isSelected());
 		config.setObsWsHost(obsWsHost.getText());
 		config.setObsWsPort(obsWsPort.getValue());
-		config.setObsWsUseAuth(obsWsAuth.isSelected());
 		config.setObsWsPass(obsWsPass.getText());
 		config.setObsWsRecStopWait(obsWsRecStopWait.getValue());
 		config.setObsWsRecMode(obsWsRecMode.getSelectionModel().getSelectedIndex());
@@ -184,7 +178,6 @@ public class ObsConfigurationView implements Initializable {
 				final Config tempConfig = new Config();
 				tempConfig.setObsWsHost(obsWsHost.getText());
 				tempConfig.setObsWsPort(obsWsPort.getValue());
-				tempConfig.setObsWsUseAuth(obsWsAuth.isSelected());
 				tempConfig.setObsWsPass(obsWsPass.getText());
 
 				obsCfgClient = new ObsWsClient(tempConfig);

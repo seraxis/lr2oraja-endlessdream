@@ -103,7 +103,7 @@ public class ObsWsClient {
 
 	public ObsWsClient(Config config) throws URISyntaxException {
 		this.serverUri = new URI("ws://" + config.getObsWsHost() + ":" + config.getObsWsPort());
-		this.password = config.isObsWsUseAuth() ? config.getObsWsPass() : null;
+		this.password = config.getObsWsPass();
 		this.recordingMode = ObsRecordingMode.fromValue(config.getObsWsRecMode());
 		createWebSocketClient();
 	}
