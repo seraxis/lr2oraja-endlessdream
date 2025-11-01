@@ -74,15 +74,6 @@ public class ObsWsClient {
 			return value;
 		}
 
-		public static ObsRecordingMode fromString(String str) {
-			for (ObsRecordingMode mode : ObsRecordingMode.values()) {
-				if (mode.name().equals(str)) {
-					return mode;
-				}
-			}
-			throw new IllegalArgumentException("No matching enum for value: " + str);
-		}
-
 		public static ObsRecordingMode fromValue(int value) {
 			for (ObsRecordingMode mode : ObsRecordingMode.values()) {
 				if (mode.getValue() == value) {
@@ -444,7 +435,7 @@ public class ObsWsClient {
 			return;
 		}
 
-		final ObsRecordingMode reasonMode = ObsRecordingMode.fromString(reason);
+		final ObsRecordingMode reasonMode = ObsRecordingMode.valueOf(reason);
 		if (this.saveRequested || recordingMode == ObsRecordingMode.KEEP_ALL || reasonMode != recordingMode) {
 			return;
 		}
