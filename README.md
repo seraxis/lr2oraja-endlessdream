@@ -1,10 +1,8 @@
-# LR2oraja \~Endless Dream\~
-
-<hr>
-
 <div align="center" style="line-height: 1;">
 
-[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns?theme=default-inverted)](https://discord.gg/HutCHCZHns)
+# LR2oraja \~Endless Dream\~
+
+[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns?theme=default)](https://discord.gg/HutCHCZHns)
 
 </div>
 
@@ -33,7 +31,7 @@ Development builds are created for every commit and published as [releases](http
 - [**Macos Download (Intel)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-0.3.0.jar)
 
 ### Installing from scratch
-If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [release page](https://mocha-repository.info/download.php).
+If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [beatoraja release page](https://mocha-repository.info/download.php).
 
 ### Post Install
 Once you're set up with a copy of LR2oraja Endless Dream you might want to check out the excellent [Beatoraja English Guide](https://github.com/wcko87/beatoraja-english-guide/wiki) that has answers to all of your questions about beatoraja and BMS, including a list of skins, where to get songs, and how to use tables.
