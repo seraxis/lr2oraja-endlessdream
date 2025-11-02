@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.IntSet.IntSetIterator;
 import bms.player.beatoraja.CourseData.TrophyData;
 import bms.player.beatoraja.song.*;
 
+import bms.player.beatoraja.modmenu.DownloadTaskState;
+
 /**
  * 楽曲バー描画用クラス
  *
@@ -161,14 +163,18 @@ public final class BarRenderer {
 					ba.value = 6;
 				} else if (sd instanceof CommandBar || sd instanceof ContainerBar) {
 					ba.value = 5;
-				} else {
+				} else if (sd instanceof FunctionBar) {
+					var fn = ((FunctionBar) sd);
+					ba.value = fn.getDisplayBarType();
+					ba.text = fn.getDisplayTextType();
+                } else {
 					ba.value = -1;
 				}
 			} else {
 				ba.value = -1;
 			}
 
-			if(ba.value != -1) {
+			if(ba.value != -1 && !(ba.sd instanceof FunctionBar)) {
 				// Barの種類によってテキストを変える
 				// SongBarかFolderBarの場合は新規かどうかでさらに変える
 				// songstatus最終値 =
@@ -286,7 +292,34 @@ public final class BarRenderer {
 					graph.draw(sprite, (DirectoryBar)ba.sd, ba.x, ba.y);
 				}
 			}
+			else if (ba.sd instanceof FunctionBar) {
+				final SkinDistributionGraph graph = baro.getGraph();
+				if (graph != null && graph.draw) {
+					graph.draw(sprite, (FunctionBar)ba.sd, ba.x, ba.y);
+				}
+			}
 		}
+
+        var downloadTasks = DownloadTaskState.runningDownloadTasks;
+        if (!downloadTasks.isEmpty()) {
+            // download progress bars
+            for (int i = 0; i < barlength; i++) {
+                final BarArea ba = bararea[i];
+                if (ba.value == -1) { continue; }
+                if (!(ba.sd instanceof SongBar)) { continue; }
+
+                var songBar = (SongBar)ba.sd;
+				var songMd5 = songBar.getSongData().getMd5();
+                for (var task : downloadTasks.values()) {
+                    String md5 = task.getHash();
+                    if (!md5.equals(songMd5)) { continue; }
+                    final SkinDistributionGraph graph = baro.getGraph();
+                    if (graph != null && graph.draw) {
+                        graph.draw(sprite, songBar, task, ba.x, ba.y);
+                    }
+                }
+            }
+        }
 
 		for (int i = 0; i < barlength; i++) {
 			final BarArea ba = bararea[i];
@@ -357,6 +390,14 @@ public final class BarRenderer {
 						? song.getDifficulty() : 0);
 				if (leveln != null) {
 					leveln.draw(sprite, time, song.getLevel(), select, ba.x, ba.y);
+				}
+			}
+			else if (ba.sd instanceof FunctionBar
+					 && ((FunctionBar) ba.sd).getLevel() != null) {
+				final int level = ((FunctionBar) ba.sd).getLevel();
+				final SkinNumber leveln = baro.getBarlevel(0);
+				if (leveln != null) {
+					leveln.draw(sprite, time, level, select, ba.x, ba.y);
 				}
 			}
 		}
@@ -478,11 +519,13 @@ public final class BarRenderer {
 		}
 		while(mov > 0) {
 			manager.move(true);
+			select.stop(SCRATCH);
 			select.play(SCRATCH);
 			mov--;
 		}
 		while(mov < 0) {
 			manager.move(false);
+			select.stop(SCRATCH);
 			select.play(SCRATCH);
 			mov++;
 		}
@@ -495,7 +538,7 @@ public final class BarRenderer {
 		}
 	}
 
-	void updateBarText() {
+	public void updateBarText() {
 		bartextupdate = true;
 	}
 	

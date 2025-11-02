@@ -6,10 +6,15 @@ import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.modmenu.JudgeTrainer;
 import bms.player.beatoraja.modmenu.RandomTrainer;
 import com.badlogic.gdx.utils.Array;
@@ -90,6 +95,10 @@ public class BMSPlayer extends MainState {
 	private RhythmTimerProcessor rhythm;
 	private long startpressedtime;
 
+	private float adjustedVolume = -1.f;
+	private boolean analysisChecked = false;
+	private Future<BMSLoudnessAnalyzer.AnalysisResult> analysisTask;
+
 	public BMSPlayer(MainController main, PlayerResource resource) {
 		super(main);
 		this.model = resource.getBMSModel();
@@ -101,10 +110,32 @@ public class BMSPlayer extends MainState {
 		playinfo.doubleoption = config.getDoubleoption();
 
 		RandomTrainer randomtrainer = new RandomTrainer();
+        Optional<GhostBattlePlay.Settings> ghostBattle = GhostBattlePlay.consume();
 
 		ReplayData HSReplay = null;
 
-		if(resource.getChartOption() != null) {
+        if(ghostBattle.isPresent()) {
+			playinfo.randomoption = ghostBattle.get().random().ordinal();
+            if (config.getRandom() == bms.player.beatoraja.pattern.Random.MIRROR.ordinal()) {
+                ImGuiNotify.info(String.format("Ghost Battle: Mirroring pattern."));
+                switch (ghostBattle.get().random()) {
+                case IDENTITY:
+                    playinfo.randomoption = bms.player.beatoraja.pattern.Random.MIRROR.ordinal();
+                    break;
+                case MIRROR:
+                    playinfo.randomoption = bms.player.beatoraja.pattern.Random.IDENTITY.ordinal();
+                    break;
+                case RANDOM:
+                    StringBuilder pattern =  new StringBuilder();
+                    pattern.append(ghostBattle.get().lanes());
+                    Integer reversed = Integer.parseInt(pattern.reverse().toString());
+                    ghostBattle = Optional.of(
+                        new GhostBattlePlay.Settings(ghostBattle.get().random(), reversed));
+                    break;
+                }
+            }
+        }
+		else if(resource.getChartOption() != null) {
 			ReplayData chartOption = resource.getChartOption();
 			playinfo.randomoption = chartOption.randomoption;
 			playinfo.randomoptionseed = chartOption.randomoptionseed;
@@ -182,6 +213,12 @@ public class BMSPlayer extends MainState {
 		}
 
 		boolean score = true;
+		boolean forceNoIRSend = false;
+
+		// Allow osu score submission
+		if (model.isFromOSU()) {
+			forceNoIRSend = false;
+		}
 
 		// RANDOM構文処理
 		if (model.getRandom() != null && model.getRandom().length > 0) {
@@ -218,6 +255,9 @@ public class BMSPlayer extends MainState {
 			if (main.getConfig().getAudioConfig().getFreqOption() == FrequencyType.FREQUENCY) {
 				main.getAudioProcessor().setGlobalPitch(freq / 100f);
 			}
+
+			// Whenever using freq mode, score is forced to not send to IR service
+			forceNoIRSend = true;
 
 			// "Persist" some states in resource
 			resource.setFreqOn(true);
@@ -266,6 +306,11 @@ public class BMSPlayer extends MainState {
 			if(config.getExtranoteDepth() > 0) {
 				mods.add(new ExtraNoteModifier(config.getExtranoteType(), config.getExtranoteDepth(), config.isExtranoteScratch()));
 			}
+
+            // maybe we skip all that for gbattle
+            if (ghostBattle.isPresent()){
+                mods = new Array<PatternModifier>();
+            }
 
 			for(PatternModifier mod : mods) {
 				mod.modify(model);
@@ -351,7 +396,13 @@ public class BMSPlayer extends MainState {
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {
-				if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
+                if (ghostBattle.isPresent()) {
+					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
+                    Integer pattern = ghostBattle.get().lanes();
+					Logger.getGlobal().info("Ghost battle - fixing lane pattern to " + pattern);
+					pm.setSeed(seedmap.get(pattern));
+                }
+                else if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
 					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
 					pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
@@ -411,10 +462,11 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
-		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score);
+		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
 		resource.setUpdateCourseScore(resource.isUpdateCourseScore() && score);
+		resource.setForceNoIRSend(forceNoIRSend);
 		final int difficulty = resource.getSongdata() != null ? resource.getSongdata().getDifficulty() : 0;
 		resource.getSongdata().setBMSModel(model);
 		resource.getSongdata().setDifficulty(difficulty);
@@ -493,8 +545,13 @@ public class BMSPlayer extends MainState {
 			} else {
 				resource.setTargetScoreData(resource.getRivalScoreData());
 			}
-			getScoreDataProperty().setTargetScore(score.getExscore(), score.decodeGhost(), resource.getTargetScoreData() != null ? resource.getTargetScoreData().getExscore() : 0 , null, model.getTotalNotes());
-		}
+            ScoreData target = resource.getTargetScoreData();
+            getScoreDataProperty().setTargetScore(
+                score.getExscore(), score.decodeGhost(),
+                target != null ? target.getExscore() : 0,
+                target != null ? target.decodeGhost() : null,
+                model.getTotalNotes());
+        }
 	}
 
 	@Override
@@ -536,6 +593,39 @@ public class BMSPlayer extends MainState {
 						timer.setTimerOff(141);
 						lanerender.init(model);
 					}
+					
+					// Wait for the analysis to complete
+					if (!analysisChecked) {
+						adjustedVolume = -1.f;
+						analysisChecked = true;
+						analysisTask = resource.getAnalysisTask();
+						
+						if (analysisTask != null) {
+							try {
+								BMSLoudnessAnalyzer.AnalysisResult result = analysisTask.get(15, TimeUnit.SECONDS);
+								if (result.success) {
+									float configVolume = main.getConfig().getAudioConfig().getKeyvolume();
+									adjustedVolume = result.calculateAdjustedVolume(configVolume);
+									String message = String.format("Volume set to %.2f (%.2f LUFS)",
+										adjustedVolume, result.loudnessLUFS);
+									Logger.getGlobal().info(message);
+									// For demonstration purposes. Should probably be removed later.
+									ImGuiNotify.success(message, 1000);
+								} else {
+									Logger.getGlobal().warning("Analysis failed: " + result.errorMessage);
+									ImGuiNotify.warning("Loudness analysis failed");
+								}
+							} catch (TimeoutException e) {
+								ImGuiNotify.warning("Chart volume analysis timed out");
+								Logger.getGlobal().warning("Loudness analysis timed out after 15 seconds");
+								analysisTask.cancel(true);
+							} catch (Exception e) {
+								ImGuiNotify.warning("Failed to analyze chart volume");
+								Logger.getGlobal().warning("Loudness analysis error: " + e.getMessage());
+							}
+						}
+					}
+					
 					bga.prepare(this);
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
@@ -859,6 +949,10 @@ public class BMSPlayer extends MainState {
 
 	public int getState() {
 		return state;
+	}
+	
+	public float getAdjustedVolume() {
+		return adjustedVolume;
 	}
 
 	public LaneRenderer getLanerender() {

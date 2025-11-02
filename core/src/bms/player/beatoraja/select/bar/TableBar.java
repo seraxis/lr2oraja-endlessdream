@@ -92,4 +92,8 @@ public class TableBar extends DirectoryBar {
     public Bar[] getChildren() {
     	return children;
     }
+
+    public TableData getTableData() {
+		return td;
+	}
 }

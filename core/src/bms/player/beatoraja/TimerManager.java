@@ -16,6 +16,7 @@ public class TimerManager {
 	 */
 	private long starttime;
 	private long nowmicrotime;
+	private boolean frozen = false;
 
 	public static final int timerCount = SkinProperty.TIMER_MAX + 1;
 	private final long[] timer = new long[timerCount];
@@ -105,8 +106,10 @@ public class TimerManager {
 		starttime = System.nanoTime();
 		nowmicrotime = ((System.nanoTime() - starttime) / 1000);
 	}
+
+    public void setFrozen(boolean freeze) { this.frozen = freeze; }
 	
 	public void update() {
-		nowmicrotime = ((System.nanoTime() - starttime) / 1000);
+        if (!frozen) nowmicrotime = ((System.nanoTime() - starttime) / 1000);
 	}
 }

@@ -10,6 +10,7 @@ import bms.player.beatoraja.select.SkinBar;
 import bms.player.beatoraja.select.SkinDistributionGraph;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.property.TimerProperty;
+import bms.player.beatoraja.PerformanceMetrics;
 
 /**
  * JSONセレクトスキンオブジェクトローダー
@@ -33,6 +34,8 @@ public class JsonSelectSkinObjectLoader extends JsonSkinObjectLoader<MusicSelect
 		if(obj != null) {
 			return obj;
 		}
+
+        try (var perf = PerformanceMetrics.get().Event("Select object: " + dst.id)) {
 		
 		if (sk.songlist != null && dst.id.equals(sk.songlist.id)) {
 			SkinBar barobj = new SkinBar(0);
@@ -240,5 +243,6 @@ public class JsonSelectSkinObjectLoader extends JsonSkinObjectLoader<MusicSelect
 		}
 		
 		return null;
+        }
 	}
 }

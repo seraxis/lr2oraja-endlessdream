@@ -4,6 +4,7 @@ import bms.model.*;
 import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.TableData.TableFolder;
 import bms.player.beatoraja.audio.AudioDriver;
+import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.ir.RankingData;
 import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.player.beatoraja.play.GrooveGauge;
@@ -19,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.concurrent.Future;
 
 /**
  * プレイヤーのコンポーネント間でデータをやり取りするためのクラス
@@ -129,14 +131,19 @@ public final class PlayerResource {
 	private String tablefull;
 	private boolean freqOn;
 	private String freqString;
+	private boolean forceNoIRSend;
 	// Full list of difficult tables that contains current song
 	private List<String> reverseLookup = new ArrayList<>();
 
-	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig) {
+	private final BMSLoudnessAnalyzer loudnessAnalyzer;
+	private Future<BMSLoudnessAnalyzer.AnalysisResult> analysisTask;
+
+	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig, BMSLoudnessAnalyzer loudnessAnalyzer) {
 		this.config = config;
 		this.pconfig = pconfig;
 		this.bmsresource = new BMSResource(audio, config, pconfig);
 		this.orgGaugeOption = pconfig.getGauge();
+		this.loudnessAnalyzer = loudnessAnalyzer;
 	}
 
 	public void clear() {
@@ -180,6 +187,11 @@ public final class PlayerResource {
 		if(tablename.length() == 0 || courseindex != 0){
 			setTableinfo();
 		}
+		if (config.getAudioConfig().isNormalizeVolume() && loudnessAnalyzer != null && loudnessAnalyzer.isAvailable()) {
+			analysisTask = loudnessAnalyzer.analyzeAsync(model);
+		} else {
+			analysisTask = null;
+		}
 		return true;
 	}
 
@@ -203,6 +215,9 @@ public final class PlayerResource {
 		BMSModel model = decoder.decode(info);
 		if (model == null) {
 			return null;
+		}
+		if (decoder instanceof OSUDecoder) {
+			model.setFromOSU(true);
 		}
 
 		marginTime = BMSModelUtils.setStartNoteTime(model, 1000);
@@ -612,5 +627,17 @@ public final class PlayerResource {
 
 	public void setFreqString(String freqString) {
 		this.freqString = freqString;
+	}
+
+	public boolean isForceNoIRSend() {
+		return forceNoIRSend;
+	}
+
+	public void setForceNoIRSend(boolean forceNoIRSend) {
+		this.forceNoIRSend = forceNoIRSend;
+	}
+
+	public Future<BMSLoudnessAnalyzer.AnalysisResult> getAnalysisTask() {
+		return analysisTask;
 	}
 }

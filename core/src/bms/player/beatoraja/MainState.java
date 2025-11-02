@@ -1,6 +1,7 @@
 package bms.player.beatoraja;
 
 import bms.player.beatoraja.SkinConfig.Offset;
+import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
@@ -116,6 +117,7 @@ public abstract class MainState {
 		}
 		this.skin = skin;
 		if (skin != null) {
+			SkinWidgetManager.changeSkin(skin);
 			for (IntMap.Entry<Offset> e : skin.getOffset().entries()) {
 				SkinOffset offset = main.getOffset(e.key);
 				if(offset == null || e.value == null) {
@@ -132,8 +134,10 @@ public abstract class MainState {
 	}
 
 	public void loadSkin(SkinType skinType) {
-		setSkin(SkinLoader.load(this, skinType));
-	}
+        try (var perf = PerformanceMetrics.get().Event("Load skin: " + skinType)) {
+            setSkin(SkinLoader.load(this, skinType));
+        }
+    }
 
 	public int getJudgeCount(int judge, boolean fast) {
 		ScoreData sd = score.getScoreData();

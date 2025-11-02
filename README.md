@@ -1,10 +1,8 @@
-# LR2oraja \~Endless Dream\~
-
-<hr>
-
 <div align="center" style="line-height: 1;">
 
-[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns)](https://discord.gg/HutCHCZHns)
+# LR2oraja \~Endless Dream\~
+
+[![DISCORD](https://dcbadge.limes.pink/api/server/HutCHCZHns?theme=default)](https://discord.gg/HutCHCZHns)
 
 </div>
 
@@ -27,13 +25,13 @@ Development builds are created for every commit and published as [releases](http
 > [!NOTE]
 > As of 0.3.0 the Java version has changed from 8 to 17, please check the releases page to update your installations java version
 
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-windows-0.3.0.zip)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-linux-0.3.0.zip)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-windows-0.3.0.jar)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-linux-0.3.0.jar)
 - [**Macos Download (Apple Silicon)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-aarch64-0.3.0.jar)
 - [**Macos Download (Intel)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-0.3.0.jar)
 
 ### Installing from scratch
-If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [release page](https://mocha-repository.info/download.php).
+If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [beatoraja release page](https://mocha-repository.info/download.php).
 
 ### Post Install
 Once you're set up with a copy of LR2oraja Endless Dream you might want to check out the excellent [Beatoraja English Guide](https://github.com/wcko87/beatoraja-english-guide/wiki) that has answers to all of your questions about beatoraja and BMS, including a list of skins, where to get songs, and how to use tables.
@@ -77,12 +75,14 @@ Click 'More Actions' next to the run configurations panel in the window bar, Edi
 
 ![Run box clearly shown in the edit configuration menu](https://media.discordapp.net/attachments/1409976036963385547/1418936266514235483/idea64_bmidlXWb16.png?ex=68cfeee0&is=68ce9d60&hm=344ce793bff0fc3cdc47cc2b1a1692ec3a119b50e698a77c9c305508c1c6854e&=&format=webp&quality=lossless&width=547&height=208)
 
+If you'd like to test IR dependent changes, set the `useIR` system property to `true` (e.g. `-DuseIR=true`).
+
 **Windows:**
 ```powershell
 .\gradlew.bat core:runShadow -Dplatform=windows -DrunDir="C:\beatoraja0.8.8"
 ```
 
 ## Contributing
-Please state the impact your changes will have on drop-in compatibility with an upstream beatoraja install.
+Consider joining the Discord server. It's the place where most communication and collaboration happens.
 
-TBD
+Please state the impact your changes will have on the drop-in compatibility of Endless Dream with the latest beatoraja distribution when it is a relevant factor to your feature submission.

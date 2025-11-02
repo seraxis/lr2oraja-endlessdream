@@ -22,19 +22,21 @@ import bms.player.beatoraja.play.JudgeAlgorithm;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.song.*;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
+import javafx.stage.*;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Stage;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -81,6 +83,8 @@ public class PlayConfigurationView implements Initializable {
 	private Tab courseTab;
 	@FXML
     private Tab streamTab;
+	@FXML
+	private Tab discordTab;
 	@FXML
 	private HBox controlPanel;
 
@@ -179,6 +183,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private ComboBox<Integer> longnotemode;
 	@FXML
+	private CheckBox forcedcnendings;
+	@FXML
 	private Slider longnoterate;
 	@FXML
 	private Spinner<Integer> hranthresholdbpm;
@@ -272,6 +278,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
     private StreamEditorView streamController;
 	@FXML
+	private DiscordConfigurationView discordController;
+	@FXML
 	private TrainerView trainerController;
 
 	private Config config;
@@ -282,9 +290,6 @@ public class PlayConfigurationView implements Initializable {
 	private boolean songUpdated = false;
 
 	private RequestToken requestToken = null;
-
-	@FXML
-	public CheckBox discord;
 
 	@FXML
 	public CheckBox clipboardScreenshot;
@@ -335,6 +340,7 @@ public class PlayConfigurationView implements Initializable {
 		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCES.keySet());
 		notesdisplaytiming.setValueFactoryValues(PlayerConfig.JUDGETIMING_MIN, PlayerConfig.JUDGETIMING_MAX, 0, 1);
 		resourceController.init(this);
+		discordController.init(this);
 
 		checkNewVersion();
 		Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
@@ -352,13 +358,16 @@ public class PlayConfigurationView implements Initializable {
 						@Override
 						public void handle(ActionEvent event) {
 							Desktop desktop = Desktop.getDesktop();
-							URI uri;
-							try {
-								uri = new URI(downloadURL);
-								desktop.browse(uri);
-							} catch (Exception e) {
-								Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
-							}
+                            java.awt.EventQueue.invokeLater(() -> {
+                                try {
+                                    URI uri;
+                                    uri = new URI(downloadURL);
+                                    desktop.browse(uri);
+                                }
+                                catch (Exception e) {
+                                    Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
+                                }
+                            });
 						}
 					});
 				}
@@ -387,12 +396,12 @@ public class PlayConfigurationView implements Initializable {
 		soundpath.setText(config.getSoundpath());
 
 		resourceController.update(config);
+		discordController.update(config);
 
 		skinController.update(config);
         // int b = Boolean.valueOf(config.getJKOC()).compareTo(false);
 
         usecim.setSelected(config.isCacheSkinImage());
-        discord.setSelected(config.isUseDiscordRPC());
         clipboardScreenshot.setSelected(config.isSetClipboardWhenScreenshot());
 
 		enableIpfs.setSelected(config.isEnableIpfs());
@@ -484,6 +493,7 @@ public class PlayConfigurationView implements Initializable {
 		minemode.getSelectionModel().select(player.getMineMode());
 		scrollmode.getSelectionModel().select(player.getScrollMode());
 		longnotemode.getSelectionModel().select(player.getLongnoteMode());
+		forcedcnendings.setSelected(player.isForcedCNEndings());
 		longnoterate.setValue(player.getLongnoteRate());
 		hranthresholdbpm.getValueFactory().setValue(player.getHranThresholdBPM());
 		judgeregion.setSelected(player.isShowjudgearea());
@@ -535,6 +545,7 @@ public class PlayConfigurationView implements Initializable {
 		config.setSoundpath(soundpath.getText());
 
 		resourceController.commit();
+		discordController.commit();
 
         // jkoc_hack is integer but *.setJKOC needs boolean type
 
@@ -547,7 +558,6 @@ public class PlayConfigurationView implements Initializable {
 		config.setDownloadSource(httpDownloadSource.getValue());
 		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
-		config.setUseDiscordRPC(discord.isSelected());
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
 
 		commitPlayer();
@@ -595,6 +605,7 @@ public class PlayConfigurationView implements Initializable {
 		player.setMineMode(minemode.getValue());
 		player.setScrollMode(scrollmode.getValue());
 		player.setLongnoteMode(longnotemode.getValue());
+		player.setForcedCNEndings(forcedcnendings.isSelected());
 		player.setLongnoteRate(longnoterate.getValue());
 		player.setHranThresholdBPM(getValue(hranthresholdbpm));
 		player.setMarkprocessednote(markprocessednote.isSelected());
@@ -712,13 +723,29 @@ public class PlayConfigurationView implements Initializable {
 		otherTab.setDisable(true);
 		irTab.setDisable(true);
 		streamTab.setDisable(true);
+		discordTab.setDisable(true);
 		controlPanel.setDisable(true);
 
 		// Minimise the stage after start
 		Stage stage = (Stage) root.getScene().getWindow();
 		stage.setIconified(true);
 
-		MainLoader.play(null, bms.player.beatoraja.BMSPlayerMode.PLAY, true, config, player, songUpdated);
+        // On linux the main play/GL loop needs to run on a thread separate
+        // from the JavaFX thread; otherwise the launcher becomes uninteractable
+        // and certain calls such as opening the file manager, or the browser.
+        if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+            Runnable play =
+                () -> MainLoader.play(null,
+                                      bms.player.beatoraja.BMSPlayerMode.PLAY,
+                                      true,
+                                      config,
+                                      player,
+                                      songUpdated);
+            new Thread(play, "Play Thread").start();
+        }
+        else {
+            MainLoader.play(null, bms.player.beatoraja.BMSPlayerMode.PLAY, true, config, player, songUpdated);
+        }
 	}
 
     @FXML
@@ -746,17 +773,65 @@ public class PlayConfigurationView implements Initializable {
 	 */
 	public void loadBMS(String updatepath, boolean updateAll) {
 		commit();
-		try {
-			SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
-			SongInformationAccessor infodb = config.isUseSongInfo() ?
-					new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
-			Logger.getGlobal().info("song.db更新開始");
-			songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
-			Logger.getGlobal().info("song.db更新完了");
-			songUpdated = true;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+
+		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
+		final Stage loadingBarStage = new Stage();
+        Runnable progressRunnable = () -> {
+			// JavaFX UI code must be run inside a Platform run context
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    loadingBarStage.setResizable(false);
+					// This modality freezes the launcher/primary stage
+                    loadingBarStage.initModality(Modality.APPLICATION_MODAL);
+                    loadingBarStage.setTitle(bundle.getString("PROGRESS_BMS_TITLE"));
+                    loadingBarStage.initStyle(StageStyle.UTILITY);
+
+                    ProgressBar progressBar = new ProgressBar();
+                    progressBar.setPrefWidth(300);
+
+                    Label messageLabel = new Label(bundle.getString("PROGRESS_BMS_LABEL"));
+
+                    VBox root = new VBox(10);
+                    root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+                    root.getChildren().addAll(messageLabel, progressBar);
+
+                    Scene scene = new Scene(root);
+                    loadingBarStage.setScene(scene);
+
+					// Prevents closing. This has the side effect of preventing windowing system close requests but
+					// the application can still be force killed by the user if necessary
+					loadingBarStage.setOnCloseRequest(Event::consume);
+                    loadingBarStage.show();
+                }
+            });
+        };
+
+        Runnable loadBMSRunnable = () -> {
+            try {
+                SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
+                SongInformationAccessor infodb = config.isUseSongInfo() ?
+                        new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
+                Logger.getGlobal().info("song.db更新開始");
+                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
+                Logger.getGlobal().info("song.db更新完了");
+                songUpdated = true;
+
+				// Once again, JavaFX UI code must be run inside a Platform context. Hide progress bar and resume
+				// normal launcher behaviour
+				Platform.runLater(new Runnable() {
+					@Override
+					public void run() {
+						loadingBarStage.hide();
+					}
+				});
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        };
+
+        new Thread(progressRunnable).start();
+        new Thread(loadBMSRunnable).start();
 	}
 
     @FXML

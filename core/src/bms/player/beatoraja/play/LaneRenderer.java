@@ -697,6 +697,7 @@ public class LaneRenderer {
 			// LN
 			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNote(lane) == ln.getPair() ? 2 : 3], x,
 					y - height + scale, width, height - scale);
+            if (config.isForcedCNEndings()) { sprite.draw(longImage[0], x, y, width, scale); }
 			sprite.draw(longImage[1], x, y - height, width, scale);
 		}
 	}

@@ -186,7 +186,7 @@ public final class MusicSelector extends MainState {
 		input.setMidiConfig(pc.getMidiConfig());
 		manager.updateBar();
 
-		loadSkin(SkinType.MUSIC_SELECT);
+        loadSkin(SkinType.MUSIC_SELECT);
 
 		// search text field
 		Rectangle searchRegion = ((MusicSelectSkin) getSkin()).getSearchTextRegion();
@@ -304,8 +304,11 @@ public final class MusicSelector extends MainState {
 					}
 				}
 			}
-			play = null;
-		}
+            play = null;
+            if (current instanceof FunctionBar) {
+                ((FunctionBar)current).accept(this);
+            }
+        }
 	}
 
 	public void input() {
@@ -352,7 +355,7 @@ public final class MusicSelector extends MainState {
 		command.function.accept(this);
 	}
 
-	private void readChart(SongData song, Bar current) {
+	public void readChart(SongData song, Bar current) {
 		resource.clear();
 		if (resource.setBMSFile(Paths.get(song.getPath()), play)) {
 			// TODO 表名、フォルダ名をPlayerResource上でも重複実施している

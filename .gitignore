@@ -1,4 +1,7 @@
+.DS_*
+.java-version
 /assets/build/*
+/assets/http_download/
 /assets/player/*
 /assets/skin/*
 !/assets/skin/default/
@@ -8,6 +11,7 @@
 /assets/course/*
 /assets/favorite/*
 /assets/layout.ini
+/assets/*.json.bak
 songdata.db
 songinfo.db
 config.json
@@ -46,6 +50,7 @@ gradle-app.setting
 
 # User-specific stuff
 .idea/**/workspace.xml
+.idea/**/encodings.xml
 .idea/**/tasks.xml
 .idea/**/misc.xml
 .idea/**/usage.statistics.xml

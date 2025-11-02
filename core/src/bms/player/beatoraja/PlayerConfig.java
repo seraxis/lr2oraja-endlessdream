@@ -5,7 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.logging.Logger;
+import java.text.ParseException;
 
+import bms.player.beatoraja.system.RobustFile;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.ir.IRConnectionManager;
 import bms.player.beatoraja.pattern.*;
@@ -98,6 +100,7 @@ public final class PlayerConfig {
 	 * LNモード
 	 */
 	private int lnmode = 0;
+	private boolean forcedcnendings = false;
 	/**
 	 * スクロール追加/削除モード
 	 */
@@ -721,6 +724,14 @@ public final class PlayerConfig {
 		this.showhiddennote = showhiddennote;
 	}
 
+	public boolean isForcedCNEndings() {
+		return forcedcnendings;
+	}
+
+	public void setForcedCNEndings(boolean forcedcnendings) {
+		this.forcedcnendings = forcedcnendings;
+	}
+
 	public boolean isShowpastnote() {
 		return showpastnote;
 	}
@@ -1005,18 +1016,31 @@ public final class PlayerConfig {
 	}
 
 	private static PlayerConfig loadPlayerConfig(String playerpath, String playerid, Path path) throws PlayerConfigException {
-		PlayerConfig player;
-		try (Reader reader = new InputStreamReader(Files.newInputStream(path.toFile().toPath()), StandardCharsets.UTF_8)) {
-			Json json = new Json();
-			json.setIgnoreUnknownFields(true);
-			player = json.fromJson(PlayerConfig.class, reader);
-		} catch (SerializationException e) {
-			writeBackupConfigFile(playerpath, playerid, path);
-			throw new PlayerConfigException("PlayerConfigの読み込み失敗 - Path : " + path + " , Log : " + e.getLocalizedMessage());
-		} catch (IOException e) {
-			throw new PlayerConfigException("Failed to load player config file: " + e.getLocalizedMessage());
-		}
-		return player;
+        RobustFile.Parser<PlayerConfig> parser = (byte[] data) -> {
+            Json json = new Json();
+            json.setIgnoreUnknownFields(true);
+            try {
+                String ss = new String(data, StandardCharsets.UTF_8);
+                PlayerConfig player = json.fromJson(PlayerConfig.class, ss);
+                if (player == null) { throw new SerializationException("(unknown error)"); }
+                return player;
+            }
+            catch (SerializationException e) {
+                throw new ParseException("PlayerConfigの読み込み失敗 - Path : " + path +
+                                             " , Log : " + e.getLocalizedMessage(),
+                                         0);
+            }
+        };
+
+        try {
+            PlayerConfig player = RobustFile.load(path, parser);
+            return player;
+        }
+        catch (IOException e) {
+            writeBackupConfigFile(playerpath, playerid, path);
+            throw new PlayerConfigException("PlayerConfigの読み込み失敗 - Path : " + path +
+                                            " , Log : " + e.getLocalizedMessage());
+        }
 	}
 
 	private static PlayerConfig loadPlayerConfigFromOldPath(Path path_old) throws PlayerConfigException {
@@ -1041,20 +1065,28 @@ public final class PlayerConfig {
 		}
 	}
 
-	public static void write(String playerpath, PlayerConfig player) {
-		try (Writer writer = new OutputStreamWriter(
-				new FileOutputStream(Paths.get(playerpath + "/" + player.getId() + "/" + configpath).toFile()), StandardCharsets.UTF_8)) {
-			Json json = new Json();
-			json.setOutputType(JsonWriter.OutputType.json);
-			json.setUsePrototypes(false);
-			writer.write(json.prettyPrint(player));
-			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public static String getConfigJson(PlayerConfig player) {
+        Json json = new Json();
+        json.setOutputType(JsonWriter.OutputType.json);
+        json.setUsePrototypes(false);
+        return json.prettyPrint(player);
+    }
 
-	public int getMineMode() {
+    public static void write(String playerpath, PlayerConfig player) {
+        write(playerpath, player, getConfigJson(player));
+    }
+
+	public static void write(String playerpath, PlayerConfig player, String configJson) {
+        try {
+            Path path = Paths.get(playerpath + "/" + player.getId() + "/" + configpath);
+            RobustFile.write(path, configJson.getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getMineMode() {
 		return mineMode;
 	}
 

@@ -40,6 +40,8 @@ public class AudioConfigurationView implements Initializable {
 	@FXML
 	private Slider bgvolume;
 	@FXML
+	private CheckBox normalizeVolume;
+	@FXML
 	private ComboBox<FrequencyType> audioFreqOption;
 	@FXML
 	private ComboBox<FrequencyType> audioFastForward;
@@ -70,10 +72,12 @@ public class AudioConfigurationView implements Initializable {
 		systemvolume.setValue((double)config.getSystemvolume());
 		keyvolume.setValue((double)config.getKeyvolume());
 		bgvolume.setValue((double)config.getBgvolume());
+		normalizeVolume.setSelected(config.isNormalizeVolume());
 		loopResultSound.setSelected(config.isLoopResultSound());
 		loopCourseResultSound.setSelected(config.isLoopCourseResultSound());
 
 		updateAudioDriver();
+		updateNormalizeVolume();
 	}
 	
 	public void commit() {
@@ -87,8 +91,16 @@ public class AudioConfigurationView implements Initializable {
 		config.setSystemvolume((float) systemvolume.getValue());
 		config.setKeyvolume((float) keyvolume.getValue());
 		config.setBgvolume((float) bgvolume.getValue());
+		config.setNormalizeVolume(normalizeVolume.isSelected());
 		config.setLoopResultSound(loopResultSound.isSelected());
 		config.setLoopCourseResultSound(loopCourseResultSound.isSelected());
+	}
+	
+	@FXML
+	public void updateNormalizeVolume() {
+		boolean enabled = normalizeVolume.isSelected();
+		keyvolume.setDisable(enabled);
+		bgvolume.setDisable(enabled);
 	}
 
     @FXML
