@@ -1,10 +1,10 @@
 package bms.player.beatoraja.select;
 
 import bms.player.beatoraja.MainState;
-import bms.player.beatoraja.select.bar.Bar;
-import bms.player.beatoraja.select.bar.DirectoryBar;
+import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
+import bms.tool.mdprocessor.DownloadTask;
 
 import bms.player.beatoraja.skin.property.TimerProperty;
 import com.badlogic.gdx.graphics.Color;
@@ -151,6 +151,61 @@ public class SkinDistributionGraph extends SkinObject {
                 }
             }
         }
+    }
+
+    public void draw(SkinObjectRenderer sprite, FunctionBar current, float offsetx, float offsety) {
+        if (current == null) { return; }
+        int[] lamps = current.getLamps();
+        int count = 0;
+        for (int lamp : lamps) { count += lamp; }
+        if (count == 0) { return; }
+
+        for (int i = 10, x = 0; i >= 0; i--) {
+            sprite.draw(currentImage[i], region.x + x * region.width / count + offsetx,
+                        region.y + offsety, lamps[i] * region.width / count, region.height);
+            x += lamps[i];
+        }
+    }
+
+    public void draw(SkinObjectRenderer sprite, SongBar current, DownloadTask task, float offsetx, float offsety) {
+    	if(current == null) {
+    		return;
+    	}
+
+        // colors: 0 none 1 fail 4 ec 5 nc 6 hc
+        TextureRegion bg = currentImage[0];
+        TextureRegion fg = currentImage[0];
+
+        Float percent = 0.f;
+
+        DownloadTask.DownloadTaskStatus state = task.getDownloadTaskStatus();
+        switch (state) {
+        case Prepare: break;
+        case Downloading:
+            percent = (float)task.getDownloadSize() / task.getContentLength();
+            fg = currentImage[4];
+            break;
+        case Downloaded:
+            percent = 1.f;
+            fg = currentImage[4];
+            break;
+        case Extracted:
+            percent = 1.f;
+            fg = currentImage[6];
+            break;
+        case Error:
+            percent = 1.f;
+            fg = currentImage[1];
+            break;
+        case Cancel:
+            percent = 1.f;
+            fg = currentImage[4];
+            break;
+        }
+
+        sprite.draw(bg, region.x + offsetx, region.y + offsety, region.width, region.height);
+        sprite.draw(fg, region.x + offsetx + 1, region.y + offsety + 1,
+                    percent * (region.width - 2), region.height - 2);
     }
 
     @Override

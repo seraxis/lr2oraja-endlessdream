@@ -4,6 +4,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 
 import java.util.logging.Logger;
 
+import com.badlogic.gdx.math.MathUtils;
+
 import bms.model.BMSModel;
 import bms.model.TimeLine;
 import bms.player.beatoraja.BMSPlayerMode;
@@ -24,8 +26,9 @@ class KeyInputProccessor {
 	private JudgeThread judge;
 
 	private long prevtime = -1;
-	private int[] scratch;
+	private float[] scratch;
 	private int[] scratchKey;
+	private float[] scratchTTGraphicSpeed;
 
 	private final LaneProperty laneProperty;
 
@@ -38,8 +41,9 @@ class KeyInputProccessor {
 	public KeyInputProccessor(BMSPlayer player, LaneProperty laneProperty) {
 		this.player = player;
 		this.laneProperty = laneProperty;
-		this.scratch = new int[laneProperty.getScratchKeyAssign().length];
+		this.scratch = new float[laneProperty.getScratchKeyAssign().length];
 		this.scratchKey = new int[laneProperty.getScratchKeyAssign().length];
+		this.scratchTTGraphicSpeed = new float[laneProperty.getScratchKeyAssign().length];
 	}
 
 	public void startJudge(BMSModel model, KeyInputLog[] keylog, long milliMarginTime) {
@@ -90,19 +94,41 @@ class KeyInputProccessor {
 		}
 
 		if(prevtime >= 0) {
-			final long deltatime = now - prevtime;
+			final float deltatime = (now - prevtime) / 1000.0f;
 			for (int s = 0; s < scratch.length; s++) {
-				scratch[s] += s % 2 == 0 ? 2160 - deltatime : deltatime;
 				final int key0 = laneProperty.getScratchKeyAssign()[s][1];
 				final int key1 = laneProperty.getScratchKeyAssign()[s][0];
-				if (input.getKeyState(key0) || auto_presstime[key0] != Long.MIN_VALUE) {
-					scratch[s] += deltatime * 2;
-				} else if (input.getKeyState(key1) || auto_presstime[key1] != Long.MIN_VALUE) {
-					scratch[s] += 2160 - deltatime * 2;
+
+				float targetSpeed = 1.0f;
+				float moveTowardsSpeed = 4.0f;
+
+				if (player.resource.getPlayMode().mode != BMSPlayerMode.Mode.AUTOPLAY) {
+					if (input.getKeyState(key0) || auto_presstime[key0] != Long.MIN_VALUE) {
+						targetSpeed = -0.75f;
+						moveTowardsSpeed = 16.0f;
+						scratchTTGraphicSpeed[s] = Math.min(scratchTTGraphicSpeed[s], 0);
+					} else if (input.getKeyState(key1) || auto_presstime[key1] != Long.MIN_VALUE) {
+						targetSpeed = 2.0f;
+						moveTowardsSpeed = 16.0f;
+						scratchTTGraphicSpeed[s] = Math.max(scratchTTGraphicSpeed[s], 0);
+					}
 				}
-				scratch[s] %= 2160;
-				
-				main.getOffset(OFFSET_SCRATCHANGLE_1P + s).r = scratch[s] / 6;
+
+				// Move towards
+				if (Math.abs(1.0f - scratchTTGraphicSpeed[s]) <= deltatime)
+					scratchTTGraphicSpeed[s] = targetSpeed;
+				else
+					scratchTTGraphicSpeed[s] += Math.signum(targetSpeed - scratchTTGraphicSpeed[s]) * deltatime * moveTowardsSpeed;
+
+				// Apply TT speed
+				if (scratchTTGraphicSpeed[s] > 0.0f)
+					scratch[s] += 360.0f - scratchTTGraphicSpeed[s] * deltatime * 270.0f;
+				else if (scratchTTGraphicSpeed[s] < 0.0f)
+					scratch[s] += -scratchTTGraphicSpeed[s] * deltatime * 270.0f;
+
+				scratch[s] %= 360.0f;
+
+				main.getOffset(OFFSET_SCRATCHANGLE_1P + s).r = scratch[s];
 			}
 		}
 		prevtime = now;

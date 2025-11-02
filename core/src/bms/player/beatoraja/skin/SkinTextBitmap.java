@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
+import bms.player.beatoraja.PerformanceMetrics;
 
 /**
  * .fnt ファイルをソースとして持つスキン用テキスト
@@ -59,6 +60,7 @@ public class SkinTextBitmap extends SkinText {
 		float scale = this.size / source.getOriginalSize();
 		font.getData().setScale(scale);
 		final float x = (getAlign() == 2 ? region.x - region.width : (getAlign() == 1 ? region.x - region.width / 2 : region.x));
+		sprite.setBlend(this.getBlend());
 		if (source.getType() == SkinTextBitmapSource.TYPE_DISTANCE_FIELD ||
 				source.getType() == SkinTextBitmapSource.TYPE_COLORED_DISTANCE_FIELD) {
 			sprite.setType(SkinObjectRenderer.TYPE_DISTANCE_FIELD);
@@ -145,13 +147,17 @@ public class SkinTextBitmap extends SkinText {
 			float _pageWidth = 0;
 			float _pageHeight = 0;
 
-			try {
-				_fontData = new BitmapFont.BitmapFontData(new FileHandle(_fontPath.toFile()), false);
+			try (var perf = PerformanceMetrics.get().Event(String.format("Font load: %s", _fontPath.getFileName()))){
+                try (var perf_ = PerformanceMetrics.get().Event(String.format("description parse", _fontPath.getFileName()))) {
+                    _fontData = new BitmapFont.BitmapFontData(new FileHandle(_fontPath.toFile()), false);
+                }
 
-				_regions = new Array<>(_fontData.imagePaths.length);
-				for (int i = 0; i < _fontData.imagePaths.length; ++i) {
-					_regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));
-				}
+                try (var perf_ = PerformanceMetrics.get().Event(String.format("image load", _fontPath.getFileName()))) {
+                    _regions = new Array<>(_fontData.imagePaths.length);
+                    for (int i = 0; i < _fontData.imagePaths.length; ++i) {
+                        _regions.add(new TextureRegion(SkinLoader.getTexture(_fontData.imagePaths[i], usecim, useMipMaps)));
+                    }
+                }
 
 				_font = new BitmapFont(_fontData, _regions, true);
 

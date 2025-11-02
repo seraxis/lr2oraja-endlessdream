@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Queue;
@@ -92,7 +93,11 @@ public class BarManager {
 	void init() {
 		TableDataAccessor tdaccessor = new TableDataAccessor(select.resource.getConfig().getTablepath());
 
-		TableData[] unsortedtables = tdaccessor.readAll();
+        TableData[] unsortedtables;
+        try (var perf = PerformanceMetrics.get().Event("Saved table load")) {
+            unsortedtables = tdaccessor.readAll();
+        }
+
 		final List<TableData> sortedtables = new ArrayList<TableData>(unsortedtables.length);
 		
 		for(String url : select.resource.getConfig().getTableURL()) {
@@ -281,6 +286,9 @@ public class BarManager {
 			if (dir.size > 0) {
 				prevbar = dir.first();
 			}
+            if (prevbar instanceof ContextMenuBar) {
+                prevbar = ((ContextMenuBar)prevbar).getPrevious();
+            }
 			dir.clear();
 			sourcebars.clear();
 			l.addAll(new FolderBar(select, null, "e2977170").getChildren());
@@ -373,10 +381,14 @@ public class BarManager {
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
 			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
+                if (SongManagerMenu.isLastPlayedSortEnabled()) {
+                    Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
+                }
 			}
 
 			Array<Bar> bars = new Array<Bar>();
-			if (select.main.getPlayerConfig().isRandomSelect()) {
+			if (select.main.getPlayerConfig().isRandomSelect()
+				&& !(bar instanceof ContextMenuBar)) {
 				try {
 					for (RandomFolder randomFolder : randomFolderList) {
 						SongData[] randomTargets = Stream.of(newcurrentsongs).filter(
@@ -465,6 +477,7 @@ public class BarManager {
 
 	public void close() {
 		if(dir.size == 0) {
+            SongManagerMenu.forceDisableLastPlayedSort();
 			select.executeEvent(EventType.sort);
 			return;
 		}
@@ -502,6 +515,8 @@ public class BarManager {
 	public float getSelectedPosition() {
 		return ((float) selectedindex) / currentsongs.length;
 	}
+
+    public TableBar[] getTables() { return tables.clone(); }
 
 	public void setSelectedPosition(float value) {
 		if (value >= 0 && value < 1) {

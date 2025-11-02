@@ -146,4 +146,36 @@ public class IRScoreData {
 	public int getExscore() {
 		return (epg + lpg) * 2 + egr + lgr;
 	}
+
+	public ScoreData convertToScoreData() {
+		ScoreData score = new ScoreData();
+		score.setSha256(this.sha256);
+		score.setMode(this.lntype);
+		score.setPlayer(this.player);
+		score.setClear(this.clear.id);
+		score.setDate(this.date);
+		score.setEpg(this.epg);
+		score.setLpg(this.lpg);
+		score.setEgr(this.egr);
+		score.setLgr(this.lgr);
+		score.setEgd(this.egd);
+		score.setLgd(this.lgd);
+		score.setEbd(this.ebd);
+		score.setLbd(this.lbd);
+		score.setEpr(this.epr);
+		score.setLpr(this.lpr);
+		score.setEms(this.ems);
+		score.setLms(this.lms);
+		score.setCombo(this.maxcombo);
+		score.setNotes(this.notes);
+		score.setPassnotes(this.passnotes != 0 ? this.notes : this.passnotes);
+		score.setMinbp(this.minbp);
+		score.setAvgjudge(this.avgjudge);
+		score.setOption(this.option);
+		score.setSeed(this.seed);
+		score.setAssist(this.assist);
+		score.setGauge(this.gauge);
+		score.setDeviceType(this.deviceType);
+		return score;
+	}
 }

@@ -82,7 +82,7 @@ public class MusicResult extends AbstractResult {
 			state = STATE_IR_PROCESSING;
 			
         	for(IRStatus irc : ir) {
-    			boolean send = resource.isUpdateScore();
+    			boolean send = resource.isUpdateScore() && !resource.isForceNoIRSend();
     			switch(irc.config.getIrsend()) {
     			case IRConfig.IR_SEND_ALWAYS:
     				break;

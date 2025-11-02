@@ -618,16 +618,19 @@ public class EventFactory {
 	    /**
 	     * LNモードの変更
 	     */
-		lnmode(308, (state, arg1) -> {
-			if(state instanceof MusicSelector selector) {
-				final int lnmodelength = 3;
-	            PlayerConfig config = selector.resource.getPlayerConfig();
-	            config.setLnmode((config.getLnmode() + (arg1 >= 0 ? 1 : lnmodelength - 1)) % lnmodelength);
-	            selector.getBarManager().updateBar();
-	            selector.play(OPTION_CHANGE);
-			}
-		}),
-		autosavereplay1(321, changeAutoSaveReplay(0)),
+        lnmode(308, (state, arg1) -> {
+            // endless dream - switching ln disabled in-game
+            // you can only change this in configuration
+            return;
+            // if(state instanceof MusicSelector selector) {
+			// 	final int lnmodelength = 3;
+	        //     PlayerConfig config = selector.resource.getPlayerConfig();
+	        //     config.setLnmode((config.getLnmode() + (arg1 >= 0 ? 1 : lnmodelength - 1)) % lnmodelength);
+	        //     selector.getBarManager().updateBar();
+	        //     selector.play(OPTION_CHANGE);
+			// }
+        }),
+        autosavereplay1(321, changeAutoSaveReplay(0)),
 		autosavereplay2(322, changeAutoSaveReplay(1)),
 		autosavereplay3(323, changeAutoSaveReplay(2)),
 		autosavereplay4(324, changeAutoSaveReplay(3)),

@@ -3,47 +3,35 @@ package bms.tool.mdprocessor;
 import java.nio.file.Path;
 
 public class DownloadTask {
-    private int id;
-    private String url;
-    private String name;
+    final private int id;
+    final private String url;
+    final private String name;
+    final private String hash;
+
     private DownloadTaskStatus downloadTaskStatus;
-    private Path downloadFilePath;
     private long downloadSize;
     private long contentLength;
     private String errorMessage;
-    public DownloadTask() {
+    private volatile long timeFinished;
 
-    }
-
-    public DownloadTask(int id, String url, String name) {
+    public DownloadTask(int id, String url, String name, String hash) {
         this.id = id;
         this.url = url;
         this.name = name;
+        this.hash = hash;
         this.downloadTaskStatus = DownloadTaskStatus.Prepare;
     }
 
-    /**
-     * @return A copied DownloadTask instance, only used for rendering
-     */
-    public DownloadTask copy() {
-        DownloadTask downloadTask = new DownloadTask();
-        // Yeah this is java
-        downloadTask.id = this.id;
-        downloadTask.url = this.url;
-        downloadTask.name = this.name;
-        downloadTask.downloadTaskStatus = this.downloadTaskStatus;
-        downloadTask.downloadSize = this.downloadSize;
-        downloadTask.contentLength = this.contentLength;
-        downloadTask.errorMessage = this.errorMessage;
-        return downloadTask;
+    public int getId() {
+        return id;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public String getHash() {
+        return hash;
     }
 
     public DownloadTaskStatus getDownloadTaskStatus() {
@@ -51,15 +39,10 @@ public class DownloadTask {
     }
 
     public void setDownloadTaskStatus(DownloadTaskStatus downloadTaskStatus) {
+        if (downloadTaskStatus.value >= DownloadTask.DownloadTaskStatus.Extracted.getValue()) {
+            timeFinished = System.nanoTime();
+        }
         this.downloadTaskStatus = downloadTaskStatus;
-    }
-
-    public Path getDownloadFilePath() {
-        return downloadFilePath;
-    }
-
-    public void setDownloadFilePath(Path downloadFilePath) {
-        this.downloadFilePath = downloadFilePath;
     }
 
     public long getDownloadSize() {
@@ -86,29 +69,22 @@ public class DownloadTask {
         this.errorMessage = errorMessage;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public long getTimeFinished() {
+        return timeFinished;
     }
 
     // TODO: Success state should be split into multiple different states like `Download successfully` and `Extract successfully`
     public enum DownloadTaskStatus {
         Prepare(0, "Prepare"),
         Downloading(1, "Downloading"),
-        Success(2, "Success"),
-        Error(3, "Error"),
-        Cancel(4, "Cancel");
+        Downloaded(2, "Downloaded"),
+        Extracted(3, "Finished"),
+        Error(4, "Error"),
+        Cancel(5, "Cancel");
 
         private final int value;
         private final String name;

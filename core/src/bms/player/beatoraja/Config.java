@@ -7,12 +7,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
+import java.util.logging.Logger;
 
+import bms.player.beatoraja.system.RobustFile;
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import com.badlogic.gdx.utils.SerializationException;
+
 
 /**
  * 各種設定項目。config.jsonで保持される
@@ -71,6 +77,10 @@ public class Config implements Validatable {
 	 * 検索バー同時表示上限数
 	 */
 	private int maxSearchBarCount = 10;
+	/**
+	 * When selecting a song, if set to true, game changes to play scene instead of decide scene
+	 */
+	private boolean skipDecideScreen = false;
 	/**
 	 * 所持していない楽曲バーを表示するかどうか
 	 */
@@ -134,6 +144,8 @@ public class Config implements Validatable {
 	 * 難易度表URL
 	 */
 	private String[] tableURL = DEFAULT_TABLEURL;
+
+	private String[] availableURL = AVAILABLE_TABLEURL;
 	/**
 	 * BGA表示
 	 */
@@ -172,22 +184,119 @@ public class Config implements Validatable {
 	private boolean useDiscordRPC = false;
 	private boolean setClipboardScreenshot = false;
 	private String monitorName = "";
+    private int webhookOption = 0; // 0 - Off, 1 - Image, 2 - Rich
+    private String webhookName = "";
+    private String webhookAvatar = "";
+	/**
+	 * Discord webhook urls
+	 */
+	private String[] webhookUrl = new String[0];
 
-	private static final String[] DEFAULT_TABLEURL = { "http://bmsnormal2.syuriken.jp/table.html",
-			"http://bmsnormal2.syuriken.jp/table_insane.html",
+	/**
+	 * Bank of available tables
+	 *
+	 * A users tableurl list is subtracted from this list to avoid unintentional duplicate table entries
+	 */
+    private static final String[] AVAILABLE_TABLEURL = {
+			//
+			// Default list
+			//
+			// stardust, starlight, satellite, stella
+			"https://mqppppp.neocities.org/StardustTable.html",
+			"https://djkuroakari.github.io/starlighttable.html",
+			"https://stellabms.xyz/sl/table.html",
+			"https://stellabms.xyz/st/table.html",
+			// normal 1/2 insane 1/2
+			"https://darksabun.club/table/archive/normal1/",
+			"https://darksabun.club/table/archive/insane1/",
+			"http://rattoto10.jounin.jp/table.html",
+			"http://rattoto10.jounin.jp/table_insane.html",
+			// overjoy
+			"https://rattoto10.jounin.jp/table_overjoy.html",
+			//
+			// Optional list
+			//
+			// stream + chordjack
+			"https://lets-go-time-hell.github.io/code-stream-table/",
+			"https://lets-go-time-hell.github.io/Arm-Shougakkou-table/",
+			"https://su565fx.web.fc2.com/Gachimijoy/gachimijoy.html",
+			// stellaverse quirked up
+			"https://stellabms.xyz/so/table.html",
+			"https://stellabms.xyz/sn/table.html",
+			// osu
+			"https://air-afother.github.io/osu-table/",
+			// AI
+			"https://bms.hexlataia.xyz/tables/ai.html",
+			// Library
+			"https://bms.hexlataia.xyz/tables/db.html",
+			"https://stellabms.xyz/upload.html",
+			"https://exturbow.github.io/github.io/index.html",
+			"https://bms.hexlataia.xyz/tables/olduploader.html",
+			//"http://upl.konjiki.jp/",
+			// beginner
+			"http://fezikedifficulty.futene.net/list.html",
+			// LN
+			"https://ladymade-star.github.io/luminous/table.html",
+			"https://vinylhouse.web.fc2.com/lntougou/difficulty.html",
+			"http://flowermaster.web.fc2.com/lrnanido/gla/LN.html",
+			"https://skar-wem.github.io/ln/",
+			"http://cerqant.web.fc2.com/zindy/table.html",
+			"https://notepara.com/glassist/lnoj",
+			// Scratch
+			"https://egret9.github.io/Scramble/",
+			"http://minddnim.web.fc2.com/sara/3rd_hard/bms_sara_3rd_hard.html",
+			// delay
+			"https://lets-go-time-hell.github.io/Delay-joy-table/",
+			"https://kamikaze12345.github.io/github.io/delaytrainingtable/table.html",
+			"https://wrench616.github.io/Delay/",
+			// high difficulty
+			"https://darksabun.club/table/archive/old-overjoy/",
+			"https://monibms.github.io/Dystopia/dystopia.html",
+			"https://www.firiex.com/tables/joverjoy",
+			// hard judge
+			"https://plyfrm.github.io/table/timing/",
+			// artist search
+			"https://plyfrm.github.io/table/bmssearch/index.html",
+			// DP
+			"https://yaruki0.net/DPlibrary/",
+			"https://stellabms.xyz/dp/table.html",
+			"https://stellabms.xyz/dpst/table.html",
+			"https://deltabms.yaruki0.net/table/data/dpdelta_head.json",
+			"https://deltabms.yaruki0.net/table/data/insane_head.json",
+			"http://ereter.net/dpoverjoy/",
+			// Stella Extensions
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/satellite-fullcombo.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/stella-fullcombo.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-easy.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-normal.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-hard.html",
+			"https://notmichaelchen.github.io/stella-table-extensions/dp-satellite-fullcombo.html",
+			// Walkure
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=easy",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=normal",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=hard",
 			"http://walkure.net/hakkyou/for_glassist/bms/?lamp=fc",
+    };
+
+	private static final String[] DEFAULT_TABLEURL = {
+			// stardust, starlight, satellite, stella
+			"https://mqppppp.neocities.org/StardustTable.html",
+			"https://djkuroakari.github.io/starlighttable.html",
 			"https://stellabms.xyz/sl/table.html",
 			"https://stellabms.xyz/st/table.html",
-			"https://mocha-repository.info/table/dpn_header.json",
-			"https://mocha-repository.info/table/dpi_header.json",
-			"https://stellabms.xyz/dp/table.html",
-			"https://stellabms.xyz/dpst/table.html",
-			"https://mocha-repository.info/table/ln_header.json",
-			"https://pmsdifficulty.xxxxxxxx.jp/_pastoral_insane_table.html",
-			"https://excln.github.io/table24k/table.html",
+			// normal 1/2 insane 1/2
+			"https://darksabun.club/table/archive/normal1/",
+			"https://darksabun.club/table/archive/insane1/",
+			"http://rattoto10.jounin.jp/table.html",
+			"http://rattoto10.jounin.jp/table_insane.html",
+			// overjoy
+			"https://rattoto10.jounin.jp/table_overjoy.html"
 	};
 
 	public Config() {
@@ -257,6 +366,14 @@ public class Config implements Validatable {
 		this.tableURL = tableURL;
 	}
 
+	public String[] getAvailableURL() {
+		return availableURL;
+	}
+
+	public void setAvailableURL(String[] availableURL) {
+		this.availableURL = availableURL;
+	}
+
 	public boolean isFolderlamp() {
 		return folderlamp;
 	}
@@ -321,8 +438,16 @@ public class Config implements Validatable {
 	    this.maxSearchBarCount = maxSearchBarCount;
     }
 
+	public void setSkipDecideScreen(boolean skipDecideScreen) {
+		this.skipDecideScreen = skipDecideScreen;
+	}
+
+	public boolean isSkipDecideScreen() {
+		return skipDecideScreen;
+	}
+
 	public boolean isShowNoSongExistingBar() {
-		return showNoSongExistingBar;
+		return showNoSongExistingBar || isEnableHttp();
 	}
 
 	public void setShowNoSongExistingBar(boolean showNoExistingSongBar) {
@@ -564,7 +689,28 @@ public class Config implements Validatable {
 		this.monitorName = monitorName;
 	}
 
-	public boolean validate() {
+    public String getWebhookName() { return webhookName; }
+
+    public void setWebhookName(String webhookName) { this.webhookName = webhookName; }
+
+    public String getWebhookAvatar() { return webhookAvatar; };
+
+    public void setWebhookAvatar(String webhookAvatar) { this.webhookAvatar = webhookAvatar; }
+
+	public String[] getWebhookUrl() {
+		return webhookUrl;
+	}
+
+	public void setWebhookUrl(String[] webhookUrl) {
+		this.webhookUrl = webhookUrl;
+	}
+
+    // 0 - Off, 1 - Image, 2 - Rich
+    public int getWebhookOption() { return webhookOption; }
+
+    public void setWebhookOption(int webhookOption) { this.webhookOption = webhookOption; }
+
+    public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
 
@@ -611,16 +757,32 @@ public class Config implements Validatable {
 	}
 
 	public static Config read() throws PlayerConfigException {
-		Config config = null;
+        RobustFile.Parser<Config> parser = (byte[] data) -> {
+            Json json = new Json();
+            json.setIgnoreUnknownFields(true);
+            try {
+                String ss = new String(data, StandardCharsets.UTF_8);
+                Config config = json.fromJson(Config.class, ss);
+                if (config == null) { throw new SerializationException("(unknown error)"); }
+                return config;
+            }
+            catch (SerializationException e) {
+                throw new ParseException("Configの読み込み失敗 - Path : " + configpath +
+                                             " , Log : " + e.getLocalizedMessage(),
+                                         0);
+            }
+        };
+
+        Config config = null;
 		if (Files.exists(configpath)) {
-			Json json = new Json();
-			json.setIgnoreUnknownFields(true);
-			try (Reader reader = new InputStreamReader(new FileInputStream(configpath.toFile()), StandardCharsets.UTF_8)) {
-				config = json.fromJson(Config.class, reader);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} else if(Files.exists(configpath_old)) {
+            try {
+                config = RobustFile.load(configpath, parser);
+            }
+            catch (IOException e) {
+                writeBackupConfigFile();
+                e.printStackTrace();
+            }
+        } else if(Files.exists(configpath_old)) {
 			// 旧コンフィグ読み込み。そのうち削除
 			Json json = new Json();
 			json.setIgnoreUnknownFields(true);
@@ -636,23 +798,41 @@ public class Config implements Validatable {
 		return validateConfig(config);
 	}
 
+	private static void writeBackupConfigFile() {
+		try {
+            Path configBackupPath = configpath.resolveSibling("config_sys_backup.json");
+			Files.copy(configpath, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
+			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+		} catch (IOException e) {
+			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+		}
+	}
+
 	public static Config validateConfig(Config config) throws PlayerConfigException {
 		config.validate();
 		PlayerConfig.init(config);
 		return config;
 	}
 
-	public static void write(Config config) {
-		Json json = new Json();
-		json.setUsePrototypes(false);
-		json.setOutputType(OutputType.json);
-		try (Writer writer = new OutputStreamWriter(new FileOutputStream(configpath.toFile()), StandardCharsets.UTF_8)) {
-			writer.write(json.prettyPrint(config));
-			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    public static String getConfigJson(Config config) {
+        Json json = new Json();
+        json.setUsePrototypes(false);
+        json.setOutputType(OutputType.json);
+        return json.prettyPrint(config);
+    }
+
+    public static void write(Config config) {
+        write(config, getConfigJson(config));
+    }
+
+    public static void write(Config config, String configJson) {
+        try {
+            RobustFile.write(configpath, configJson.getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 	public int getIrSendCount() {
 		return irSendCount;
@@ -670,7 +850,7 @@ public class Config implements Validatable {
 		this.useResolution = useResolution;
 	}
 
-	public enum DisplayMode {
+    public enum DisplayMode {
 		FULLSCREEN,BORDERLESS,WINDOW;
 	}
 

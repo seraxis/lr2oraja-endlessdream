@@ -73,14 +73,10 @@ public class HttpDownloadProcessor {
         return Optional.ofNullable(tasks.get(taskId));
     }
 
-    /**
-     * @return Current snapshot of all tasks
-     */
-    public List<DownloadTask> getAllTaskSnapshot() {
-        synchronized (tasks) {
-            return tasks.values().stream().map(DownloadTask::copy).toList();
-        }
-    }
+    // Would be best if this returned an immutable view over the tasks,
+    // without creating a copy, in the interest of efficiency,
+    // however I'm not sure if that is possible in java
+    public Map<Integer, DownloadTask> getAllTasks() { return tasks; }
 
     /**
      * Submit a download task based on md5
@@ -117,7 +113,7 @@ public class HttpDownloadProcessor {
                     return null;
                 }
                 int taskId = idGenerator.addAndGet(1);
-                DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName);
+                DownloadTask downloadTask = new DownloadTask(taskId, downloadURL, taskName, md5);
                 tasks.put(taskId, downloadTask);
                 ImGuiNotify.info(String.format("New download task[%s] submitted", taskName));
                 return downloadTask;
@@ -158,6 +154,7 @@ public class HttpDownloadProcessor {
             try {
                 extractCompressedFile(result.toFile(), null);
                 successfullyExtracted = true;
+                downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Extracted);
             } catch (Exception e) {
                 e.printStackTrace();
                 ImGuiNotify.error(String.format("Failed extracting file: %s due to %s", result.getFileName(), e.getMessage()));
@@ -233,7 +230,7 @@ public class HttpDownloadProcessor {
                 task.setContentLength(contentLength);
             }
             Logger.getGlobal().info(String.format("[HttpDownloadProcessor] Download successfully to %s", result));
-            task.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Success);
+            task.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Downloaded);
         } catch (Exception e) {
             e.printStackTrace();
             Logger.getGlobal().info("[HttpDownloadProcessor] Failed to download file from url: " + e.getMessage());

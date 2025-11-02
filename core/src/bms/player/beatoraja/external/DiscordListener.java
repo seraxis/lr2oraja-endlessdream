@@ -8,79 +8,59 @@ import bms.player.beatoraja.play.BMSPlayer;
 import bms.player.beatoraja.result.CourseResult;
 import bms.player.beatoraja.result.MusicResult;
 import bms.player.beatoraja.select.MusicSelector;
-import club.minnced.discord.rpc.DiscordEventHandlers;
-import club.minnced.discord.rpc.DiscordRPC;
-import club.minnced.discord.rpc.DiscordRichPresence;
+import bms.player.beatoraja.external.DiscordRPC.RichPresence;
+
+import java.util.logging.Logger;
 
 public class DiscordListener implements MainStateListener {
 
-	private Discord discord;
+	private static final String APPLICATION_ID = "1054234988167561277";
+
+	private RichPresence richPresence;
 	
 	public DiscordListener() {
-		discord = new Discord();
-		discord.startup();
+		try {
+			richPresence = new RichPresence(APPLICATION_ID);
+			richPresence.connect();
+			Logger.getGlobal().info("Discord RPC Ready!");
+		} catch (Exception e) {
+			richPresence = null;
+			Logger.getGlobal().warning("Failed to initialize Discord RPC: " + e.getMessage());
+		}
 	}
 	
 	@Override
 	public void update(MainState state, int status) {
-		if(state instanceof MusicSelector) {
-			discord.update("In Music Select Menu", "");
-		}
-		if(state instanceof MusicDecide) {
-			discord.update("Decide Screen", "");
-		}
-		if(state instanceof BMSPlayer) {
-			final PlayerResource resource = state.main.getPlayerResource();
-			discord.update(resource.getSongdata().getFullTitle(), resource.getSongdata().getArtist(), resource.getSongdata().getMode());
-		}
-		if(state instanceof MusicResult) {
-			discord.update("Result Screen", "");
-		}
-		if(state instanceof CourseResult) {
-			discord.update("Course Result Screen", "");
+		if (richPresence == null) return;
+		
+		try {
+			RichPresence.RichPresenceData data = new RichPresence.RichPresenceData();
+			data.setStartTimestamp(System.currentTimeMillis() / 1000)
+				.setLargeImage("bms", null);
+			
+			if (state instanceof MusicSelector) {
+				data.setState("In Music Select Menu");
+			} else if (state instanceof MusicDecide) {
+				data.setState("Decide Screen");
+			} else if (state instanceof BMSPlayer) {
+				final PlayerResource resource = state.main.getPlayerResource();
+				data.setDetails(resource.getSongdata().getFullTitle() + " / " + resource.getSongdata().getArtist());
+				data.setState("Playing: " + resource.getSongdata().getMode() + "Keys");
+			} else if (state instanceof MusicResult) {
+				data.setState("Result Screen");
+			} else if (state instanceof CourseResult) {
+				data.setState("Course Result Screen");
+			}
+			
+			richPresence.update(data);
+		} catch (Exception e) {
+			Logger.getGlobal().warning("Failed to update Discord Rich Presence: " + e.getMessage());
 		}
 	}
-
-	public static class Discord {
-	    public final DiscordRichPresence presence = new DiscordRichPresence();
-
-	    private final DiscordRPC lib = DiscordRPC.INSTANCE;
-	    /*
-	    private final String APPLICATIONID = "876968973126746182"; // DISCORD APPLICATION ID   (https://discord.com/developers/applications)
-	    */
-	    private static final String APPLICATIONID = "1054234988167561277"; // LR2ORAJA DISCORD APPLICATION ID
-
-	    public void startup() {
-	        String steamId = "";
-	        DiscordEventHandlers handlers = new DiscordEventHandlers();
-	        handlers.ready = (user) -> System.out.println("Discord RPC Ready!");
-	        lib.Discord_Initialize(APPLICATIONID, handlers, true, steamId);
-	        DiscordRichPresence presence = new DiscordRichPresence();
-	        lib.Discord_UpdatePresence(presence);
-	        // in a worker thread
-	        new Thread(() -> {
-	            while (!Thread.currentThread().isInterrupted()) {
-	                lib.Discord_RunCallbacks();
-	                try {
-	                    Thread.sleep(2000);
-	                } catch (InterruptedException ignored) {
-	                }
-	            }
-	        }, "RPC-Callback-Handler").start();
-
-	    }
-
-	    public void update(String fulltitle, String artist, int mode) {
-	        update("Playing: " + mode + "Keys", fulltitle + " / " + artist);	    	
-	    }
-
-	    public void update(String state, String details) {
-	        presence.details = details;
-	        presence.state = state;
-	        presence.startTimestamp = System.currentTimeMillis() / 1000;
-	        presence.largeImageKey = "bms";
-	        lib.Discord_UpdatePresence(presence);
-	    }
-
+	
+	public void close() {
+		if (richPresence != null) {
+			richPresence.close();
+		}
 	}
 }

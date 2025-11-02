@@ -6,10 +6,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
-import bms.player.beatoraja.modmenu.DownloadTaskMenu;
-import bms.player.beatoraja.modmenu.ImGuiNotify;
-import bms.player.beatoraja.modmenu.ImGuiRenderer;
-import bms.player.beatoraja.modmenu.SongManagerMenu;
+import bms.player.beatoraja.modmenu.*;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
@@ -23,7 +20,6 @@ import com.badlogic.gdx.utils.StringBuilder;
 
 import bms.player.beatoraja.AudioConfig.DriverType;
 import bms.player.beatoraja.MainState.MainStateType;
-import bms.player.beatoraja.MessageRenderer.Message;
 import bms.player.beatoraja.audio.*;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
@@ -44,10 +40,6 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
-import de.damios.guacamole.gdx.graphics.ShaderCompatibilityHelper;
-import de.damios.guacamole.gdx.graphics.ShaderProgramFactory;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
-import space.earlygrey.shapedrawer.ShapeDrawer;
 
 /**
  * アプリケーションのルートクラス
@@ -56,7 +48,7 @@ import space.earlygrey.shapedrawer.ShapeDrawer;
  */
 public class MainController {
 
-	private static final String VERSION = "LR2oraja Endless Dream pre-release 0.3.1";
+	private static final String VERSION = "LR2oraja Endless Dream pre-release 0.3.2";
 
 	public static final boolean debug = false;
 	public static final int debugTextXpos = 10;
@@ -77,6 +69,8 @@ public class MainController {
 	private SkinConfiguration skinconfig;
 
 	private AudioDriver audio;
+
+	private BMSLoudnessAnalyzer loudnessAnalyzer;
 
 	private PlayerResource resource;
 
@@ -287,14 +281,10 @@ public class MainController {
 			}
 			break;
 		case DECIDE:
-			newState = decide;
+			newState = config.isSkipDecideScreen() ? createBMSPlayerState() : decide;
 			break;
 		case PLAY:
-			if (bmsplayer != null) {
-				bmsplayer.dispose();
-			}
-			bmsplayer = new BMSPlayer(this, resource);
-			newState = bmsplayer;
+			newState = createBMSPlayerState();
 			break;
 		case RESULT:
 			newState = result;
@@ -311,13 +301,13 @@ public class MainController {
 		}
 
 		if (newState != null && current != newState) {
-			if(current != null) {
-				current.shutdown();
-				current.setSkin(null);
-			}
 			newState.create();
 			if(newState.getSkin() != null) {
 				newState.getSkin().prepare(newState);
+			}
+			if(current != null) {
+				current.shutdown();
+				current.setSkin(null);
 			}
 			current = newState;
 			timer.setMainState(newState);
@@ -329,6 +319,13 @@ public class MainController {
 		} else {
 			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
 		}
+	}
+
+	private MainState createBMSPlayerState() {
+		if (bmsplayer != null) {
+			bmsplayer.dispose();
+		}
+		return new BMSPlayer(this, resource);
 	}
 
 	public MainState getCurrentState() {
@@ -345,10 +342,12 @@ public class MainController {
 		sprite = SpriteBatchHelper.createSpriteBatch();
 		SkinLoader.initPixmapResourcePool(config.getSkinPixmapGen());
 
+        try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
+            ImGuiRenderer.init();
+            SkinMenu.init(this, player);
+        }
 
-		ImGuiRenderer.init();
-
-		try {
+        try (var perf = PerformanceMetrics.get().Event("System font load")) {
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(config.getSystemfontpath()));
 			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 			parameter.size = 24;
@@ -358,7 +357,10 @@ public class MainController {
 			Logger.getGlobal().severe("System Font読み込み失敗");
 		}
 
-		input = new BMSPlayerInputProcessor(config, player);
+        try (var perf = PerformanceMetrics.get().Event("Input Processor constructor")) {
+			input = new BMSPlayerInputProcessor(config, player);
+		}
+
 		switch(config.getAudioConfig().getDriver()) {
 		case OpenAL:
 			audio = new GdxSoundDriver(config);
@@ -368,13 +370,18 @@ public class MainController {
 //			break;
 		}
 
-		resource = new PlayerResource(audio, config, player);
-		selector = new MusicSelector(this, songUpdated);
+		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
+		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
+        try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
+            selector = new MusicSelector(this, songUpdated);
+        }
+
 		if(player.getRequestEnable()) {
 		    streamController = new StreamController(selector);
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
+		MiscSettingMenu.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
 		gresult = new CourseResult(this);
@@ -411,6 +418,20 @@ public class MainController {
 		});
 		polling.start();
 
+        String lnModeName = switch (player.getLnmode()) {
+            case 1 -> "CN";
+            case 2 -> "HCN";
+            default -> "LN";
+        };
+        if (!lnModeName.equals("LN")) {
+            // give them a really insistent warning
+            String lnWarning = "Long Note mode is " + lnModeName + ".\n"
+                               + "This is not recommended.\n"
+                               + "Your scores may be incompatible with IR.\n"
+                               + "You may change this in play options.";
+            ImGuiNotify.warning(lnWarning, 8000);
+        }
+
 		Array<String> targetlist = new Array<String>(player.getTargetlist());
 		for(int i = 0;i < rivals.getRivalCount();i++) {
 			targetlist.add("RIVAL_" + (i + 1));
@@ -442,11 +463,11 @@ public class MainController {
 		if (config.isEnableHttp()) {
 			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
 			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
-			DownloadTaskMenu.initialize(httpDownloadProcessor);
+			DownloadTaskState.initialize(httpDownloadProcessor);
 		}
 
 		if(ir.length > 0) {
-			ImGuiNotify.info("%d IR Connection Succeed", ir.length);
+			ImGuiNotify.info(String.format("%d IR Connection Succeed", ir.length));
 
 			Thread irResendProcess = new Thread(() -> {
 				for (;;) {
@@ -480,6 +501,8 @@ public class MainController {
 			});
 			irResendProcess.start();
 		}
+
+        lastConfigSave = System.nanoTime();
 	}
 
 	private long prevtime;
@@ -569,6 +592,12 @@ public class MainController {
 
 			sprite.end();
 		}
+
+        periodicConfigSave();
+
+        if (config.isEnableHttp()) { DownloadTaskState.update(); }
+        PerformanceMetrics.get().commit();
+
 		imGui.start();
 		imGui.render();
 		imGui.end();
@@ -711,6 +740,9 @@ public class MainController {
 		if (download != null) {
 			download.dispose();
 		}
+		if (loudnessAnalyzer != null) {
+			loudnessAnalyzer.shutdown();
+		}
 
 		Logger.getGlobal().info("全リソース破棄完了");
 	}
@@ -732,6 +764,36 @@ public class MainController {
 		PlayerConfig.write(config.getPlayerpath(), player);
 		Logger.getGlobal().info("設定情報を保存");
 	}
+
+    private long lastConfigSave = 0;
+    private Thread configWrite;
+
+    private void periodicConfigSave() {
+        // let's not start anything heavy during play
+        if (current instanceof BMSPlayer) { return; }
+
+        // save once every 5 minutes
+        long now = System.nanoTime();
+        if ((now - lastConfigSave) < 5 * 60 * 1000000000L) { return; }
+
+        if (configWrite != null && configWrite.isAlive()) {
+            Logger.getGlobal().severe("Couldn't write config files - save process is stuck.");
+            return;
+        }
+
+        lastConfigSave = now;
+
+        // the write are quite slow but we can do them on a separate thread;
+        // we still serialize the configs into json on the
+        // main thread to avoid multithreading issues
+        final String configJson = Config.getConfigJson(config);
+        final String playerConfigJson = PlayerConfig.getConfigJson(player);
+        configWrite = new Thread(() -> {
+            Config.write(config, configJson);
+            PlayerConfig.write(config.getPlayerpath(), player, playerConfigJson);
+        });
+        configWrite.start();
+    }
 
 	public void exit() {
 		Gdx.app.exit();

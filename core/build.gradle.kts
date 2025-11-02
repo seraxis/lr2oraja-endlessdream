@@ -3,8 +3,14 @@ import java.nio.file.FileSystems
 plugins {
     id("java-library")
     id("application")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.9"
     id("org.endlessdream.extra.multiplatform-convention")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
 }
 
 repositories {
@@ -31,7 +37,7 @@ application {
 }
 
 tasks {
-    // fat/uber-jar task provided by https://github.com/johnrengelman/shadow
+    // fat/uber-jar task provided by https://github.com/GradleUp/shadow
     shadowJar {
         val platformProp = System.getProperty("platform")
         val archProp = System.getProperty("arch")
@@ -43,6 +49,25 @@ tasks {
             true -> platformProp.plus("-").plus(archVariant).plus(libs.versions.endlessdream.get())
             false -> "".plus(libs.versions.endlessdream.get())
         }
+
+        // Include IR JAR in uberjar
+        val runDirProp = System.getProperty("runDir")
+        val useIRProp = System.getProperty("useIR")
+        when(runDirProp != null
+                && gradle.startParameter.taskNames.any() { it.contains("runShadow") }
+                && useIRProp.toBoolean()
+        ) {
+            true -> {
+                println("Including IR jars")
+                val runDir = FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
+                val irJars : FileTree = fileTree(runDir.resolve("./ir")) {
+                    include("*.jar")
+                }
+                from(irJars)
+            }
+            false -> { println("Skipping IR jar inclusion") }
+        }
+
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
         archiveClassifier.set(classifierPlatform)
@@ -83,16 +108,20 @@ dependencies {
     implementation(libs.bundles.codecs)
     implementation(libs.bundles.jackson)
 
+    implementation(libs.bundles.jna)
+
     implementation(libs.sqlite)
     implementation(libs.commons.compress)
+    implementation(libs.commons.csv)
     implementation(libs.commons.dbutils)
     implementation(libs.xz)
 
-    implementation(libs.javadiscord)
     implementation(libs.twitter4j)
 
     implementation(libs.shapedrawer)
     implementation(libs.guacamole)
+
+    implementation(libs.ebur128java)
 
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
