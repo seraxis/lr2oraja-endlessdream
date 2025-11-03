@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html $if(lang)$ lang="$lang$" $endif$>
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <meta name="generator" content="pandoc" />
+        $for(author-meta)$
+        <meta name="author" content="$author-meta$" />
+        $endfor$
+        $if(date-meta)$
+        <meta name="date" content="$date-meta$" />
+        $endif$
+        <title>$if(pagetitle)$$pagetitle$$endif$</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+        <style>
+            body {
+                ::-webkit-scrollbar {
+                    display: none;
+                }
+                /* hide the horizontal scrollbar */
+                overflow-y: scroll;
+                overflow-x: hidden;
+            }
+            /* make the scrollbar a little wider */
+            ::-webkit-scrollbar {
+                width: 2px;
+            }
+            ::-webkit-scrollbar-track  {
+                background-color: white;
+            }
+        </style>
+    </head>
+
+    <body style="background-color:#f4f4f4;">
+        $body$
+    </body>
+</html>

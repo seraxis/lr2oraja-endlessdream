@@ -23,14 +23,20 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
 
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
 <?import javafx.scene.control.skin.TabPaneSkin.TabControlButtons?>
 <?import bms.player.beatoraja.launcher.EditableTableView?>
 <!-- Pref height must not be 700 due to incredibly rare bug with TableView https://bugs.openjdk.org/browse/JDK-8320245?attachmentOrder=asc -->
+
 <VBox fx:id="root" prefHeight="725.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="bms.player.beatoraja.launcher.PlayConfigurationView">
-   <Hyperlink fx:id="newversion" text="" />
+    <HBox fx:id="topBar">
+        <Hyperlink fx:id="newversion" alignment="CENTER_LEFT" text="" />
+        <Region minWidth="10.0" HBox.hgrow="ALWAYS" />
+        <Hyperlink fx:id="changelog" onAction="#whatsNewPopup" alignment="CENTER_RIGHT" text="What's new in this version" />
+    </HBox>
     <HBox fx:id="playerPanel" alignment="CENTER_LEFT" prefHeight="10.0" prefWidth="730.0">
         <VBox.margin>
             <Insets bottom="5.0" top="5.0" />
