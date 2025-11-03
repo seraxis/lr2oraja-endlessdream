@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
@@ -29,12 +30,14 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebView;
 import javafx.stage.*;
 import javafx.stage.FileChooser.ExtensionFilter;
 import twitter4j.Twitter;
@@ -50,14 +53,14 @@ import twitter4j.conf.ConfigurationBuilder;
  * @author exch
  */
 public class PlayConfigurationView implements Initializable {
-
-
-	// TODO スキンプレビュー機能
+    // TODO スキンプレビュー機能
 
 	@FXML
 	private Hyperlink newversion;
+    @FXML
+    private Hyperlink changelog;
 
-	@FXML
+    @FXML
 	private VBox root;
 	@FXML
 	private HBox playerPanel;
@@ -351,6 +354,56 @@ public class PlayConfigurationView implements Initializable {
 		Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
 	}
 
+    @FXML
+    private void whatsNewPopup() {
+        ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
+
+        final Stage whatsNewStage = new Stage();
+        Runnable whatsNewRunnable = () -> {
+            // JavaFX UI code must be run inside a Platform run context
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    whatsNewStage.setResizable(true);
+                    // This modality freezes the launcher/primary stage
+                    whatsNewStage.initModality(Modality.APPLICATION_MODAL);
+                    whatsNewStage.setTitle("What's New");
+                    whatsNewStage.initStyle(StageStyle.DECORATED);
+
+                    WebView webView = new WebView();
+                    try {
+                        String whatsNewHTMLLocation = getClass().getResource("/resources/whatsnew.html").toURI().toString();
+                        webView.getEngine().load(whatsNewHTMLLocation);
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    Button gotItButton = new Button();
+                    gotItButton.setText("Got it");
+                    gotItButton.prefHeight(28.0);
+                    gotItButton.minWidth(140.0);
+                    gotItButton.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override public void handle(ActionEvent e) {
+                            whatsNewStage.hide();
+                        }
+                    });
+
+                    VBox root = new VBox(10);
+                    root.setPrefWidth(800.0);
+                    root.setPrefHeight(600.0);
+                    root.setStyle("-fx-padding: 20; -fx-alignment: center;");
+                    root.getChildren().addAll(webView, gotItButton);
+
+                    Scene scene = new Scene(root);
+                    whatsNewStage.setScene(scene);
+
+                    whatsNewStage.show();
+                }
+            });
+        };
+        new Thread(whatsNewRunnable).start();
+    }
+
 	private void checkNewVersion() {
 		Runnable newVersionCheckRunnable = () -> {
 			final String message = MainLoader.getVersionChecker().getMessage();
@@ -391,6 +444,14 @@ public class PlayConfigurationView implements Initializable {
 	 */
 	public void update(Config config) {
 		this.config = config;
+
+        // Show the What's New popup upon version change
+        String currentVersion = MainController.getVersion();
+        String lastVersion = config.getLastBootedVersion();
+        if (!currentVersion.equals(lastVersion)) {
+            whatsNewPopup();
+            config.setLastBootedVersion(currentVersion);
+        }
 
 		players.getItems().setAll(PlayerConfig.readAllPlayerID(config.getPlayerpath()));
 		videoController.update(config);

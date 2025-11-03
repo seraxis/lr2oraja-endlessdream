@@ -114,15 +114,15 @@ public class ImGuiRenderer {
             ImGui.checkbox("Show Rate Modifier Window", SHOW_FREQ_PLUS);
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
-            ImGui.checkbox("Show Song Manager Menu", SHOW_SONG_MANAGER);
+            if (ImGui.checkbox("Show Skin Configuration Window", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
+            ImGui.checkbox("Show Skin Widget Manager Window", SHOW_SKIN_WIDGET_MANAGER);
+            ImGui.checkbox("Show Song Manager Window", SHOW_SONG_MANAGER);
             ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
-            ImGui.checkbox("Show Skin Widget Manager Menu", SHOW_SKIN_WIDGET_MANAGER);
-            if (ImGui.checkbox("Show Performance Monitor", SHOW_PERFORMANCE_MONITOR) &&
+            if (ImGui.checkbox("Show Performance Monitor Window", SHOW_PERFORMANCE_MONITOR) &&
                 SHOW_PERFORMANCE_MONITOR.get()) {
                 PerformanceMonitor.reloadEventTree();
             }
-            if (ImGui.checkbox("Show Skin Menu", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
-            ImGui.checkbox("Show Misc Setting Menu", SHOW_MISC_SETTING);
+            ImGui.checkbox("Show Misc Setting Window", SHOW_MISC_SETTING);
 
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);

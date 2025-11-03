@@ -44,7 +44,12 @@ public class Config implements Validatable {
 	 * 選択中のプレイヤー名
 	 */
 	private String playername;
-	/**
+
+    /**
+     * Last version boot, used for dynamically displaying changelogs
+     */
+    private String lastBootedVersion = "";
+    /**
 	 * ディスプレイモード
 	 */
 	private DisplayMode displaymode = DisplayMode.WINDOW;
@@ -325,6 +330,10 @@ public class Config implements Validatable {
 	public void setPlayername(String playername) {
 		this.playername = playername;
 	}
+
+    public String getLastBootedVersion() { return lastBootedVersion; }
+
+    public void setLastBootedVersion(String lastBootedVersion) { this.lastBootedVersion = lastBootedVersion; }
 
 	public boolean isVsync() {
 		return vsync;

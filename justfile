@@ -4,6 +4,7 @@
 # are 
 alias b := build
 alias ba := build_all
+alias p := pandoc
 alias r := run
 alias u := update
 
@@ -29,6 +30,10 @@ run dir: build
 # Update submodules to point to the latest commit
 update:
   git submodule update --remote --merge
+
+# Build the whats new html file
+pandoc:
+  pandoc doc/whatsnew.md -f markdown -t html -s -o core/src/resources/whatsnew.html --template "./doc/template.html"
 
 # Removes all gradle caches, build intermediaries, and runs gradle clean
 [confirm("Are you sure you want to delete all gradle caches and build intermediaries? (y/n)")]

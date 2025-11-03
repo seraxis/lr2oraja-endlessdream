@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html >
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <meta name="generator" content="pandoc" />
+                        <title>whatsnew</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+        <style>
+            body {
+                ::-webkit-scrollbar {
+                    display: none;
+                }
+                /* hide the horizontal scrollbar */
+                overflow-y: scroll;
+                overflow-x: hidden;
+            }
+            /* make the scrollbar a little wider */
+            ::-webkit-scrollbar {
+                width: 2px;
+            }
+            ::-webkit-scrollbar-track  {
+                background-color: white;
+            }
+        </style>
+    </head>
+
+    <body style="background-color:#f4f4f4;">
+        <h1 id="endless-dream-0.3.1">Endless Dream 0.3.1</h1>
+        <h2 id="new-features">New features</h2>
+        <ul>
+        <li><h4 id="context-menu">Context Menu</h4>
+        <ul>
+        <li>Keys 3 and 5 now activate the Context Menu</li>
+        <li>The Context Menu can be opened on a Song or top-level Table
+        folder in Music Select</li>
+        <li>Autoplay and Practice Mode functionality has been placed
+        inside the Context Menu</li>
+        </ul></li>
+        <li><h4 id="lr2ir-and-lr2-g-battle-support">LR2IR and LR2
+        G-BATTLE Support</h4>
+        <ul>
+        <li>Lunatic Rave 2 Internet Ranking song leaderboards are now
+        accessible inside the Context Menu</li>
+        <li>Pressing play on a LR2IR leaderboard score will enter
+        G-BATTLE
+        <ul>
+        <li>Your pacemaker will be set to challenge the leaderboard
+        score you have selected</li>
+        <li>With the RANDOM option enabled your random will match the
+        random that the leaderboard score was obtained with</li>
+        <li>Only 7K is currently supported</li>
+        </ul></li>
+        </ul></li>
+        <li><h4 id="in-game-skin-configuration">In-game skin
+        configuration</h4>
+        <ul>
+        <li>Update your skin settings live inside the game
+        <ul>
+        <li>Accessible via the Skin Configuration window in the mod
+        menu</li>
+        <li>The menu will let you configure the currently displayed
+        scene’s skin configuration
+        <ul>
+        <li>To edit the PLAY scene, play a chart with the menu open. The
+        same goes for RESULT, etc.</li>
+        </ul></li>
+        </ul></li>
+        <li>Edit skin elements dimensions and properties live with the
+        Skin Widget Manager
+        <ul>
+        <li>Make small edits to your skin on the fly, resize elements
+        with the mouse</li>
+        <li>Comes with an undo button and full history for all
+        alterations</li>
+        </ul></li>
+        </ul></li>
+        <li><h4 id="obs-scene-switcher-and-automatic-recording">OBS
+        Scene switcher and Automatic Recording</h4>
+        <ul>
+        <li>Automate scene switching from within the Endless Dream
+        launcher</li>
+        <li>Configure replay recording and saving with per-scene
+        settings
+        <ul>
+        <li>Recordings can be saved: always, whenever you take a
+        screenshot, or whenever a replay is saved (Using the auto-save
+        replay feature)</li>
+        </ul></li>
+        </ul></li>
+        <li><h4
+        id="automatically-send-screenshots-to-discord-with-webhooks">Automatically
+        send screenshots to Discord with Webhooks</h4>
+        <ul>
+        <li>Send a plain image or a rich embed to as many channels as
+        you’d like with webhooks as soon as you take a screenshot</li>
+        <li>Add as many channels as you’d like, configurable from the
+        Discord tab in the launcher</li>
+        </ul></li>
+        <li><h4 id="additional-features">Additional features</h4>
+        <ul>
+        <li>Automatic per-chart volume normalization has been added to
+        the Audio tab in the launcher</li>
+        <li>An option to skip the DECIDE screen has been added to the
+        Music Select tab in the launcher</li>
+        <li>You can force visual LN end caps to display in the Play
+        Option tab in the launcher</li>
+        <li>A list of default table URLs is provided in a new table in
+        the Resource tab in the launcher
+        <ul>
+        <li>You can quickly add popular tables into your active table
+        list</li>
+        <li>You still need to reload your tables for this to take
+        effect</li>
+        </ul></li>
+        <li>The Misc Settings mod menu window has more play settings
+        that previously required a restart to configure</li>
+        <li>Song Manager window in the mod menu now has an option to
+        sort songs by least recently played</li>
+        </ul></li>
+        </ul>
+        <h2 id="behavior-changes">Behavior changes</h2>
+        <ul>
+        <li>Playing courses with CONSTANT is now NO PLAY (previously
+        ASSIST CLEAR)</li>
+        <li>Switching to CN/HCN LN modes has been disabled in game. This
+        can now only be changed in the launcher</li>
+        <li>Notifications will now be displayed for a variety of
+        different events
+        <ul>
+        <li>E.g. when downloading songs, playing a song with options
+        that will restrict score saving, etc.</li>
+        </ul></li>
+        <li>The analog scratch threshold default has been changed from
+        100 to 50</li>
+        <li>The spinning turntable emblem in skins now spins
+        smoother</li>
+        <li>The sound of quickly scrolling through music select is less
+        loud</li>
+        <li>Improved audio when changing between scenes</li>
+        <li>Music previews generated with the preview generator tool
+        will have lower priority</li>
+        <li>Skins with large bitmap fonts will load faster</li>
+        <li>In-progress song downloads now display a progress bar</li>
+        <li>Loading BMS and Table will now display a spinner instead of
+        hanging the launcher</li>
+        <li>Song Downloader menu has a retry failed downloads
+        button</li>
+        <li>Config saving and loading has gotten more robust</li>
+        <li>Your settings will now save periodically when you have the
+        game open</li>
+        </ul>
+        <h2 id="bug-fixes">Bug fixes</h2>
+        <ul>
+        <li>Fixed the Linux Wayland crash with NVIDIA graphics cards (no
+        more gamescope!)</li>
+        <li>Fixed a crash when launching borderless without a set
+        monitor</li>
+        <li>Fixed issues with loading osu files</li>
+        <li>On Linux, fixed opening chart folder with F3, the new
+        version download link in the launcher, and fixed the launcher
+        becoming non-functional after starting the game</li>
+        <li>Fixed Discord rich presence on macOS</li>
+        <li>Fixed bitmap font text display becoming transparent in
+        certain contexts</li>
+        <li>Fixed a crash caused by incorrect entries in some difficulty
+        tables</li>
+        </ul>
+        <h2 id="known-issues">Known issues:</h2>
+        <ul>
+        <li>[Linux] Certain skin fonts may only load partially due to
+        incorrect letter case in their filenames. Can be manually
+        resolved by renaming the offending files.</li>
+        <li>[Linux] When loading configuration files created on Windows,
+        skin settings will fail to transfer. Fix by replacing
+        backslashes with forward slashes in the skin paths in saved skin
+        settings in <code>config.json</code> and
+        <code>config_play.json</code> in the player folder.</li>
+        </ul>
+    </body>
+</html>
