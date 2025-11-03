@@ -197,7 +197,7 @@ public class Config implements Validatable {
 	 *
 	 * A users tableurl list is subtracted from this list to avoid unintentional duplicate table entries
 	 */
-    private static final String[] AVAILABLE_TABLEURL = {
+    public static final String[] AVAILABLE_TABLEURL = {
 			//
 			// Default list
 			//

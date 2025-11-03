@@ -140,8 +140,10 @@ public class ResourceConfigurationView implements Initializable {
 		bmsroot.getItems().setAll(config.getBmsroot());
 		updatesong.setSelected(config.isUpdatesong());
 
-		// Remove user tables that have already been added to the
-		String[] intermediate = subtractTable(config.getAvailableURL(),config.getTableURL());
+		// Make sure that all available tables are present in the list prior to deduplicating with the user tables
+        String[] intermediate = addUniqueTable(Config.AVAILABLE_TABLEURL, config.getAvailableURL());
+        // Remove user tables that have already been added to the active list
+		intermediate = subtractTable(intermediate ,config.getTableURL());
 		config.setAvailableURL(intermediate);
 		TableInfo.populateList(tableurl.getItems(), config.getTableURL());
 		TableInfo.populateList(available_tables.getItems(), config.getAvailableURL());
@@ -532,6 +534,21 @@ public class ResourceConfigurationView implements Initializable {
 		source.removeSelectedItems();
 		source.getSelectionModel().clearSelection();
 	}
+
+    // Adds unique elements of the latter to the former
+    public String[] addUniqueTable(String[] formerArray, String[] latterArray) {
+        List<String> formerList = Arrays.asList(formerArray);
+        List<String> latterList = Arrays.asList(latterArray);
+
+        List<String> resultList = new ArrayList<String>(formerList);
+        for (String url : latterList) {
+            if (!formerList.contains(url)) {
+                resultList.add(url);
+            }
+        }
+
+        return resultList.toArray(new String[0]);
+    }
 
 	// Subtract members of the latter from the former
 	public String[] subtractTable(String[] formerArray, String[] latterArray) {
