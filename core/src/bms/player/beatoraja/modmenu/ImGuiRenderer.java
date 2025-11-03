@@ -15,8 +15,11 @@ import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class ImGuiRenderer {
@@ -65,6 +68,7 @@ public class ImGuiRenderer {
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic());
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesJapanese());
+        rangesBuilder.addRanges(FontAwesomeIcons._IconRange);
         // TODO: After ImGUI 1.92, manual glyph setup is no longer required. We can delete this garbage line after
         // ImGui-java has upgraded to 1.92 or above
         // This line is provided for "reverse difficult table lookup" feature. Because some difficult tables' symbol
@@ -79,6 +83,8 @@ public class ImGuiRenderer {
 
         final short[] glyphRanges = rangesBuilder.buildRanges();
         io.getFonts().addFontFromMemoryTTF(loadFromResources("skin/default/VL-Gothic-Regular.ttf"), 14, fontConfig, glyphRanges); // japanese glyphs
+        io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-regular-400.ttf"), 14, fontConfig, glyphRanges);
+        io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-solid-900.ttf"), 14, fontConfig, glyphRanges);
         io.getFonts().build();
 
         fontConfig.destroy();
@@ -201,6 +207,13 @@ public class ImGuiRenderer {
 
     }
 
+    private static byte[] loadFromClassPath(String name) {
+        try (InputStream is = ImGuiRenderer.class.getClassLoader().getResourceAsStream(name)) {
+            return is.readAllBytes();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static byte[] loadFromResources(String name) {
         try {

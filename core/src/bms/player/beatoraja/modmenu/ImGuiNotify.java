@@ -163,10 +163,10 @@ public class ImGuiNotify {
         public String getIcon() {
             return switch (type) {
                 case None -> null;
-                case Success -> "[OK]";
-                case Warning -> "[!]";
-                case Error -> "[X]";
-                case Info -> "[I]";
+                case Success -> FontAwesomeIcons.CheckCircle;
+                case Warning -> FontAwesomeIcons.Exclamation;
+                case Error -> FontAwesomeIcons.Bomb;
+                case Info -> FontAwesomeIcons.InfoCircle;
                 default -> null;
             };
         }
