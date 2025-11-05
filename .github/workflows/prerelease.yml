@@ -51,6 +51,6 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "pre-release"
         prerelease: true
-        title: "Pre-release Development Build"
+        title: "Unstable Development Build"
         files: |
           dist/*
