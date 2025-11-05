@@ -186,6 +186,34 @@ public class MainController {
 
 		playdata = new PlayDataAccessor(config);
 
+		initializeIRConfig();
+
+		switch(config.getAudioConfig().getDriver()) {
+			case PortAudio:
+				try {
+					audio = new PortAudioDriver(config);
+				} catch(Throwable e) {
+					e.printStackTrace();
+					config.getAudioConfig().setDriver(DriverType.OpenAL);
+				}
+				break;
+		}
+
+		timer = new TimerManager();
+		sound = new SystemSoundManager(this);
+
+		if(config.isUseDiscordRPC()) {
+			stateListener.add(new DiscordListener());
+		}
+
+		if(config.isUseObsWs()) {
+			obsListener = new ObsListener(config);
+			obsClient = obsListener.getObsClient();
+			stateListener.add(obsListener);
+		}
+	}
+
+	private void initializeIRConfig() {
 		Array<IRStatus> irarray = new Array<IRStatus>();
 		for(IRConfig irconfig : player.getIrconfig()) {
 			final IRConnection ir = IRConnectionManager.getIRConnection(irconfig.getIrname());
@@ -215,30 +243,6 @@ public class MainController {
 		ir = irarray.toArray(IRStatus.class);
 		
 		rivals.update(this);
-
-		switch(config.getAudioConfig().getDriver()) {
-		case PortAudio:
-			try {
-				audio = new PortAudioDriver(config);
-			} catch(Throwable e) {
-				e.printStackTrace();
-				config.getAudioConfig().setDriver(DriverType.OpenAL);
-			}
-			break;
-		}
-
-		timer = new TimerManager();
-		sound = new SystemSoundManager(this);
-		
-		if(config.isUseDiscordRPC()) {
-			stateListener.add(new DiscordListener());
-		}
-
-		if(config.isUseObsWs()) {
-			obsListener = new ObsListener(config);
-			obsClient = obsListener.getObsClient();
-			stateListener.add(obsListener);
-		}
 	}
 
 	public boolean hasObsListener() {
@@ -326,24 +330,52 @@ public class MainController {
 		}
 
 		if (newState != null && current != newState) {
-			newState.create();
-			if(newState.getSkin() != null) {
-				newState.getSkin().prepare(newState);
-			}
-			if(current != null) {
-				current.shutdown();
-				current.setSkin(null);
-			}
-			current = newState;
-			timer.setMainState(newState);
-			current.prepare();
-			updateMainStateListener(0);
+			changeState(newState);
 		}
 		if (current.getStage() != null) {
 			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
 		} else {
 			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
 		}
+	}
+
+	private void changeState(MainState newState) {
+		newState.create();
+		if(newState.getSkin() != null) {
+			newState.getSkin().prepare(newState);
+		}
+		if(current != null) {
+			current.shutdown();
+			current.setSkin(null);
+		}
+		current = newState;
+		timer.setMainState(newState);
+		current.prepare();
+		updateMainStateListener(0);
+	}
+
+	public void loadNewProfile(PlayerConfig pc) {
+		config.setPlayername(pc.getId());
+		player = pc;
+
+		playdata = new PlayDataAccessor(config);
+
+		initializeIRConfig();
+
+		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
+		resource = new PlayerResource(audio, config, pc, loudnessAnalyzer);
+
+		initializeStates();
+		SongManagerMenu.injectMusicSelector(selector);
+
+		changeState(selector);
+		if (current.getStage() != null) {
+			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
+		} else {
+			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
+		}
+
+		lastConfigSave = System.nanoTime();
 	}
 
 	private MainState createBMSPlayerState() {
@@ -416,21 +448,10 @@ public class MainController {
 
 		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
 		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
-        try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
-            selector = new MusicSelector(this, songUpdated);
-        }
-
-		if(player.getRequestEnable()) {
-		    streamController = new StreamController(selector);
-	        streamController.run();
-		}
+		initializeStates();
 		SongManagerMenu.injectMusicSelector(selector);
 		MiscSettingMenu.setMain(this);
-		decide = new MusicDecide(this);
-		result = new MusicResult(this);
-		gresult = new CourseResult(this);
-		keyconfig = new KeyConfiguration(this);
-		skinconfig = new SkinConfiguration(this, player);
+		ProfileSwitcherMenu.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
@@ -548,6 +569,23 @@ public class MainController {
 		}
 
         lastConfigSave = System.nanoTime();
+	}
+
+	private void initializeStates() {
+		try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
+			selector = new MusicSelector(this, songUpdated);
+		}
+
+		if(player.getRequestEnable()) {
+			streamController = new StreamController(selector);
+			streamController.run();
+		}
+
+		decide = new MusicDecide(this);
+		result = new MusicResult(this);
+		gresult = new CourseResult(this);
+		keyconfig = new KeyConfiguration(this);
+		skinconfig = new SkinConfiguration(this, player);
 	}
 
 	private long prevtime;
