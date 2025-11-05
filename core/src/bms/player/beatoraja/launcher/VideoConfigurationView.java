@@ -20,6 +20,14 @@ import java.util.ResourceBundle;
 public class VideoConfigurationView implements Initializable {
 	@FXML
 	private ComboBox<Resolution> resolution;
+
+	@FXML
+	private CheckBox customResolution;
+	@FXML
+	private Spinner<Integer> customResolutionWidth;
+	@FXML
+	private Spinner<Integer> customResolutionHeight;
+
 	@FXML
 	private ComboBox<Config.DisplayMode> displayMode;
 	@FXML
@@ -49,6 +57,9 @@ public class VideoConfigurationView implements Initializable {
     public void update(Config config) {
 		displayMode.setValue(config.getDisplaymode());
 		resolution.setValue(config.getResolution());
+		customResolution.setSelected(config.isUseResolution());
+		customResolutionWidth.getValueFactory().setValue(config.getWindowWidth());
+		customResolutionHeight.getValueFactory().setValue(config.getWindowHeight());
 		vSync.setSelected(config.isVsync());
 		monitor.setValue(config.getMonitorName());
 		bgaOp.getSelectionModel().select(config.getBga());
@@ -62,6 +73,9 @@ public class VideoConfigurationView implements Initializable {
 
 	public void commit(Config config) {
 		config.setResolution(resolution.getValue());
+		config.setUseResolution(customResolution.isSelected());
+		config.setWindowWidth(customResolutionWidth.getValue());
+		config.setWindowHeight(customResolutionHeight.getValue());
 		config.setDisplaymode(displayMode.getValue());
 		config.setVsync(vSync.isSelected());
 		config.setMonitorName(monitor.getValue());
