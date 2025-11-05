@@ -1,4 +1,4 @@
-name: "pre-release"
+name: "pre0.3.1 testing"
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   pre-release:
-    name: "Pre Release"
+    name: "pre0.3.1 testing"
     runs-on: ubuntu-latest
 
     steps:
@@ -49,8 +49,8 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "pre-release"
+        automatic_release_tag: "pre0.3.1"
         prerelease: true
-        title: "Unstable Development Build"
+        title: "pre0.3.1 Testing Build"
         files: |
           dist/*
