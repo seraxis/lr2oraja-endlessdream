@@ -24,6 +24,10 @@ public class BMSRenderer {
 	}
 
 	public RenderResult render(Path bmsPath) {
+		return render(bmsPath, 0);
+	}
+
+	public RenderResult render(Path bmsPath, long maxDurationMs) {
 		Logger.getGlobal().info("Starting BMS rendering: " + bmsPath);
 
 		ChartDecoder decoder = ChartDecoder.getDecoder(bmsPath);
@@ -38,15 +42,26 @@ public class BMSRenderer {
 			return null;
 		}
 
-		return renderBMS(model);
+		return renderBMS(model, maxDurationMs);
 	}
 
 	public RenderResult renderBMS(BMSModel model) {
+		return renderBMS(model, 0);
+	}
+
+	public RenderResult renderBMS(BMSModel model, long maxDurationMs) {
 		Map<Integer, PCM> wavCache = loadWavFiles(model);
 
 		// Calculate output buffer size
 		// (number of samples = sampling rate * seconds)
 		long endTime = model.getLastMilliTime();
+		
+		// Apply time limit if specified (0 = no limit)
+		if (maxDurationMs > 0 && endTime > maxDurationMs) {
+			Logger.getGlobal().info(String.format("Limiting render duration from %dms to %dms", endTime, maxDurationMs));
+			endTime = maxDurationMs;
+		}
+		
 		long totalSamples = endTime * sampleRate / 1000;
 		int bytesPerSample = 2; // 16-bit
 		int bufferSize = (int) (totalSamples * channels * bytesPerSample);
@@ -64,6 +79,9 @@ public class BMSRenderer {
 
 		for (TimeLine tl : timelines) {
 			long time = tl.getMilliTime();
+			if (time >= endTime) {
+				break;
+			}
 			for (Note note : tl.getBackGroundNotes()) {
 				renderNote(note, time, wavCache, mixBuffer);
 			}

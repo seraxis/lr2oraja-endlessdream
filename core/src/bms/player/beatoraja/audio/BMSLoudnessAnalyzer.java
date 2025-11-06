@@ -123,7 +123,7 @@ public class BMSLoudnessAnalyzer {
 
 			try (var perf = PerformanceMetrics.get().Event("Render BMS to PCM")) {
 				BMSRenderer renderer = new BMSRenderer();
-				result = renderer.renderBMS(model);
+				result = renderer.renderBMS(model, 10 * 60 * 1000); // 10 minute limit
 				if (result == null) {
 					return new AnalysisResult(model, "Failed to render BMS file");
 				}
