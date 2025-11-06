@@ -621,11 +621,8 @@ public class BMSPlayer extends MainState {
 								if (result.success) {
 									float configVolume = main.getConfig().getAudioConfig().getKeyvolume();
 									adjustedVolume = result.calculateAdjustedVolume(configVolume);
-									String message = String.format("Volume set to %.2f (%.2f LUFS)",
-										adjustedVolume, result.loudnessLUFS);
-									Logger.getGlobal().info(message);
-									// For demonstration purposes. Should probably be removed later.
-									ImGuiNotify.success(message, 1000);
+									Logger.getGlobal().info(String.format("Volume set to %.2f (%.2f LUFS)",
+										adjustedVolume, result.loudnessLUFS));
 								} else {
 									Logger.getGlobal().warning("Analysis failed: " + result.errorMessage);
 									ImGuiNotify.warning("Loudness analysis failed");
