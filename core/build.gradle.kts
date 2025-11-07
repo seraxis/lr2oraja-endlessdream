@@ -101,7 +101,18 @@ dependencies {
         }
     }
 
-    implementation(libs.bundles.imgui)
+    /* After version 1.86.11 imgui-java updated their lwjgl3 dependency to 3.3.4
+     * this introduced an lwjgl3 bug that causes crashes on Nvidia under Wayland
+     * #82. Until such a point that libgdx and imgui-java update their lwjgl3 to
+     * 3.3.7 we stay on 3.3.3 to avoid the crash and related issues.
+     *
+     * See also:
+     * https://github.com/libgdx/libgdx/issues/7495
+     * https://github.com/libgdx/libgdx/pull/7555
+     */
+    implementation(libs.bundles.imgui) {
+        exclude(group = "org.lwjgl")
+    }
 
     implementation(libs.bundles.ffmpeg)
 
