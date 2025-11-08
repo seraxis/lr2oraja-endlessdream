@@ -16,6 +16,7 @@ import bms.player.beatoraja.external.ScoreDataImporter;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.compare.ComparableUtils;
 
 import bms.model.Mode;
 import bms.player.beatoraja.*;
@@ -446,9 +447,10 @@ public class PlayConfigurationView implements Initializable {
 		this.config = config;
 
         // Show the What's New popup upon version change
-        String currentVersion = MainController.getVersion();
+        String currentVersion = Version.getVersion();
         String lastVersion = config.getLastBootedVersion();
-        if (!currentVersion.equals(lastVersion)) {
+        // If current version is greater than last version
+        if (Version.compareToString(lastVersion) > 0) {
             whatsNewPopup();
             config.setLastBootedVersion(currentVersion);
         }
