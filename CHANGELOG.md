@@ -41,6 +41,7 @@ New features:
 - Live skin configuration (#107)
 - New difficulty table management UI, allows adding from a built-in list of popular tables (#130)
 - Ghost battle against LR2IR scores; accessed through the new in-game LR2IR leaderboard (#131)
+- OBS WebSocket control integration (#135)
 
 Behavior changes:
 - Changed the default analog scratch threshold from 100 to 50 (9b3a17b6f0d0a82b1c878a561f039e94cea76b36)
@@ -53,8 +54,16 @@ Behavior changes:
 - Skins with large bitmap fonts will now load faster (#106)
 - Currently downloading songs now display a progress bar (#110)
 - Launcher: loading tables and BMS files will display a progress window. (#129) Please wait warmly...
+- Add FontAwesome icons to the ImGui modmenu and notification system (#141)
+- In-game song downloader menu now features button to retry failed download tasks (#134)
+- When playing a song with modifiers which would disable IR submission or saving a notification is generated (#122)
+- Improve the robustness of config saving and periodically save the current users config (#136)
+- Switching to CN/HCN LN modes has been disabled in game but remains an option in the launcher (#139)
+- Esc only closes the game when at the top level of music select, instead it closes the current open folder (#139)
+- There is an option in the launcher for forcing visual LN endings to render. Off by default (#139)
 
 Bug fixes:
+- Fixed Wayland JVM crash that affected users with nVidia graphics drivers (52a12e9b64852015ad8877be84d70829672325e0)
 - Fixed a crash when launching borderless without a set monitor (31f81b8cf87094cda152387cca74a9de5002ee4d)
 - Fixed several issues with loading osu files ([parser #2](https://github.com/seraxis/jbms-parser/pull/2))
 - On Linux, fixed opening chart folders with F3, the broken new version download link,
@@ -70,9 +79,6 @@ Known issues:
 - [Linux] When loading configuration files created on Windows, skin settings will fail
   to transfer. Fix by replacing backslashes with forward slashes in the skin paths in
   saved skin settings in `config.json` and `config_player.json` in the player folder.
-- [Linux + Nvidia] The game may crash when launching. Fix by launching the game with
-  gamescope: `gamescope -w 2560 -h 1440 -f -r 120.0 lr2oraja-endlessdream`
-
 
 # 0.3.0
 
