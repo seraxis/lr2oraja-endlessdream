@@ -61,6 +61,13 @@ public class EndlessDreamPropertyFactory {
 		return null;
 	}
 
+	public static BooleanProperty getBooleanProperty(int optionId) {
+		int id = Math.abs(optionId);
+		// NOTE: We don't have to revert the negative option id result here, it would be handled inside BooleanPropertyFactory
+		BooleanType b = booleanPropertyMap.get(id);
+		return b == null ? null : b.property;
+	}
+
 	/**
 	 * Initialize the dynamic id and expose them to lua env
 	 * @param table main_state table
@@ -82,6 +89,17 @@ public class EndlessDreamPropertyFactory {
 			int nextID = ++floatMaximumID;
 			floatPropertyMap.put(nextID, floatType);
 			table.set(floatType.name(), new ZeroArgFunction() {
+				@Override
+				public LuaValue call() {
+					return LuaNumber.valueOf(nextID);
+				}
+			});
+		}
+		int booleanMaximumID = getBooleanPropertyMaximumID();
+		for (BooleanType booleanType : BooleanType.values()) {
+			int nextID = ++booleanMaximumID;
+			booleanPropertyMap.put(nextID, booleanType);
+			table.set(booleanType.name(), new ZeroArgFunction() {
 				@Override
 				public LuaValue call() {
 					return LuaNumber.valueOf(nextID);
@@ -155,6 +173,14 @@ public class EndlessDreamPropertyFactory {
 		// Call FloatPropertyFactory.FloatType.values() always leads to a crash, no idea why
 		for (FloatPropertyFactory.FloatType floatType : FloatPropertyFactory.FloatTypeValues) {
 			r = Math.max(r, floatType.getId());
+		}
+		return r;
+	}
+
+	private static int getBooleanPropertyMaximumID() {
+		int r = 0;
+		for (BooleanPropertyFactory.BooleanType booleanType : BooleanPropertyFactory.BooleanType.values()) {
+			r = Math.max(r, booleanType.getId());
 		}
 		return r;
 	}
