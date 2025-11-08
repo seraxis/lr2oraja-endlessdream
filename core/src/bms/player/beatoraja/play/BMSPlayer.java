@@ -474,6 +474,9 @@ public class BMSPlayer extends MainState {
 		if (!score) {
 			ImGuiNotify.warning("Score nullifying options enabled. Next play will not be saved");
 		}
+		if (forceNoIRSend) {
+			ImGuiNotify.error("Special mod options enabled. Next play will not be submitted to IR");
+		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
