@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import bms.player.beatoraja.launcher.NumericSpinner?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="bms.player.beatoraja.launcher.ObsConfigurationView"
+	spacing="15" maxWidth="500">
+	<padding>
+		<Insets left="20.0" top="20.0" right="20.0" bottom="20.0"/>
+	</padding>
+
+	<CheckBox fx:id="obsWsEnabled" mnemonicParsing="false" text="%OBSWS_CONTROL"/>
+
+	<Separator/>
+
+	<GridPane hgap="15" vgap="12">
+		<columnConstraints>
+			<ColumnConstraints minWidth="80" prefWidth="100"/>
+			<ColumnConstraints hgrow="ALWAYS"/>
+		</columnConstraints>
+
+		<Label text="%OBSWS_HOST" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+		<TextField fx:id="obsWsHost" promptText="localhost"
+			GridPane.columnIndex="1" GridPane.rowIndex="0" maxWidth="250"/>
+
+		<Label text="%OBSWS_PORT" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+		<NumericSpinner fx:id="obsWsPort" editable="true" maxWidth="150"
+			GridPane.columnIndex="1" GridPane.rowIndex="1">
+			<valueFactory>
+				<SpinnerValueFactory.IntegerSpinnerValueFactory
+					amountToStepBy="1" initialValue="4455" max="65535" min="1"/>
+			</valueFactory>
+		</NumericSpinner>
+
+		<Label text="%OBSWS_PASS" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+		<PasswordField fx:id="obsWsPass" promptText=""
+			GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="250"/>
+	</GridPane>
+
+
+	<GridPane hgap="15" vgap="12">
+		<columnConstraints>
+			<ColumnConstraints minWidth="150" prefWidth="180"/>
+			<ColumnConstraints hgrow="ALWAYS"/>
+		</columnConstraints>
+
+		<Label text="%OBSWS_REC_MODE" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+		<ComboBox fx:id="obsWsRecMode" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="200"/>
+
+		<Label text="%OBSWS_REC_STOPWAIT" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+		<NumericSpinner fx:id="obsWsRecStopWait" editable="true" maxWidth="150"
+			GridPane.columnIndex="1" GridPane.rowIndex="1">
+			<valueFactory>
+				<SpinnerValueFactory.IntegerSpinnerValueFactory
+					amountToStepBy="100" initialValue="3000" min="0" max="60000"/>
+			</valueFactory>
+		</NumericSpinner>
+	</GridPane>
+
+	<Separator/>
+
+  <HBox spacing="15" alignment="CENTER_LEFT">
+    <Button fx:id="obsWsConnectButton" text="%OBSWS_CONNECT"
+      onAction="#connect" prefWidth="120">
+      <tooltip>
+        <Tooltip text="Connect to OBS and get scenes to adjust settings below." />
+      </tooltip>
+    </Button>
+    <Label fx:id="obsWsConnectLabel" text=""/>
+  </HBox>
+
+	<VBox fx:id="listContainer" spacing="5"/>
+</VBox>
+
