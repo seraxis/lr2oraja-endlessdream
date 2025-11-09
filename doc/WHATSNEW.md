@@ -62,6 +62,7 @@
 - Fixed Discord rich presence on macOS
 - Fixed bitmap font text display becoming transparent in certain contexts
 - Fixed a crash caused by incorrect entries in some difficulty tables
+- Fixed the Fullscreen toggle button (F4) causing skins to behave incorrectly and making the window bar inaccessible
 
 ## Known issues:
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case in their filenames. Can be manually resolved by renaming the offending files.

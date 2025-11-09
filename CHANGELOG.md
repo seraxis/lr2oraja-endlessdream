@@ -72,6 +72,7 @@ Bug fixes:
 - Fixed bitmap font text display incorrectly becoming transparent when the previously
   displayed skin element made use of a blending mode. (fdc1d787a584af88f82c76756fa6d0be4ee48c2b)
 - Fixed a crash caused by incorrect entries in some difficulty tables. (#128)
+- Fixed the F4 fullscreen toggle button causing skins to malfunction with certain resolution configurations (#117)
 
 Known issues:
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case
