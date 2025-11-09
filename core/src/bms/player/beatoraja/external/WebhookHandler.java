@@ -1,11 +1,13 @@
 package bms.player.beatoraja.external;
 
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.result.AbstractResult;
 import bms.player.beatoraja.result.CourseResult;
 import bms.player.beatoraja.result.MusicResult;
+import bms.player.beatoraja.skin.property.IntegerPropertyFactory;
 import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -21,8 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bms.player.beatoraja.skin.SkinProperty.STRING_FULLTITLE;
-import static bms.player.beatoraja.skin.SkinProperty.STRING_TABLE_LEVEL;
+import static bms.player.beatoraja.skin.SkinProperty.*;
 
 public class WebhookHandler {
     private void writeMultipartField(OutputStream os, String boundary, String name, String value) throws IOException {
@@ -108,16 +109,31 @@ public class WebhookHandler {
     private static String formatDiff(int newScore, int oldScore) {
         int improvement = newScore - oldScore;
         if (improvement > 0) {
-            return String.format("(+%d)", improvement);
+            return String.format("(+%d) :arrow_up:", improvement);
         } else if (improvement < 0) {
-            return String.format("(%d)", improvement);
+            return String.format("(%d) :arrow_down:", improvement);
         } else {
-            return "(±0)";
+            return "(±0) :arrow_right:";
         }
+    }
+
+    private static String formatPercent(ScoreData newscore, int maxscore) {
+        float percent = 100.0f * (Float.valueOf(newscore.getExscore()) / Float.valueOf(maxscore));
+        return String.format("(%.2f%%)", percent);
+    }
+
+    private static String formatRank(MainState currentState, ScoreData newscore, int maxscore) {
+        
+        float percent = 100.0f * (Float.valueOf(newscore.getExscore()) / Float.valueOf(maxscore));
+        StringBuilder sb = new StringBuilder();
+
+
+        return "";
     }
 
     public Map<String, Object> createWebhookPayload(MainState currentState) {
         Map<String, Object> payload = new HashMap<>();
+        Config config = currentState.resource.getConfig();
 
         String webhookName = currentState.resource.getConfig().getWebhookName();
         payload.put("username", webhookName.isEmpty() ? "Endless Dream" : webhookName);
@@ -127,8 +143,6 @@ public class WebhookHandler {
         if (currentState.resource.getConfig().getWebhookOption() == 2) {
             Map<String, Object> embed = new HashMap<>();
             Map<String, String> author = new HashMap<>();
-            author.put("name", "LR2Oraja Endless Dream");
-            embed.put("author", author);
 
             Map<String, String> image = new HashMap<>();
             image.put("url", "attachment://screenshot.png");
@@ -136,17 +150,41 @@ public class WebhookHandler {
 
             // Score specific
             if (currentState instanceof MusicResult || currentState instanceof CourseResult) {
+                Map<String, String> footer = new HashMap<>();
                 embed.put("title", createTitle(currentState));
+                embed.put("color", ScreenShotExporter.getClearTypeColour(currentState));
+                author.put("name", StringPropertyFactory.getStringProperty(STRING_TABLE_NAME).get(currentState));
+                embed.put("author", author);
 
                 ScoreData newScore = ((AbstractResult) currentState).getNewScore();
                 ScoreData oldScore = ((AbstractResult) currentState).getOldScore();
+                int maxscore = IntegerPropertyFactory.getIntegerProperty(NUMBER_MAXSCORE).get(currentState);
 
-                embed.put("fields", Arrays.asList(
-                        createField(
-                                String.format("EX Score: %s", newScore.getExscore()),
-                                formatDiff(newScore.getExscore(), oldScore != null ? oldScore.getExscore() : 0)
-                        )
-                ));
+//                embed.put("fields", Arrays.asList(
+//                        createField(
+//                                String.format("EX Score: %s", newScore.getExscore()),
+//                                formatDiff(newScore.getExscore(), oldScore != null ? oldScore.getExscore() : 0)
+//                        )
+//                ));
+
+                StringBuilder description = new StringBuilder();
+                description.append(String.format("**EX Score: %s/%s** %s",
+                        newScore.getExscore(),
+                        maxscore,
+                        formatDiff(newScore.getExscore(), oldScore != null ? oldScore.getExscore() : 0))
+                );
+                // Rank AAA-51 (86.7%) UP
+                description.append(String.format("**Rank %s %s",
+                        formatRank(currentState, newScore, maxscore),
+                        formatPercent(newScore, maxscore))
+                );
+
+                embed.put("description", description);
+                footer.put("text", "LR2oraja ~Endless Dream~ Scorecard");
+                embed.put("footer", footer);
+            } else {
+                author.put("name", "LR2oraja ~Endless Dream~");
+                embed.put("author", author);
             }
 
             payload.put("embeds", Arrays.asList(embed));
