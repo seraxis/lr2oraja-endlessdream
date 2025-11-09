@@ -116,6 +116,7 @@ public class PortAudioDriver extends AbstractAudioDriver<PCM> implements Runnabl
 
 	@Override
 	protected void disposeKeySound(PCM pcm) {
+		//stop(pcm);
 	}
 
 	private long put(PCM pcm, int channel, float volume, float pitch, boolean loop) {
