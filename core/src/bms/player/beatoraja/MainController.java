@@ -10,6 +10,7 @@ import bms.player.beatoraja.modmenu.*;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import bms.tool.mdprocessor.HttpDownloadSource;
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -676,14 +677,41 @@ public class MainController {
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
             }
-            // fullscrees - windowed
+            // fullscreen - windowed
             if (!input.getKeyState(Input.Keys.ALT_LEFT) && !input.getKeyState(Input.Keys.ALT_RIGHT) && input.isActivated(KeyCommand.SWITCH_SCREEN_MODE)) {
                 boolean fullscreen = Gdx.graphics.isFullscreen();
-                Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+
                 if (fullscreen) {
-                    Gdx.graphics.setWindowedMode(currentMode.width, currentMode.height);
+					// Restore window decorations
+					Lwjgl3Graphics graphics = (Lwjgl3Graphics) Gdx.graphics;
+					Gdx.graphics.setUndecorated(false);
+                    Gdx.graphics.setWindowedMode(config.getWindowWidth(), config.getWindowHeight());
+
+					// Try and find the highest resolution display mode available, otherwise use the current mode
+					Graphics.DisplayMode maxResOrCurrent = Arrays.stream(Gdx.graphics.getDisplayModes())
+							.max(Comparator.comparingInt((Graphics.DisplayMode mode) -> mode.width)
+									.thenComparingInt(mode -> mode.height)
+									.thenComparingInt(mode -> mode.refreshRate))
+							.orElse(Gdx.graphics.getDisplayMode());
+
+					// Center window on screen
+					int windowX = (maxResOrCurrent.width / 2) - (config.getWindowWidth() / 2);
+					int windowY = (maxResOrCurrent.height / 2) - (config.getWindowHeight() / 2);
+					// Handle max res contents pushing the decorations off screen
+					if (windowY == 0) {
+						windowY += 32;
+					}
+
+					graphics.getWindow().setPosition(windowX, windowY);
+
                 } else {
-                    Gdx.graphics.setFullscreenMode(currentMode);
+					// Try and find the best resolution mode that fits the window size, skins will behave strangely if
+					// fullscreened with the wrong display mode
+					Graphics.DisplayMode windowResOrCurrent = Arrays.stream(Gdx.graphics.getDisplayModes())
+							.filter(mode -> mode.width == config.getWindowWidth() && mode.height == config.getWindowHeight())
+							.max(Comparator.comparingInt(mode -> mode.refreshRate))
+							.orElse(Gdx.graphics.getDisplayMode());
+                    Gdx.graphics.setFullscreenMode(windowResOrCurrent);
                 }
                 config.setDisplaymode(fullscreen ? Config.DisplayMode.WINDOW : Config.DisplayMode.FULLSCREEN);
             }

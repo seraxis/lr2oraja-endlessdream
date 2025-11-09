@@ -143,6 +143,8 @@ public class MainLoader extends Application {
             }
             final int w = config.getResolution().width;
             final int h = config.getResolution().height;
+			config.setWindowWidth(w);
+			config.setWindowHeight(h);
             String targetMonitorName = config.getMonitorName();
             Graphics.Monitor targetMonitor = null;
 			Graphics.DisplayMode gdxDisplayMode;
