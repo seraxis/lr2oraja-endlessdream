@@ -1,4 +1,8 @@
+import java.io.ByteArrayOutputStream
 import java.nio.file.FileSystems
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.TimeZone
 
 plugins {
     id("java-library")
@@ -39,6 +43,7 @@ application {
 tasks {
     // fat/uber-jar task provided by https://github.com/GradleUp/shadow
     shadowJar {
+        dependsOn("generateBuildMetaInfo")
         val platformProp = System.getProperty("platform")
         val archProp = System.getProperty("arch")
         val archVariant = when(archProp != null) {
@@ -84,6 +89,36 @@ tasks {
         }
         workingDir = runDir
     }
+}
+
+// Generate current build's meta info: git commit hash, commit time, etc
+tasks.register("generateBuildMetaInfo") {
+    val gitHash: String by lazy {
+        try {
+            val stdout = ByteArrayOutputStream()
+            exec {
+                commandLine("git", "rev-parse", "--short", "HEAD")
+                standardOutput = stdout
+            }
+            stdout.toString().trim()
+        } catch (e: Exception) {
+            "unknown"
+        }
+    }
+
+    val buildTime: String by lazy {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        sdf.format(Date())
+    }
+
+    var output = file("src/resources/build.properties")
+    output.writeText(
+        """
+            git_commit=${gitHash}
+            build_time=${buildTime} 
+        """.trimIndent()
+    )
 }
 
 // versions and bundles defined in ../gradle/libs.versions.toml

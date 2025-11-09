@@ -1,9 +1,14 @@
 package bms.player.beatoraja;
 
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.Properties;
+import java.util.TimeZone;
+import java.util.logging.Logger;
 
 public class Version {
-    // TODO: Parse current commit from ~somewhere~. Have to either check manifest of JAR or inject at gradle fatJar stage
     public static final int VERSION_MAJOR = 0;
     public static final int VERSION_MINOR = 3;
     public static final int VERSION_PATCH = 1;
@@ -16,11 +21,14 @@ public class Version {
     public static String getVersion() { return version; }
     public static String getLongVersion() { return versionLong; }
 
+    private static Properties buildMetaInfo = new Properties();
+
     static {
         BUILD_TYPE = BuildType.PRERELEASE;
         unqualifiedVersion = String.valueOf(VERSION_MAJOR) + '.' + VERSION_MINOR + '.' + VERSION_PATCH;
         version = BUILD_TYPE.prefix + unqualifiedVersion;
         versionLong = "LR2oraja Endless Dream " + (BUILD_TYPE.prefix.isBlank() ? "" : "pre-release ") + unqualifiedVersion;
+        tryLoadingBuildMetaInfo();
     }
 
     private static int[] versionStringToIntArray(String versionString) {
@@ -70,6 +78,30 @@ public class Version {
         return 0;
     }
 
+    /**
+     * Get current build's git commit hash
+     * @return commit hash or "unknown" if anything went wrong
+     */
+    public static String getGitCommitHash() {
+        return buildMetaInfo.getProperty("git_commit");
+    }
+
+    /**
+     * Get the build time of the current build
+     * @return a date represents when it's being built, or null if anything went wrong
+     */
+    public static Date getBuildDate() {
+        try {
+            String buildDate = buildMetaInfo.getProperty("build_time");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return sdf.parse(buildDate);
+        } catch (Exception e) {
+            Logger.getGlobal().severe("Failed to parse build time: " + e.getMessage());
+            return null;
+        }
+    }
+
     public enum BuildType {
         PRERELEASE("pre"),
         STABLE("");
@@ -78,6 +110,18 @@ public class Version {
 
         BuildType(String prefix) {
             this.prefix = prefix;
+        }
+    }
+
+    /**
+     * Try loading the build meta data, no exceptions would be thrown
+     */
+    private static void tryLoadingBuildMetaInfo() {
+        try {
+            buildMetaInfo.load(Version.class.getClassLoader().getResourceAsStream("resources/build.properties"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.getGlobal().severe("Failed to load build meta info");
         }
     }
 }
