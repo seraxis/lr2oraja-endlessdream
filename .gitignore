@@ -169,3 +169,4 @@ core/bin
 /player/
 
 util/
+core/src/resources/build.properties
