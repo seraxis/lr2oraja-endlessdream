@@ -336,6 +336,7 @@ public class MainController {
 		playdata = new PlayDataAccessor(config);
 
 	  initializeIRConfig();
+    SkinMenu.init(this, player);
 
     loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
 		resource = new PlayerResource(audio, config, pc, loudnessAnalyzer);
