@@ -22,6 +22,18 @@ public interface ScreenShotExporter {
 		return "";
 	}
 
+	public static int getClearTypeColour(MainState currentState) {
+		String[] clearTypeRGB = { "7F7F7F", "8A0000", "9F39CF", "C467D5", "00D70F",
+				"229AFF", "FDFDFD", "FFDB00", "78FFF7", "A7F583", "F0F0FF" };
+
+		int clear = IntegerPropertyFactory.getIntegerProperty(NUMBER_CLEAR).get(currentState);
+		if(clear >= 0 && clear < clearTypeRGB.length) {
+			return Integer.parseInt(clearTypeRGB[clear], 16);
+		}
+
+		return 0;
+	}
+
 	public static String getRankTypeName(MainState currentState) {
 		String rankTypeName = "";
 		if(BooleanPropertyFactory.getBooleanProperty(OPTION_RESULT_AAA_1P).get(currentState)) rankTypeName += "AAA";
