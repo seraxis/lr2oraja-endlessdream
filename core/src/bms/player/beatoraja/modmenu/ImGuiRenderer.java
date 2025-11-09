@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.Version;
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
 
 import com.badlogic.gdx.Gdx;
@@ -164,6 +165,8 @@ public class ImGuiRenderer {
                     ImGui.text("Axis: " + con.getAxis(0));
                 }
                 ImGui.text("GLFW version: " + GLFW.glfwGetVersionString());
+                ImGui.text("Commit hash: " + Version.getGitCommitHash());
+                ImGui.text("Build time: " + Version.getBuildDate());
                 ImGui.treePop();
             }
             ImGui.end();
