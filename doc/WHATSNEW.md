@@ -10,11 +10,13 @@
     - Your pacemaker will be set to challenge the leaderboard score you have selected
     - With the RANDOM option enabled your random will match the random that the leaderboard score was obtained with
     - Only 7K is currently supported
+    - Currently only NONRAN, MIRROR, and RANDOM are supported.
 - #### In-game skin configuration
   - Update your skin settings live inside the game
     - Accessible via the Skin Configuration window in the mod menu
     - The menu will let you configure the currently displayed scene's skin configuration
       - To edit the PLAY scene, play a chart with the menu open. The same goes for RESULT, etc.
+      - You can freeze gameplay timers, very useful for editing scenes like DECIDE
   - Edit skin elements dimensions and properties live with the Skin Widget Manager
     - Make small edits to your skin on the fly, resize elements with the mouse
     - Comes with an undo button and full history for all alterations
@@ -36,7 +38,7 @@
   - Song Manager window in the mod menu now has an option to sort songs by least recently played
 
 ## Behavior changes
-- Playing courses with CONSTANT is now NO PLAY (previously ASSIST CLEAR)
+- Playing courses with CONSTANT is now ASSIST CLEAR (previously CONSTANT had no effect)
 - Switching to CN/HCN LN modes has been disabled in game. This can now only be changed in the launcher
 - Notifications will now be displayed for a variety of different events
   - E.g. when downloading songs, playing a song with options that will restrict score saving, etc.
@@ -64,3 +66,5 @@
 ## Known issues:
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case in their filenames. Can be manually resolved by renaming the offending files.
 - [Linux] When loading configuration files created on Windows, skin settings will fail to transfer. Fix by replacing backslashes with forward slashes in the skin paths in saved skin settings in `config.json` and `config_play.json` in the player folder.
+- [macOS] Videos in skins sometimes "flash"
+- Skin Widget Manager works abnormally when editing sliders or scrollbars
