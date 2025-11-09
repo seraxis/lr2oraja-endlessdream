@@ -21,6 +21,7 @@ import bms.player.beatoraja.ScoreData.SongTrophy;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.ScoreLogDatabaseAccessor.ScoreLog;
 import bms.player.beatoraja.ir.LR2IRConnection;
+import bms.player.beatoraja.modmenu.SongManagerMenu;
 import bms.player.beatoraja.song.SongData;
 
 import com.badlogic.gdx.utils.Json;
@@ -285,6 +286,7 @@ public final class PlayDataAccessor {
 			newscore.setClearcount(score.getClearcount());
 			newscore.setScorehash(getScoreHash(newscore));
 
+			SongManagerMenu.invalidCache(newscore.getSha256());
 			scoredatalogdb.setScoreDataLog(newscore);
 		}
 
@@ -357,6 +359,16 @@ public final class PlayDataAccessor {
 			hash += s;
 		}
 		return readScoreData(hash, ln, lnmode, option, constraint);
+	}
+
+	/**
+	 * Load one specific chart's play history
+	 *
+	 * @param hash chart's hash
+	 * @return play records
+	 */
+	public List<ScoreData> readScoreDataLog(String hash) {
+		return scoredatalogdb.getScoreDataLog(hash);
 	}
 
 	/**
