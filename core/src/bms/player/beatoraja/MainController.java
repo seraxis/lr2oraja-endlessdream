@@ -677,7 +677,7 @@ public class MainController {
                 showfps = !showfps;
             }
             // fullscrees - windowed
-            if (input.isActivated(KeyCommand.SWITCH_SCREEN_MODE)) {
+            if (!input.getKeyState(Input.Keys.ALT_LEFT) && !input.getKeyState(Input.Keys.ALT_RIGHT) && input.isActivated(KeyCommand.SWITCH_SCREEN_MODE)) {
                 boolean fullscreen = Gdx.graphics.isFullscreen();
                 Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
                 if (fullscreen) {
