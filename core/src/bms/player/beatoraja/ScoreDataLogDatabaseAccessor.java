@@ -124,4 +124,15 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			Logger.getGlobal().severe("スコア更新時の例外:" + e.getMessage());
 		}
 	}
+
+	public List<ScoreData> getScoreDataLog(String sha256) {
+		List<ScoreData> result = null;
+		try {
+			// TODO: One day we shall use prepared statement instead
+			result = Validatable.removeInvalidElements(qr.query(String.format("SELECT * FROM eddatalog WHERE sha256 = '%s'", sha256), scoreHandler));
+		} catch (Exception e) {
+			Logger.getGlobal().severe("Failed to query table eddatalog: " + e.getMessage());
+		}
+		return result;
+	}
 }

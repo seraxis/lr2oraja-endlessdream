@@ -761,7 +761,7 @@ public class Config implements Validatable {
 	}
 
 	public String getObsWsPass() {
-		if (obsWsPass.isBlank()) {
+		if (obsWsPass == null || obsWsPass.isBlank()) {
 			return null;
 		}
 		return obsWsPass;
