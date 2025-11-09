@@ -261,6 +261,7 @@ public class BMSPlayer extends MainState {
 
 			// "Persist" some states in resource
 			resource.setFreqOn(true);
+			resource.setFreqValue(freq);
 			resource.setFreqString(FreqTrainerMenu.getFreqString());
 		}
 		if (autoplay.mode == BMSPlayerMode.Mode.PLAY || autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY) {
@@ -289,7 +290,16 @@ public class BMSPlayer extends MainState {
 					assist = Math.max(assist, 2);
 					score = false;
 				}
+				resource.setOverrideJudgeRank(JudgeTrainer.getJudgeRank());
 				model.setJudgerank(overridingJudgeWindowRate);
+			} else {
+				resource.setOverrideJudgeRank(-1);
+			}
+
+			// Constant considered as assist in Endless Dream
+			// This is a community discussion result, see https://github.com/seraxis/lr2oraja-endlessdream/issues/42
+			if (config.getPlayConfig(model.getMode()).getPlayconfig().isEnableConstant()) {
+				assist = Math.max(assist, 2);
 			}
 
 			Array<PatternModifier> mods = new Array<PatternModifier>();
@@ -462,6 +472,15 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
+		if (assist != 0) {
+			ImGuiNotify.warning("Assist options enabled. Next play will be saved as an assist clear");
+		}
+		if (!score) {
+			ImGuiNotify.warning("Score nullifying options enabled. Next play will not be saved");
+		}
+		if (forceNoIRSend) {
+			ImGuiNotify.error("Special mod options enabled. Next play will not be submitted to IR");
+		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
@@ -1009,6 +1028,10 @@ public class BMSPlayer extends MainState {
 				}
 			}
 		}
+		if (resource.isFreqOn()) {
+			score.setRate(resource.getFreqValue());
+		}
+		score.setOverridejudge(resource.getOverrideJudgeRank());
 		score.setClear(clear.id);
 		score.setGauge(gauge.isTypeChanged() ? -1 : gauge.getType());
 		score.setOption(playinfo.randomoption + (model.getMode().player == 2
@@ -1081,6 +1104,9 @@ public class BMSPlayer extends MainState {
 	}
 
 	public void stopPlay() {
+		if (main.hasObsListener()) {
+			main.getObsListener().triggerPlayEnded();
+		}
 		if (state == STATE_PRACTICE) {
 			practice.saveProperty();
 			timer.setTimerOn(TIMER_FADEOUT);

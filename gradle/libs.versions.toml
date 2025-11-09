@@ -2,10 +2,10 @@
 beatoraja = "0.8.8-endlessdream"
 endlessdream = "pre0.3.2"
 kotlin = "1.9.20"
-gdx = "1.13.0"
+gdx = "1.13.1"
 gdx-controllers = "2.2.3"
 lwjgl = "3.3.3"
-imgui = "1.86.12"
+imgui = "1.89.0"
 javacv = "1.5.9"
 ffmpeg = "6.0-1.5.9"
 jflac = "1.5.2"
@@ -21,6 +21,7 @@ shapedrawer = "2.5.0"
 guacamole = "0.3.5"
 ebur128java = "1.2.6-2"
 jna = "5.13.0"
+websocket = "1.6.0"
 
 
 [libraries]
@@ -76,6 +77,8 @@ ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "
 
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
+
+javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "websocket" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]

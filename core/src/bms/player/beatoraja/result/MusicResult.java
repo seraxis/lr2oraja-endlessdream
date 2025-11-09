@@ -326,6 +326,7 @@ public class MusicResult extends AbstractResult {
 				main.getPlayDataAccessor().wrireReplayData(rd, resource.getBMSModel(),
 						resource.getPlayerConfig().getLnmode(), index);
 				saveReplay[index] = ReplayStatus.SAVED;
+				main.saveLastRecording("ON_REPLAY");
 			}
 		}
 	}
@@ -449,15 +450,6 @@ public class MusicResult extends AbstractResult {
 
 		if (isFreqTrainerEnabled()) {
 			resource.getScoreData().setClear(NoPlay.id);
-		}
-
-		// Disable lamps for plays using the CONSTANT setting. Community setting was overly negative towards this 0.8.8 feature
-		if (
-			resource.getCourseBMSModels() == null &&
-			resource.getPlayerConfig().getPlayConfig(Mode.BEAT_7K).getPlayconfig().isEnableConstant() &&
-			resource.getScoreData().getClear() != Failed.id
-		) {
-			resource.getScoreData().setClear(AssistEasy.id);
 		}
 
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !(isFreqTrainerEnabled() && isFreqNegative())) {
