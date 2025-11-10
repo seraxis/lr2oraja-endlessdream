@@ -112,9 +112,10 @@ public class SongManagerMenu {
      * @param localHistory local records
      */
     private static void renderLocalHistoryTable(List<ScoreData> localHistory) {
-        if (ImGui.beginTable("Local History", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+        if (ImGui.beginTable("Local History", 5, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
             ImGui.tableSetupScrollFreeze(0, 1);
             ImGui.tableSetupColumn("Clear");
+            ImGui.tableSetupColumn("Score");
             ImGui.tableSetupColumn("Freq");
             ImGui.tableSetupColumn("Judge");
             ImGui.tableSetupColumn("Time");
@@ -123,20 +124,23 @@ public class SongManagerMenu {
                 ImGui.tableNextRow();
                 ImGui.pushID(scoreData.getDate());
 
-                ImGui.tableSetColumnIndex(0);
+                ImGui.tableNextColumn();
                 ImGui.text(ClearType.getClearTypeByID(scoreData.getClear()).name());
 
-                ImGui.tableSetColumnIndex(1);
+                ImGui.tableNextColumn();
+                ImGui.text("" + scoreData.getExscore());
+
+                ImGui.tableNextColumn();
                 int rate = scoreData.getRate();
                 String rateData = rate == 0 ? "/" : String.format("%.02fx", (rate / 100.0f));
                 ImGui.text(rateData);
 
-                ImGui.tableSetColumnIndex(2);
+                ImGui.tableNextColumn();
                 int overrideJudge = scoreData.getOverridejudge();
                 String overrideJudgeDate = overrideJudge == -1 ? "/" : JudgeTrainer.JUDGE_OPTIONS[overrideJudge];
                 ImGui.text(overrideJudgeDate);
 
-                ImGui.tableSetColumnIndex(3);
+                ImGui.tableNextColumn();
                 ImGui.text(simpleDateFormat.format(new Date(scoreData.getDate() * 1000)));
 
                 ImGui.popID();
