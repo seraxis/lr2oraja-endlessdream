@@ -329,30 +329,25 @@ public class MainController {
 		updateMainStateListener(0);
 	}
 
-  public void loadNewProfile(PlayerConfig pc) {
-	  config.setPlayername(pc.getId());
-	  player = pc;
+	public void loadNewProfile(PlayerConfig pc) {
+		config.setPlayername(pc.getId());
+		player = pc;
 
 		playdata = new PlayDataAccessor(config);
 
-	  initializeIRConfig();
-    SkinMenu.init(this, player);
-
-    loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
-		resource = new PlayerResource(audio, config, pc, loudnessAnalyzer);
-
+		initializeIRConfig();
 		initializeStates();
-	  SongManagerMenu.injectMusicSelector(selector);
+		initializeDependantMenus();
 
 		changeState(selector);
-    if (current.getStage() != null) {
-      Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
-    } else {
-      Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
-    }
+		if (current.getStage() != null) {
+			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
+		} else {
+			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
+		}
 
-    lastConfigSave = System.nanoTime();
-  }
+		lastConfigSave = System.nanoTime();
+	}
 
 	private MainState createBMSPlayerState() {
 		if (bmsplayer != null) {
@@ -377,7 +372,7 @@ public class MainController {
 
         try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
             ImGuiRenderer.init();
-            SkinMenu.init(this, player);
+            //SkinMenu.init(this, player);
         }
 
         try (var perf = PerformanceMetrics.get().Event("System font load")) {
@@ -403,12 +398,10 @@ public class MainController {
 //			break;
 		}
 
-    loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
-    resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
     initializeStates();
-		SongManagerMenu.injectMusicSelector(selector);
+		initializeDependantMenus();
 		MiscSettingMenu.setMain(this);
-    ProfileSwitcherMenu.setMain(this);
+		//ProfileSwitcherMenu.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
@@ -528,6 +521,9 @@ public class MainController {
 	}
 
 	private void initializeStates() {
+		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
+		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
+
 		try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
 			selector = new MusicSelector(this, songUpdated);
 		}
@@ -542,6 +538,13 @@ public class MainController {
 		gresult = new CourseResult(this);
 		keyconfig = new KeyConfiguration(this);
 		skinconfig = new SkinConfiguration(this, player);
+	}
+
+	private void initializeDependantMenus() {
+		try (var perf = PerformanceMetrics.get().Event("SkinMenu init")) {
+			SkinMenu.init(this, player);
+		}
+		SongManagerMenu.injectMusicSelector(selector);
 	}
 
 	private long prevtime;

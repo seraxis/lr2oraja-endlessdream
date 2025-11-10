@@ -1,8 +1,11 @@
 package bms.player.beatoraja.modmenu;
 
 import bms.model.Mode;
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.PlayConfig;
+import bms.player.beatoraja.PlayerConfig;
+import bms.player.beatoraja.select.MusicSelector;
 import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
@@ -17,6 +20,7 @@ import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
 
 public class MiscSettingMenu {
     private static MainController main;
+    private static Config config;
 
     // Some of the settings are based on play mode
     // WARN: PLAY_MODE_VALUE has an initial value, 1 -> BEAT_7K
@@ -39,6 +43,11 @@ public class MiscSettingMenu {
     private static final ImInt LANE_COVER_SWITCH_DURATION = new ImInt(0);
     private static final ImBoolean ENABLE_CONSTANT = new ImBoolean(false);
     private static final ImInt CONSTANT_VALUE = new ImInt(0);
+    private static final ImBoolean PROFILE_SWITCHER = new ImBoolean(false);
+    private static ImInt SELECTED_PLAYER;
+
+    private static String[] players = PlayerConfig.readAllPlayerID("player");
+
 
     public static void show(ImBoolean showMiscSetting) {
         // TODO: We can setup preferred game mode here in future
@@ -100,11 +109,16 @@ public class MiscSettingMenu {
                 getPlayConfig().setConstantFadeinTime(CONSTANT_VALUE.get());
             }
         }
+
+        profileSwitcher();
+
         ImGui.end();
     }
 
     public static void setMain(MainController main) {
         MiscSettingMenu.main = main;
+        MiscSettingMenu.config = main.getConfig();
+        MiscSettingMenu.SELECTED_PLAYER = new ImInt(Arrays.asList(players).indexOf(config.getPlayername()));
     }
 
     /**
@@ -135,5 +149,25 @@ public class MiscSettingMenu {
 
         ENABLE_CONSTANT.set(conf.isEnableConstant());
         CONSTANT_VALUE.set(conf.getConstantFadeinTime());
+    }
+
+    private static void profileSwitcher() {
+        ImGui.combo("##Player Profile", SELECTED_PLAYER, players, 4);
+        ImGui.sameLine();
+        boolean canClick = main.getCurrentState() instanceof MusicSelector
+          && !config.getPlayername().equals(players[SELECTED_PLAYER.get()]);
+
+        ImGui.beginDisabled(!canClick);
+        boolean clicked = ImGui.button("Switch");
+        ImGui.endDisabled();
+        ImGui.sameLine();
+        ImGui.text("Player Profile");
+        if (clicked) {
+            PlayerConfig newPlayerConfig = PlayerConfig.readPlayerConfig("player", players[SELECTED_PLAYER.get()]);
+            //ImGuiRenderer.toggleMenu();
+
+            main.saveConfig();
+            main.loadNewProfile(newPlayerConfig);
+        }
     }
 }
