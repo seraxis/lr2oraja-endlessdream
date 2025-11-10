@@ -33,7 +33,7 @@ update:
 
 # Build the whats new html file
 pandoc:
-  pandoc doc/whatsnew.md -f markdown -t html -s -o core/src/resources/whatsnew.html --template "./doc/template.html"
+  pandoc --wrap=preserve doc/whatsnew.md -f markdown -t html -s -o core/src/resources/whatsnew.html --template "./doc/template.html"
 
 # Removes all gradle caches, build intermediaries, and runs gradle clean
 [confirm("Are you sure you want to delete all gradle caches and build intermediaries? (y/n)")]
