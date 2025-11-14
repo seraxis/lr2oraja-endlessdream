@@ -398,7 +398,7 @@ public class MainController {
 //			break;
 		}
 
-    initializeStates();
+    	initializeStates();
 		initializeDependantMenus();
 		MiscSettingMenu.setMain(this);
 		//ProfileSwitcherMenu.setMain(this);
@@ -541,9 +541,7 @@ public class MainController {
 	}
 
 	private void initializeDependantMenus() {
-		try (var perf = PerformanceMetrics.get().Event("SkinMenu init")) {
-			SkinMenu.init(this, player);
-		}
+		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
 	}
 
