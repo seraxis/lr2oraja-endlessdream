@@ -43,6 +43,7 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_MISC_SETTING = new ImBoolean(false);
+    //private static ImBoolean SHOW_PROFILE_SWITCHER = new ImBoolean(false);
 
 
     public static void init() {
@@ -117,6 +118,7 @@ public class ImGuiRenderer {
             if (ImGui.checkbox("Show Skin Menu", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
             ImGui.checkbox("Show Misc Setting Menu", SHOW_MISC_SETTING);
 
+            //ImGui.checkbox("Show Profile Switcher Window", SHOW_PROFILE_SWITCHER);
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);
             }
@@ -148,6 +150,10 @@ public class ImGuiRenderer {
             if (SHOW_MISC_SETTING.get()) {
                 MiscSettingMenu.show(SHOW_MISC_SETTING);
             }
+            //if (SHOW_PROFILE_SWITCHER.get()) {
+            //    ProfileSwitcherMenu.show(SHOW_PROFILE_SWITCHER);
+            //}
+
 
             if (ImGui.treeNode("Controller Input Debug Information")) {
                 float axis;
