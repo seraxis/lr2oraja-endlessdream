@@ -168,6 +168,7 @@ public class MiscSettingMenu {
 
             main.saveConfig();
             main.loadNewProfile(newPlayerConfig);
+            changePlayMode(CURRENT_PLAY_MODE);
         }
     }
 }
