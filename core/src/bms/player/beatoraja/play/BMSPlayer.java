@@ -12,6 +12,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
+import bms.player.beatoraja.arena.client.Client;
+import io.github.catizard.jlr2arenaex.enums.ClientToServer;
+import io.github.catizard.jlr2arenaex.network.SelectedBMSMessage;
 import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
@@ -86,6 +89,7 @@ public class BMSPlayer extends MainState {
 	public static final int STATE_FAILED = 5;
 	public static final int STATE_FINISHED = 6;
 	public static final int STATE_ABORTED = 7;
+	public static final int STATE_WAIT = 8;
 
 	private long prevtime;
 
@@ -94,6 +98,8 @@ public class BMSPlayer extends MainState {
 
 	private RhythmTimerProcessor rhythm;
 	private long startpressedtime;
+	private boolean firedWaitingReady = false;
+	private boolean allReady = false;
 
 	private float adjustedVolume = -1.f;
 	private boolean analysisChecked = false;
@@ -292,6 +298,12 @@ public class BMSPlayer extends MainState {
 				model.setJudgerank(overridingJudgeWindowRate);
 			}
 
+			// Constant considered as assist in Endless Dream
+			// This is a community discussion result, see https://github.com/seraxis/lr2oraja-endlessdream/issues/42
+			if (config.getPlayConfig(model.getMode()).getPlayconfig().isEnableConstant()) {
+				assist = Math.max(assist, 2);
+			}
+
 			Array<PatternModifier> mods = new Array<PatternModifier>();
 
 			if(config.getScrollMode() > 0) {
@@ -396,16 +408,25 @@ public class BMSPlayer extends MainState {
 			if(playinfo.randomoptionseed != -1) {
 				pm.setSeed(playinfo.randomoptionseed);
 			} else {
-                if (ghostBattle.isPresent()) {
+				if (Client.connected.get() && !Client.state.getHost().equals(Client.state.getRemoteId())) {
+					if (RandomTrainer.isActive()) {
+						Logger.getGlobal().info("RandomTrainer: Disabled during arena session");
+					}
+					int lr2Seed = Client.state.getRandomSeed();
+					long rajaSeed = LR2RandomPattern.fromLR2SeedToRaja(lr2Seed);
+					Logger.getGlobal().info(String.format("Arena: Applying random seed from host, converting from %d to %d", lr2Seed, rajaSeed));
+					pm.setSeed(rajaSeed);
+				} else if (ghostBattle.isPresent()) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
-                    Integer pattern = ghostBattle.get().lanes();
+					Integer pattern = ghostBattle.get().lanes();
 					Logger.getGlobal().info("Ghost battle - fixing lane pattern to " + pattern);
 					pm.setSeed(seedmap.get(pattern));
-                }
-                else if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
-					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
-					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
-					pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+				} else {
+					if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
+						HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
+						Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+						pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+					}
 				}
 				playinfo.randomoptionseed = pm.getSeed();
 			}
@@ -462,6 +483,12 @@ public class BMSPlayer extends MainState {
 			gaugelog[i] = new FloatArray(playtime / 500 + 2);
 		}
 
+		if (assist != 0) {
+			ImGuiNotify.warning("Assist options enabled. Next play will be saved as an assist clear");
+		}
+		if (!score) {
+			ImGuiNotify.warning("Score nullifying options enabled. Next play will not be saved");
+		}
 		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
 
 		resource.setUpdateScore(score);
@@ -593,13 +620,13 @@ public class BMSPlayer extends MainState {
 						timer.setTimerOff(141);
 						lanerender.init(model);
 					}
-					
+
 					// Wait for the analysis to complete
 					if (!analysisChecked) {
 						adjustedVolume = -1.f;
 						analysisChecked = true;
 						analysisTask = resource.getAnalysisTask();
-						
+
 						if (analysisTask != null) {
 							try {
 								BMSLoudnessAnalyzer.AnalysisResult result = analysisTask.get(15, TimeUnit.SECONDS);
@@ -625,21 +652,39 @@ public class BMSPlayer extends MainState {
 							}
 						}
 					}
-					
+
 					bga.prepare(this);
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
 					final long cmem = Runtime.getRuntime().freeMemory();
 					Logger.getGlobal().info("current free memory : " + (cmem / (1024 * 1024)) + "MB , disposed : "
 							+ ((cmem - mem) / (1024 * 1024)) + "MB");
-					state = STATE_READY;
-					timer.setTimerOn(TIMER_READY);
-					play(PLAY_READY);
-					Logger.getGlobal().info("STATE_READYに移行");
+					if (Client.connected.get()) {
+						state = STATE_WAIT;
+					} else {
+						state = STATE_READY;
+						timer.setTimerOn(TIMER_READY);
+						play(PLAY_READY);
+						Logger.getGlobal().info("STATE_READYに移行");
+					}
 				}
 				if(!timer.isTimerOn(TIMER_PM_CHARA_1P_NEUTRAL) || !timer.isTimerOn(TIMER_PM_CHARA_2P_NEUTRAL)){
 					timer.setTimerOn(TIMER_PM_CHARA_1P_NEUTRAL);
 					timer.setTimerOn(TIMER_PM_CHARA_2P_NEUTRAL);
+				}
+			}
+			case STATE_WAIT -> {
+				if (!firedWaitingReady) {
+					firedWaitingReady = true;
+					Client.send(ClientToServer.CTS_SELECTED_BMS, createSelectedBMSMessage(model, playinfo.randomoptionseed, playinfo.randomoption).pack());
+					Client.send(ClientToServer.CTS_LOADING_COMPLETE, "".getBytes());
+					Client.acceptNextAllReady((allReady) -> this.allReady = allReady);
+				}
+				if (this.allReady) {
+					state = STATE_READY;
+					timer.setTimerOn(TIMER_READY);
+					play(PLAY_READY);
+					Logger.getGlobal().info("STATE_READYに移行");
 				}
 			}
 			// practice mode
@@ -950,7 +995,7 @@ public class BMSPlayer extends MainState {
 	public int getState() {
 		return state;
 	}
-	
+
 	public float getAdjustedVolume() {
 		return adjustedVolume;
 	}
@@ -1087,6 +1132,17 @@ public class BMSPlayer extends MainState {
 			state = STATE_PRACTICE_FINISHED;
 			return;
 		}
+		if (state == STATE_WAIT) {
+			Client.send(ClientToServer.CTS_CHART_CANCELLED, "".getBytes());
+			main.getAudioProcessor().setGlobalPitch(1f);
+			timer.setTimerOn(TIMER_FADEOUT);
+			if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+				state = STATE_ABORTED;
+			} else {
+				state = STATE_PRACTICE_FINISHED;
+			}
+			return;
+		}
 		if (state == STATE_PRELOAD || state == STATE_READY) {
 			main.getAudioProcessor().setGlobalPitch(1f);
 			timer.setTimerOn(TIMER_FADEOUT);
@@ -1199,5 +1255,14 @@ public class BMSPlayer extends MainState {
 
 	public long getNowQuarterNoteTime() {
 		return rhythm != null ? rhythm.getNowQuarterNoteTime() : 0;
+	}
+
+	private SelectedBMSMessage createSelectedBMSMessage(BMSModel model, long randomSeed, int randomOption) {
+		// TODO: items are not supported.
+		// NOTE: We need to convert a Raja seed to LR2 seed
+		// NOTE: Gauge isn't synced everytime, considering 99% raja users are using auto-shift, there's no reason
+		// to sync an initial gauge value. Also LR2 has a different gauge system definition, it's tedious to handle
+		// the assist clear & ex-hard etc
+		return new SelectedBMSMessage(LR2RandomPattern.fromRajaToLR2Seed(randomSeed), model.getMD5(), model.getTitle(), model.getArtist(), randomOption, 0, false);
 	}
 }
