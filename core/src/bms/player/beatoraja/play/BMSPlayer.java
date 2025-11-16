@@ -414,9 +414,19 @@ public class BMSPlayer extends MainState {
 					if (RandomTrainer.isActive()) {
 						logger.info("RandomTrainer: Disabled during arena session");
 					}
-					int lr2Seed = Client.state.getRandomSeed();
-					long rajaSeed = LR2RandomPattern.fromLR2SeedToRaja(lr2Seed);
-					logger.info("Arena: Applying random seed from host, converting from {} to {}", lr2Seed, rajaSeed);
+                    int lr2Seed = Client.state.getRandomSeed();
+                    long rajaSeed = 0;
+                    if (Client.state.getRandomFlip()) {
+                        HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
+                        String lanePattern = new StringBuilder().append(
+                            LR2RandomPattern.getLR2LaneOrder(lr2Seed, false)
+                        ).reverse().toString();
+                        rajaSeed = seedmap.get(Integer.parseInt(lanePattern));
+                        logger.info("Arena: Applying flipped random seed from host, converting from flipped pattern {} to {}", lanePattern, rajaSeed);
+                    } else {
+                        rajaSeed = LR2RandomPattern.fromLR2SeedToRaja(lr2Seed);
+                        logger.info("Arena: Applying random seed from host, converting from {} to {}", lr2Seed, rajaSeed);
+                    }
 					pm.setSeed(rajaSeed);
 				} else if (ghostBattle.isPresent()) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
@@ -625,13 +635,13 @@ public class BMSPlayer extends MainState {
 						timer.setTimerOff(141);
 						lanerender.init(model);
 					}
-					
+
 					// Wait for the analysis to complete
 					if (!analysisChecked) {
 						adjustedVolume = -1.f;
 						analysisChecked = true;
 						analysisTask = resource.getAnalysisTask();
-						
+
 						if (analysisTask != null) {
 							try {
 								BMSLoudnessAnalyzer.AnalysisResult result = analysisTask.get(15, TimeUnit.SECONDS);
@@ -654,7 +664,7 @@ public class BMSPlayer extends MainState {
 							}
 						}
 					}
-					
+
 					bga.prepare(this);
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
@@ -996,7 +1006,7 @@ public class BMSPlayer extends MainState {
 	public int getState() {
 		return state;
 	}
-	
+
 	public float getAdjustedVolume() {
 		return adjustedVolume;
 	}

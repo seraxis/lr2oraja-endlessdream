@@ -2,6 +2,7 @@ package bms.player.beatoraja.arena.lobby;
 
 
 import bms.player.beatoraja.arena.client.Client;
+import imgui.type.ImBoolean;
 import io.github.catizard.jlr2arenaex.enums.ClientToServer;
 import io.github.catizard.jlr2arenaex.network.Address;
 import bms.player.beatoraja.modmenu.ArenaMenu;
@@ -28,6 +29,7 @@ public class Lobby {
     private static boolean scrollToBottom = false;
     private static final List<LogMessage> lines = new CopyOnWriteArrayList<>();
     private static final ImString inputBuf = new ImString(128);
+    private static final ImBoolean randomFlip = new ImBoolean(false);
 
     public static void render() {
         ImGui.text("Lobby");
@@ -150,7 +152,8 @@ public class Lobby {
             if (ImGui.beginTabItem("Settings##Lobby")) {
                 ImGui.text("Player settings");
                 ImGui.separator();
-                // ImGui.checkBox("Enable random flip", & hooks::random::random_flip);
+                ImGui.checkbox("Enable random flip", randomFlip);
+                Client.state.setRandomFlip(randomFlip.get());
                 ImGui.endTabItem();
 
                 ImGui.text("Lobby settings");
