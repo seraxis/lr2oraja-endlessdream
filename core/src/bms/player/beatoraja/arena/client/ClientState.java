@@ -21,6 +21,8 @@ public class ClientState {
     private Boolean autoSelectFlag = false;
     // Random seed
     private final AtomicInteger randomSeed = new AtomicInteger();
+    // Random flip
+    private Boolean randomFlip = false;
 
     public Map<Address, Peer> getPeers() {
         return peers;
@@ -76,6 +78,14 @@ public class ClientState {
 
     public void setRandomSeed(int randomSeed) {
         this.randomSeed.set(randomSeed);
+    }
+
+    public Boolean getRandomFlip() {
+        return randomFlip;
+    }
+
+    public void setRandomFlip(Boolean randomFlip) {
+        this.randomFlip = randomFlip;
     }
 
     public Optional<Integer> getMaxScore() {
