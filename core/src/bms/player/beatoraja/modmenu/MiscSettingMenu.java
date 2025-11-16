@@ -151,6 +151,10 @@ public class MiscSettingMenu {
         CONSTANT_VALUE.set(conf.getConstantFadeinTime());
     }
 
+    private static void loadPlayers() {
+        players = PlayerConfig.readAllPlayerID("player");
+    }
+
     private static void profileSwitcher() {
         ImGui.combo("##Player Profile", SELECTED_PLAYER, players, 4);
         ImGui.sameLine();
@@ -158,17 +162,27 @@ public class MiscSettingMenu {
           && !config.getPlayername().equals(players[SELECTED_PLAYER.get()]);
 
         ImGui.beginDisabled(!canClick);
-        boolean clicked = ImGui.button("Switch");
+        boolean switchClicked = ImGui.button("Switch");
         ImGui.endDisabled();
         ImGui.sameLine();
+        boolean reloadClicked = ImGui.button("Reload list");
+        ImGui.sameLine();
         ImGui.text("Player Profile");
-        if (clicked) {
-            PlayerConfig newPlayerConfig = PlayerConfig.readPlayerConfig("player", players[SELECTED_PLAYER.get()]);
-            //ImGuiRenderer.toggleMenu();
+        if (switchClicked) {
+            String[] oldPlayers = players;
+            loadPlayers();
+            // Make sure that a different profile is not selected,
+            // nor it creates a new one if it does not find the selected one
+            if (Arrays.equals(players, oldPlayers)) {
+                PlayerConfig newPlayerConfig = PlayerConfig.readPlayerConfig("player", players[SELECTED_PLAYER.get()]);
 
-            main.saveConfig();
-            main.loadNewProfile(newPlayerConfig);
-            changePlayMode(CURRENT_PLAY_MODE);
+                main.saveConfig();
+                main.loadNewProfile(newPlayerConfig);
+                changePlayMode(CURRENT_PLAY_MODE);
+            }
+        }
+        if (reloadClicked) {
+            loadPlayers();
         }
     }
 }

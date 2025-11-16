@@ -416,7 +416,6 @@ public class MainController {
 
         try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
             ImGuiRenderer.init();
-            //SkinMenu.init(this, player);
         }
 
         try (var perf = PerformanceMetrics.get().Event("System font load")) {
@@ -445,7 +444,6 @@ public class MainController {
     	initializeStates();
 		initializeDependantMenus();
 		MiscSettingMenu.setMain(this);
-		//ProfileSwitcherMenu.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
