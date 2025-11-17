@@ -382,6 +382,7 @@ public class MainController {
 		}
 		SongManagerMenu.injectMusicSelector(selector);
 		ArenaMenu.setMusicSelector(selector);
+        ArenaMenu.init(resource.getPlayerConfig().getName());
 		MiscSettingMenu.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
