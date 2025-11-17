@@ -5,6 +5,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
@@ -60,6 +61,7 @@ public class MainLoader extends Application {
 		}
 
 		Logger logger = Logger.getGlobal();
+        logger.setLevel(Level.SEVERE);
 		try {
 			logger.addHandler(new FileHandler("beatoraja_log.xml"));
 		} catch (Throwable e) {

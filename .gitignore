@@ -64,6 +64,7 @@ gradle-app.setting
 .idea/**/contentModel.xml
 
 # Sensitive or high-churn files
+.idea/**/dataSources.xml
 .idea/**/dataSources/
 .idea/**/dataSources.ids
 .idea/**/dataSources.local.xml

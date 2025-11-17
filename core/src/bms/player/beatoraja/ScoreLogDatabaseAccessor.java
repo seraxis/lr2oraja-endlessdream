@@ -36,7 +36,7 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		Class.forName("org.sqlite.JDBC");
 		SQLiteConfig conf = new SQLiteConfig();
 		conf.setSharedCache(true);
-		conf.setSynchronous(SynchronousMode.OFF);
+		conf.setSynchronous(SynchronousMode.FULL);
 		// conf.setJournalMode(JournalMode.MEMORY);
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + path);

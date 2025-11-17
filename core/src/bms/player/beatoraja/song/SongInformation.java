@@ -82,17 +82,18 @@ public class SongInformation implements Validatable {
 	}
 	
 	public SongInformation(BMSModel model) {
+        List<Integer> totalNotesCombined = BMSModelUtils.getTotalNotesCombined(model);
 		sha256 = model.getSHA256();
-		n = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_KEY);
-		ln = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_LONG_KEY);
-		s = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_SCRATCH);
-		ls = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_LONG_SCRATCH);
+		n = totalNotesCombined.get(BMSModelUtils.TOTALNOTES_KEY);
+		ln = totalNotesCombined.get(BMSModelUtils.TOTALNOTES_LONG_KEY);
+		s = totalNotesCombined.get(BMSModelUtils.TOTALNOTES_SCRATCH);
+		ls = totalNotesCombined.get(BMSModelUtils.TOTALNOTES_LONG_SCRATCH);
 		total = model.getTotal();
 		
 		int[][] lanenotes = new int[model.getMode().key][3];
 		int[][] data = new int[model.getLastTime() / 1000 + 2][7];
 		int pos = 0;
-		int border = (int) (model.getTotalNotes() * (1.0 - 100.0 / model.getTotal()));
+		int border = (int) (totalNotesCombined.get(BMSModelUtils.TOTALNOTES_ALL) * (1.0 - 100.0 / model.getTotal()));
 		int borderpos = 0;
 		for (TimeLine tl : model.getAllTimeLines()) {
 			if (tl.getTime() / 1000 != pos) {
@@ -132,7 +133,7 @@ public class SongInformation implements Validatable {
 			}
 		}
 
-		final int bd = model.getTotalNotes() / data.length / 4;
+		final int bd = totalNotesCombined.get(BMSModelUtils.TOTALNOTES_ALL) / data.length / 4;
 		density = 0;
 		peakdensity = 0;
 		int count = 0;

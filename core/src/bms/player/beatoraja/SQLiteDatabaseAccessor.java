@@ -23,7 +23,7 @@ public abstract class SQLiteDatabaseAccessor {
 
 	private final ResultSetHandler<List<Column>> columnhandler = new BeanListHandler<Column>(Column.class);
 
-	private final Table[] tables;
+	public final Table[] tables;
 	
 	public SQLiteDatabaseAccessor(Table... tables) {
 		this.tables = tables;

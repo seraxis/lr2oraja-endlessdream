@@ -1,16 +1,21 @@
 package bms.player.beatoraja.song;
 
 import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +100,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		conf.setSharedCache(true);
 		conf.setSynchronous(SynchronousMode.OFF);
 		// conf.setJournalMode(JournalMode.MEMORY);
+        // Using WAL is a good chunk faster than the default of DELETE. Small optimization but we're doing a lot
+        // of SQL queries in a loop and in parallel, which is exactly our use case here.
+        conf.setJournalMode(SQLiteConfig.JournalMode.WAL);
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + filepath);
 		qr = new QueryRunner(ds);
@@ -329,16 +337,19 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		 */
 		public void updateSongDatas(Stream<Path> paths) {
 			long time = System.currentTimeMillis();
-			SongDatabaseUpdaterProperty property = new SongDatabaseUpdaterProperty(Calendar.getInstance().getTimeInMillis() / 1000, info);
+			SongDatabaseUpdaterProperty property = new SongDatabaseUpdaterProperty(Calendar.getInstance().getTimeInMillis() / 1000, info, new SqlBatcher(info));
 			property.count.set(0);
 			if(info != null) {
 				info.startUpdate();
 			}
 			try (Connection conn = ds.getConnection()) {
 				property.conn = conn;
+                property.batcher.setSongDataConn(conn);
 				conn.setAutoCommit(false);
+                property.batcher.populateTableColumns();
 				// 楽曲のタグ,FAVORITEの保持
-				for (SongData record : qr.query(conn, "SELECT sha256, tag, favorite FROM song", songhandler)) {
+                // EndlessDream: changed to only return songdata that actually matches our predicate, instead of the whole table
+				for (SongData record : qr.query(conn, "SELECT sha256, tag, favorite FROM song WHERE tag <> '' OR favorite <> 0;", songhandler)) {
 					if (record.getTag().length() > 0) {
 						property.tags.put(record.getSha256(), record.getTag());
 					}
@@ -375,6 +386,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						Logger.getGlobal().severe("楽曲データベース更新時の例外:" + e.getMessage());
 					}
 				});
+                property.batcher.flush();
 				conn.commit();
 			} catch (Exception e) {
 				Logger.getGlobal().severe("楽曲データベース更新時の例外:" + e.getMessage());
@@ -384,6 +396,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			if(info != null) {
 				info.endUpdate();
 			}
+            Logger.getGlobal().setLevel(Level.INFO);
 			long nowtime = System.currentTimeMillis();
 			Logger.getGlobal().info("楽曲更新完了 : Time - " + (nowtime - time) + " 1曲あたりの時間 - "
 					+ (property.count.get() > 0 ? (nowtime - time) / property.count.get() : "不明"));
@@ -508,7 +521,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				folder.setDate((int) (Files.getLastModifiedTime(path).toMillis() / 1000));
 				folder.setAdddate((int) property.updatetime);
 
-				SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "folder", folder);
+				property.batcher.enqueue("folder", folder);
 			}
 			// ディレクトリ内に存在しないフォルダレコードを削除
 			folders.parallelStream().filter(Objects::nonNull).forEach(folder -> {
@@ -643,13 +656,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                         sd.setDate((int) lastModifiedTime);
                         sd.setFavorite(favorite != null ? favorite.intValue() : 0);
                         sd.setAdddate((int) property.updatetime);
-                        try {
-                            SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "song", sd);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
+                        //SQLiteSongDatabaseAccessor.this.insert(qr, property.conn, "song", sd);
+                        property.batcher.enqueue("song", sd);
                         if(property.info != null) {
-                            property.info.update(model);
+                            property.batcher.enqueue("information", sd.getInformation());
                         }
                         count++;
                     } else {
@@ -684,10 +694,13 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		private final long updatetime;
 		private final AtomicInteger count = new AtomicInteger();
 		private Connection conn;
+
+        private SqlBatcher batcher;
 		
-		public SongDatabaseUpdaterProperty(long updatetime, SongInformationAccessor info) {
+		public SongDatabaseUpdaterProperty(long updatetime, SongInformationAccessor info, SqlBatcher batcher) {
 			this.updatetime = updatetime;
 			this.info = info;
+            this.batcher = batcher;
 		}
 
 	}
@@ -696,4 +709,108 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		
 		public void update(BMSModel model, SongData song);
 	}
+
+    private class SqlBatcher {
+        // Object is kind of smelly but it was desirable to retain existing insert semantics to avoid bugs
+        private ConcurrentHashMap<String, ConcurrentLinkedQueue<Object>> insertMapQueue;
+        private AtomicInteger queueSize;
+        private final Integer BATCH_SIZE = 5000;
+
+        // table name -> column array
+        private HashMap<String, Column[]> tableColumns;
+        // table name -> PropertyDescriptor[]
+        private HashMap<String, PropertyDescriptor[]> columnMethods;
+
+        private Connection songDataConn;
+        private SongInformationAccessor info;
+
+        public SqlBatcher(SongInformationAccessor info) {
+            this.insertMapQueue = new ConcurrentHashMap<String, ConcurrentLinkedQueue<Object>>();
+            this.queueSize = new AtomicInteger();
+            this.tableColumns = new HashMap<>();
+            this.info = info;
+        }
+
+        public void enqueue(String tablename, Object songDataOrInfo) {
+            insertMapQueue.get(tablename).add(songDataOrInfo);
+            // execute a batch job every BATCH_SIZE inserts
+            if (queueSize.incrementAndGet() % BATCH_SIZE != 0) return;
+            executeBatch();
+        }
+
+        // Called when finished
+        public void flush() { executeBatch(); }
+
+        private void executeBatch() {
+            insertMapQueue.forEach((tablename, insertQueue) -> {
+                StringBuilder sql = new StringBuilder("INSERT OR REPLACE INTO " + tablename + " (");
+                boolean comma = false;
+                for (Column column : tableColumns.get(tablename)) {
+                    sql.append(comma ? "," : "").append(column.getName());
+                    comma = true;
+                }
+                sql.append(") VALUES(");
+
+                comma = false;
+                for (int i = 0; i < tableColumns.get(tablename).length; i++) {
+                    sql.append(comma ? ",?" : "?");
+                    comma = true;
+                }
+                sql.append(");");
+
+                String paramSQL = sql.toString();
+
+                // We need a 2D Object[][] array of parameters to provide to qr.batch()
+                List<Object[]> paramsList = new ArrayList<>();
+                Object record;
+                while ((record = insertQueue.poll()) != null) {
+                    Object[] params = new Object[tableColumns.get(tablename).length];
+                    for (int i = 0; i < tableColumns.get(tablename).length; i++) {
+                        PropertyDescriptor pd;
+                        try {
+                            pd = new PropertyDescriptor((String)tableColumns.get(tablename)[i].getName(), record.getClass());
+                            Method getterMethod = pd.getReadMethod();
+                            params[i] = getterMethod.invoke(record);
+                        } catch (IntrospectionException | ReflectiveOperationException | IllegalArgumentException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    paramsList.add(params);
+                }
+
+                if (!paramsList.isEmpty()) {
+                    Object[][] paramsArray = paramsList.toArray(new Object[0][]);
+
+                    // EndlessDream: deviation from upstream, we don't handle the con == null case here as if the
+                    // connection does not exist we throw an exception instead of silently swallowing the query
+                    try {
+                        // Fragile workaround for managing the different connection handles
+                        if (tablename == "information") {
+                            info.qr.batch(info.conn, paramSQL, paramsArray);
+                            info.conn.commit();
+                        } else {
+                            qr.batch(songDataConn, paramSQL, paramsArray);
+                            songDataConn.commit();
+                        }
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+            });
+        }
+
+        public void setSongDataConn(Connection songDataConn) { this.songDataConn = songDataConn; }
+
+        public void populateTableColumns() {
+            for (Table table : SQLiteSongDatabaseAccessor.this.tables) {
+                tableColumns.put(table.getName(), table.getColumn());
+                insertMapQueue.put(table.getName(), new ConcurrentLinkedQueue<>());
+            }
+            for (Table table : info.tables) {
+                tableColumns.put(table.getName(), table.getColumn());
+                insertMapQueue.put(table.getName(), new ConcurrentLinkedQueue<>());
+            }
+        }
+    }
 }

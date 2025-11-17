@@ -31,9 +31,9 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 	private final ResultSetHandler<List<SongInformation>> songhandler = new BeanListHandler<SongInformation>(
 			SongInformation.class);
 
-	private final QueryRunner qr;
+	final QueryRunner qr;
 
-	private Connection conn;
+	Connection conn;
 	private final static int LOAD_CHUNK_SIZE = 1000;
 
 	public SongInformationAccessor(String filepath) throws ClassNotFoundException {
@@ -57,6 +57,7 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 		conf.setSharedCache(true);
 		conf.setSynchronous(SynchronousMode.OFF);
 		// conf.setJournalMode(JournalMode.MEMORY);
+        conf.setJournalMode(SQLiteConfig.JournalMode.WAL);
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + filepath);
 		qr = new QueryRunner(ds);
@@ -143,8 +144,9 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 		}
 	}
 
-	public void update(BMSModel model) {
-		SongInformation info = new SongInformation(model);
+	public void update(SongInformation info) {
+        // EndlessDream: Skip expensive redundant SongInfo construction, already resides in SongData
+		//SongInformation info = new SongInformation(model);
 		try {
 			insert(qr, conn, "information", info);
 		} catch (SQLException e) {

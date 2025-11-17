@@ -184,7 +184,6 @@ class KeyInputProccessor {
 		@Override
 		public void run() {
 			int index = 0;
-
 			long frametime = 1;
 			final BMSPlayerInputProcessor input = player.main.getInputProcessor();
 			final JudgeManager judge = player.getJudgeManager();
