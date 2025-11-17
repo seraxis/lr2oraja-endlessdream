@@ -21,6 +21,10 @@ public class ArenaMenu {
         ArenaMenu.selector = selector;
     }
 
+    public static void init(String username) {
+        Client.userName.set(username);
+    }
+
     public static void show(ImBoolean showArenaMenu) {
         // This tweak must be called in game's main thread, otherwise the game crashes immediately
         // because we cannot dispose a texture outside of glfw context
