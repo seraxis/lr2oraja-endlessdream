@@ -719,7 +719,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
         // table name -> column array
         private HashMap<String, Column[]> tableColumns;
         // table name -> PropertyDescriptor[]
-        private HashMap<String, PropertyDescriptor[]> columnMethods;
+        private HashMap<String, Method[]> columnMethods;
 
         private Connection songDataConn;
         private SongInformationAccessor info;
@@ -729,6 +729,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
             this.queueSize = new AtomicInteger();
             this.tableColumns = new HashMap<>();
             this.info = info;
+            this.columnMethods = new HashMap<>();
         }
 
         public void enqueue(String tablename, Object songDataOrInfo) {
@@ -766,12 +767,16 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                 while ((record = insertQueue.poll()) != null) {
                     Object[] params = new Object[tableColumns.get(tablename).length];
                     for (int i = 0; i < tableColumns.get(tablename).length; i++) {
-                        PropertyDescriptor pd;
                         try {
-                            pd = new PropertyDescriptor((String)tableColumns.get(tablename)[i].getName(), record.getClass());
-                            Method getterMethod = pd.getReadMethod();
-                            params[i] = getterMethod.invoke(record);
-                        } catch (IntrospectionException | ReflectiveOperationException | IllegalArgumentException e) {
+                            if (Objects.equals(tablename, "information")) {
+                                params[i] = columnMethods.get(tablename)[i].invoke((SongInformation) record);
+                            } else if  (Objects.equals(tablename, "folder")) {
+                                params[i] = columnMethods.get(tablename)[i].invoke((FolderData) record);
+                            } else {
+                                params[i] = columnMethods.get(tablename)[i].invoke((SongData) record);
+                            }
+
+                        } catch (ReflectiveOperationException | IllegalArgumentException e) {
                             e.printStackTrace();
                         }
                     }
@@ -785,7 +790,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                     // connection does not exist we throw an exception instead of silently swallowing the query
                     try {
                         // Fragile workaround for managing the different connection handles
-                        if (tablename == "information") {
+                        if (Objects.equals(tablename, "information")) {
                             info.qr.batch(info.conn, paramSQL, paramsArray);
                             info.conn.commit();
                         } else {
@@ -804,12 +809,44 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
         public void populateTableColumns() {
             for (Table table : SQLiteSongDatabaseAccessor.this.tables) {
+                Column[] columns = table.getColumn();
                 tableColumns.put(table.getName(), table.getColumn());
                 insertMapQueue.put(table.getName(), new ConcurrentLinkedQueue<>());
+
+                PropertyDescriptor pd;
+                Method[] methods = new Method[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    try {
+                        if (table.getName().equals("folder")) {
+                            pd = new PropertyDescriptor((String) columns[i].getName(), FolderData.class);
+                        } else {
+                            pd = new PropertyDescriptor((String) columns[i].getName(), SongData.class);
+                        }
+                        Method getterMethod = pd.getReadMethod();
+                        methods[i] = getterMethod;
+                    } catch (IntrospectionException | IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
+                columnMethods.put(table.getName(), methods);
             }
             for (Table table : info.tables) {
+                Column[] columns = table.getColumn();
                 tableColumns.put(table.getName(), table.getColumn());
                 insertMapQueue.put(table.getName(), new ConcurrentLinkedQueue<>());
+
+                PropertyDescriptor pd;
+                Method[] methods = new Method[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    try {
+                        pd = new PropertyDescriptor((String) columns[i].getName(), SongInformation.class);
+                        Method getterMethod = pd.getReadMethod();
+                        methods[i] = getterMethod;
+                    } catch (IntrospectionException | IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
+                columnMethods.put(table.getName(), methods);
             }
         }
     }
