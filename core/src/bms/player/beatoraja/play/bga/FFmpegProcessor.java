@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.Gdx2DPixmap;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
+import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_RGB24;
 /**
  * ffmpegを使用した動画表示用クラス
  *
@@ -137,7 +138,13 @@ public class FFmpegProcessor implements MovieProcessor {
 		public void run() {
 			try {
 				grabber = new FFmpegFrameGrabber(filepath);
+				// HACK: frame caught by ffmpeg's color order is wrong on macos only
+				// Expected to be RGB, got BGR
+				if (UIUtils.isMac) {
+					grabber.setPixelFormat(AV_PIX_FMT_RGB24);
+				}
 				grabber.start();
+
 				while (grabber.getVideoBitrate() < 10) {
 					final int videoStream = grabber.getVideoStream();
 					try {
@@ -181,30 +188,6 @@ public class FFmpegProcessor implements MovieProcessor {
 								break;
 							}
 							framecount++;
-							// HACK: frame caught by ffmpeg's color order is wrong on macos only
-							// Expected to be RGB, got BGR
-							// Below code hacks the order manually which obviously not a good idea,
-							// but I cannot find a better one
-							if (UIUtils.isMac) {
-								if (frame.image != null) {
-									ByteBuffer buf = ((ByteBuffer) frame.image[0]);
-									int size = buf.remaining();
-									byte[] pixelData = new byte[3]; // 3 size buf
-
-									for (int i = 0; i < size; i += 3) {
-										buf.position(i);
-										buf.get(pixelData); // BGR
-
-										byte temp = pixelData[0]; // t <- B
-										pixelData[0] = pixelData[2]; // RGR
-										pixelData[2] = temp; // RGB
-
-										buf.position(i);
-										buf.put(pixelData);
-									}
-									buf.rewind(); // It's this necessary?
-								}
-							}
 							// System.out.println("time : " + grabber.getTimestamp() + " --- " + time);
 						}
 						if (frame == null) {
