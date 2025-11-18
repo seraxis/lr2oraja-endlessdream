@@ -165,6 +165,7 @@ public class SongData implements Validatable, IpfsInformation {
 		maxbpm = (int) model.getMaxBPM();
 		feature = 0;
 		final int keys = model.getMode().key;
+        int count = 0;
 		for (TimeLine tl : model.getAllTimeLines()) {
 			if(tl.getStop() > 0) {
 				feature |= FEATURE_STOPSEQUENCE;
@@ -174,8 +175,22 @@ public class SongData implements Validatable, IpfsInformation {
 			}
 
 			for(int i = 0;i < keys;i++) {
-				if(tl.getNote(i) instanceof LongNote) {
-					switch(((LongNote) tl.getNote(i)).getType()) {
+                // EndlessDream: this code is replicated from the TimeLine.getTotalNotes() method
+                Note note = tl.getNote(i);
+                if (note != null) {
+                    if (note instanceof LongNote) {
+                        final LongNote ln = (LongNote) note;
+                        if (ln.getType() == LongNote.TYPE_CHARGENOTE || ln.getType() == LongNote.TYPE_HELLCHARGENOTE
+                                || (ln.getType() == LongNote.TYPE_UNDEFINED && model.getLntype() != BMSModel.LNTYPE_LONGNOTE)
+                                || !ln.isEnd()) {
+                            count++;
+                        }
+                    } else if (note instanceof NormalNote) {
+                        count++;
+                    }
+                }
+				if(note instanceof LongNote) {
+					switch(((LongNote) note).getType()) {
 						case LongNote.TYPE_UNDEFINED:
 							feature |= FEATURE_UNDEFINEDLN;
 							break;
@@ -190,13 +205,13 @@ public class SongData implements Validatable, IpfsInformation {
 							break;
 					}
 				}
-				if(tl.getNote(i) instanceof MineNote) {
+				if(note instanceof MineNote) {
 					feature |= FEATURE_MINENOTE;
 				}
 			}
 		}
 		length = model.getLastTime();
-		notes = model.getTotalNotes();
+		notes = count;
 
 		timelines = model.getAllTimeLines();
 
