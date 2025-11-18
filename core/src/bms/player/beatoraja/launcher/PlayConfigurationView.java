@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
@@ -16,6 +17,8 @@ import bms.player.beatoraja.external.ScoreDataImporter;
 import bms.tool.mdprocessor.HttpDownloadProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.animation.AnimationTimer;
+import javafx.beans.binding.Bindings;
 import org.apache.commons.lang3.compare.ComparableUtils;
 
 import bms.model.Mode;
@@ -847,7 +850,8 @@ public class PlayConfigurationView implements Initializable {
 
 		ResourceBundle bundle = ResourceBundle.getBundle("resources.UIResources");
 		final Stage loadingBarStage = new Stage();
-        Runnable progressRunnable = () -> {
+		SongDatabaseUpdateListener songDatabaseUpdateListener = new SongDatabaseUpdateListener();
+		Runnable progressRunnable = () -> {
 			// JavaFX UI code must be run inside a Platform run context
             Platform.runLater(new Runnable() {
                 @Override
@@ -862,10 +866,30 @@ public class PlayConfigurationView implements Initializable {
                     progressBar.setPrefWidth(300);
 
                     Label messageLabel = new Label(bundle.getString("PROGRESS_BMS_LABEL"));
+					Supplier<String> getProcessStatusText = () -> String.format(
+							bundle.getString("PROGRESS_BMS_STATUS"),
+							songDatabaseUpdateListener.getBMSFilesCount(),
+							songDatabaseUpdateListener.getSkipBMSFilesCount(),
+							songDatabaseUpdateListener.getNewBMSFilesCount()
+					);
+					Label processStatusLabel = new Label(getProcessStatusText.get());
+					AnimationTimer timer = new AnimationTimer() {
+						private long lastUpdate = -1;
+						private final long interval = 1000_000_000;
+
+						@Override
+						public void handle(long now) {
+							if (now - lastUpdate >= interval) {
+								processStatusLabel.setText(getProcessStatusText.get());
+								lastUpdate = now;
+							}
+						}
+					};
+					timer.start();
 
                     VBox root = new VBox(10);
                     root.setStyle("-fx-padding: 20; -fx-alignment: center;");
-                    root.getChildren().addAll(messageLabel, progressBar);
+                    root.getChildren().addAll(messageLabel, processStatusLabel, progressBar);
 
                     Scene scene = new Scene(root);
                     loadingBarStage.setScene(scene);
@@ -874,6 +898,7 @@ public class PlayConfigurationView implements Initializable {
 					// the application can still be force killed by the user if necessary
 					loadingBarStage.setOnCloseRequest(Event::consume);
                     loadingBarStage.show();
+					loadingBarStage.setOnHidden(e -> timer.stop());
                 }
             });
         };
@@ -884,7 +909,7 @@ public class PlayConfigurationView implements Initializable {
                 SongInformationAccessor infodb = config.isUseSongInfo() ?
                         new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
                 Logger.getGlobal().info("song.db更新開始");
-                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
+                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb, songDatabaseUpdateListener);
                 Logger.getGlobal().info("song.db更新完了");
                 songUpdated = true;
 

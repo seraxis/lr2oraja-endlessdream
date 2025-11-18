@@ -67,4 +67,5 @@ public interface SongDatabaseAccessor {
 	 */
 	public void updateSongDatas(String updatepath, String[] bmsroot, boolean updateAll, SongInformationAccessor info);
 
+	void updateSongDatas(String updatePath, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener);
 }

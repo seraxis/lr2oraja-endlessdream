@@ -295,12 +295,16 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	 *            LR2のルートパス
 	 */
 	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info) {
+		updateSongDatas(path, bmsroot, updateAll, info, null);
+	}
+
+	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
 		if(bmsroot == null || bmsroot.length == 0) {
 			Logger.getGlobal().warning("楽曲ルートフォルダが登録されていません");
 			return;
 		}
 		SongDatabaseUpdater updater = new SongDatabaseUpdater(updateAll, bmsroot, info);
-		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(p -> Paths.get(p)) : Stream.of(Paths.get(path)));
+		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(p -> Paths.get(p)) : Stream.of(Paths.get(path)), listener);
 	}
 	
 	/**
@@ -327,10 +331,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		 * @param paths
 		 *            更新するディレクトリ(ルートディレクトリでなくても可)
 		 */
-		public void updateSongDatas(Stream<Path> paths) {
+		public void updateSongDatas(Stream<Path> paths, SongDatabaseUpdateListener listener) {
 			long time = System.currentTimeMillis();
-			SongDatabaseUpdaterProperty property = new SongDatabaseUpdaterProperty(Calendar.getInstance().getTimeInMillis() / 1000, info);
-			property.count.set(0);
+			SongDatabaseUpdaterProperty property = new SongDatabaseUpdaterProperty(Calendar.getInstance().getTimeInMillis() / 1000, info, listener);
 			if(info != null) {
 				info.startUpdate();
 			}
@@ -386,7 +389,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			}
 			long nowtime = System.currentTimeMillis();
 			Logger.getGlobal().info("楽曲更新完了 : Time - " + (nowtime - time) + " 1曲あたりの時間 - "
-					+ (property.count.get() > 0 ? (nowtime - time) / property.count.get() : "不明"));
+					+ (property.listener.getBMSFilesCount() > 0 ? (nowtime - time) / property.listener.getBMSFilesCount() : "不明"));
 		}
 
 	}
@@ -458,7 +461,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			}
 
 			final boolean containsBMS = bmsfiles.size() > 0;
-			property.count.addAndGet(this.processBMSFolder(records, property));
+			property.listener.addBMSFilesCount(bmsfiles.size());
+			property.listener.addNewBMSFilesCount(this.processBMSFolder(records, property));
 
 			final int len = folders.size();
 			dirs.forEach(bf -> {
@@ -549,6 +553,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					}
 				}
 				if (!update) {
+					property.listener.addSkipBMSFilesCount(1);
 					continue;
 				}
 				BMSModel model = null;
@@ -682,14 +687,14 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		private final Map<String, Integer> favorites = new HashMap<String, Integer>();
 		private final SongInformationAccessor info;
 		private final long updatetime;
-		private final AtomicInteger count = new AtomicInteger();
+		private SongDatabaseUpdateListener listener;
 		private Connection conn;
-		
-		public SongDatabaseUpdaterProperty(long updatetime, SongInformationAccessor info) {
+
+		public SongDatabaseUpdaterProperty(long updatetime, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
 			this.updatetime = updatetime;
 			this.info = info;
+			this.listener = listener;
 		}
-
 	}
 	
 	public static interface SongDatabaseAccessorPlugin {
