@@ -381,6 +381,8 @@ public class MainController {
 	        streamController.run();
 		}
 		SongManagerMenu.injectMusicSelector(selector);
+		ArenaMenu.setMusicSelector(selector);
+        ArenaMenu.init(resource.getPlayerConfig().getName());
 		MiscSettingMenu.setMain(this);
 		decide = new MusicDecide(this);
 		result = new MusicResult(this);
@@ -464,6 +466,7 @@ public class MainController {
 			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
 			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
 			DownloadTaskState.initialize(httpDownloadProcessor);
+			DownloadTaskMenu.setProcessor(httpDownloadProcessor);
 		}
 
 		if(ir.length > 0) {

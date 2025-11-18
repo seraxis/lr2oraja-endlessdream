@@ -23,7 +23,6 @@ import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
-import bms.player.beatoraja.song.SongData;
 
 /**
  * リザルト
@@ -449,15 +448,6 @@ public class MusicResult extends AbstractResult {
 
 		if (isFreqTrainerEnabled()) {
 			resource.getScoreData().setClear(NoPlay.id);
-		}
-
-		// Disable lamps for plays using the CONSTANT setting. Community setting was overly negative towards this 0.8.8 feature
-		if (
-			resource.getCourseBMSModels() == null &&
-			resource.getPlayerConfig().getPlayConfig(Mode.BEAT_7K).getPlayconfig().isEnableConstant() &&
-			resource.getScoreData().getClear() != Failed.id
-		) {
-			resource.getScoreData().setClear(AssistEasy.id);
 		}
 
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !(isFreqTrainerEnabled() && isFreqNegative())) {

@@ -5,7 +5,7 @@ kotlin = "1.9.20"
 gdx = "1.13.0"
 gdx-controllers = "2.2.3"
 lwjgl = "3.3.3"
-imgui = "1.86.12"
+imgui = "1.89.0"
 javacv = "1.5.9"
 ffmpeg = "6.0-1.5.9"
 jflac = "1.5.2"
@@ -19,6 +19,8 @@ twitter4j = "4.0.4"
 xz = "1.10"
 shapedrawer = "2.5.0"
 guacamole = "0.3.5"
+websocket = "1.6.0"
+msgpack = "0.9.10"
 ebur128java = "1.2.6-2"
 jna = "5.13.0"
 
@@ -77,6 +79,10 @@ ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
 
+javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "websocket" }
+msgpack = { group = "org.msgpack", name = "msgpack-core", version.ref = "msgpack" }
+# msgpack-jackson = { group = "org.msgpack", name = "jackson-dataformat-msgpack", version.ref = "msgpack" }
+
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]
 lwjgl3 = ["lwjgl", "lwjgl-jemalloc", "lwjgl-glfw", "lwjgl-openal", "lwjgl-opengl", "lwjgl-stb"]
@@ -85,3 +91,4 @@ ffmpeg = ["javacv", "javacpp", "ffmpeg"]
 codecs = ["commons-codec", "jflac"]
 jackson = ["jackson-core", "jackson-databind", "jackson-annotations", "jackson-xml"]
 jna = ["jna", "jna-platform"]
+msgpack = ["msgpack"]
