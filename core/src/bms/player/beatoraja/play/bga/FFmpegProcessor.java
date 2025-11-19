@@ -5,7 +5,8 @@ import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -20,12 +21,14 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
 import static org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_RGB24;
+
 /**
  * ffmpegを使用した動画表示用クラス
  *
  * @author exch
  */
 public class FFmpegProcessor implements MovieProcessor {
+	private static final Logger logger = LoggerFactory.getLogger(FFmpegProcessor.class);
 	private enum ProcessorStatus {
 		TEXTURE_INACTIVE,
 		TEXTURE_ACTIVE,
@@ -160,11 +163,7 @@ public class FFmpegProcessor implements MovieProcessor {
 						e.printStackTrace();
 					}
 				}
-				Logger.getGlobal()
-						.info("movie decode - fps : " + grabber.getFrameRate() + " format : " + grabber.getFormat()
-								+ " size : " + grabber.getImageWidth() + " x " + grabber.getImageHeight()
-								+ " length (frame / time) : " + grabber.getLengthInFrames() + " / "
-								+ grabber.getLengthInTime());
+				logger.info("movie decode - fps : {} format : {} size : {} x {} length (frame / time) : {} / {}", grabber.getFrameRate(), grabber.getFormat(), grabber.getImageWidth(), grabber.getImageHeight(), grabber.getLengthInFrames(), grabber.getLengthInTime());
 
 				offset = grabber.getTimestamp();
 				Frame frame = null;
@@ -255,7 +254,7 @@ public class FFmpegProcessor implements MovieProcessor {
 				try {
 					grabber.stop();
 					grabber.close();
-					Logger.getGlobal().info("動画リソースの開放 : " + filepath);
+					logger.info("動画リソースの開放 : {}", filepath);
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}

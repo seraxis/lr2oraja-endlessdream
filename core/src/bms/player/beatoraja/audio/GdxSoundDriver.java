@@ -5,7 +5,8 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.*;
 import java.util.Locale;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.Config;
 import com.badlogic.gdx.Gdx;
@@ -20,6 +21,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author exch
  */
 public class GdxSoundDriver extends AbstractAudioDriver<Sound> {
+	private static final Logger logger = LoggerFactory.getLogger(GdxSoundDriver.class);
 
 	private SoundMixer mixer;
 
@@ -72,7 +74,7 @@ public class GdxSoundDriver extends AbstractAudioDriver<Sound> {
 		try {
 			return Gdx.audio.newSound(handle);
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().warning("音源ファイル読み込み失敗" + e.getMessage());
+			logger.warn("音源ファイル読み込み失敗" + e.getMessage());
 		}
 		return null;
 	}

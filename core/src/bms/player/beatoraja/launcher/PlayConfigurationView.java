@@ -8,8 +8,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.external.ScoreDataImporter;
@@ -57,6 +58,7 @@ import twitter4j.conf.ConfigurationBuilder;
  * @author exch
  */
 public class PlayConfigurationView implements Initializable {
+	private static final Logger logger = LoggerFactory.getLogger(PlayConfigurationView.class);
     // TODO スキンプレビュー機能
 
 	@FXML
@@ -355,7 +357,7 @@ public class PlayConfigurationView implements Initializable {
 		obsController.init(this);
 
 		checkNewVersion();
-		Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
+		logger.info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
 	}
 
     @FXML
@@ -427,7 +429,7 @@ public class PlayConfigurationView implements Initializable {
                                     desktop.browse(uri);
                                 }
                                 catch (Exception e) {
-                                    Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
+                                    logger.warn("最新版URLアクセス時例外:" + e.getMessage());
                                 }
                             });
 						}
@@ -528,7 +530,7 @@ public class PlayConfigurationView implements Initializable {
         try {
             player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), players.getValue());
         } catch (PlayerConfigException e) {
-            Logger.getGlobal().warning("Player config failed to load: " + e.getLocalizedMessage());
+            logger.warn("Player config failed to load: " + e.getLocalizedMessage());
 			player = PlayerConfig.validatePlayerConfig("player1", new PlayerConfig());
         }
         playername.setText(player.getName());
@@ -908,9 +910,9 @@ public class PlayConfigurationView implements Initializable {
                 SongDatabaseAccessor songdb = MainLoader.getScoreDatabaseAccessor();
                 SongInformationAccessor infodb = config.isUseSongInfo() ?
                         new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
-                Logger.getGlobal().info("song.db更新開始");
-                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb, songDatabaseUpdateListener);
-                Logger.getGlobal().info("song.db更新完了");
+                logger.info("song.db更新開始");
+                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb);
+                logger.info("song.db更新完了");
                 songUpdated = true;
 
 				// Once again, JavaFX UI code must be run inside a Platform context. Hide progress bar and resume

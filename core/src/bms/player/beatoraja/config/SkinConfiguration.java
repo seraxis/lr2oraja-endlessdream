@@ -18,7 +18,8 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 /**
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
  * @author excln
  */
 public class SkinConfiguration extends MainState {
+	private static final Logger logger = LoggerFactory.getLogger(SkinConfiguration.class);
 
 	private SkinConfigurationSkin skin;
 	private SkinType type;
@@ -169,7 +171,7 @@ public class SkinConfiguration extends MainState {
 
 	private void setOtherSkin(int indexDiff) {
 		if (availableSkins.isEmpty()) {
-			Logger.getGlobal().warning("利用可能なスキンがありません");
+			logger.warn("利用可能なスキンがありません");
 			return;
 		}
 

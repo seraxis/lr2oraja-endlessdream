@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 楽曲詳細情報
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
  * @author exch
  */
 public class SongInformation implements Validatable {
+	private static final Logger logger = LoggerFactory.getLogger(SongInformation.class);
 	
 	/**
 	 * 譜面のハッシュ値
@@ -207,7 +209,7 @@ public class SongInformation implements Validatable {
 		}
 		final int count = distribution.length() % (index.length * 2) == 0 ? distribution.length() / (index.length * 2) : 0;
 		if(count == 0) {
-			Logger.getGlobal().warning("distributionのString超が不正です");
+			logger.warn("distributionのString超が不正です");
 		}
 		distributionValues = new int[count][7];
 		for(int i = 0;i < count;i++) {
@@ -215,7 +217,7 @@ public class SongInformation implements Validatable {
 				try {
 					distributionValues[i][index[j]] = parseInt36(distribution, i * (index.length * 2) + j * 2);
 				} catch(NumberFormatException e) {
-					Logger.getGlobal().warning("distribution解析中の例外:" + e.getMessage());
+					logger.warn("distribution解析中の例外:{}", e.getMessage());
 				}
 			}
 		}

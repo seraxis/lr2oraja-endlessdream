@@ -3,7 +3,8 @@ package bms.player.beatoraja.skin;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.PixmapResourcePool;
 import bms.player.beatoraja.skin.json.JsonSkin;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.utils.Array;
 // largely adopted from SkinTextBitmap.java
 
 public class BitmapFontBatchLoader {
+    private static final Logger logger = LoggerFactory.getLogger(BitmapFontBatchLoader.class);
     public BitmapFontBatchLoader(JsonSkin.Skin skin, Path skinPath, boolean usecim,
                                  boolean useMipMaps) {
         this.usecim = usecim;
@@ -40,8 +42,7 @@ public class BitmapFontBatchLoader {
                 fontPaths.put(path, font.type);
             }
             catch (IllegalArgumentException e) {
-                Logger.getGlobal().warning("Skin attempted to load a font with an invalid path: " +
-                                           e.getMessage());
+				logger.warn("Skin attempted to load a font with an invalid path: {}", e.getMessage());
             }
         }
     }
@@ -68,12 +69,12 @@ public class BitmapFontBatchLoader {
                     parsedFontData.put(fontData);
                 }
                 catch (InterruptedException e) {
-                    Logger.getGlobal().warning(e.getLocalizedMessage());
+                    logger.warn(e.getLocalizedMessage());
                     e.printStackTrace();
                 }
                 catch (Exception e) {
-                    Logger.getGlobal().warning("Failed to load bitmap font description: " + path);
-                    Logger.getGlobal().warning(e.getLocalizedMessage());
+					logger.warn("Failed to load bitmap font description: {}", path);
+                    logger.warn(e.getLocalizedMessage());
                 }
             }
             return true;
@@ -101,19 +102,18 @@ public class BitmapFontBatchLoader {
                                 loadedImages.put(imagePath);
                             }
                             else {
-                                Logger.getGlobal().warning("Failed to load bitmap font image: " +
-                                                           imagePath);
+								logger.warn("Failed to load bitmap font image: {}", imagePath);
                             }
                         }
                         catch (InterruptedException e) {
-                            Logger.getGlobal().warning(e.getLocalizedMessage());
+                            logger.warn(e.getLocalizedMessage());
                             e.printStackTrace();
                         }
                     });
                 }
             }
             catch (InterruptedException e) {
-                Logger.getGlobal().warning(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -131,7 +131,7 @@ public class BitmapFontBatchLoader {
                 loadedTextures.put(imagePath, new TextureRegion(texture));
             }
             catch (InterruptedException e) {
-                Logger.getGlobal().warning(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage());
                 e.printStackTrace();
             }
         }
@@ -170,7 +170,7 @@ public class BitmapFontBatchLoader {
                 fontCache.font = new BitmapFont(fontData, imageRegions, true);
             }
             catch (Exception e) {
-                Logger.getGlobal().warning(e.getLocalizedMessage());
+                logger.warn(e.getLocalizedMessage());
                 e.printStackTrace();
             }
             fontCache.fontData = fontData;
@@ -200,7 +200,7 @@ public class BitmapFontBatchLoader {
             return new fontSizes(size, scaleW, scaleH);
         }
         catch (Exception e) {
-            Logger.getGlobal().warning(e.getLocalizedMessage());
+            logger.warn(e.getLocalizedMessage());
             e.printStackTrace();
             return null;
         }

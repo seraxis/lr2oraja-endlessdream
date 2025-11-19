@@ -170,6 +170,7 @@ dependencies {
     implementation(libs.ebur128java)
 
     implementation(libs.javawebsocket)
+    implementation(libs.bundles.slf4j)
 
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")

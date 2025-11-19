@@ -3,7 +3,8 @@ package bms.player.beatoraja.play;
 import java.io.*;
 import java.nio.file.*;
 import java.util.function.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.model.BMSModel;
 import bms.model.Mode;
@@ -32,7 +33,7 @@ import com.badlogic.gdx.utils.SerializationException;
  * @author exch
  */
 public final class PracticeConfiguration {
-
+	private static final Logger logger = LoggerFactory.getLogger(PracticeConfiguration.class);
 
 	private BitmapFont titlefont;
 
@@ -92,7 +93,7 @@ public final class PracticeConfiguration {
 			titlefont = generator.generateFont(parameter);
 			generator.dispose();
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().warning("Practice Font読み込み失敗");
+			logger.warn("Practice Font読み込み失敗");
 		}
 		
 		for(int i = 0; i < graph.length; i++) {

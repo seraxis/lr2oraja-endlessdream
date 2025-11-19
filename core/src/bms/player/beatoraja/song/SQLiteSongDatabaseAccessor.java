@@ -11,7 +11,8 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,6 +35,7 @@ import bms.model.*;
  * @author exch
  */
 public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implements SongDatabaseAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(SQLiteSongDatabaseAccessor.class);
 
 	private SQLiteDataSource ds;
 
@@ -127,7 +129,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				qr.update("DROP TABLE old_song");
 			}
 		} catch (SQLException e) {
-			Logger.getGlobal().severe("楽曲データベース初期化中の例外:" + e.getMessage());
+			logger.error("楽曲データベース初期化中の例外:{}", e.getMessage());
 		}
 	}
 
@@ -147,7 +149,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
+			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
 		return SongData.EMPTY;
 	}
@@ -197,7 +199,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			return validated;
 		} catch (Exception e) {
 			e.printStackTrace();
-			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
+			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
 
 		return SongData.EMPTY;
@@ -244,7 +246,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 							+ " GROUP BY sha256",songhandler, "%" + text + "%");
 			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
-			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
+			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
 
 		return SongData.EMPTY;
@@ -264,7 +266,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			final List<FolderData> m = qr.query("SELECT * FROM folder WHERE " + key + " = ?", folderhandler, value);
 			return m.toArray(new FolderData[m.size()]);
 		} catch (Exception e) {
-			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
+			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
 
 		return FolderData.EMPTY;
@@ -285,7 +287,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			conn.commit();
 			conn.close();
 		} catch (Exception e) {
-			Logger.getGlobal().severe("song.db更新時の例外:" + e.getMessage());
+			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
 	}
 
@@ -301,7 +303,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
 		if(bmsroot == null || bmsroot.length == 0) {
-			Logger.getGlobal().warning("楽曲ルートフォルダが登録されていません");
+			logger.warn("楽曲ルートフォルダが登録されていません");
 			return;
 		}
 		SongDatabaseUpdater updater = new SongDatabaseUpdater(updateAll, bmsroot, info);
@@ -376,12 +378,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						BMSFolder folder = new BMSFolder(p, bmsroot);
 						folder.processDirectory(property);
 					} catch (IOException | SQLException | IllegalArgumentException | ReflectiveOperationException | IntrospectionException e) {
-						Logger.getGlobal().severe("楽曲データベース更新時の例外:" + e.getMessage());
+						logger.error("楽曲データベース更新時の例外:{}", e.getMessage());
 					}
 				});
 				conn.commit();
 			} catch (Exception e) {
-				Logger.getGlobal().severe("楽曲データベース更新時の例外:" + e.getMessage());
+				logger.error("楽曲データベース更新時の例外:{}", e.getMessage());
 				e.printStackTrace();
 			}
 
@@ -389,8 +391,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				info.endUpdate();
 			}
 			long nowtime = System.currentTimeMillis();
-			Logger.getGlobal().info("楽曲更新完了 : Time - " + (nowtime - time) + " 1曲あたりの時間 - "
-					+ (property.listener.getBMSFilesCount() > 0 ? (nowtime - time) / property.listener.getBMSFilesCount() : "不明"));
+			logger.info("楽曲更新完了 : Time - {} 1曲あたりの時間 - {}", nowtime - time, property.listener.getBMSFilesCount() > 0 ? (nowtime - time) / property.listener.getBMSFilesCount() : "不明");
 		}
 
 	}
@@ -496,7 +497,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					try {
 						bf.processDirectory(property);
 					} catch (IOException | SQLException | IllegalArgumentException | ReflectiveOperationException | IntrospectionException e) {
-						Logger.getGlobal().severe("楽曲データベース更新時の例外:" + e.getMessage());
+						logger.error("楽曲データベース更新時の例外:{}", e.getMessage());
 					}					
 				});
 			}
@@ -527,7 +528,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					qr.update(property.conn, "DELETE FROM folder WHERE path LIKE ?", folder.getPath() + "%");
 					qr.update(property.conn, "DELETE FROM song WHERE path LIKE ?", folder.getPath() + "%");
 				} catch (SQLException e) {
-					Logger.getGlobal().severe("ディレクトリ内に存在しないフォルダレコード削除の例外:" + e.getMessage());
+					logger.error("ディレクトリ内に存在しないフォルダレコード削除の例外:{}", e.getMessage());
 				}
 			});
 		}
@@ -572,7 +573,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					try {
 						model = bmsondecoder.decode(path);
 					} catch (Exception e) {
-						Logger.getGlobal().severe("Error while decoding bmson at path: " + pathname + e.getMessage());
+						logger.error("Error while decoding bmson at path: {}{}", pathname, e.getMessage());
 					}
 				} else if (pathname.toLowerCase().endsWith(".osu")) {
 					if (osudecoder == null) {
@@ -581,7 +582,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					try {
 						model = osudecoder.decode(path);
 					} catch (Exception e) {
-						Logger.getGlobal().severe("Error while decoding osu at path: " + pathname + e.getMessage());
+						logger.error("Error while decoding osu at path: {}{}", pathname, e.getMessage());
 					}
 				} else {
 					if (bmsdecoder == null) {
@@ -590,7 +591,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					try {
 						model = bmsdecoder.decode(path);
 					} catch (Exception e) {
-						Logger.getGlobal().severe("Error while decoding bms at path: " + pathname + e.getMessage());
+						logger.error("Error while decoding bms at path: {}{}", pathname, e.getMessage());
 					}
 				}
 
@@ -674,7 +675,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                     }
                 }
 				catch (Exception e) {
-					Logger.getGlobal().severe("Error while adding db record for chart at path: " + pathname + e.getMessage());
+					logger.error("Error while adding db record for chart at path: {}{}", pathname, e.getMessage());
 				}
 			}
 			// ディレクトリ内のファイルに存在しないレコードを削除

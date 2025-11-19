@@ -2,7 +2,8 @@ package bms.player.beatoraja;
 
 import java.io.File;
 import java.nio.file.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.utils.Array;
@@ -19,6 +20,7 @@ import bms.player.beatoraja.song.SongData;
  * @author exch
  */
 public final class RivalDataAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(RivalDataAccessor.class);
 
 	/**
 	 * ライバル情報
@@ -68,9 +70,9 @@ public final class RivalDataAccessor {
 						ScoreDataImporter scoreimport = new ScoreDataImporter(new ScoreDatabaseAccessor(main.getConfig().getPlayerpath() + File.separatorChar + main.getConfig().getPlayername() + File.separatorChar + "score.db"));
 						scoreimport.importScores(convert(scores.getData()), main.getIRStatus()[0].config.getIrname());
 
-						Logger.getGlobal().info("IRからのスコアインポート完了");
+						logger.info("IRからのスコアインポート完了");
 					} else {
-						Logger.getGlobal().warning("IRからのスコアインポート失敗 : " + scores.getMessage());
+						logger.warn("IRからのスコアインポート失敗 : {}", scores.getMessage());
 					}					
 				} catch (Throwable e) {
 					e.printStackTrace();
@@ -117,9 +119,9 @@ public final class RivalDataAccessor {
 								IRResponse<IRScoreData[]> scores = main.getIRStatus()[0].connection.getPlayData(irplayer, null);
 								if(scores.isSucceeded()) {
 									scoredb.setScoreData(convert(scores.getData()));
-									Logger.getGlobal().info("IRからのライバルスコア取得完了 : " + rival.getName());
+									logger.info("IRからのライバルスコア取得完了 : {}", rival.getName());
 								} else {
-									Logger.getGlobal().warning("IRからのライバルスコア取得失敗 : " + scores.getMessage());
+									logger.warn("IRからのライバルスコア取得失敗 : {}", scores.getMessage());
 								}
 							}).start();
 						}
@@ -159,7 +161,7 @@ public final class RivalDataAccessor {
 											},songs, lnmode);
 										}
 									});
-									Logger.getGlobal().info("ローカルに保存されているライバルスコア取得完了 : " + info.getName());
+									logger.info("ローカルに保存されているライバルスコア取得完了 : {}", info.getName());
 								}
 							}
 						}
@@ -179,7 +181,7 @@ public final class RivalDataAccessor {
 					e.printStackTrace();
 				}
 			} else {
-				Logger.getGlobal().warning("IRからのライバル取得失敗 : " + response.getMessage());
+				logger.warn("IRからのライバル取得失敗 : {}", response.getMessage());
 			}
 		}
 	}

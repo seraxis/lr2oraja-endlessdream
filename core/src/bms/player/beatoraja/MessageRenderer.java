@@ -1,6 +1,7 @@
 package bms.player.beatoraja;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -21,6 +22,7 @@ import bms.player.beatoraja.select.MusicSelector;
  * @author exch
  */
 public class MessageRenderer implements Disposable  {
+	private static final Logger logger = LoggerFactory.getLogger(MessageRenderer.class);
 
 	private FreeTypeFontGenerator generator;
 	private final Array<Message> messages = new Array<Message>();
@@ -29,7 +31,7 @@ public class MessageRenderer implements Disposable  {
 		try {
 			generator = new FreeTypeFontGenerator(Gdx.files.internal(fontpath));				
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().severe("Message Font読み込み失敗");
+			logger.error("Message Font読み込み失敗");
 		}
 	}
 

@@ -2,7 +2,8 @@ package bms.player.beatoraja.obs;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
@@ -12,6 +13,7 @@ import bms.player.beatoraja.MainStateListener;
 import bms.player.beatoraja.launcher.ObsConfigurationView;
 
 public class ObsListener implements MainStateListener {
+	private static final Logger logger = LoggerFactory.getLogger(ObsListener.class);
 
 	private final Config config;
 	private final ObsWsClient obsClient;
@@ -27,7 +29,7 @@ public class ObsListener implements MainStateListener {
 			client = new ObsWsClient(config);
 			client.connectAsync();
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Failed to initialize OBS client: " + e.getMessage());
+			logger.warn("Failed to initialize OBS client: {}", e.getMessage());
 		}
 		this.obsClient = client;
 	}
@@ -79,7 +81,7 @@ public class ObsListener implements MainStateListener {
 			try {
 				obsClient.requestStopRecord();
 			} catch (Exception e) {
-				Logger.getGlobal().warning("Failed to send early StopRecord: " + e.getMessage());
+				logger.warn("Failed to send early StopRecord: {}", e.getMessage());
 			}
 		}
 
@@ -98,7 +100,7 @@ public class ObsListener implements MainStateListener {
 						try {
 							obsClient.requestStopRecord();
 						} catch (Exception e) {
-							Logger.getGlobal().warning("Failed to stop recording: " + e.getMessage());
+							logger.warn("Failed to stop recording: {}", e.getMessage());
 						} finally {
 							synchronized (ObsListener.this) {
 								scheduledStopTask = null;
@@ -110,7 +112,7 @@ public class ObsListener implements MainStateListener {
 				}
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Failed to send OBS request: " + e.getMessage());
+			logger.warn("Failed to send OBS request: {}", e.getMessage());
 		}
 	}
 

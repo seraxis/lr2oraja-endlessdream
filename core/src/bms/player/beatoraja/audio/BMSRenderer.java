@@ -7,9 +7,11 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BMSRenderer {
+	private static final Logger logger = LoggerFactory.getLogger(BMSRenderer.class);
 
 	private final int sampleRate;
 	private final int channels;
@@ -28,17 +30,17 @@ public class BMSRenderer {
 	}
 
 	public RenderResult render(Path bmsPath, long maxDurationMs) {
-		Logger.getGlobal().info("Starting BMS rendering: " + bmsPath);
+		logger.info("Starting BMS rendering: {}", bmsPath);
 
 		ChartDecoder decoder = ChartDecoder.getDecoder(bmsPath);
 		if (decoder == null) {
-			Logger.getGlobal().warning("Unsupported file format: " + bmsPath);
+			logger.warn("Unsupported file format: {}", bmsPath);
 			return null;
 		}
 
 		BMSModel model = decoder.decode(bmsPath);
 		if (model == null) {
-			Logger.getGlobal().warning("Failed to load BMS file: " + bmsPath);
+			logger.warn("Failed to load BMS file: {}", bmsPath);
 			return null;
 		}
 
@@ -58,7 +60,7 @@ public class BMSRenderer {
 		
 		// Apply time limit if specified (0 = no limit)
 		if (maxDurationMs > 0 && endTime > maxDurationMs) {
-			Logger.getGlobal().info(String.format("Limiting render duration from %dms to %dms", endTime, maxDurationMs));
+			logger.info("Limiting render duration from {}ms to {}ms", endTime, maxDurationMs);
 			endTime = maxDurationMs;
 		}
 		
@@ -66,8 +68,7 @@ public class BMSRenderer {
 		int bytesPerSample = 2; // 16-bit
 		int bufferSize = (int) (totalSamples * channels * bytesPerSample);
 
-		Logger.getGlobal().info(String.format("Rendering chart: 0ms - %dms (total %d samples, %d bytes)",
-				endTime, totalSamples, bufferSize));
+		logger.info("Rendering chart: 0ms - {}ms (total {} samples, {} bytes)", endTime, totalSamples, bufferSize);
 
 		// Create output buffer
 		ByteBuffer outputBuffer = ByteBuffer.allocate(bufferSize);
@@ -211,7 +212,7 @@ public class BMSRenderer {
 	}
 
 	private Map<Integer, PCM> loadWavFiles(BMSModel model) {
-		Logger.getGlobal().info("Loading audio files...");
+		logger.info("Loading audio files...");
 
 		Map<Integer, PCM> result = new HashMap<>();
 		String[] wavList = model.getWavList();
@@ -237,7 +238,7 @@ public class BMSRenderer {
 			}
 
 			if (wavPath == null) {
-				Logger.getGlobal().warning("Audio file not found: " + wavList[i]);
+				logger.warn("Audio file not found: {}", wavList[i]);
 				continue;
 			}
 
@@ -247,11 +248,11 @@ public class BMSRenderer {
 				result.put(i, pcm);
 				loaded++;
 			} else {
-				Logger.getGlobal().fine("Failed to load audio file: " + wavPath);
+				logger.trace("Failed to load audio file: {}", wavPath);
 			}
 		}
 
-		Logger.getGlobal().info("Audio files loaded: " + loaded + " / " + wavList.length);
+		logger.info("Audio files loaded: {} / {}", loaded, wavList.length);
 		return result;
 	}
 

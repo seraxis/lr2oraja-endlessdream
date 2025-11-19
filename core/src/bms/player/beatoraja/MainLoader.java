@@ -5,7 +5,14 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.logging.FileHandler;
-import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+
+import de.damios.guacamole.gdx.log.LoggerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JOptionPane;
 
@@ -34,6 +41,7 @@ import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
 import bms.player.beatoraja.song.SongUtils;
+import org.slf4j.jul.JULServiceProvider;
 
 /**
  * 起動用クラス
@@ -41,6 +49,7 @@ import bms.player.beatoraja.song.SongUtils;
  * @author exch
  */
 public class MainLoader extends Application {
+	private static final Logger logger = LoggerFactory.getLogger(MainLoader.class);
 
 	private static final boolean ALLOWS_32BIT_JAVA = false;
 
@@ -59,9 +68,9 @@ public class MainLoader extends Application {
 			System.exit(1);
 		}
 
-		Logger logger = Logger.getGlobal();
+		java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
 		try {
-			logger.addHandler(new FileHandler("beatoraja_log.xml"));
+			rootLogger.addHandler(new FileHandler("beatoraja_log.xml"));
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -185,7 +194,7 @@ public class MainLoader extends Application {
 				}
 				gdxDisplayMode = d;
 				if (gdxDisplayMode == null) {
-					Logger.getGlobal().warning(String.format("Current resolution(%dx%d) is not compatible with current monitor, full-screen mode might be malfunctioning", w, h));
+					logger.warn("Current resolution({}x{}) is not compatible with current monitor, full-screen mode might be malfunctioning", w, h);
 					gdxDisplayMode = targetMonitor == null ? Lwjgl3ApplicationConfiguration.getDisplayMode() : Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
 				}
             } else {
@@ -243,8 +252,8 @@ public class MainLoader extends Application {
 				}
 
 				public void create() {
-                    Logger.getGlobal().info("Starting " + Version.versionLong);
-                    Logger.getGlobal().info ("[Build info] Build date: " + Version.getBuildDate() + ", Commit: " + Version.getGitCommitHash());
+					logger.info("Starting {}", Version.versionLong);
+					logger.info("[Build info] Build date: {}, Commit: {}", Version.getBuildDate(), Version.getGitCommitHash());
 					main.create();
 					if (displaymode == Config.DisplayMode.FULLSCREEN) {
 						Gdx.graphics.setFullscreenMode(finalGdxDisplayMode);
@@ -254,7 +263,7 @@ public class MainLoader extends Application {
 			//System.exit(0);
 		} catch (Throwable e) {
 			e.printStackTrace();
-			Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
+			logger.error("{} : {}", e.getClass().getName(), e.getMessage());
 		}
 		System.exit(0);
 	}
@@ -274,7 +283,7 @@ public class MainLoader extends Application {
 				Class.forName("org.sqlite.JDBC");
 				songdb = new SQLiteSongDatabaseAccessor(config.getSongpath(), config.getBmsroot());
 			} catch (ClassNotFoundException | PlayerConfigException e) {
-				Logger.getGlobal().severe("Failed to access score database: " + e.getLocalizedMessage());
+				logger.error("Failed to access score database: {}", e.getLocalizedMessage());
 			}
         }
 		return songdb;
@@ -339,10 +348,10 @@ public class MainLoader extends Application {
 				bmsinfo.exit();
 			});
 			primaryStage.show();
-//			Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
+//			logger.info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
 
 		} catch (IOException e) {
-			Logger.getGlobal().severe(e.getMessage());
+			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -388,7 +397,7 @@ public class MainLoader extends Application {
                     dlurl = "https://github.com/seraxis/lr2oraja-endlessdream/releases/tag/pre-release";
                 }
 			} catch (Exception e) {
-				Logger.getGlobal().warning("最新版URL取得時例外:" + e.getMessage());
+				logger.warn("最新版URL取得時例外:{}", e.getMessage());
 				message = "バージョン情報を取得できませんでした";
 			}
 		}

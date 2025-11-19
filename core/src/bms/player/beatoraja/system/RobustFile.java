@@ -12,9 +12,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.text.ParseException;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RobustFile {
+    private static final Logger logger = LoggerFactory.getLogger(RobustFile.class);
     // an interface for supplying a parsing function to the load methods
     // this function is expected to throw ParseException on any
     // encountered issues to trigger an attempt to restore from a backup
@@ -41,13 +43,13 @@ public class RobustFile {
         }
         catch (IOException e) {
             // could not read the original file - try the backup
-            Logger.getGlobal().severe(e.getMessage());
+            logger.error(e.getMessage());
             return loadBackup(file, parser);
         }
         catch (ParseException e) {
             // the read reported no errors but, for some reason, parsing the received
             // data failed (possible corruption) - log the problem, then restore from backup
-            Logger.getGlobal().severe(e.getMessage());
+            logger.error(e.getMessage());
             return loadBackup(file, parser);
         }
     }
@@ -70,7 +72,7 @@ public class RobustFile {
                                   e);
         }
         catch (ParseException e) {
-            Logger.getGlobal().severe(e.getMessage());
+            logger.error(e.getMessage());
             throw new IOException("File load failed.\nPath: " + original + "\nReason: " +
                                       e.getClass().getSimpleName() + "\n" + e.getMessage(),
                                   e);
@@ -101,8 +103,7 @@ public class RobustFile {
             Files.move(temporaryPath(file), file, REPLACE_EXISTING, ATOMIC_MOVE);
         }
         catch (AtomicMoveNotSupportedException e) {
-            Logger.getGlobal().warning("RobustFile.write: Could not perform an atomic move to " +
-                                       file);
+			logger.warn("RobustFile.write: Could not perform an atomic move to {}", file);
             Files.move(temporaryPath(file), file, REPLACE_EXISTING);
         }
 

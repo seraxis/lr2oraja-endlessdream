@@ -6,7 +6,8 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.*;
@@ -24,6 +25,7 @@ import bms.player.beatoraja.skin.lua.SkinLuaAccessor;
  * @author exch
  */
 public class JSONSkinLoader extends SkinLoader {
+	private static final Logger logger = LoggerFactory.getLogger(JSONSkinLoader.class);
 
 	protected Resolution dstr;
 	protected boolean usecim;
@@ -96,14 +98,14 @@ public class JSONSkinLoader extends SkinLoader {
                 sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
             }
 			catch (Exception e) {
-                Logger.getGlobal().warning("Error parsing json, retrying with Shift JIS: " + p);
+				logger.warn("Error parsing json, retrying with Shift JIS: {}", p);
                 var stream = new InputStreamReader(new FileInputStream(p.toFile()),
                                                    Charset.forName("Shift_JIS"));
                 sk = json.fromJson(JsonSkin.Skin.class, stream);
             }
             header = loadJsonSkinHeader(sk, p);
 		} catch (FileNotFoundException e) {
-			Logger.getGlobal().severe("JSONスキンファイルが見つかりません : " + p.toString());
+			logger.error("JSONスキンファイルが見つかりません : {}", p.toString());
 		}
 		return header;
 	}
@@ -249,7 +251,7 @@ public class JSONSkinLoader extends SkinLoader {
                 sk = json.fromJson(JsonSkin.Skin.class, new FileReader(p.toFile()));
             }
             catch (Exception e) {
-                Logger.getGlobal().warning("Error parsing json, retrying with Shift JIS: " + p);
+				logger.warn("Error parsing json, retrying with Shift JIS: {}", p);
                 var stream = new InputStreamReader(new FileInputStream(p.toFile()),
                                                    Charset.forName("Shift_JIS"));
                 sk = json.fromJson(JsonSkin.Skin.class, stream);
@@ -257,9 +259,9 @@ public class JSONSkinLoader extends SkinLoader {
 
             skin = loadJsonSkin(header, sk, type, property, p);
 		} catch (FileNotFoundException e) {
-			Logger.getGlobal().severe("JSONスキンファイルが見つかりません : " + p.toString());
+			logger.error("JSONスキンファイルが見つかりません : {}", p.toString());
 		} catch (Throwable e) {
-			Logger.getGlobal().severe("何らかの原因でJSONスキンファイルの読み込みに失敗しました");
+			logger.error("何らかの原因でJSONスキンファイルの読み込みに失敗しました");
 			e.printStackTrace();
 		}
 		return skin;
@@ -497,8 +499,8 @@ public class JSONSkinLoader extends SkinLoader {
 					 	isMovie = true;
 					 	break;
 					 } catch (Throwable e) {
-						Logger.getGlobal().warning("BGAファイル読み込み失敗。" + e.getMessage());
-					 	e.printStackTrace();
+						 logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
+						 e.printStackTrace();
 					 }
 				 }
 			 }

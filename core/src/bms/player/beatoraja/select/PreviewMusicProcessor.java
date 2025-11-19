@@ -5,7 +5,8 @@ import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.Config.SongPreview;
@@ -18,6 +19,7 @@ import bms.player.beatoraja.song.SongData;
  * @author exch
  */
 public class PreviewMusicProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(PreviewMusicProcessor.class);
     /**
      * 音源読み込みタスク
      */
@@ -54,7 +56,7 @@ public class PreviewMusicProcessor {
             try {
                 previewPath = Paths.get(song.getPath()).getParent().resolve(song.getPreview()).toString();
             } catch (InvalidPathException e) {
-                Logger.getGlobal().warning(e.getMessage());
+                logger.warn(e.getMessage());
             }
         }
         commands.add(previewPath);

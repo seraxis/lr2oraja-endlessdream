@@ -8,7 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.utils.*;
 
@@ -21,6 +22,7 @@ import com.badlogic.gdx.utils.*;
  *            音源データ
  */
 public abstract class AbstractAudioDriver<T> implements AudioDriver {
+	private static final Logger logger = LoggerFactory.getLogger(AbstractAudioDriver.class);
 
 	/**
 	 * 効果音マップ
@@ -180,7 +182,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 				sound = sound.audio != null ? sound : null;
 				soundmap.put(p, sound);
 			} catch (Exception e) {
-				Logger.getGlobal().warning("音源読み込み失敗。" + e.getMessage());
+				logger.warn("音源読み込み失敗。{}", e.getMessage());
 			}
 		}		
 		return sound;
@@ -242,7 +244,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 	 * @param model
 	 */
 	public synchronized void setModel(BMSModel model) {
-		Logger.getGlobal().info("音源ファイル読み込み開始。");
+		logger.info("音源ファイル読み込み開始。");
 		String[] wavlist = model.getWavList();
 		final int wavcount = wavlist.length;
 		boolean use_defaultsound = false;
@@ -340,12 +342,12 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 					}
 				}
 			} catch (InvalidPathException e) {
-				Logger.getGlobal().warning(e.getMessage());
+				logger.warn(e.getMessage());
 			}
 			progress.incrementAndGet();
 		});
 
-		Logger.getGlobal().info("音源ファイル読み込み完了。音源数:" + wavmap.length);
+		logger.info("音源ファイル読み込み完了。音源数:{}", wavmap.length);
 		for (int i = 0; i < wavmap.length; i++) {
 			if (slicesound[i] != null) {
 				this.slicesound[i] = slicesound[i].toArray(SliceWav.class);
@@ -356,7 +358,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 
 		final int prevsize = cache.size();
 		cache.disposeOld();
-		Logger.getGlobal().info("AudioCache容量 : " + cache.size() + " 開放 : " + (prevsize - cache.size()));
+		logger.info("AudioCache容量 : {} 開放 : {}", cache.size(), prevsize - cache.size());
 
 		progress.set(noteMapSize);
 	}
@@ -611,7 +613,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
                     // " start:" + note.getStarttime() +
                     // " duration:" + note.getDuration());
                 } catch (Throwable e) {
-                    Logger.getGlobal().warning("音源(wav)ファイルスライシング失敗。" + e.getMessage());
+					logger.warn("音源(wav)ファイルスライシング失敗。{}", e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -621,14 +623,14 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 
 		@Override
 		protected T load(AudioKey key) {
-		    Logger.getGlobal().fine("音源ファイルを読み込む中：" + key.path);
+			logger.trace("音源ファイルを読み込む中：{}", key.path);
 
 		    T sound = key.start == 0 && key.duration == 0
                     ? getKeySound(Paths.get(key.path)) // 音切りなしのケース
                     : loadSlice(key);
 
 		    if (sound == null) {
-                Logger.getGlobal().warning("音源ファイル読み込み失敗：" + key.path);
+				logger.warn("音源ファイル読み込み失敗：{}", key.path);
             }
 			return sound;
 		}

@@ -149,7 +149,7 @@ public class ShortPCM extends PCM<short[]> {
 			}
 		}
 //		if(length != orglength) {
-//			Logger.getGlobal().info("終端の無音データ除外 - " + (orglength - length) + " samples");
+//			logger.info("終端の無音データ除外 - " + (orglength - length) + " samples");
 //		}
 		return length > 0 ? new ShortPCM(channels, sampleRate, this.start + start, length, this.sample) : null;
 	}

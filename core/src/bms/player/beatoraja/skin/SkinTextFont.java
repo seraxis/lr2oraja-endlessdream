@@ -3,7 +3,8 @@ package bms.player.beatoraja.skin;
 import bms.player.beatoraja.skin.property.StringProperty;
 import bms.player.beatoraja.skin.property.StringPropertyFactory;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -22,6 +23,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author exch
  */
 public class SkinTextFont extends SkinText {
+	private static final Logger logger = LoggerFactory.getLogger(SkinTextFont.class);
 
     /**
      * ビットマップフォント
@@ -48,7 +50,7 @@ public class SkinTextFont extends SkinText {
             parameter.size = size;
             setShadowOffset(new Vector2(shadow, shadow));    		
     	} catch (GdxRuntimeException e) {
-    		Logger.getGlobal().warning("Skin Font読み込み失敗");
+    		logger.warn("Skin Font読み込み失敗");
     	}
     }
     
@@ -71,7 +73,7 @@ public class SkinTextFont extends SkinText {
             layout = new GlyphLayout(font, "");
             preparedFonts = text;
         } catch (GdxRuntimeException e) {
-    		Logger.getGlobal().warning("Font準備失敗 : " + text + " - " + e.getMessage());
+			logger.warn("Font準備失敗 : {} - {}", text, e.getMessage());
     	}
     }    
 
@@ -90,7 +92,7 @@ public class SkinTextFont extends SkinText {
             font = generator.generateFont(parameter);
             layout = new GlyphLayout(font, "");        	
     	} catch (GdxRuntimeException e) {
-    		Logger.getGlobal().warning("Font準備失敗 : " + text + " - " + e.getMessage());
+			logger.warn("Font準備失敗 : {} - {}", text, e.getMessage());
     	}
 	}
 	

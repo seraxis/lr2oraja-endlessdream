@@ -3,7 +3,8 @@ package bms.player.beatoraja.stream;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.MessageRenderer;
 import bms.player.beatoraja.select.MusicSelector;
@@ -14,6 +15,7 @@ import bms.player.beatoraja.stream.command.StreamRequestCommand;
  * beatoraja パイプで受け取った文字列処理
  */
 public class StreamController {
+    private static final Logger logger = LoggerFactory.getLogger(StreamController.class);
     StreamCommand[] commands;
     BufferedReader pipeBuffer;
     Thread polling;
@@ -45,7 +47,7 @@ public class StreamController {
                         if (line == null) {
                             break;
                         }
-                        Logger.getGlobal().info("受信:" + line);
+						logger.info("受信:{}", line);
                         execute(line);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -83,7 +85,7 @@ public class StreamController {
         for(int i = 0; i < commands.length; i++) {
             commands[i].dispose();
         }
-        Logger.getGlobal().info("パイプリソース破棄完了");
+        logger.info("パイプリソース破棄完了");
     }
 
     private void execute(String line) {

@@ -4,7 +4,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 
 import bms.player.beatoraja.system.RobustFile;
@@ -28,6 +29,7 @@ import com.badlogic.gdx.utils.SerializationException;
  * @author exch
  */
 public final class PlayerConfig {
+	private static final Logger logger = LoggerFactory.getLogger(PlayerConfig.class);
 
 	/**
 	 * 旧コンフィグパス。そのうち削除
@@ -443,7 +445,7 @@ public final class PlayerConfig {
 	public PlayModeConfig getMode10() {
 		if(mode10 == null || mode10.getController().length < 2) {
 			mode10 = new PlayModeConfig(Mode.BEAT_10K);
-			Logger.getGlobal().warning("mode10のPlayConfigを再構成");
+			logger.warn("mode10のPlayConfigを再構成");
 		}
 		return mode10;
 	}
@@ -455,7 +457,7 @@ public final class PlayerConfig {
 	public PlayModeConfig getMode14() {
 		if(mode14 == null || mode14.getController().length < 2) {
 			mode14 = new PlayModeConfig(Mode.BEAT_14K);
-			Logger.getGlobal().warning("mode14のPlayConfigを再構成");
+			logger.warn("mode14のPlayConfigを再構成");
 		}
 		return mode14;
 	}
@@ -483,7 +485,7 @@ public final class PlayerConfig {
 	public PlayModeConfig getMode24double() {
 		if(mode24double == null || mode24double.getController().length < 2) {
 			mode24double = new PlayModeConfig(Mode.KEYBOARD_24K_DOUBLE);
-			Logger.getGlobal().warning("mode24doubleのPlayConfigを再構成");
+			logger.warn("mode24doubleのPlayConfigを再構成");
 		}
 		return mode24double;
 	}
@@ -528,7 +530,7 @@ public final class PlayerConfig {
 	public SkinConfig[] getSkin() {
 		if(skin.length <= SkinType.getMaxSkinTypeID()) {
 			skin = Arrays.copyOf(skin, SkinType.getMaxSkinTypeID() + 1);
-			Logger.getGlobal().warning("skinを再構成");
+			logger.warn("skinを再構成");
 		}
 		return skin;
 	}
@@ -925,7 +927,7 @@ public final class PlayerConfig {
                 try {
                     Files.copy(parentPlayerScoreDBPath, Paths.get(config.getPlayerpath() + "/player1/score.db"));
                 } catch (IOException e) {
-					Logger.getGlobal().severe(String.format("Failed to copy playerscore.db to %s: %s", config.getPlayerpath(), e.getLocalizedMessage()));
+					logger.error("Failed to copy playerscore.db to {}: {}", config.getPlayerpath(), e.getLocalizedMessage());
                 }
             }
 
@@ -942,7 +944,7 @@ public final class PlayerConfig {
         try {
             Files.createDirectory(path);
         } catch (IOException e) {
-            Logger.getGlobal().severe(String.format("Failed to create directory at %s: %s", path, e.getLocalizedMessage()));
+            logger.error("Failed to create directory at {}: {}", path, e.getLocalizedMessage());
         }
     }
 
@@ -961,7 +963,7 @@ public final class PlayerConfig {
 				Files.copy(p, player1ReplayDir.resolve(p.getFileName()));
 			}
 		} catch(Throwable e) {
-			Logger.getGlobal().warning("Error while copying replays: " + e.getLocalizedMessage());
+			logger.warn("Error while copying replays: {}", e.getLocalizedMessage());
 		}
 	}
 
@@ -1059,9 +1061,9 @@ public final class PlayerConfig {
 		try {
 			Path configBackupPath = Paths.get(playerpath + "/" + playerid + "/config_backup.json");
 			Files.copy(path, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
-			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+			logger.info("Backup config written to {}", configBackupPath);
 		} catch (IOException e) {
-			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+			logger.error("Failed to write backup config file: {}", e.getLocalizedMessage());
 		}
 	}
 

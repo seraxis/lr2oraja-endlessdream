@@ -34,12 +34,14 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
 public class ScreenShotFileExporter implements ScreenShotExporter {
+    private static final Logger logger = LoggerFactory.getLogger(ScreenShotFileExporter.class);
 
     @Override
     public boolean send(MainState currentState, byte[] pixels) {
@@ -87,7 +89,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
             String path = "screenshot/" + sdf.format(Calendar.getInstance().getTime()) + stateName + ".png";
             BufferUtils.copy(pixels, 0, pixmap.getPixels(), pixels.length);
             PixmapIO.writePNG(new FileHandle(path), pixmap);
-            Logger.getGlobal().info("スクリーンショット保存:" + path);
+            logger.info("スクリーンショット保存:" + path);
             pixmap.dispose();
             ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);
 
@@ -121,7 +123,7 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             ImageTransferable imageTransferable = new ImageTransferable(output);
             clipboard.setContents(imageTransferable, null);
-            Logger.getGlobal().info("スクリーンショット保存: Clipboard");
+            logger.info("スクリーンショット保存: Clipboard");
             ImGuiNotify.info("Screen shot saved : Clipboard", 2000);
         } catch (Exception e) {
             e.printStackTrace();

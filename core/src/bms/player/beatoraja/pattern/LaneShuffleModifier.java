@@ -6,7 +6,8 @@ import java.util.*;
 
 import bms.player.beatoraja.modmenu.RandomTrainer;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 
 import com.badlogic.gdx.utils.IntArray;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.utils.IntArray;
  * @author exch
  */
 public abstract class LaneShuffleModifier extends PatternModifier {
+	private static final Logger logger = LoggerFactory.getLogger(LaneShuffleModifier.class);
 
 	/**
 	 * 各レーンの移動先
@@ -305,7 +307,7 @@ public abstract class LaneShuffleModifier extends PatternModifier {
 				kouhoPatternList = searchForNoMurioshiLaneCombinations(originalPatternList, keys);
 			}
 
-			Logger.getGlobal().info("無理押し無し譜面数 : "+(kouhoPatternList.size()));
+			logger.info("無理押し無し譜面数 : {}", kouhoPatternList.size());
 
 			int[] result = new int[9];
 			if (kouhoPatternList.size() > 0) {

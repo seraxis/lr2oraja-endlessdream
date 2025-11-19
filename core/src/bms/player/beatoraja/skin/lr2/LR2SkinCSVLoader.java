@@ -5,7 +5,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
@@ -34,6 +35,7 @@ import com.badlogic.gdx.utils.ObjectMap;
  * @author exch
  */
 public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
+	private static final Logger logger = LoggerFactory.getLogger(LR2SkinCSVLoader.class);
 
 	Array<Object> imagelist = new Array<Object>();
 	Array<SkinTextImage.SkinTextImageSource> fontlist = new Array<SkinTextImage.SkinTextImageSource>();
@@ -99,7 +101,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 								isMovie = true;
 								break;
 							} catch (Throwable e) {
-								Logger.getGlobal().warning("BGAファイル読み込み失敗。" + e.getMessage());
+								logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
 								e.printStackTrace();
 							}
 						}
@@ -109,8 +111,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						imagelist.add(getTexture(imagefile.getPath(), usecim));
 					}
 				} else {
-					Logger.getGlobal()
-							.warning("IMAGE " + imagelist.size + " : ファイルが見つかりません : " + imagefile.getPath());
+					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
 					imagelist.add(null);
 				}
 				// System.out
@@ -134,8 +135,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					}
 
 				} else {
-					Logger.getGlobal()
-							.warning("IMAGE " + imagelist.size + " : ファイルが見つかりません : " + imagefile.getPath());
+					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
 					fontlist.add(null);
 				}
 				// System.out
@@ -781,7 +781,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 		for (SkinObject obj : skin.getAllSkinObjects()) {
 			if (obj instanceof SkinImage && obj.getAllDestination().length == 0) {
 				skin.removeSkinObject(obj);
-				Logger.getGlobal().warning("NO_DESTINATION : " + obj);
+				logger.warn("NO_DESTINATION : {}", obj);
 			}
 		}
 	}
@@ -822,7 +822,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			return getSourceImage((Texture) imagelist.get(values[2]), values[3], values[4], values[5], values[6],
 					values[7], values[8]);
 		}
-		Logger.getGlobal().warning("IMAGEが定義されてないか、読み込みに失敗しています : " + line);
+		logger.warn("IMAGEが定義されてないか、読み込みに失敗しています : {}", line);
 		return null;
 	}
 

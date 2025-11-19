@@ -4,7 +4,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+
+import bms.player.beatoraja.config.SkinConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.utils.Json;
@@ -18,6 +21,7 @@ import bms.player.beatoraja.TableData.TableFolder;
  * @author exch
  */
 public class BMSSearchAccessor extends TableDataAccessor.TableAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(BMSSearchAccessor.class);
 	private static String API_STRING = "https://api.bmssearch.net/v1/bmses/search?orderBy=PUBLISHED&orderDirection=DESC&limit=20";
 
 	private String tabledir;
@@ -69,9 +73,9 @@ public class BMSSearchAccessor extends TableDataAccessor.TableAccessor {
 			tdenew.setSong(songs.toArray(new SongData[songs.size()]));
 			td.setFolder(new TableFolder[] { tdenew });
 			td.setName("BMS Search");
-			Logger.getGlobal().info("BMS Search取得完了");
+			logger.info("BMS Search取得完了");
 		} catch (Throwable e) {
-			Logger.getGlobal().severe("BMS Search更新中の例外:" + e.getMessage());
+			logger.error("BMS Search更新中の例外:{}", e.getMessage());
 		}
 		return td;
 	}

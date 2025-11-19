@@ -2,7 +2,8 @@ package bms.player.beatoraja;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -17,6 +18,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
  * @author omi
  */
 public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(ScoreDataLogDatabaseAccessor.class);
 
 	private SQLiteDataSource ds;
 	private final ResultSetHandler<List<ScoreData>> scoreHandler = new BeanListHandler<ScoreData>(ScoreData.class);
@@ -84,7 +86,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			}
 			con.commit();
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア更新時の例外:" + e.getMessage());
+			logger.error("スコア更新時の例外:" + e.getMessage());
 		}
 	}
 }

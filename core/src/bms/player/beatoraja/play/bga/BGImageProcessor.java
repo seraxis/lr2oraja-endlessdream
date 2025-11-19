@@ -2,7 +2,8 @@ package bms.player.beatoraja.play.bga;
 
 import java.nio.file.Path;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.model.TimeLine;
 import bms.player.beatoraja.PixmapResourcePool;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.graphics.Texture;
  * @author exch
  */
 public class BGImageProcessor {
+	private static final Logger logger = LoggerFactory.getLogger(BGImageProcessor.class);
 	
 	public static final String[] pic_extension = { "jpg", "jpeg", "gif", "bmp", "png", "tga" };
 	/**
@@ -96,8 +98,7 @@ public class BGImageProcessor {
 				count++;
 			}
 		}
-		Logger.getGlobal().info(
-				"BGAデータの事前Texture化 - BGAデータ数:" + count + " time(ms):" + (System.currentTimeMillis() - l));
+		logger.info("BGAデータの事前Texture化 - BGAデータ数:{} time(ms):{}", count, System.currentTimeMillis() - l);
 	}
 
 	public Texture getTexture(int id) {

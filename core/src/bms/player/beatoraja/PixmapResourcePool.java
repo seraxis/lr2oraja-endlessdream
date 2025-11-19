@@ -2,7 +2,8 @@ package bms.player.beatoraja;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 
@@ -16,6 +17,7 @@ import com.badlogic.gdx.graphics.PixmapIO;
  * @author exch
  */
 public class PixmapResourcePool extends ResourcePool<String, Pixmap> {
+	private static Logger logger = LoggerFactory.getLogger(PixmapResourcePool.class);
 
 	public PixmapResourcePool() {
 		super(1);
@@ -65,10 +67,10 @@ public class PixmapResourcePool extends ResourcePool<String, Pixmap> {
 				tex = new Pixmap(Gdx.files.internal(path));				
 			}
 		} catch (Throwable e) {
-			Logger.getGlobal().warning("BGAファイル読み込み失敗。" + e.getMessage());
+			logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
 		}
 		if (tex == null) {
-			Logger.getGlobal().warning("BGAファイル読み込み再試行:" + path);
+			logger.warn("BGAファイル読み込み再試行:{}", path);
 			try {
 				// TODO 一部のbmsはImageIO.readで失敗する(e.g. past glow)。別の画像デコーダーが必要
 				BufferedImage bi = ImageIO.read(f);
@@ -80,7 +82,7 @@ public class PixmapResourcePool extends ResourcePool<String, Pixmap> {
 					}
 				}
 			} catch (Throwable e) {
-				Logger.getGlobal().warning("BGAファイル読み込み失敗。" + e.getMessage());
+				logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
 				e.printStackTrace();
 			}
 		}

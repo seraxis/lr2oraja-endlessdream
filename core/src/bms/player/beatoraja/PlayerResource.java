@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
 
 /**
@@ -28,6 +29,7 @@ import java.util.concurrent.Future;
  * @author exch
  */
 public final class PlayerResource {
+	private static final Logger logger = LoggerFactory.getLogger(PlayerResource.class);
 	
 	/**
 	 * 選曲中のBMS
@@ -169,7 +171,7 @@ public final class PlayerResource {
 		replay = new ReplayData();
 		model = loadBMSModel(f, pconfig.getLnmode());
 		if (model == null) {
-			Logger.getGlobal().warning("楽曲が存在しないか、解析時にエラーが発生しました:" + f.toString());
+			logger.warn("楽曲が存在しないか、解析時にエラーが発生しました:{}", f.toString());
 			return false;
 		}
 		if (model.getAllTimeLines().length == 0) {

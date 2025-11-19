@@ -5,7 +5,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.input.KeyCommand;
 import com.badlogic.gdx.utils.FloatArray;
@@ -25,6 +26,7 @@ import bms.player.beatoraja.skin.property.EventFactory.EventType;
  * @author exch
  */
 public class CourseResult extends AbstractResult {
+	private static final Logger logger = LoggerFactory.getLogger(CourseResult.class);
 
 	private List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
@@ -128,7 +130,7 @@ public class CourseResult extends AbstractResult {
 							removeIrSendStatus.add(irc);
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("IR送信時の例外:" + e.getMessage());
+						logger.warn("IR送信時の例外:{}", e.getMessage());
 						e.printStackTrace();
 						// remove from queue
 						removeIrSendStatus.add(irc);
@@ -143,12 +145,12 @@ public class CourseResult extends AbstractResult {
 						if (response.isSucceeded()) {
 							ranking.updateScore(response.getData(), newscore.getExscore() > oldscore.getExscore() ? newscore : oldscore);
 							rankingOffset = ranking.getRank() > 10 ? ranking.getRank() - 5 : 0;
-							Logger.getGlobal().info("IRからのスコア取得成功 : " + response.getMessage());
+							logger.info("IRからのスコア取得成功 : {}", response.getMessage());
 						} else {
-							Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
+							logger.warn("IRからのスコア取得失敗 : {}", response.getMessage());
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("IRからのスコア取得時例外:" + e.getMessage());
+						logger.warn("IRからのスコア取得時例外:{}", e.getMessage());
 						e.printStackTrace();
 					}
 				}
@@ -274,7 +276,7 @@ public class CourseResult extends AbstractResult {
 				random, resource.getConstraint(), resource.isUpdateCourseScore());
 
 
-		Logger.getGlobal().info("スコアデータベース更新完了 ");
+		logger.info("スコアデータベース更新完了 ");
 	}
 
 	public int getJudgeCount(int judge, boolean fast) {
@@ -338,14 +340,14 @@ public class CourseResult extends AbstractResult {
 		}
 		
 		public boolean send() {
-			Logger.getGlobal().info("IRへスコア送信中 : " + course.getName());
+			logger.info("IRへスコア送信中 : {}", course.getName());
             IRResponse<Object> send1 = ir.sendCoursePlayData(new IRCourseData(course, lnmode), new bms.player.beatoraja.ir.IRScoreData(score));
             if(send1.isSucceeded()) {
-                Logger.getGlobal().info("IRスコア送信完了 : " + course.getName());
+				logger.info("IRスコア送信完了 : {}", course.getName());
                 retry = -255;
                 return true;
             } else {
-                Logger.getGlobal().warning("IRスコア送信失敗 : " + send1.getMessage());
+				logger.warn("IRスコア送信失敗 : {}", send1.getMessage());
                 retry++;
                 return false;
             }

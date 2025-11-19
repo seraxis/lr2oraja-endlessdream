@@ -10,7 +10,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.audio.BMSLoudnessAnalyzer;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
@@ -36,6 +37,7 @@ import bms.player.beatoraja.skin.SkinType;
  * @author exch
  */
 public class BMSPlayer extends MainState {
+	private static final Logger logger = LoggerFactory.getLogger(BMSPlayer.class);
 
 	private BMSModel model;
 
@@ -158,7 +160,7 @@ public class BMSPlayer extends MainState {
 						}
 						replay = replays[0];
 					} else {
-						Logger.getGlobal().info("リプレイデータを読み込めなかったため、通常プレイモードに移行");
+						logger.info("リプレイデータを読み込めなかったため、通常プレイモードに移行");
 						autoplay = BMSPlayerMode.PLAY;
 						resource.setPlayMode(autoplay);
 					}
@@ -177,7 +179,7 @@ public class BMSPlayer extends MainState {
 					boolean isReplayPatternPlay = false;
 					if(main.getInputProcessor().getKeyState(1)) {
 						//保存された譜面オプション/Random Seedから譜面再現
-						Logger.getGlobal().info("リプレイ再現モード : 譜面");
+						logger.info("リプレイ再現モード : 譜面");
 						playinfo.randomoption = replay.randomoption;
 						playinfo.randomoptionseed = replay.randomoptionseed;
 						playinfo.randomoption2 = replay.randomoption2;
@@ -187,7 +189,7 @@ public class BMSPlayer extends MainState {
 						isReplayPatternPlay = true;
 					} else if(main.getInputProcessor().getKeyState(2)) {
 						//保存された譜面オプションログから譜面オプション再現
-						Logger.getGlobal().info("リプレイ再現モード : オプション");
+						logger.info("リプレイ再現モード : オプション");
 						playinfo.randomoption = replay.randomoption;
 						playinfo.randomoption2 = replay.randomoption2;
 						playinfo.doubleoption = replay.doubleoption;
@@ -195,7 +197,7 @@ public class BMSPlayer extends MainState {
 					}
 					if(main.getInputProcessor().getKeyState(4)) {
 						//保存されたHSオプションログからHSオプション再現
-						Logger.getGlobal().info("リプレイ再現モード : ハイスピード");
+						logger.info("リプレイ再現モード : ハイスピード");
 						HSReplay = replay;
 						isReplayPatternPlay = true;
 					}
@@ -205,7 +207,7 @@ public class BMSPlayer extends MainState {
 						resource.setPlayMode(autoplay);
 					}
 				} else {
-					Logger.getGlobal().info("リプレイデータを読み込めなかったため、通常プレイモードに移行");
+					logger.info("リプレイデータを読み込めなかったため、通常プレイモードに移行");
 					autoplay = BMSPlayerMode.PLAY;
 					resource.setPlayMode(autoplay);
 				}
@@ -236,7 +238,7 @@ public class BMSPlayer extends MainState {
 				BMSPlayerRule.validate(model);
 			}
 			playinfo.rand = model.getRandom();
-			Logger.getGlobal().info("譜面分岐 : " + Arrays.toString(playinfo.rand));
+			logger.info("譜面分岐 : {}", Arrays.toString(playinfo.rand));
 		}
 		// 通常プレイの場合は最後のノーツ、オートプレイの場合はBG/BGAを含めた最後のノーツ
 		playtime = (autoplay.mode == BMSPlayerMode.Mode.AUTOPLAY ? model.getLastTime() : model.getLastNoteTime()) + TIME_MARGIN;
@@ -283,7 +285,7 @@ public class BMSPlayer extends MainState {
 				// the window rate to it and directly mark the model as BMSON type (see BMSPlayerRule::validate)
 				int overridingJudgeWindowRate = JudgeTrainer.getJudgeWindowRate(model.getMode());
 				int originalJudgeWindowRate = model.getJudgerank();
-				Logger.getGlobal().info(String.format("Overriding original judge window from %d to %d", originalJudgeWindowRate, overridingJudgeWindowRate));
+				logger.info("Overriding original judge window from {} to {}", originalJudgeWindowRate, overridingJudgeWindowRate);
 				if (originalJudgeWindowRate < overridingJudgeWindowRate) {
 					// Like expand judge treatment above if the original judge window is stricter than customized one
 					assist = Math.max(assist, 2);
@@ -341,7 +343,7 @@ public class BMSPlayer extends MainState {
 					}
 					assist = Math.max(assist, 1);
 					score = false;
-					Logger.getGlobal().info("譜面オプション : BATTLE (L-ASSIST)");
+					logger.info("譜面オプション : BATTLE (L-ASSIST)");
 				} else {
 					// SPでなければBATTLEは未適用
 					playinfo.doubleoption = 0;
@@ -349,24 +351,24 @@ public class BMSPlayer extends MainState {
 			}
 		}
 
-		Logger.getGlobal().info("譜面オプション設定");
+		logger.info("譜面オプション設定");
 		if (replay != null && replay.pattern != null) {
 			// リプレイ譜面再現(PatternModifyLog使用。旧verとの互換性維持用)
 			if(replay.sevenToNinePattern > 0 && model.getMode() == Mode.BEAT_7K) {
 				model.setMode(Mode.POPN_9K);
 			}
 			PatternModifier.modify(model, Arrays.asList(replay.pattern));
-			Logger.getGlobal().info("リプレイデータから譜面再現 : PatternModifyLog");
+			logger.info("リプレイデータから譜面再現 : PatternModifyLog");
 		} else if (autoplay.mode != BMSPlayerMode.Mode.PRACTICE) {
 
 			// リプレイデータからのoption/seed再現
 			ReplayData rd = null;
 			if(replay != null) {
 				rd = replay;
-				Logger.getGlobal().info("リプレイデータから譜面再現 : option/seed");
+				logger.info("リプレイデータから譜面再現 : option/seed");
 			} else if(resource.getReplayData().randomoptionseed != -1) {
 				rd = resource.getReplayData();
-				Logger.getGlobal().info("前回プレイ時の譜面再現");
+				logger.info("前回プレイ時の譜面再現");
 			}
 			if (rd != null) {
 				if(rd.sevenToNinePattern > 0 && model.getMode() == Mode.BEAT_7K) {
@@ -385,7 +387,7 @@ public class BMSPlayer extends MainState {
 				if (playinfo.doubleoption == 1) {
 					mods.add(new PlayerFlipModifier());
 				}
-				Logger.getGlobal().info("譜面オプション(DP) :  " + playinfo.doubleoption);
+				logger.info("譜面オプション(DP) :  {}", playinfo.doubleoption);
 
 				PatternModifier pm = PatternModifier.create(playinfo.randomoption2, 1, model.getMode(), config);
 				if(playinfo.randomoption2seed != -1) {
@@ -394,7 +396,7 @@ public class BMSPlayer extends MainState {
 					playinfo.randomoption2seed = pm.getSeed();
 				}
 				mods.add(pm);
-				Logger.getGlobal().info("譜面オプション(2P) :  " + playinfo.randomoption2 + ", Seed : " + playinfo.randomoption2seed);
+				logger.info("譜面オプション(2P) :  {}, Seed : {}", playinfo.randomoption2, playinfo.randomoption2seed);
 			}
 
 			// SP譜面オプション
@@ -405,18 +407,18 @@ public class BMSPlayer extends MainState {
                 if (ghostBattle.isPresent()) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
                     Integer pattern = ghostBattle.get().lanes();
-					Logger.getGlobal().info("Ghost battle - fixing lane pattern to " + pattern);
+					logger.info("Ghost battle - fixing lane pattern to {}", pattern);
 					pm.setSeed(seedmap.get(pattern));
                 }
                 else if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
 					HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
-					Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+					logger.info("RandomTrainer: Enabled, modifying random seed");
 					pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
 				}
 				playinfo.randomoptionseed = pm.getSeed();
 			}
 			mods.add(pm);
-			Logger.getGlobal().info("譜面オプション(1P) :  " + playinfo.randomoption + ", Seed : " + playinfo.randomoptionseed);
+			logger.info("譜面オプション(1P) :  {}, Seed : {}", playinfo.randomoption, playinfo.randomoptionseed);
 
 			if (config.getSevenToNinePattern() >= 1 && model.getMode() == Mode.BEAT_7K) {
 				//7to9
@@ -429,7 +431,7 @@ public class BMSPlayer extends MainState {
 			for(PatternModifier mod : mods) {
 				mod.modify(model);
 				if(mod.getAssistLevel() != PatternModifier.AssistLevel.NONE) {
-					Logger.getGlobal().info("アシスト譜面オプションが選択されました");
+					logger.info("アシスト譜面オプションが選択されました");
 					assist = Math.max(assist, mod.getAssistLevel() == PatternModifier.AssistLevel.ASSIST ? 2 : 1);
 					score = false;
 				}
@@ -450,7 +452,7 @@ public class BMSPlayer extends MainState {
 			config.getPlayConfig(model.getMode()).setPlayconfig(HSReplay.config);
 		}
 
-		Logger.getGlobal().info("ゲージ設定");
+		logger.info("ゲージ設定");
 		if(replay != null) {
 			for(int count = (main.getInputProcessor().getKeyState(5) ? 1 : 0) + (main.getInputProcessor().getKeyState(3) ? 2 : 0);count > 0; count--) {
 				if (replay.gauge != GrooveGauge.HAZARD || replay.gauge != GrooveGauge.EXHARDCLASS) {
@@ -477,7 +479,7 @@ public class BMSPlayer extends MainState {
 		if (forceNoIRSend) {
 			ImGuiNotify.error("Special mod options enabled. Next play will not be submitted to IR");
 		}
-		Logger.getGlobal().info("アシストレベル : " + assist + " - スコア保存 : " + score + " - no IR submit : " + forceNoIRSend);
+		logger.info("アシストレベル : {} - スコア保存 : {} - no IR submit : {}", assist, score, forceNoIRSend);
 
 		resource.setUpdateScore(score);
 		resource.setUpdateCourseScore(resource.isUpdateCourseScore() && score);
@@ -543,7 +545,7 @@ public class BMSPlayer extends MainState {
 		bga = resource.getBGAManager();
 
 		ScoreData score = main.getPlayDataAccessor().readScoreData(model, config.getLnmode());
-		Logger.getGlobal().info("スコアデータベースからスコア取得");
+		logger.info("スコアデータベースからスコア取得");
 		if (score == null) {
 			score = new ScoreData();
 		}
@@ -621,19 +623,19 @@ public class BMSPlayer extends MainState {
 								if (result.success) {
 									float configVolume = main.getConfig().getAudioConfig().getKeyvolume();
 									adjustedVolume = result.calculateAdjustedVolume(configVolume);
-									Logger.getGlobal().info(String.format("Volume set to %.2f (%.2f LUFS)",
-										adjustedVolume, result.loudnessLUFS));
+									logger.info("Volume set to {} ({} LUFS)",
+										adjustedVolume, result.loudnessLUFS);
 								} else {
-									Logger.getGlobal().warning("Analysis failed: " + result.errorMessage);
+									logger.warn("Analysis failed: {}", result.errorMessage);
 									ImGuiNotify.warning("Loudness analysis failed");
 								}
 							} catch (TimeoutException e) {
 								ImGuiNotify.warning("Chart volume analysis timed out");
-								Logger.getGlobal().warning("Loudness analysis timed out after 15 seconds");
+								logger.warn("Loudness analysis timed out after 15 seconds");
 								analysisTask.cancel(true);
 							} catch (Exception e) {
 								ImGuiNotify.warning("Failed to analyze chart volume");
-								Logger.getGlobal().warning("Loudness analysis error: " + e.getMessage());
+								logger.warn("Loudness analysis error: {}", e.getMessage());
 							}
 						}
 					}
@@ -642,12 +644,11 @@ public class BMSPlayer extends MainState {
 					final long mem = Runtime.getRuntime().freeMemory();
 					System.gc();
 					final long cmem = Runtime.getRuntime().freeMemory();
-					Logger.getGlobal().info("current free memory : " + (cmem / (1024 * 1024)) + "MB , disposed : "
-							+ ((cmem - mem) / (1024 * 1024)) + "MB");
+					logger.info("current free memory : {}MB , disposed : {}MB", cmem / (1024 * 1024), (cmem - mem) / (1024 * 1024));
 					state = STATE_READY;
 					timer.setTimerOn(TIMER_READY);
 					play(PLAY_READY);
-					Logger.getGlobal().info("STATE_READYに移行");
+					logger.info("STATE_READYに移行");
 				}
 				if(!timer.isTimerOn(TIMER_PM_CHARA_1P_NEUTRAL) || !timer.isTimerOn(TIMER_PM_CHARA_2P_NEUTRAL)){
 					timer.setTimerOn(TIMER_PM_CHARA_1P_NEUTRAL);
@@ -702,7 +703,7 @@ public class BMSPlayer extends MainState {
 					PatternModifier.create(property.random, 0, model.getMode(), config).modify(model);
                     if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
                         HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
-                        Logger.getGlobal().info("RandomTrainer: Enabled, modifying random seed");
+                        logger.info("RandomTrainer: Enabled, modifying random seed");
                         pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
                     }
                     pm.modify(model);
@@ -718,7 +719,7 @@ public class BMSPlayer extends MainState {
 					state = STATE_READY;
 					timer.setTimerOn(TIMER_READY);
 					play(PLAY_READY);
-					Logger.getGlobal().info("STATE_READYに移行");
+					logger.info("STATE_READYに移行");
 				}
 			}
 			// practice終了
@@ -741,7 +742,7 @@ public class BMSPlayer extends MainState {
 					input.setKeyLogMarginTime(resource.getMarginTime());
 					keyinput.startJudge(model, replay != null ? replay.keylog : null, resource.getMarginTime());
 					keysound.startBGPlay(model, starttimeoffset * 1000);
-					Logger.getGlobal().info("STATE_PLAYに移行");
+					logger.info("STATE_PLAYに移行");
 				}
 			}
 			// プレイ
@@ -773,7 +774,7 @@ public class BMSPlayer extends MainState {
 					}
 					timer.setTimerOff(TIMER_PM_CHARA_DANCE);
 
-					Logger.getGlobal().info("STATE_FINISHEDに移行");
+					logger.info("STATE_FINISHEDに移行");
 				} else if(playtime - TIME_MARGIN < ptime) {
 					timer.switchTimer(TIMER_ENDOFNOTE_1P, true);
 				}
@@ -800,7 +801,7 @@ public class BMSPlayer extends MainState {
 							main.getAudioProcessor().stop((Note) null);
 						}
 						play(PLAY_STOP);
-						Logger.getGlobal().info("STATE_FAILEDに移行");
+						logger.info("STATE_FAILEDに移行");
 						break;
 					case PlayerConfig.GAUGEAUTOSHIFT_CONTINUE:
 						break;
@@ -824,13 +825,13 @@ public class BMSPlayer extends MainState {
                     main.getAudioProcessor().setGlobalPitch(1f);
 					if (!resource.isUpdateScore()) {
 						resource.getReplayData().randomoptionseed = -1;
-						Logger.getGlobal().info("アシストモード時は同じ譜面でリプレイできません");
+						logger.info("アシストモード時は同じ譜面でリプレイできません");
 					} else if (input.startPressed()) {
 						resource.getReplayData().randomoptionseed = -1;
-						Logger.getGlobal().info("オプションを変更せずリプレイ");
+						logger.info("オプションを変更せずリプレイ");
 					} else {
 						resource.setScoreData(createScoreData());
-						Logger.getGlobal().info("同じ譜面でリプレイ");
+						logger.info("同じ譜面でリプレイ");
 					}
 					saveConfig();
 					resource.reloadBMSFile();
@@ -894,7 +895,7 @@ public class BMSPlayer extends MainState {
 					if (autoplay.mode == BMSPlayerMode.Mode.PRACTICE) {
 						state = STATE_PRACTICE;
 					} else if (resource.getScoreData() != null) {
-						Logger.getGlobal().info("\"score\": " + resource.getScoreData());
+						logger.info("\"score\": {}", resource.getScoreData());
 						main.changeState(MainStateType.RESULT);
 					} else {
 						if (resource.mediaLoadFinished()) {
@@ -916,13 +917,13 @@ public class BMSPlayer extends MainState {
 					main.getAudioProcessor().setGlobalPitch(1f);
 					if (!resource.isUpdateScore()) {
 						resource.getReplayData().randomoptionseed = -1;
-						Logger.getGlobal().info("アシストモード時は同じ譜面でリプレイできません");
+						logger.info("アシストモード時は同じ譜面でリプレイできません");
 					} else if (input.startPressed()) {
 						resource.getReplayData().randomoptionseed = -1;
-						Logger.getGlobal().info("オプションを変更せずリプレイ");
+						logger.info("オプションを変更せずリプレイ");
 					} else {
 						resource.setScoreData(createScoreData());
-						Logger.getGlobal().info("同じ譜面でリプレイ");
+						logger.info("同じ譜面でリプレイ");
 					}
 					saveConfig();
 					resource.reloadBMSFile();
@@ -1131,7 +1132,7 @@ public class BMSPlayer extends MainState {
 				|| resource.getPlayMode().mode == BMSPlayerMode.Mode.AUTOPLAY)) {
 			state = STATE_FINISHED;
 			timer.setTimerOn(TIMER_FADEOUT);
-			Logger.getGlobal().info("STATE_FINISHEDに移行");
+			logger.info("STATE_FINISHEDに移行");
 		} else if(state == STATE_FINISHED && !timer.isTimerOn(TIMER_FADEOUT)) {
 			timer.setTimerOn(TIMER_FADEOUT);
 		} else if(state != STATE_FINISHED) {
@@ -1142,7 +1143,7 @@ public class BMSPlayer extends MainState {
 				main.getAudioProcessor().stop((Note) null);
 			}
 			play(PLAY_STOP);
-			Logger.getGlobal().info("STATE_FAILEDに移行");
+			logger.info("STATE_FAILEDに移行");
 		}
 	}
 
@@ -1151,7 +1152,7 @@ public class BMSPlayer extends MainState {
 		super.dispose();
 		lanerender.dispose();
 		practice.dispose();
-		Logger.getGlobal().info("システム描画のリソース解放");
+		logger.info("システム描画のリソース解放");
 	}
 
 	public PracticeConfiguration getPracticeConfiguration() {

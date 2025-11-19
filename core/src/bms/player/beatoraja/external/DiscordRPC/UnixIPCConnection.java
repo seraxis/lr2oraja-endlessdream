@@ -6,9 +6,11 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Path;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class UnixIPCConnection implements IPCConnection {
+    private static final Logger logger = LoggerFactory.getLogger(UnixIPCConnection.class);
     private SocketChannel socket;
 
     @Override
@@ -49,7 +51,7 @@ class UnixIPCConnection implements IPCConnection {
             try {
                 socket.close();
             } catch (IOException e) {
-                Logger.getGlobal().warning("Failed to close Unix socket: " + e.getMessage());
+				logger.warn("Failed to close Unix socket: {}", e.getMessage());
             }
         }
     }

@@ -8,7 +8,8 @@ import static bms.player.beatoraja.skin.SkinProperty.STRING_TABLE_NAME;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import com.badlogic.gdx.Gdx;
@@ -35,6 +36,7 @@ import twitter4j.UploadedMedia;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class ScreenShotTwitterExporter implements ScreenShotExporter {
+	private static final Logger logger = LoggerFactory.getLogger(ScreenShotTwitterExporter.class);
 
 	private String consumerKey;
 	private String consumerSecret;
@@ -113,11 +115,11 @@ public class ScreenShotTwitterExporter implements ScreenShotExporter {
 
 			// Upload Media and Post
 			UploadedMedia mediastatus = twitter.uploadMedia("from beatoraja", byteArrayInputStream);
-			Logger.getGlobal().info("Twitter Media Upload:" + mediastatus.toString());
+			logger.info("Twitter Media Upload:{}", mediastatus.toString());
 			StatusUpdate update = new StatusUpdate(text);
 			update.setMediaIds(new long[]{mediastatus.getMediaId()});
 			Status status = twitter.updateStatus(update);
-			Logger.getGlobal().info("Twitter Post:" + status.toString());
+			logger.info("Twitter Post:{}", status.toString());
 			pixmap.dispose();
 	        ImGuiNotify.info(String.format("Twitter Upload: %s", text), 2000);
 			return true;

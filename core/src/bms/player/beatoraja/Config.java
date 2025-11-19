@@ -7,7 +7,8 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.ParseException;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.system.RobustFile;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.badlogic.gdx.utils.SerializationException;
  * @author exch
  */
 public class Config implements Validatable {
+	private static final Logger logger = LoggerFactory.getLogger(Config.class);
 	
 	/**
 	 * 旧コンフィグパス。そのうち削除
@@ -917,9 +919,9 @@ public class Config implements Validatable {
 		try {
             Path configBackupPath = configpath.resolveSibling("config_sys_backup.json");
 			Files.copy(configpath, configBackupPath, StandardCopyOption.REPLACE_EXISTING);
-			Logger.getGlobal().info("Backup config written to " + configBackupPath);
+			logger.info("Backup config written to {}", configBackupPath);
 		} catch (IOException e) {
-			Logger.getGlobal().severe("Failed to write backup config file: " + e.getLocalizedMessage());
+			logger.error("Failed to write backup config file: {}", e.getLocalizedMessage());
 		}
 	}
 

@@ -10,9 +10,11 @@ import bms.player.beatoraja.result.MusicResult;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.external.DiscordRPC.RichPresence;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DiscordListener implements MainStateListener {
+	private static final Logger logger = LoggerFactory.getLogger(DiscordListener.class);
 
 	private static final String APPLICATION_ID = "1054234988167561277";
 
@@ -22,10 +24,10 @@ public class DiscordListener implements MainStateListener {
 		try {
 			richPresence = new RichPresence(APPLICATION_ID);
 			richPresence.connect();
-			Logger.getGlobal().info("Discord RPC Ready!");
+			logger.info("Discord RPC Ready!");
 		} catch (Exception e) {
 			richPresence = null;
-			Logger.getGlobal().warning("Failed to initialize Discord RPC: " + e.getMessage());
+			logger.warn("Failed to initialize Discord RPC: {}", e.getMessage());
 		}
 	}
 	
@@ -54,7 +56,7 @@ public class DiscordListener implements MainStateListener {
 			
 			richPresence.update(data);
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Failed to update Discord Rich Presence: " + e.getMessage());
+			logger.warn("Failed to update Discord Rich Presence: {}", e.getMessage());
 		}
 	}
 	

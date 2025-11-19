@@ -2,7 +2,8 @@ package bms.player.beatoraja;
 
 import java.sql.*;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -20,6 +21,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
  * @author exch
  */
 public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(ScoreDatabaseAccessor.class);
 
 	private final QueryRunner qr;
 	
@@ -101,7 +103,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 				this.insert(qr, "player", new PlayerData());
 			}
 		} catch (SQLException e) {
-			Logger.getGlobal().severe("スコアデータベース初期化中の例外:" + e.getMessage());
+			logger.error("スコアデータベース初期化中の例外:{}", e.getMessage());
 		}
 	}
 	
@@ -112,7 +114,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 				return info.get(0);
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア取得時の例外:" + e.getMessage());
+			logger.error("スコア取得時の例外:{}", e.getMessage());
 		}
 		return null;
 	}
@@ -123,7 +125,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			insert(qr, "info", info);
 //			qr.update("insert into info " + "(id, name, rank) " + "values(?,?,?);", info.getId(), info.getName(), info.getRank());
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア取得時の例外:" + e.getMessage());
+			logger.error("スコア取得時の例外:{}", e.getMessage());
 		}
 	}
 
@@ -141,7 +143,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 				result = sc;
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア取得時の例外:" + e.getMessage());
+			logger.error("スコア取得時の例外:{}", e.getMessage());
 		}
 		return result;
 	}
@@ -196,7 +198,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 				}
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア取得時の例外:" + e.getMessage());
+			logger.error("スコア取得時の例外:{}", e.getMessage());
 		}		
 	}
 
@@ -205,7 +207,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 		try {
 			score = Validatable.removeInvalidElements(qr.query("SELECT * FROM score WHERE " + sql, scoreHandler));
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア取得時の例外:" + e.getMessage());
+			logger.error("スコア取得時の例外:{}", e.getMessage());
 		}
 		return score;
 
@@ -223,7 +225,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			}
 			con.commit();
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア更新時の例外:" + e.getMessage());
+			logger.error("スコア更新時の例外:{}", e.getMessage());
 		}
 	}
 
@@ -243,7 +245,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			}
 			con.commit();
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア更新時の例外:" + e.getMessage());
+			logger.error("スコア更新時の例外:{}", e.getMessage());
 		}
 	}
 
@@ -276,7 +278,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 					.query("SELECT * FROM player ORDER BY date DESC" + (count > 0 ? " limit " + count : ""), playerHandler);
 			result = pd.toArray(new PlayerData[0]);
 		} catch (Exception e) {
-			Logger.getGlobal().severe("プレイヤーデータ取得時の例外:" + e.getMessage());
+			logger.error("プレイヤーデータ取得時の例外:{}", e.getMessage());
 		}
 		return result != null ? result : new PlayerData[0];
 	}
@@ -299,7 +301,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			this.insert(qr, con, "player", pd);
 			con.commit();
 		} catch (Exception e) {
-			Logger.getGlobal().severe("スコア更新時の例外:" + e.getMessage());
+			logger.error("スコア更新時の例外:{}", e.getMessage());
 		}
 	}
 	
