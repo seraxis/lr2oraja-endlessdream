@@ -2,7 +2,9 @@ package bms.player.beatoraja.play;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
-import java.util.logging.Logger;
+import bms.player.beatoraja.modmenu.RandomTrainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.math.MathUtils;
 
@@ -20,6 +22,7 @@ import bms.player.beatoraja.skin.SkinPropertyMapper;
  * @author exch
  */
 class KeyInputProccessor {
+	private static final Logger logger = LoggerFactory.getLogger(KeyInputProccessor.class);
 
 	private final BMSPlayer player;
 
@@ -234,7 +237,7 @@ class KeyInputProccessor {
 				input.resetAllKeyState();
 			}
 
-			Logger.getGlobal().info("入力パフォーマンス(max ms) : " + frametime);
+			logger.info("入力パフォーマンス(max ms) : {}", frametime);
 		}
 	}
 }

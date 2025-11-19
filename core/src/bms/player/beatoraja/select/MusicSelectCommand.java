@@ -12,7 +12,8 @@ import javafx.scene.input.ClipboardContent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
 import static bms.player.beatoraja.SystemSoundManager.SoundType.FOLDER_OPEN;
@@ -115,7 +116,7 @@ public enum MusicSelectCommand {
                 }
 
                 if (!startdownload) {
-                    Logger.getGlobal().info("ダウンロードは開始されませんでした。");
+					LoggerFactory.getLogger(MusicSelectCommand.class).info("ダウンロードは開始されませんでした。");
                 }
                 break;
             }
@@ -126,10 +127,10 @@ public enum MusicSelectCommand {
 		if (current instanceof SongBar) {
 			final SongData song = ((SongBar) current).getSongData();
 			if (song == null) {
-				Logger.getGlobal().info("Not a valid song bar? Skipped...");
+				LoggerFactory.getLogger(MusicSelectCommand.class).info("Not a valid song bar? Skipped...");
 				return ;
 			}
-			Logger.getGlobal().info("Missing song md5: " + song.getMd5());
+			LoggerFactory.getLogger(MusicSelectCommand.class).info("Missing song md5: {}", song.getMd5());
 			if (song.getMd5() != null && !song.getMd5().isEmpty()) {
 				selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5(), song.getTitle());
 			}

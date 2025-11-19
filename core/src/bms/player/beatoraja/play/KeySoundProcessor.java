@@ -12,7 +12,8 @@ import bms.model.TimeLine;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.audio.AudioDriver;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * キー音処理用クラス

@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.Validatable;
 import bms.player.beatoraja.SQLiteDatabaseAccessor;
@@ -25,6 +26,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
  * @author exch
  */
 public class SongInformationAccessor extends SQLiteDatabaseAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(SongInformationAccessor.class);
 
 	private final SQLiteDataSource ds;
 
@@ -63,7 +65,7 @@ public class SongInformationAccessor extends SQLiteDatabaseAccessor {
 		try {
 			validate(qr);
 		} catch (SQLException e) {
-			Logger.getGlobal().severe("楽曲データベース初期化中の例外:" + e.getMessage());
+			logger.error("楽曲データベース初期化中の例外:" + e.getMessage());
 		}
 	}
 

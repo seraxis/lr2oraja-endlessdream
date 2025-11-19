@@ -4,7 +4,8 @@ import java.awt.Desktop;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.IRConfig;
 import bms.player.beatoraja.PlayerConfig;
@@ -20,6 +21,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class IRConfigurationView implements Initializable {
+	private static final Logger logger = LoggerFactory.getLogger(IRConfigurationView.class);
 	
 	@FXML
 	private Button primarybutton;
@@ -122,7 +124,7 @@ public class IRConfigurationView implements Initializable {
                 uri = new URI(homeurl);
                 desktop.browse(uri);
             } catch (Exception e) {
-                Logger.getGlobal().warning("最新版URLアクセス時例外:" + e.getMessage());
+				logger.warn("最新版URLアクセス時例外:{}", e.getMessage());
             }
         });
 		

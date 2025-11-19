@@ -3,7 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.modmenu.*;
@@ -49,6 +50,7 @@ import bms.tool.mdprocessor.MusicDownloadProcessor;
  * @author exch
  */
 public class MainController {
+	private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
 	private static final String VERSION = Version.versionLong;
 
@@ -148,7 +150,7 @@ public class MainController {
             try {
                 player = PlayerConfig.readPlayerConfig(config.getPlayerpath(), config.getPlayername());
             } catch (PlayerConfigException e) {
-                Logger.getGlobal().severe(e.getLocalizedMessage());
+                logger.error(e.getLocalizedMessage());
             }
         }
 		this.player = player;
@@ -197,15 +199,15 @@ public class MainController {
 						if(response.isSucceeded()) {
 							irarray.add(new IRStatus(irconfig, ir, response.getData()));
 						} else {
-							Logger.getGlobal().warning("IRへのログイン失敗 : " + response.getMessage());
+							logger.warn("IRへのログイン失敗 : {}", response.getMessage());
 						}
 					} catch (IllegalArgumentException e) {
-						Logger.getGlobal().info("trying pre-0.8.5 IR login method");
+						logger.info("trying pre-0.8.5 IR login method");
 						IRResponse<IRPlayerData> response = ir.login(irconfig.getUserid(), irconfig.getPassword());
 						if(response.isSucceeded()) {
 							irarray.add(new IRStatus(irconfig, ir, response.getData()));
 						} else {
-							Logger.getGlobal().warning("IRへのログイン失敗 : " + response.getMessage());
+							logger.warn("IRへのログイン失敗 : {}", response.getMessage());
 						}
 					}
 				}
@@ -398,7 +400,7 @@ public class MainController {
 			systemfont = generator.generateFont(parameter);
 			generator.dispose();
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().severe("System Font読み込み失敗");
+			logger.error("System Font読み込み失敗");
 		}
 
         try (var perf = PerformanceMetrics.get().Event("Input Processor constructor")) {
@@ -443,7 +445,7 @@ public class MainController {
 			changeState(MainStateType.MUSICSELECT);
 		}
 
-		Logger.getGlobal().info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
+		logger.info("初期化時間(ms) : {}", System.currentTimeMillis() - t);
 
 		Thread polling = new Thread(() -> {
 			long time = 0;
@@ -540,7 +542,7 @@ public class MainController {
 							} catch (InterruptedException e) {
 							}
 						} catch (Exception e) {
-							Logger.getGlobal().severe(e.getMessage());
+							logger.error(e.getMessage());
 						}
 				}
 			});
@@ -817,7 +819,7 @@ public class MainController {
 			loudnessAnalyzer.shutdown();
 		}
 
-		Logger.getGlobal().info("全リソース破棄完了");
+		logger.info("全リソース破棄完了");
 	}
 
 	public void pause() {
@@ -835,7 +837,7 @@ public class MainController {
 	public void saveConfig(){
 		Config.write(config);
 		PlayerConfig.write(config.getPlayerpath(), player);
-		Logger.getGlobal().info("設定情報を保存");
+		logger.info("設定情報を保存");
 	}
 
     private long lastConfigSave = 0;
@@ -850,7 +852,7 @@ public class MainController {
         if ((now - lastConfigSave) < 5 * 60 * 1000000000L) { return; }
 
         if (configWrite != null && configWrite.isAlive()) {
-            Logger.getGlobal().severe("Couldn't write config files - save process is stuck.");
+            logger.error("Couldn't write config files - save process is stuck.");
             return;
         }
 
@@ -986,7 +988,7 @@ public class MainController {
 			updateSong = new SongUpdateThread(path);
 			updateSong.start();
 		} else {
-			Logger.getGlobal().warning("楽曲更新中のため、更新要求は取り消されました");
+			logger.warn("楽曲更新中のため、更新要求は取り消されました");
 		}
 	}
 
@@ -995,7 +997,7 @@ public class MainController {
 			updateSong = new TableUpdateThread(reader);
 			updateSong.start();
 		} else {
-			Logger.getGlobal().warning("楽曲更新中のため、更新要求は取り消されました");
+			logger.warn("楽曲更新中のため、更新要求は取り消されました");
 		}
 	}
 
@@ -1109,16 +1111,16 @@ public class MainController {
 		}
 
 		public boolean send() {
-			Logger.getGlobal().info("IRへスコア送信中 : " + song.getTitle());
+			logger.info("IRへスコア送信中 : {}", song.getTitle());
 			lastTry = System.currentTimeMillis();
 			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
 			retry++;
 			if(send1.isSucceeded()) {
-				Logger.getGlobal().info("IRスコア送信完了 : " + song.getTitle());
+				logger.info("IRスコア送信完了 : {}", song.getTitle());
 				isSent = true;
 				return true;
 			} else {
-				Logger.getGlobal().warning("IRスコア送信失敗 : " + send1.getMessage());
+				logger.warn("IRスコア送信失敗 : {}", send1.getMessage());
 				return false;
 			}
 

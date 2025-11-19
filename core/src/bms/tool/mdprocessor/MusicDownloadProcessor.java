@@ -15,7 +15,8 @@ import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import static java.nio.file.StandardCopyOption.*;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -29,6 +30,7 @@ import org.apache.commons.compress.utils.IOUtils;
  * @author LNTakeshi
  */
 public class MusicDownloadProcessor {
+	private static final Logger logger = LoggerFactory.getLogger(MusicDownloadProcessor.class);
 
 	private Deque<IpfsInformation> commands = new ConcurrentLinkedDeque<IpfsInformation>();
 	private String ipfs = "";
@@ -143,10 +145,10 @@ public class MusicDownloadProcessor {
 							downloadipfs = new DownloadIpfsThread(ipfspath, path);
 							downloadipfs.start();
         					download = true;
-							Logger.getGlobal().info("BMS本体取得開始");
+							logger.info("BMS本体取得開始");
 						} else if (ipfspath != null && ipfspath.length() != 0 && diffpath != null
 								&& diffpath.length() != 0) {
-        					Logger.getGlobal().info(path+"は既に存在します（差分取得のみ）");
+							logger.info("{}は既に存在します（差分取得のみ）", path);
         					download = true;
         				}
         			}
@@ -169,7 +171,7 @@ public class MusicDownloadProcessor {
 								downloadipfs = new DownloadIpfsThread(diffpath, "ipfs" + File.separator + diffpath);
 								ipfspath = "";
 								downloadipfs.start();
-								Logger.getGlobal().info("差分取得開始");
+								logger.info("差分取得開始");
         					}
         				}else if(downloadpath == null){
         					Path p = Paths.get(path).toAbsolutePath();
@@ -183,7 +185,7 @@ public class MusicDownloadProcessor {
         	} catch (Exception e) {
         		e.printStackTrace();
         	}
-			Logger.getGlobal().info("IPFS Thread終了");
+			logger.info("IPFS Thread終了");
 			if (downloadipfs != null && downloadipfs.isAlive()) {
 				downloadipfs.interrupt();
 			}
@@ -221,7 +223,7 @@ public class MusicDownloadProcessor {
 				out = new FileOutputStream("ipfs/bms.tar.gz");
 			} catch (Exception e) {
 				if (url != null) {
-					Logger.getGlobal().info("URL:" + url.toString() + "に接続失敗。");
+					logger.info("URL:{}に接続失敗。", url.toString());
 				}
 			}
 			byte data[] = new byte[1024 * 512];

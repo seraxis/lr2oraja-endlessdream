@@ -26,7 +26,8 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * キーコンフィグ画面
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
  * @author exch
  */
 public class KeyConfiguration extends MainState {
+	private static final Logger logger = LoggerFactory.getLogger(KeyConfiguration.class);
 
 	// TODO スキンベースへ移行
 
@@ -116,7 +118,7 @@ public class KeyConfiguration extends MainState {
 			titlefont = generator.generateFont(parameter);
 			generator.dispose();
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().severe("Font読み込み失敗");
+			logger.error("Font読み込み失敗");
 		}
 
 		input = main.getInputProcessor();

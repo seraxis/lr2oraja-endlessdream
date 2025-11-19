@@ -6,7 +6,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
@@ -31,6 +32,7 @@ import bms.player.beatoraja.song.SongData;
  * @author exch
  */
 public class MusicResult extends AbstractResult {
+	private static final Logger logger = LoggerFactory.getLogger(MusicResult.class);
 
 	private ResultKeyProperty property;
 
@@ -121,7 +123,7 @@ public class MusicResult extends AbstractResult {
 							removeIrSendStatus.add(irc);
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("IR送信時の例外:" + e.getMessage());
+						logger.warn("IR送信時の例外: {}", e.getMessage());
 						e.printStackTrace();
 						// remove from queue
 						removeIrSendStatus.add(irc);
@@ -136,12 +138,12 @@ public class MusicResult extends AbstractResult {
 						if(response.isSucceeded()) {
 							ranking.updateScore(response.getData(), newscore.getExscore() > oldscore.getExscore() ? newscore : oldscore);
 							rankingOffset = ranking.getRank() > 10 ? ranking.getRank() - 5 : 0;
-							Logger.getGlobal().info("IRからのスコア取得成功 : " + response.getMessage());
+							logger.info("IRからのスコア取得成功 : {}", response.getMessage());
 						} else {
-							Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
+							logger.warn("IRからのスコア取得失敗 : {}", response.getMessage());
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("IRからのスコア取得時例外:" + e.getMessage());
+						logger.warn("IRからのスコア取得時例外: {}", e.getMessage());
 						e.printStackTrace();
 					}
 				}
@@ -229,7 +231,7 @@ public class MusicResult extends AbstractResult {
 					}
 					if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY
 							&& key == ResultKeyProperty.ResultKey.REPLAY_DIFFERENT) {
-						Logger.getGlobal().info("オプションを変更せずリプレイ");
+						logger.info("オプションを変更せずリプレイ");
 						// オプションを変更せず同じ譜面でリプレイ
 						resource.getReplayData().randomoptionseed = -1;
 						resource.reloadBMSFile();
@@ -238,9 +240,9 @@ public class MusicResult extends AbstractResult {
 							&& key == ResultKeyProperty.ResultKey.REPLAY_SAME) {
 						// 同じ譜面でリプレイ
 						if(resource.isUpdateScore()) {
-							Logger.getGlobal().info("同じ譜面でリプレイ");							
+							logger.info("同じ譜面でリプレイ");
 						} else {
-							Logger.getGlobal().info("アシストモード時は同じ譜面でリプレイできません");
+							logger.info("アシストモード時は同じ譜面でリプレイできません");
 							resource.getReplayData().randomoptionseed = -1;
 						}
 						resource.reloadBMSFile();
@@ -456,7 +458,7 @@ public class MusicResult extends AbstractResult {
 			main.getPlayDataAccessor().writeScoreData(resource.getScoreData(), resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), resource.isUpdateScore());
 		} else {
-			Logger.getGlobal().info("プレイモードが" + resource.getPlayMode().mode.name() + "のため、スコア登録はされません");
+			logger.info("プレイモードが{}のため、スコア登録はされません", resource.getPlayMode().mode.name());
 		}
 	}
 

@@ -2,7 +2,8 @@ package bms.player.beatoraja.skin.lua;
 
 import java.nio.file.Path;
 import java.util.function.Function;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.luaj.vm2.*;
 import org.luaj.vm2.lib.*;
@@ -22,6 +23,7 @@ import bms.player.beatoraja.SkinConfig;
  * @author excln
  */
 public class SkinLuaAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(SkinLuaAccessor.class);
 	
 	private final Globals globals;
 
@@ -50,7 +52,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load("return " + script);
 			return loadBooleanProperty(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -67,7 +69,7 @@ public class SkinLuaAccessor {
 				try {
 					return function.call().toboolean();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 					return false;
 				}
 			}
@@ -79,7 +81,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load("return " + script);
 			return loadIntegerProperty(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -91,7 +93,7 @@ public class SkinLuaAccessor {
 				try{
 					return function.call().toint();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 					return 0;
 				}
 			}
@@ -103,7 +105,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load("return " + script);
 			return loadFloatProperty(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -115,7 +117,7 @@ public class SkinLuaAccessor {
 				try{
 					return function.call().tofloat();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 					return 0f;
 				}
 			}
@@ -127,7 +129,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load("return " + script);
 			return loadStringProperty(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -139,7 +141,7 @@ public class SkinLuaAccessor {
 				try {
 					return function.call().tojstring();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外：" + e.getMessage());
+					logger.warn("Lua実行時の例外：{}", e.getMessage());
 					return "";
 				}
 			}
@@ -168,7 +170,7 @@ public class SkinLuaAccessor {
 				return loadTimerProperty(lv.checkfunction());
 			}
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -186,7 +188,7 @@ public class SkinLuaAccessor {
 				try {
 					return timerFunction.call().tolong();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外：" + e.getMessage());
+					logger.warn("Lua実行時の例外：{}", e.getMessage());
 					return Long.MIN_VALUE;
 				}
 			}
@@ -198,7 +200,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load(script);
 			return loadEvent(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -210,7 +212,7 @@ public class SkinLuaAccessor {
 				try{
 					function.call();
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 				}
 			});
 		case 1:
@@ -218,7 +220,7 @@ public class SkinLuaAccessor {
 				try{
 					function.call(LuaNumber.valueOf(arg1));
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 				}
 			});
 		case 2:
@@ -226,7 +228,7 @@ public class SkinLuaAccessor {
 				try{
 					function.call(LuaNumber.valueOf(arg1), LuaNumber.valueOf(arg2));
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外 : " + e.getMessage());
+					logger.warn("Lua実行時の例外 : {}", e.getMessage());
 				}
 			});
 		default:
@@ -239,7 +241,7 @@ public class SkinLuaAccessor {
 			final LuaValue lv = globals.load(script);
 			return loadFloatWriter(lv.checkfunction());
 		} catch (RuntimeException e) {
-			Logger.getGlobal().warning("Lua解析時の例外 : " + e.getMessage());
+			logger.warn("Lua解析時の例外 : {}", e.getMessage());
 		}
 		return null;
 	}
@@ -251,7 +253,7 @@ public class SkinLuaAccessor {
 				try{
 					function.call(LuaDouble.valueOf(value));
 				} catch (RuntimeException e) {
-					Logger.getGlobal().warning("Lua実行時の例外：" + e.getMessage());
+					logger.warn("Lua実行時の例外：{}", e.getMessage());
 				}
 			}
 		};

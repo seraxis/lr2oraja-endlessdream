@@ -12,9 +12,11 @@ import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScoreDataImporter {
+    private static final Logger logger = LoggerFactory.getLogger(ScoreDataImporter.class);
 
     private ScoreDatabaseAccessor scoredb;
 
@@ -54,7 +56,7 @@ public class ScoreDataImporter {
             
             this.importScores(result.toArray(new ScoreData[result.size()]), "LR2");
         } catch (Exception e) {
-            Logger.getGlobal().severe("スコア移行時の例外:" + e.getMessage());
+			logger.error("スコア移行時の例外:{}", e.getMessage());
         }
     }
 
@@ -78,6 +80,6 @@ public class ScoreDataImporter {
         }
         
         scoredb.setScoreData(result.toArray(new ScoreData[result.size()]));
-		Logger.getGlobal().info("スコアインポート完了 - インポート数 : " + result.size());
+		logger.info("スコアインポート完了 - インポート数 : {}", result.size());
     }
 }

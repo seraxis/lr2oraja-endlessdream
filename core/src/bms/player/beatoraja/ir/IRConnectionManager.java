@@ -9,7 +9,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * IRConnectionの管理用クラス
@@ -17,6 +18,7 @@ import java.util.logging.Logger;
  * @author exch
  */
 public class IRConnectionManager {
+	private static final Logger logger = LoggerFactory.getLogger(IRConnectionManager.class);
 	
 	/**
 	 * 検出されたIRConnection
@@ -113,7 +115,7 @@ public class IRConnectionManager {
 							}
 						}
 					} catch(Throwable e) {
-						Logger.getGlobal().warning("Jarファイル読み込み失敗 - " + url.toString() + " : " + e.getMessage());
+						logger.warn("Jarファイル読み込み失敗 - " + url.toString() + " : " + e.getMessage());
 					}
 				}
 				if (url.getProtocol().equals("file")) {

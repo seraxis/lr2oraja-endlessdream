@@ -2,7 +2,8 @@ package bms.player.beatoraja.launcher;
 
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.modmenu.RandomTrainer;
@@ -12,6 +13,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 public class TrainerView {
+	private static final Logger logger = LoggerFactory.getLogger(TrainerView.class);
 	
 	@FXML
 	private CheckBox traineractive;
@@ -58,7 +60,7 @@ public class TrainerView {
 	public void setRandom() {
 		RandomTrainer randomtrainer = new RandomTrainer();
 		if (this.laneorder == null) {
-			Logger.getGlobal().warning("RandomTrainer: Lane field empty");
+			logger.warn("RandomTrainer: Lane field empty");
 			return;
 		}
 
@@ -70,13 +72,13 @@ public class TrainerView {
 		Arrays.sort(l);
 
 		if (l.length != 7) {
-			Logger.getGlobal().warning("RandomTrainer: Incorrect number of lanes specified");
+			logger.warn("RandomTrainer: Incorrect number of lanes specified");
 			return;
 		}
 
 		for (int i = 0; i < has_all.length; i++) {
 			if (l[i] != has_all[i]) {
-				Logger.getGlobal().warning("RandomTrainer: Lanes in incorrect format, falling back to nonran or last ran used");
+				logger.warn("RandomTrainer: Lanes in incorrect format, falling back to nonran or last ran used");
 				return;
 			}
 		}

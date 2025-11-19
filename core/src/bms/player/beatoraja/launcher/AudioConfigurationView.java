@@ -4,7 +4,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.portaudio.DeviceInfo;
 
@@ -22,6 +23,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 
 public class AudioConfigurationView implements Initializable {
+	private static final Logger logger = LoggerFactory.getLogger(AudioConfigurationView.class);
 
 	@FXML
 	private ComboBox<DriverType> audio;
@@ -133,7 +135,7 @@ public class AudioConfigurationView implements Initializable {
 				audiosim.setDisable(false);
 //				PortAudio.terminate();
 			} catch(Throwable e) {
-				Logger.getGlobal().severe("PortAudioは選択できません : " + e.getMessage());
+				logger.error("PortAudioは選択できません : {}", e.getMessage());
 				audio.setValue(DriverType.OpenAL);
 			}
 			break;

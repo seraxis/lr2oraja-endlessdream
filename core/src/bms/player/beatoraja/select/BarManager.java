@@ -6,7 +6,8 @@ import java.io.BufferedInputStream;
 import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -38,6 +39,7 @@ import bms.player.beatoraja.song.SongInformationAccessor;
  * @author exch
  */
 public class BarManager {
+	private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
 	
 	private final MusicSelector select;
 	/**
@@ -188,7 +190,7 @@ public class BarManager {
 					}
 				}
 			} else {
-				Logger.getGlobal().warning("IRからのテーブル取得失敗 : " + response.getMessage());
+				logger.warn("IRからのテーブル取得失敗 : {}", response.getMessage());
 			}
 		}
 
@@ -471,7 +473,7 @@ public class BarManager {
 		} else {
 			updateBar(null);
 		}
-		Logger.getGlobal().warning("楽曲がありません");
+		logger.warn("楽曲がありません");
 		return false;
 	}
 
@@ -823,7 +825,7 @@ public class BarManager {
 							songbar.setBanner(select.getBannerResource().get(bannerfile.toString()));
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("banner読み込み失敗 : " + song.getBanner());
+						logger.warn("banner読み込み失敗 : {}", song.getBanner());
 					}
 					try {
 						Path stagefilefile = Paths.get(song.getPath()).getParent().resolve(song.getStagefile());
@@ -832,7 +834,7 @@ public class BarManager {
 							songbar.setStagefile(select.getStagefileResource().get(stagefilefile.toString()));
 						}
 					} catch (Exception e) {
-						Logger.getGlobal().warning("stagefile読み込み失敗 : " + song.getStagefile());
+						logger.warn("stagefile読み込み失敗 : {}", song.getStagefile());
 					}
 				}
 				if (stop) {

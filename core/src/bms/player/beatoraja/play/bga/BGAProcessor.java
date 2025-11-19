@@ -2,7 +2,8 @@ package bms.player.beatoraja.play.bga;
 
 import java.nio.file.*;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.model.Layer.Sequence;
 import bms.model.*;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.utils.Array;
  * @author exch
  */
 public class BGAProcessor {
+	private static final Logger logger = LoggerFactory.getLogger(BGAProcessor.class);
 	
 	// TODO イベントレイヤー対応(現状はミスレイヤーのみ)
 
@@ -176,7 +178,7 @@ public class BGAProcessor {
 						}
 					}
 				} catch (InvalidPathException e) {
-					Logger.getGlobal().warning(e.getMessage());
+					logger.warn(e.getMessage());
 				}
 
 				if (f != null) {
@@ -189,7 +191,7 @@ public class BGAProcessor {
 								isMovie = true;
 								break;
 							} catch (Throwable e) {
-								Logger.getGlobal().warning("BGAファイル読み込み失敗。" + e.getMessage());
+								logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
 								e.printStackTrace();
 							}
 						}
@@ -208,7 +210,7 @@ public class BGAProcessor {
 
 		disposeOld();
 
-		Logger.getGlobal().info("BGAファイル読み込み完了。BGA数:" + id);
+		logger.info("BGAファイル読み込み完了。BGA数:{}", id);
 		progress = 1;
 	}
 

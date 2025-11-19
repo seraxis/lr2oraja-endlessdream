@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
-import java.util.logging.Logger;
+
+import bms.player.beatoraja.TableDataAccessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /* 
@@ -14,6 +17,7 @@ import java.util.logging.Logger;
  * @author Sarah A.
  */
 public class MSADPCMDecoder {
+    private static final Logger logger = LoggerFactory.getLogger(MSADPCMDecoder.class);
 
     private static final int[] AdaptionTable = {
         230, 230, 230, 230, 307, 409, 512, 614,
@@ -61,7 +65,7 @@ public class MSADPCMDecoder {
             channelSamples = new short[channels][samplesPerBlock];
 
         if ((in.remaining() % blockSize) != 0){
-            Logger.getGlobal().severe("Malformed MS ADPCM block");
+            logger.error("Malformed MS ADPCM block");
             throw new IOException("too few elements left in input buffer");
             // Note: ffmpeg doesn't process incomplete blocks.
         }
@@ -79,20 +83,20 @@ public class MSADPCMDecoder {
             in.position(in.position() + blockSize);
             out.position(out.position() + blockSampleSize);
         }
-//        Logger.getGlobal().info("Return hit");
+//        logger.info("Return hit");
         out.flip();
         return out;
     }
 
     private void decode_block(ShortBuffer out, ByteBuffer blockData) throws IOException {
-        //Logger.getGlobal().info("decoding block");
+        //logger.info("decoding block");
 
         if (channels > 2) {
             // When channels > 2, channels are NOT interleaved.
             for (int ch = 0; ch < channels; ch++) {
                 int predictor = Byte.toUnsignedInt(blockData.get());
                 if (predictor > 6) {
-                    Logger.getGlobal().warning("Malformed block header");
+                    logger.warn("Malformed block header");
                     throw new IOException("Malformed block header. Expected range for predictor 0..6, found "+ predictor);
                 }
 
@@ -152,7 +156,7 @@ public class MSADPCMDecoder {
             for (int ch = 0; ch < channels; ch++) {
                 int predictor = Byte.toUnsignedInt(blockData.get());
                 if (predictor > 6) {
-                    Logger.getGlobal().warning("Malformed block header");
+                    logger.warn("Malformed block header");
                     throw new IOException("Malformed block header. Expected range for predictor 0..6, found "+ predictor);
                 }
 
@@ -198,7 +202,7 @@ public class MSADPCMDecoder {
         }
 
 
-        //Logger.getGlobal().info("===== BLOCK FINISH =====");
+        //logger.info("===== BLOCK FINISH =====");
     }
     
 
@@ -223,7 +227,7 @@ public class MSADPCMDecoder {
             initialDelta[channel] = 16;
         }
         if (initialDelta[channel] > Integer.MAX_VALUE/768){
-            Logger.getGlobal().warning("idelta overflow");
+            logger.warn("idelta overflow");
             initialDelta[channel] = Integer.MAX_VALUE/768;
         }
         return predictor;

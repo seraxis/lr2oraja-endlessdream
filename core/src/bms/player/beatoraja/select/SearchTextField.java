@@ -5,7 +5,8 @@ import bms.player.beatoraja.SpriteBatchHelper;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.SearchWordBar;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -29,6 +30,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
  * @author exch
  */
 public class SearchTextField extends Stage {
+	private static final Logger logger = LoggerFactory.getLogger(SearchTextField.class);
 	
 	// TOTO ユーザー定義のBitmapFontも使えるようにしたい
 	
@@ -146,7 +148,7 @@ public class SearchTextField extends Stage {
 			screen.addActor(search);
 			addActor(screen);
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().warning("Search Text読み込み失敗");
+			logger.warn("Search Text読み込み失敗");
 		}
 	}
 

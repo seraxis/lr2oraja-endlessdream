@@ -5,7 +5,8 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +23,7 @@ import bms.table.*;
  * @author exch
  */
 public class TableDataAccessor {
+	private static final Logger logger = LoggerFactory.getLogger(TableDataAccessor.class);
 	
 	private final String tabledir;
 
@@ -216,7 +218,7 @@ public class TableDataAccessor {
 				return td;
 			} catch (Throwable e) {
 				e.printStackTrace();
-				Logger.getGlobal().warning("難易度表 - "+url+" の読み込み失敗。");
+				logger.warn("難易度表 - "+url+" の読み込み失敗。");
 			}
 			return null;
 		}

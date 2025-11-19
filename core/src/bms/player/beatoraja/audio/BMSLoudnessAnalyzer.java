@@ -9,7 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.PerformanceMetrics;
 import io.github.llm96.ebur128java.Channel;
@@ -18,6 +19,7 @@ import io.github.llm96.ebur128java.Mode;
 import io.github.llm96.ebur128java.State;
 
 public class BMSLoudnessAnalyzer {
+	private static final Logger logger = LoggerFactory.getLogger(BMSLoudnessAnalyzer.class);
 
 	private final ExecutorService executor;
 	private final boolean available;
@@ -67,7 +69,7 @@ public class BMSLoudnessAnalyzer {
 			try {
 				Files.createDirectories(cacheDir);
 			} catch (Exception e) {
-				Logger.getGlobal().warning("Failed to create cache directory: " + e.getMessage());
+				logger.warn("Failed to create cache directory: {}", e.getMessage());
 			}
 		}
 
@@ -93,7 +95,7 @@ public class BMSLoudnessAnalyzer {
 			testState.close();
 			return true;
 		} catch (Exception e) {
-			Logger.getGlobal().warning("libebur128 not available: " + e.getMessage());
+			logger.warn("libebur128 not available: {}", e.getMessage());
 			return false;
 		}
 	}
@@ -137,7 +139,7 @@ public class BMSLoudnessAnalyzer {
 				return new AnalysisResult(model, loudness);
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().severe("Loudness analysis failed: " + e.getMessage());
+			logger.error("Loudness analysis failed: {}", e.getMessage());
 			e.printStackTrace();
 			return new AnalysisResult(model, "Analysis error: " + e.getMessage());
 		}
@@ -181,7 +183,7 @@ public class BMSLoudnessAnalyzer {
 				return Double.parseDouble(content);
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Failed to read cache for " + hash + ": " + e.getMessage());
+			logger.warn("Failed to read cache for {}: {}", hash, e.getMessage());
 		}
 		return null;
 	}
@@ -190,9 +192,9 @@ public class BMSLoudnessAnalyzer {
 		try {
 			Path cacheFile = cacheDir.resolve(hash + ".lufs");
 			Files.write(cacheFile, String.valueOf(loudness).getBytes());
-			Logger.getGlobal().info("Cached loudness for " + hash + ": " + loudness + " LUFS");
+			logger.info("Cached loudness for {}: {} LUFS", hash, loudness);
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Failed to write cache for " + hash + ": " + e.getMessage());
+			logger.warn("Failed to write cache for {}: {}", hash, e.getMessage());
 		}
 	}
 

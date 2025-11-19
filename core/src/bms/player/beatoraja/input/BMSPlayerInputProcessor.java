@@ -4,7 +4,8 @@ import bms.player.beatoraja.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 import bms.player.beatoraja.PlayModeConfig.*;
@@ -21,6 +22,7 @@ import com.badlogic.gdx.utils.Array;
  * @author exch
  */
 public class BMSPlayerInputProcessor {
+	private static final Logger logger = LoggerFactory.getLogger(BMSPlayerInputProcessor.class);
 	
 	private boolean enable = true;
 
@@ -40,7 +42,7 @@ public class BMSPlayerInputProcessor {
 
 		Array<BMControllerInputProcessor> bminput = new Array<BMControllerInputProcessor>();
 		for (Controller controller : Controllers.getControllers()) {
-			Logger.getGlobal().info("コントローラーを検出 : " + controller.getName());
+			logger.info("コントローラーを検出 : " + controller.getName());
 			// FIXME:前回終了時のModeからコントローラ設定を復元
 			ControllerConfig controllerConfig = Stream.of(player.getMode7().getController())
 				.filter(m -> {

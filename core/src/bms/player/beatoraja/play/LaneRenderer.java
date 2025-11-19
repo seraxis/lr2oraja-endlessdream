@@ -1,7 +1,8 @@
 package bms.player.beatoraja.play;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.play.SkinNote.SkinLane;
@@ -29,6 +30,7 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
  * @author exch
  */
 public class LaneRenderer {
+	private static final Logger logger = LoggerFactory.getLogger(LaneRenderer.class);
 	
 	private float basehispeed;
 
@@ -76,7 +78,7 @@ public class LaneRenderer {
 			font = generator.generateFont(parameter);
 			generator.dispose();
 		} catch (GdxRuntimeException e) {
-			Logger.getGlobal().severe("Practice Font読み込み失敗");
+			logger.error("Practice Font読み込み失敗");
 		}
 
 		this.skin = (PlaySkin) main.getSkin();
@@ -112,7 +114,7 @@ public class LaneRenderer {
 			cscr = tl.getScroll();
 		}
 		this.timelines = tls.toArray(new TimeLine[tls.size()]);
-		// Logger.getGlobal().info("省略したTimeLine数:" +
+		// logger.info("省略したTimeLine数:" +
 		// (model.getAllTimeLines().length - timelines.length) + " / " +
 		// model.getAllTimeLines().length);
 
@@ -525,7 +527,7 @@ public class LaneRenderer {
 					} else if (note instanceof LongNote ln) {
 						if (!ln.isEnd() && ln.getPair().getMicroTime() >= microtime) {
 							// if (((LongNote) note).getEnd() == null) {
-							// Logger.getGlobal().warning(
+							// logger.warn(
 							// "LN終端がなく、モデルが正常に表示されません。LN開始時間:"
 							// + ((LongNote) note)
 							// .getStart()

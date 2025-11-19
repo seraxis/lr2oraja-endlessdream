@@ -2,7 +2,8 @@ package bms.player.beatoraja;
 
 import java.nio.file.Path;
 import java.util.ArrayDeque;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.model.BMSModel;
 import bms.player.beatoraja.audio.AudioDriver;
@@ -17,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  * @author exch
  */
 public class BMSResource {
+	private static final Logger logger = LoggerFactory.getLogger(BMSResource.class);
 
  	/**
 	 * 選曲中のBMS
@@ -75,7 +77,7 @@ public class BMSResource {
 				pix.dispose();
 			}
 		} catch(Throwable e) {
-			Logger.getGlobal().warning(e.getMessage());
+			logger.warn(e.getMessage());
 		}
 
 		if(backbmp != null) {
@@ -89,7 +91,7 @@ public class BMSResource {
 				pix.dispose();
 			}
 		} catch(Throwable e) {
-			Logger.getGlobal().warning(e.getMessage());
+			logger.warn(e.getMessage());
 		}
 
 		this.model = model;
@@ -109,7 +111,7 @@ public class BMSResource {
 					bga.setModel(bgamodel);
 					bgaon = bgamodel != null;
 				} catch (Throwable e) {
-					Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
+					logger.error("{} : {}", e.getClass().getName(), e.getMessage());
 					e.printStackTrace();
 				}
 			});
@@ -120,7 +122,7 @@ public class BMSResource {
 					audio.abort();
 					audio.setModel(model);
 				} catch (Throwable e) {
-					Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
+					logger.error("{} : {}", e.getClass().getName(), e.getMessage());
 					e.printStackTrace();
 				}
 			});

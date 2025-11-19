@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 import com.badlogic.gdx.utils.Array;
@@ -18,7 +19,8 @@ import bms.player.beatoraja.audio.AudioDriver;
  * @author exch
  */
 public class SystemSoundManager {
-	
+	private static final Logger logger = LoggerFactory.getLogger(SystemSoundManager.class);
+
 	private final MainController main;
 	/**
 	 * 検出されたBGMセットのディレクトリパス
@@ -48,7 +50,7 @@ public class SystemSoundManager {
 		if(config.getSoundpath() != null && config.getSoundpath().length() > 0) {
 			scan(Paths.get(config.getSoundpath()).toAbsolutePath(), sounds, "clear.wav");
 		}
-		Logger.getGlobal().info("検出されたBGM Set : " + bgms.size + " Sound Set : " + sounds.size);
+		logger.info("検出されたBGM Set : {} Sound Set : {}", bgms.size, sounds.size);
 	}
 
 	public void shuffle() {
@@ -58,7 +60,7 @@ public class SystemSoundManager {
 		if(sounds.size > 0) {
 			currentSoundPath = sounds.get((int) (Math.random() * sounds.size));
 		}
-		Logger.getGlobal().info("BGM Set : " + currentBGMPath + " Sound Set : " + currentSoundPath);
+		logger.info("BGM Set : {} Sound Set : {}", currentBGMPath, currentSoundPath);
 		
 		for(SoundType sound : SoundType.values()) {
 			for(Path p :getSoundPaths(sound)) {

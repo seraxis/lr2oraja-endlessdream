@@ -16,7 +16,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -29,6 +30,7 @@ import bms.player.beatoraja.Config;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 
 public class ObsWsClient {
+	private static final Logger logger = LoggerFactory.getLogger(ObsWsClient.class);
 	private volatile WebSocketClient wsClient;
 	private volatile boolean isConnected = false;
 	private volatile boolean isIdentified = false;
@@ -118,7 +120,7 @@ public class ObsWsClient {
 				try {
 					JsonNode json = objectMapper.readTree(message);
 					if (!json.has("op")) {
-						Logger.getGlobal().warning("Received malformed JSON (no op): " + message);
+						logger.warn("Received malformed JSON (no op): {}", message);
 						return;
 					}
 
@@ -142,7 +144,7 @@ public class ObsWsClient {
 							break;
 					}
 				} catch (Exception e) {
-					Logger.getGlobal().warning("Error processing message: " + e.getMessage());
+					logger.warn("Error processing message: {}", e.getMessage());
 				}
 
 				if (customMessageHandler != null) {
@@ -168,7 +170,7 @@ public class ObsWsClient {
 			@Override
 			public void onError(Exception ex) {
 				if (ex != null && ex.getMessage() != null && !ex.getMessage().isEmpty()) {
-					Logger.getGlobal().warning("OBS WebSocket error: " + ex.getMessage());
+					logger.warn("OBS WebSocket error: {}", ex.getMessage());
 				}
 
 				if (onErrorHandler != null) {
@@ -189,12 +191,12 @@ public class ObsWsClient {
 
 			switch (eventType) {
 				case "ExitStarted":
-				Logger.getGlobal().info("OBS is shutting down");
+				logger.info("OBS is shutting down");
 					close();
 					break;
 				case "AuthenticationFailure":
 				case "AuthenticationFailed":
-					Logger.getGlobal().warning("OBS authentication failed!");
+					logger.warn("OBS authentication failed!");
 					autoReconnect = false;
 					close();
 					break;
@@ -259,7 +261,7 @@ public class ObsWsClient {
 					break;
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Error handling event: " + e.getMessage());
+			logger.warn("Error handling event: {}", e.getMessage());
 		}
 	}
 
@@ -273,7 +275,7 @@ public class ObsWsClient {
 
 			if (authRequired) {
 				if (password == null || password.isEmpty()) {
-					Logger.getGlobal().warning("Authentication required but no password provided");
+					logger.warn("Authentication required but no password provided");
 					autoReconnect = false;
 					close();
 					return;
@@ -298,7 +300,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(identify));
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Error sending Identify: " + e.getMessage());
+			logger.warn("Error sending Identify: {}", e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -349,7 +351,7 @@ public class ObsWsClient {
 					break;
 			}
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Error handling request response: " + e.getMessage());
+			logger.warn("Error handling request response: {}", e.getMessage());
 		}
 	}
 
@@ -395,7 +397,7 @@ public class ObsWsClient {
 			}
 		} catch (Exception e) {
 			if (autoReconnect) {
-				Logger.getGlobal().warning("Initial connection failed: " + e.getMessage());
+				logger.warn("Initial connection failed: {}", e.getMessage());
 				scheduleReconnect();
 			} else {
 				throw e;
@@ -463,7 +465,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(request));
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Error setting scene: " + e.getMessage());
+			logger.warn("Error setting scene: {}", e.getMessage());
 		}
 	}
 
@@ -482,7 +484,7 @@ public class ObsWsClient {
 
 			send(objectMapper.writeValueAsString(request));
 		} catch (Exception e) {
-			Logger.getGlobal().warning("Error sending request: " + e.getMessage());
+			logger.warn("Error sending request: {}", e.getMessage());
 		}
 	}
 

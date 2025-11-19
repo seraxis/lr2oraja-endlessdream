@@ -30,7 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.lwjgl.opengl.GL11;
 
@@ -40,6 +41,7 @@ import org.lwjgl.opengl.GL11;
  * @author exch
  */
 public class Skin {
+	private static final Logger logger = LoggerFactory.getLogger(Skin.class);
 	
 	public final SkinHeader header;
 	/**
@@ -207,7 +209,7 @@ public class Skin {
 			}
 			
  		}
-		Logger.getGlobal().info("描画されないことが確定しているSkinObject削除 : " + removes.size + " / " + objects.size);
+		logger.info("描画されないことが確定しているSkinObject削除 : {} / {}", removes.size, objects.size);
 		objects.removeAll(removes, true);
 		objectarray = objects.toArray(SkinObject.class);
 		option.clear();

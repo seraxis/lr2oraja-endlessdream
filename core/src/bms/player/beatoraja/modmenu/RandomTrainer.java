@@ -3,9 +3,11 @@ package bms.player.beatoraja.modmenu;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RandomTrainer {
+    private static final Logger logger = LoggerFactory.getLogger(RandomTrainer.class);
     private static String laneOrder = "1234567";
     private static ArrayList<Character> lanesToRandom = new ArrayList<>();
 
@@ -27,7 +29,7 @@ public class RandomTrainer {
                 randomSeedMap = (HashMap<Integer, Long>) ois.readObject();
                 ois.close();
             } catch (ClassNotFoundException | NullPointerException | IOException ex) {
-                Logger.getGlobal().severe("RandomTrainer: randomtrainer.dat corrupted or missing from jar");
+                logger.error("RandomTrainer: randomtrainer.dat corrupted or missing from jar");
                 ex.printStackTrace();
             }
         }

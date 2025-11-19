@@ -1,7 +1,8 @@
 package bms.player.beatoraja.ir;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
@@ -13,6 +14,7 @@ import bms.player.beatoraja.song.SongData;
  * @author exch
  */
 public class RankingData {
+	private static final Logger logger = LoggerFactory.getLogger(RankingData.class);
 	/**
 	 * 選択されている楽曲の現在のIR順位
 	 */
@@ -71,10 +73,10 @@ public class RankingData {
 	        }
 	        if(response.isSucceeded()) {
 	        	updateScore(response.getData(), mainstate.getScoreDataProperty().getScoreData());
-	            Logger.getGlobal().fine("IRからのスコア取得成功 : " + response.getMessage());
+				logger.trace("IRからのスコア取得成功 : {}", response.getMessage());
 				state = FINISH;
 	        } else {
-	            Logger.getGlobal().warning("IRからのスコア取得失敗 : " + response.getMessage());
+				logger.warn("IRからのスコア取得失敗 : {}", response.getMessage());
 				state = FAIL;
 	        }
 	        lastUpdateTime = System.currentTimeMillis();

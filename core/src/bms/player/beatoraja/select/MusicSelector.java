@@ -4,7 +4,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -34,6 +35,7 @@ import imgui.ImGui;
  * @author exch
  */
 public final class MusicSelector extends MainState {
+	private static final Logger logger = LoggerFactory.getLogger(MusicSelector.class);
 
 	// TODO　ミラーランダム段位のスコア表示
 
@@ -143,7 +145,7 @@ public final class MusicSelector extends MainState {
 		this.rival = index != -1 ? rivals.getRivalInformation(index) : null;
 		rivalcache = index != -1 ? rivals.getRivalScoreDataCache(index) : null;
 		manager.updateBar();
-		Logger.getGlobal().info("Rival変更:" + (rival != null ? rival.getName() : "なし"));
+		logger.info("Rival変更:{}", rival != null ? rival.getName() : "なし");
 	}
 
 	public PlayerInformation getRival() {
@@ -445,20 +447,20 @@ public final class MusicSelector extends MainState {
 	private void readCourse(BMSPlayerMode mode) {
 		final GradeBar gradeBar = (GradeBar) manager.getSelected();
 		if (!gradeBar.existsAllSongs()) {
-			Logger.getGlobal().info("段位の楽曲が揃っていません");
+			logger.info("段位の楽曲が揃っていません");
 			return;
 		}
 
 		if (!_readCourse(mode, gradeBar)) {
 			ImGuiNotify.error("Failed to loading Course : Some of songs not found", 1200);
-			Logger.getGlobal().info("段位の楽曲が揃っていません");
+			logger.info("段位の楽曲が揃っていません");
 		}
 	}
 
 	private void readRandomCourse(BMSPlayerMode mode) {
 		final RandomCourseBar randomCourseBar = (RandomCourseBar) manager.getSelected();
 		if (!randomCourseBar.existsAllSongs()) {
-			Logger.getGlobal().info("ランダムコースの楽曲が揃っていません");
+			logger.info("ランダムコースの楽曲が揃っていません");
 			return;
 		}
 
@@ -466,7 +468,7 @@ public final class MusicSelector extends MainState {
 		final GradeBar gradeBar = new GradeBar(randomCourseBar.getCourseData().createCourseData());
 		if (!gradeBar.existsAllSongs()) {
 			ImGuiNotify.error("Failed to loading Random Course : Some of songs not found", 1200);
-			Logger.getGlobal().info("ランダムコースの楽曲が揃っていません");
+			logger.info("ランダムコースの楽曲が揃っていません");
 			return;
 		}
 
@@ -476,7 +478,7 @@ public final class MusicSelector extends MainState {
 			manager.setSelected(gradeBar);
 		} else {
 			ImGuiNotify.error("Failed to loading Random Course : Some of songs not found", 1200);
-			Logger.getGlobal().info("ランダムコースの楽曲が揃っていません");
+			logger.info("ランダムコースの楽曲が揃っていません");
 		}
 	}
 

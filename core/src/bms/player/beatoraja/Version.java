@@ -6,9 +6,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Version {
+    private static Logger logger = LoggerFactory.getLogger(Version.class);
     public static final int VERSION_MAJOR = 0;
     public static final int VERSION_MINOR = 3;
     public static final int VERSION_PATCH = 2;
@@ -97,7 +99,7 @@ public class Version {
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             return sdf.parse(buildDate);
         } catch (Exception e) {
-            Logger.getGlobal().severe("Failed to parse build time: " + e.getMessage());
+			logger.error("Failed to parse build time: {}", e.getMessage());
             return null;
         }
     }
@@ -121,7 +123,7 @@ public class Version {
             buildMetaInfo.load(Version.class.getClassLoader().getResourceAsStream("resources/build.properties"));
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.getGlobal().severe("Failed to load build meta info");
+            logger.error("Failed to load build meta info");
         }
     }
 }
