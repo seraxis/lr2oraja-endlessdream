@@ -98,10 +98,9 @@ public class LeaderBoardBar extends DirectoryBar {
 		FunctionBar[] bars = new FunctionBar[leaderboard.length + 1];
 		int id = 0;
 		boolean inserted = false;
-        FunctionBar playerBar = createFunctionBar(id, LeaderboardEntry.newEntryPrimaryIR(localScore), true);
         if (leaderboard.length == 0 || localScore.getExscore() > leaderboard[0].getIrScore().getExscore()) {
             id++;
-			bars[0] = playerBar;
+			bars[0] = createFunctionBar(id, LeaderboardEntry.newEntryPrimaryIR(localScore), true);
 			inserted = true;
 		}
         for (int i = 0; i < leaderboard.length; i++) {
@@ -111,13 +110,13 @@ public class LeaderBoardBar extends DirectoryBar {
 			id++;
             if (!inserted && score.getExscore() > localScore.getExscore() &&
                 (i == leaderboard.length - 1 || leaderboard[i + 1].getIrScore().getExscore() <= localScore.getExscore())) {
-                bars[id] = playerBar;
+                bars[id] = createFunctionBar(id + 1, LeaderboardEntry.newEntryPrimaryIR(localScore), true);
 				id++;
 				inserted = true;
 			}
 		}
 		if (!inserted) {
-			bars[id] = playerBar;
+			bars[id] = createFunctionBar(id, LeaderboardEntry.newEntryPrimaryIR(localScore), true);
 		}
 		return bars;
 	}
