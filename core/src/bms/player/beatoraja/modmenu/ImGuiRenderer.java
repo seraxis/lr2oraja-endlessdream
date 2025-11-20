@@ -157,7 +157,6 @@ public class ImGuiRenderer {
                 MiscSettingMenu.show(SHOW_MISC_SETTING);
             }
 
-
             if (ImGui.treeNode("Controller Input Debug Information")) {
                 float axis;
 
