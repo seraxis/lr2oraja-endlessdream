@@ -4,9 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.TableData;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
@@ -403,20 +405,11 @@ public class ContextMenuBar extends DirectoryBar {
 
         var fillMissingCharts = new FunctionBar((selector, self) -> {
             TableData.TableFolder[] folder = table.getTableData().getFolder();
-            List<Pair<String, String>> md5AndNames = Arrays.stream(folder)
-                    .flatMap(f -> Arrays.stream(f.getSong()).map(song -> Pair.of(song.getMd5(), song.getTitle())))
-                    .toList();
-            String[] md5Array = Pair.projectFirst(md5AndNames).toArray(String[]::new);
-            SongDatabaseAccessor songDatabaseAccessor = selector.main.getSongDatabase();
-            SongData[] inHandSongdatas = songDatabaseAccessor.getSongDatas(md5Array);
-            Set<String> inHandMd5s = Arrays.stream(inHandSongdatas).map(SongData::getMd5).collect(Collectors.toSet());
-            List<Pair<String, String>> missingCharts = md5AndNames.stream()
-                    .filter(p -> !inHandMd5s.contains(p.getFirst()))
-                    .toList();
-            missingCharts.forEach(p -> selector.main.getHttpDownloadProcessor().submitMD5Task(
-                    p.getFirst(),
-                    p.getSecond()
-            ));
+            SongData[] want = Arrays.stream(folder).flatMap(f -> Arrays.stream(f.getSong())).toArray(SongData[]::new);
+            int fillCount = fillMissingCharts(want, selector.main);
+            if (fillCount == 0) {
+                Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
+            }
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
         if (table.getTableData().getUrl() != null) options.add(fillMissingCharts);
 
@@ -426,8 +419,45 @@ public class ContextMenuBar extends DirectoryBar {
     private Bar[] tableFolderContext() {
         ArrayList<Bar> options = new ArrayList<>();
         options.add(folder);
-        // do your fillmissingcharts logic here
+        var fillMissingCharts = new FunctionBar((selector, self) -> {
+            SongData[] want = folder.getElements();
+            int fillCount = fillMissingCharts(want, selector.main);
+            if (fillCount == 0) {
+                Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
+            }
+        }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
+        options.add(fillMissingCharts);
         return options.toArray(new Bar[0]);
+    }
+
+    /**
+     * Fill the missing charts
+     *
+     * @param main full song list, md5 and title shouldn't be empty
+     * @return missing charts count
+     * @implNote if an element from 'want' doesn't have md5 or title, it would be simply thrown out without causing
+     * any error
+     */
+    private int fillMissingCharts(SongData[] want, MainController main) {
+        List<Pair<String, String>> md5AndNames = Arrays.stream(want)
+                .map(sd -> Pair.of(sd.getMd5(), sd.getTitle()))
+                .filter(p -> !p.getFirst().isEmpty() && !p.getSecond().isEmpty())
+                .toList();
+        if (md5AndNames.isEmpty()) {
+            return 0;
+        }
+        String[] md5Array = Pair.projectFirst(md5AndNames).toArray(String[]::new);
+        SongDatabaseAccessor songDatabaseAccessor = selector.main.getSongDatabase();
+        SongData[] inHandSongdatas = songDatabaseAccessor.getSongDatas(md5Array);
+        Set<String> inHandMd5s = Arrays.stream(inHandSongdatas).map(SongData::getMd5).collect(Collectors.toSet());
+        List<Pair<String, String>> missingCharts = md5AndNames.stream()
+                .filter(p -> !inHandMd5s.contains(p.getFirst()))
+                .toList();
+        missingCharts.forEach(p -> selector.main.getHttpDownloadProcessor().submitMD5Task(
+                p.getFirst(),
+                p.getSecond()
+        ));
+        return missingCharts.size();
     }
 }
 
