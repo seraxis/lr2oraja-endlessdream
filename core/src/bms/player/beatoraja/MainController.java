@@ -440,7 +440,7 @@ public class MainController {
 //			audio = new GdxAudioDeviceDriver(config);
 //			break;
 		}
-
+		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
     	initializeStates();
 		initializeDependantMenus();
 		MiscSettingMenu.setMain(this);
@@ -564,7 +564,6 @@ public class MainController {
 	}
 
 	private void initializeStates() {
-		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
 		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
 
 		try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
