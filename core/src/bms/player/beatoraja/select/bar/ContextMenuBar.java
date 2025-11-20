@@ -1,9 +1,13 @@
 package bms.player.beatoraja.select.bar;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.TableData;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.select.MusicSelector;
@@ -19,6 +23,9 @@ import java.net.URI;
 import java.awt.Desktop;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.song.SongDatabaseAccessor;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 
 public class ContextMenuBar extends DirectoryBar {
@@ -381,6 +388,25 @@ public class ContextMenuBar extends DirectoryBar {
             selector.play(OPTION_CHANGE);
         }, "Copy URL", STYLE_SEARCH, STYLE_TEXT_NEW);
         if (table.getTableData().getUrl() != null) options.add(copyUrl);
+
+        var fillMissingCharts = new FunctionBar((selector, self) -> {
+            TableData.TableFolder[] folder = table.getTableData().getFolder();
+            List<Pair<String, String>> md5AndNames = Arrays.stream(folder)
+                    .flatMap(f -> Arrays.stream(f.getSong()).map(song -> Pair.of(song.getMd5(), song.getTitle())))
+                    .toList();
+            String[] md5Array = Pair.projectFirst(md5AndNames).toArray(String[]::new);
+            SongDatabaseAccessor songDatabaseAccessor = selector.main.getSongDatabase();
+            SongData[] inHandSongdatas = songDatabaseAccessor.getSongDatas(md5Array);
+            Set<String> inHandMd5s = Arrays.stream(inHandSongdatas).map(SongData::getMd5).collect(Collectors.toSet());
+            List<Pair<String, String>> missingCharts = md5AndNames.stream()
+                    .filter(p -> !inHandMd5s.contains(p.getFirst()))
+                    .toList();
+            missingCharts.forEach(p -> selector.main.getHttpDownloadProcessor().submitMD5Task(
+                    p.getFirst(),
+                    p.getSecond()
+            ));
+        }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
+        if (table.getTableData().getUrl() != null) options.add(fillMissingCharts);
 
         return options.toArray(new Bar[0]);
     }
