@@ -411,7 +411,7 @@ public class ContextMenuBar extends DirectoryBar {
                 Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
             }
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
-        if (table.getTableData().getUrl() != null) options.add(fillMissingCharts);
+        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
 
         return options.toArray(new Bar[0]);
     }
@@ -419,6 +419,10 @@ public class ContextMenuBar extends DirectoryBar {
     private Bar[] tableFolderContext() {
         ArrayList<Bar> options = new ArrayList<>();
         options.add(folder);
+
+        // if you ever add anything here, don't forget to go to SHOW_CONTEXT_MENU
+        // in MusicSelectCommand and remove the check for isEnableHttp
+
         var fillMissingCharts = new FunctionBar((selector, self) -> {
             SongData[] want = folder.getElements();
             int fillCount = fillMissingCharts(want, selector.main);
@@ -426,7 +430,8 @@ public class ContextMenuBar extends DirectoryBar {
                 Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
             }
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
-        options.add(fillMissingCharts);
+        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
+
         return options.toArray(new Bar[0]);
     }
 
