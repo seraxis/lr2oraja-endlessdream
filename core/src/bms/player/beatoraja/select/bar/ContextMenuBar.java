@@ -31,6 +31,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 public class ContextMenuBar extends DirectoryBar {
     private SongData song = null;
     private TableBar table = null;
+    private HashBar folder = null;
     private boolean showMeta = false;
     private String title;
 
@@ -66,6 +67,16 @@ public class ContextMenuBar extends DirectoryBar {
         this.title = table.getTableData().getName();
     }
 
+    public ContextMenuBar(MusicSelector selector, TableBar table, HashBar folder) {
+        // sets showInvisibleChart = true
+        super(selector, true);
+        this.setSortable(false);
+        // folder of a difficulty table
+        this.table = table;
+        this.folder = folder;
+        this.title = folder.getTitle();
+    }
+
     public String getTitle() { return title; }
     public int getLamp(boolean dontCare) { return 0; }
     public Bar getPrevious() { return table; }
@@ -73,6 +84,7 @@ public class ContextMenuBar extends DirectoryBar {
     public Bar[] getChildren() {
         if (song != null && song.getPath() != null) { return songContext(); }
         else if (song != null && song.getPath() == null) { return missingSongContext(); }
+        else if (folder != null && table != null) { return tableFolderContext(); }
         else if (table != null) { return tableContext(); }
         else { return new Bar[0]; }
     }
@@ -408,6 +420,13 @@ public class ContextMenuBar extends DirectoryBar {
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
         if (table.getTableData().getUrl() != null) options.add(fillMissingCharts);
 
+        return options.toArray(new Bar[0]);
+    }
+
+    private Bar[] tableFolderContext() {
+        ArrayList<Bar> options = new ArrayList<>();
+        options.add(folder);
+        // do your fillmissingcharts logic here
         return options.toArray(new Bar[0]);
     }
 }

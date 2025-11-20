@@ -159,9 +159,9 @@ public enum MusicSelectCommand {
 	 */
     SHOW_CONTEXT_MENU(selector -> {
 		final BarManager bar = selector.getBarManager();
-		Bar current = selector.getBarManager().getSelected();
-        boolean alreadyInContextMenu =
-            bar.getDirectory().size > 0 && bar.getDirectory().last() instanceof ContextMenuBar;
+		Bar current = bar.getSelected();
+        Bar previous = bar.getDirectory().isEmpty() ? null : bar.getDirectory().last();
+        boolean alreadyInContextMenu = previous instanceof ContextMenuBar;
         if (current instanceof SongBar) {
             SongData song = ((SongBar)current).getSongData();
             if (!alreadyInContextMenu) {
@@ -175,7 +175,17 @@ public enum MusicSelectCommand {
                 bar.updateBar(new ContextMenuBar(selector, ((TableBar)current)));
                 selector.play(FOLDER_OPEN);
             }
-            else if (selector.getBarManager().updateBar(current)) { selector.play(FOLDER_OPEN); }
+            else if (bar.updateBar(current)) { selector.play(FOLDER_OPEN); }
+        }
+        else if (current instanceof HashBar && previous instanceof TableBar) {
+            // HashBars are also used in other places, but this will open
+            // the context menu specific to difficulty table folders
+            if (!alreadyInContextMenu) {
+                bar.updateBar(
+                    new ContextMenuBar(selector, ((TableBar)previous), ((HashBar)current)));
+                selector.play(FOLDER_OPEN);
+            }
+            else if (bar.updateBar(current)) { selector.play(FOLDER_OPEN); }
         }
     });
 
