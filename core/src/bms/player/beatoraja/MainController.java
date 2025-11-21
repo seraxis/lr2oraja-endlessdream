@@ -166,7 +166,7 @@ public class MainController {
 			}
 		}
 		if (config.isEnableHttp()) {
-			Path httpdlPath = Paths.get("http_download").toAbsolutePath();
+			Path httpdlPath = Paths.get(config.getDownloadDirectory()).toAbsolutePath();
 			if (!httpdlPath.toFile().exists())
 				httpdlPath.toFile().mkdirs();
 			List<String> roots = new ArrayList<>(Arrays.asList(getConfig().getBmsroot()));
@@ -506,7 +506,7 @@ public class MainController {
 
 		if (config.isEnableHttp()) {
 			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
-			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource);
+			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource, config.getDownloadDirectory());
 			DownloadTaskState.initialize(httpDownloadProcessor);
 			DownloadTaskMenu.setProcessor(httpDownloadProcessor);
 		}
