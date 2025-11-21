@@ -28,6 +28,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 import javafx.util.Pair;
 
 public class ResourceConfigurationView implements Initializable {
@@ -46,9 +47,32 @@ public class ResourceConfigurationView implements Initializable {
 	private Config config;
 	
 	private PlayConfigurationView main;
+	private String downloadDirectory;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		bmsroot.setCellFactory(new Callback<>() {
+			@Override
+			public ListCell<String> call(ListView<String> param) {
+				return new ListCell<>() {
+					@Override
+					protected void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
+						if (item != null && !empty) {
+							setText(item);
+							if (item.equals(downloadDirectory)) {
+								setStyle("-fx-text-fill: #7878f8");
+							} else {
+								setStyle("-fx-text-fill: -fx-text-base-color");
+							}
+						} else {
+							setText("");
+							setStyle("-fx-text-fill: -fx-text-base-color");
+						}
+					}
+				};
+			}
+		});
 	}
 	
 	void init(PlayConfigurationView main) {
@@ -137,6 +161,7 @@ public class ResourceConfigurationView implements Initializable {
 
     public void update(Config config) {
     	this.config = config;
+		this.downloadDirectory = config.getDownloadDirectory();
 		bmsroot.getItems().setAll(config.getBmsroot());
 		updatesong.setSelected(config.isUpdatesong());
 
@@ -153,6 +178,7 @@ public class ResourceConfigurationView implements Initializable {
 		config.setBmsroot(bmsroot.getItems().toArray(new String[0]));
 		config.setUpdatesong(updatesong.isSelected());
 		config.setTableURL(TableInfo.toUrlArray(tableurl.getItems()));
+		config.setDownloadDirectory(downloadDirectory);
 	}
 
     @FXML
@@ -480,7 +506,19 @@ public class ResourceConfigurationView implements Initializable {
 
     @FXML
 	public void removeSongPath() {
-		bmsroot.getItems().removeAll(bmsroot.getSelectionModel().getSelectedItems());
+		ObservableList<String> removingItem = bmsroot.getSelectionModel().getSelectedItems();
+		if (removingItem.contains(downloadDirectory)) {
+			Alert alert = new Alert(Alert.AlertType.WARNING, "You cannot remove the download directory!");
+			alert.showAndWait();
+			return ;
+		}
+		bmsroot.getItems().removeAll(removingItem);
+	}
+
+	@FXML
+	public void markAsDownloadDirectory() {
+		downloadDirectory = bmsroot.getSelectionModel().getSelectedItem();
+		bmsroot.refresh();
 	}
 
     @FXML
