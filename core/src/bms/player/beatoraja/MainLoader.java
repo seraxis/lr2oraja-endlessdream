@@ -377,12 +377,16 @@ public class MainLoader extends Application {
 				ObjectMapper mapper = new ObjectMapper();
 				GithubLastestRelease lastestData = mapper.readValue(url, GithubLastestRelease.class);
 				final String name = lastestData.name;
-				if (MainController.getVersion().contains(name)) {
+				if (Version.compareToString(name) == 0) {
 					message = "Already on the latest version";
-				} else {
+				} else if (Version.compareToString(name) == -1) {
 					message = String.format("Version [%s] is available to download", name);
 					dlurl = lastestData.html_url;
-				}
+				} else {
+                    // TODO: can we actually check if the current build is greater than the previous one by commit hash or build date? Doesn't seem possible with the latter
+                    message = "On Unstable Development Build [" + Version.getGitCommitHash() + "] for " + Version.getVersion();
+                    dlurl = "https://github.com/seraxis/lr2oraja-endlessdream/releases/tag/pre-release";
+                }
 			} catch (Exception e) {
 				Logger.getGlobal().warning("最新版URL取得時例外:" + e.getMessage());
 				message = "バージョン情報を取得できませんでした";
