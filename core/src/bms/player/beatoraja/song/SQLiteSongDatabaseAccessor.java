@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import bms.player.beatoraja.SQLiteDatabaseAccessor;
 import bms.player.beatoraja.Validatable;
+import javafx.util.Pair;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -462,7 +463,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 			final boolean containsBMS = bmsfiles.size() > 0;
 			property.listener.addBMSFilesCount(bmsfiles.size());
-			property.listener.addNewBMSFilesCount(this.processBMSFolder(records, property));
+			Pair<Integer, Integer> countPair = this.processBMSFolder(records, property);
+			Integer skipCount = countPair.getKey();
+			Integer newCount = countPair.getValue();
+			property.listener.addProcessedBMSFilesCount(skipCount + newCount);
+			property.listener.addNewBMSFilesCount(newCount);
 
 			final int len = folders.size();
 			dirs.forEach(bf -> {
@@ -526,9 +531,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				}
 			});
 		}
-		
-		private int processBMSFolder(List<SongData> records, SongDatabaseUpdaterProperty property) {
-			int count = 0;
+
+		/**
+		 * @return a pair, first is the count of charts that are already registered, second is the count of new charts.
+		 */
+		private Pair<Integer, Integer> processBMSFolder(List<SongData> records, SongDatabaseUpdaterProperty property) {
+			int skipCount = 0, newCount = 0;
 			BMSDecoder bmsdecoder = null;
 			BMSONDecoder bmsondecoder = null;
 			OSUDecoder osudecoder = null;
@@ -553,7 +561,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					}
 				}
 				if (!update) {
-					property.listener.addSkipBMSFilesCount(1);
+					skipCount++;
 					continue;
 				}
 				BMSModel model = null;
@@ -656,7 +664,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                         if(property.info != null) {
                             property.info.update(model);
                         }
-                        count++;
+						newCount++;
                     } else {
                         try {
                             qr.update(property.conn, "DELETE FROM song WHERE path = ?", pathname);
@@ -678,7 +686,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				}
 			});
 
-			return count;
+			return new Pair<>(skipCount, newCount);
 		}
 	}
 	
