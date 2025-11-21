@@ -37,8 +37,7 @@ import java.util.regex.Pattern;
 public class HttpDownloadProcessor {
     public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCES = new HashMap<>();
     public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
-    // TODO: make this magic constants configurable? I think not very worthy though
-    public static final String DOWNLOAD_DIRECTORY = "http_download";
+    private String downloadDirectory;
 
     static {
         // Wriggle
@@ -60,9 +59,10 @@ public class HttpDownloadProcessor {
     private final MainController main;
     private final HttpDownloadSource httpDownloadSource;
 
-    public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource) {
+    public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource, String downloadDirectory) {
         this.main = main;
         this.httpDownloadSource = httpDownloadSource;
+        this.downloadDirectory = downloadDirectory;
     }
 
     public static HttpDownloadSourceMeta getDefaultDownloadSource() {
@@ -182,7 +182,7 @@ public class HttpDownloadProcessor {
                 // I don't think this has any issue since user can always turn back to root directory
                 // and update the download directory manually
                 ImGuiNotify.info("Successfully downloaded & extracted. Trying to rebuild download directory");
-                main.updateSong(DOWNLOAD_DIRECTORY);
+                main.updateSong(downloadDirectory);
                 // If everything works well, trying to delete the downloaded archive
                 try {
                     Files.delete(result);
@@ -241,7 +241,7 @@ public class HttpDownloadProcessor {
 
             long contentLength = conn.getContentLengthLong();
             is = conn.getInputStream();
-            result = Path.of(DOWNLOAD_DIRECTORY, fileName);
+            result = Path.of(downloadDirectory, fileName);
             fos = new FileOutputStream(result.toFile());
 
             // TODO: We can bind the buffer to the worker thread instead of creating & releasing it repeatedly
@@ -290,7 +290,7 @@ public class HttpDownloadProcessor {
      * @param targetPath target directory, fallback to DOWNLOAD_DIRECTORY if null
      */
     private void extractCompressedFile(File file, Path targetPath) {
-        Path resultDirectory = targetPath == null ? Path.of(DOWNLOAD_DIRECTORY) : targetPath;
+        Path resultDirectory = targetPath == null ? Path.of(downloadDirectory) : targetPath;
         try (SevenZFile sevenZFile = SevenZFile.builder().setFile(file).get()) {
             SevenZArchiveEntry entry;
             while ((entry = sevenZFile.getNextEntry()) != null) {
