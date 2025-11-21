@@ -9,15 +9,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SongDatabaseUpdateListener {
 	private final AtomicInteger bmsFiles = new AtomicInteger(0);
-	private final AtomicInteger skipBMSFiles = new AtomicInteger(0);
+	private final AtomicInteger processedBMSFiles = new AtomicInteger(0);
 	private final AtomicInteger newBMSFiles = new AtomicInteger(0);
 
 	public void addBMSFilesCount(int count) {
 		bmsFiles.addAndGet(count);
 	}
 
-	public void addSkipBMSFilesCount(int count) {
-		skipBMSFiles.addAndGet(count);
+	public void addProcessedBMSFilesCount(int count) {
+		processedBMSFiles.addAndGet(count);
 	}
 
 	public void addNewBMSFilesCount(int count) {
@@ -28,8 +28,8 @@ public class SongDatabaseUpdateListener {
 		return bmsFiles.get();
 	}
 
-	public int getSkipBMSFilesCount() {
-		return skipBMSFiles.get();
+	public int getProcessedBMSFilesCount() {
+		return processedBMSFiles.get();
 	}
 
 	public int getNewBMSFilesCount() {

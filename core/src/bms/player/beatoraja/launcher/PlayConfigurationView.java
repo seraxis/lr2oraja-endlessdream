@@ -869,7 +869,7 @@ public class PlayConfigurationView implements Initializable {
 					Supplier<String> getProcessStatusText = () -> String.format(
 							bundle.getString("PROGRESS_BMS_STATUS"),
 							songDatabaseUpdateListener.getBMSFilesCount(),
-							songDatabaseUpdateListener.getSkipBMSFilesCount(),
+							songDatabaseUpdateListener.getProcessedBMSFilesCount(),
 							songDatabaseUpdateListener.getNewBMSFilesCount()
 					);
 					Label processStatusLabel = new Label(getProcessStatusText.get());
