@@ -425,8 +425,6 @@
                             <TextField fx:id="defaultDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="0" GridPane.columnIndex="1" />
                             <Label text="Override Http Server URL" prefHeight="25.0" GridPane.rowIndex="1" GridPane.columnIndex="0" />
                             <TextField fx:id="overrideDownloadURL" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="1" GridPane.columnIndex="1" />
-                            <Label text="Download Directory" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                            <TextField fx:id="downloadDirectory" prefHeight="25.0" prefWidth="400" GridPane.rowIndex="2" GridPane.columnIndex="1" />
                         </children>
                     </GridPane>
 

@@ -262,8 +262,6 @@ public class PlayConfigurationView implements Initializable {
 	private TextField defaultDownloadURL;
 	@FXML
 	private TextField overrideDownloadURL;
-	@FXML
-	private TextField downloadDirectory;
 
 	@FXML
 	private VBox skin;
@@ -482,7 +480,6 @@ public class PlayConfigurationView implements Initializable {
 		httpDownloadSource.setValue(config.getDownloadSource());
 		defaultDownloadURL.setText(config.getDefaultDownloadURL());
 		overrideDownloadURL.setText(config.getOverrideDownloadURL());
-		downloadDirectory.setText(config.getDownloadDirectory());
 
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
@@ -630,7 +627,6 @@ public class PlayConfigurationView implements Initializable {
 		config.setEnableHttp(enableHttp.isSelected());
 		config.setDownloadSource(httpDownloadSource.getValue());
 		config.setOverrideDownloadURL(overrideDownloadURL.getText());
-		config.setDownloadDirectory(downloadDirectory.getText());
 
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
 

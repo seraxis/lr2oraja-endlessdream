@@ -51,6 +51,12 @@
 					<Insets left="10.0" right="10.0" top="10.0" />
 				</VBox.margin>
 			</Button>
+			<Button mnemonicParsing="false" onAction="#markAsDownloadDirectory"
+				prefHeight="31.0" prefWidth="80.0" text="%DOWN">
+				<VBox.margin>
+					<Insets left="10.0" right="10.0" top="10.0" />
+				</VBox.margin>
+			</Button>
 		</VBox>
 	</HBox>
 	<HBox prefHeight="100.0" prefWidth="200.0"
