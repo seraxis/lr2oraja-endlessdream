@@ -305,7 +305,8 @@ public final class MusicSelectInputProcessor {
                  property.isPressed(input, REPLAY, true))) {
                 select.selectSong(BMSPlayerMode.PLAY);
             }
-            else if ((current instanceof SongBar || current instanceof TableBar) &&
+            else if ((current instanceof SongBar || current instanceof TableBar ||
+                      current instanceof HashBar) &&
                      (property.isPressed(input, PRACTICE, true) ||
                       property.isPressed(input, AUTO, true))) {
                 select.execute(MusicSelectCommand.SHOW_CONTEXT_MENU);

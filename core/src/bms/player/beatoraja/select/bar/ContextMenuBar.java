@@ -1,9 +1,15 @@
 package bms.player.beatoraja.select.bar;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.TableData;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.select.MusicSelector;
@@ -19,11 +25,15 @@ import java.net.URI;
 import java.awt.Desktop;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.song.SongDatabaseAccessor;
+import bms.tool.mdprocessor.HttpDownloadProcessor;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 
 public class ContextMenuBar extends DirectoryBar {
     private SongData song = null;
     private TableBar table = null;
+    private HashBar folder = null;
     private boolean showMeta = false;
     private String title;
 
@@ -59,6 +69,16 @@ public class ContextMenuBar extends DirectoryBar {
         this.title = table.getTableData().getName();
     }
 
+    public ContextMenuBar(MusicSelector selector, TableBar table, HashBar folder) {
+        // sets showInvisibleChart = true
+        super(selector, true);
+        this.setSortable(false);
+        // folder of a difficulty table
+        this.table = table;
+        this.folder = folder;
+        this.title = folder.getTitle();
+    }
+
     public String getTitle() { return title; }
     public int getLamp(boolean dontCare) { return 0; }
     public Bar getPrevious() { return table; }
@@ -66,6 +86,7 @@ public class ContextMenuBar extends DirectoryBar {
     public Bar[] getChildren() {
         if (song != null && song.getPath() != null) { return songContext(); }
         else if (song != null && song.getPath() == null) { return missingSongContext(); }
+        else if (folder != null && table != null) { return tableFolderContext(); }
         else if (table != null) { return tableContext(); }
         else { return new Bar[0]; }
     }
@@ -382,7 +403,66 @@ public class ContextMenuBar extends DirectoryBar {
         }, "Copy URL", STYLE_SEARCH, STYLE_TEXT_NEW);
         if (table.getTableData().getUrl() != null) options.add(copyUrl);
 
+        var fillMissingCharts = new FunctionBar((selector, self) -> {
+            TableData.TableFolder[] folder = table.getTableData().getFolder();
+            SongData[] want = Arrays.stream(folder).flatMap(f -> Arrays.stream(f.getSong())).toArray(SongData[]::new);
+            int fillCount = fillMissingCharts(want, selector.main);
+            if (fillCount == 0) {
+                Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
+            }
+        }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
+        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
+
         return options.toArray(new Bar[0]);
+    }
+
+    private Bar[] tableFolderContext() {
+        ArrayList<Bar> options = new ArrayList<>();
+        options.add(folder);
+
+        // if you ever add anything here, don't forget to go to SHOW_CONTEXT_MENU
+        // in MusicSelectCommand and remove the check for isEnableHttp
+
+        var fillMissingCharts = new FunctionBar((selector, self) -> {
+            SongData[] want = folder.getElements();
+            int fillCount = fillMissingCharts(want, selector.main);
+            if (fillCount == 0) {
+                Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
+            }
+        }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
+        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
+
+        return options.toArray(new Bar[0]);
+    }
+
+    /**
+     * Fill the missing charts
+     *
+     * @param main full song list, md5 and title shouldn't be empty
+     * @return missing charts count
+     * @implNote if an element from 'want' doesn't have md5 or title, it would be simply thrown out without causing
+     * any error
+     */
+    private int fillMissingCharts(SongData[] want, MainController main) {
+        List<Pair<String, String>> md5AndNames = Arrays.stream(want)
+                .map(sd -> Pair.of(sd.getMd5(), sd.getTitle()))
+                .filter(p -> !p.getFirst().isEmpty() && !p.getSecond().isEmpty())
+                .toList();
+        if (md5AndNames.isEmpty()) {
+            return 0;
+        }
+        String[] md5Array = Pair.projectFirst(md5AndNames).toArray(String[]::new);
+        SongDatabaseAccessor songDatabaseAccessor = selector.main.getSongDatabase();
+        SongData[] inHandSongdatas = songDatabaseAccessor.getSongDatas(md5Array);
+        Set<String> inHandMd5s = Arrays.stream(inHandSongdatas).map(SongData::getMd5).collect(Collectors.toSet());
+        List<Pair<String, String>> missingCharts = md5AndNames.stream()
+                .filter(p -> !inHandMd5s.contains(p.getFirst()))
+                .toList();
+        missingCharts.forEach(p -> selector.main.getHttpDownloadProcessor().submitMD5Task(
+                p.getFirst(),
+                p.getSecond()
+        ));
+        return missingCharts.size();
     }
 }
 

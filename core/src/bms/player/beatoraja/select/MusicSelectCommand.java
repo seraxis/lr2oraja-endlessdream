@@ -135,6 +135,19 @@ public enum MusicSelectCommand {
 			}
 		}
 	}),
+	DOWNLOAD_COURSE_HTTP(selector -> {
+		Bar current = selector.getBarManager().getSelected();
+		if (current instanceof GradeBar) {
+			final SongData[] songs = ((GradeBar) current).getSongDatas();
+            for (SongData song : songs) {
+                Logger.getGlobal().info("Missing song md5: " + song.getMd5());
+                if (song.getMd5() != null && !song.getMd5().isEmpty()) {
+                    selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5(),
+                                                                           song.getTitle());
+                }
+            }
+		}
+	}),
 	/**
 	 * 同一フォルダにある譜面を全て表示する．コースの場合は構成譜面を全て表示する
 	 */
@@ -158,9 +171,9 @@ public enum MusicSelectCommand {
 	 */
     SHOW_CONTEXT_MENU(selector -> {
 		final BarManager bar = selector.getBarManager();
-		Bar current = selector.getBarManager().getSelected();
-        boolean alreadyInContextMenu =
-            bar.getDirectory().size > 0 && bar.getDirectory().last() instanceof ContextMenuBar;
+		Bar current = bar.getSelected();
+        Bar previous = bar.getDirectory().isEmpty() ? null : bar.getDirectory().last();
+        boolean alreadyInContextMenu = previous instanceof ContextMenuBar;
         if (current instanceof SongBar) {
             SongData song = ((SongBar)current).getSongData();
             if (!alreadyInContextMenu) {
@@ -174,7 +187,19 @@ public enum MusicSelectCommand {
                 bar.updateBar(new ContextMenuBar(selector, ((TableBar)current)));
                 selector.play(FOLDER_OPEN);
             }
-            else if (selector.getBarManager().updateBar(current)) { selector.play(FOLDER_OPEN); }
+            else if (bar.updateBar(current)) { selector.play(FOLDER_OPEN); }
+        }
+        else if (current instanceof HashBar && previous instanceof TableBar) {
+            // HashBars are also used in other places, but this will open
+            // the context menu specific to difficulty table folders
+            // checking for isEnableHttp because batch downloading is
+            // currently the ontry entry in this menu
+            if (!alreadyInContextMenu && selector.main.getConfig().isEnableHttp()) {
+                bar.updateBar(
+                    new ContextMenuBar(selector, ((TableBar)previous), ((HashBar)current)));
+                selector.play(FOLDER_OPEN);
+            }
+            else if (bar.updateBar(current)) { selector.play(FOLDER_OPEN); }
         }
     });
 
