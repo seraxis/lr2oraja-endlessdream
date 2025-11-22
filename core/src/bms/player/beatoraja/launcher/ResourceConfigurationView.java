@@ -60,7 +60,9 @@ public class ResourceConfigurationView implements Initializable {
 						super.updateItem(item, empty);
 						if (item != null && !empty) {
 							setText(item);
-							if (item.equals(downloadDirectory)) {
+							String entryAbsolutePath = Path.of(item).toAbsolutePath().toString();
+							String downloadDirectoryAbsolutePath = Path.of(downloadDirectory).toAbsolutePath().toString();
+							if (entryAbsolutePath.equals(downloadDirectoryAbsolutePath)) {
 								setStyle("-fx-text-fill: #7878f8");
 							} else {
 								setStyle("-fx-text-fill: -fx-text-base-color");
