@@ -4,9 +4,11 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.SimpleFormatter;
 
 import de.damios.guacamole.gdx.log.LoggerService;
 import org.slf4j.Logger;
@@ -69,11 +71,8 @@ public class MainLoader extends Application {
 		}
 
 		java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
-		try {
-			rootLogger.addHandler(new FileHandler("beatoraja_log.xml"));
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
+        initialize_logging(rootLogger);
+
 
 		BMSPlayerMode auto = null;
 		for (String s : args) {
@@ -117,7 +116,41 @@ public class MainLoader extends Application {
 		}
 	}
 
-	public static void play(Path bmsPath, BMSPlayerMode playerMode, boolean forceExit, Config config, PlayerConfig player, boolean songUpdated) {
+    private static void initialize_logging(java.util.logging.Logger rootLogger) {
+        try {
+            Files.createDirectories(Paths.get("./logs/"));
+            FileHandler fileHandler = new FileHandler("./logs/endlessdream-%g.log", 0, 10);
+            // There is no function to set this directly on the formatter. This is very stupid
+            // Set log info to plain for printing system information
+            System.setProperty("java.util.logging.SimpleFormatter.format", "%5$s%n");
+            SimpleFormatter formatter = new SimpleFormatter();
+            fileHandler.setFormatter(formatter);
+            rootLogger.addHandler(fileHandler);
+
+            Consumer<String> logSystem = (key) -> {
+                String value = System.getProperty(key);
+                rootLogger.info(key + ": " + value);
+            };
+
+            rootLogger.info("--- System Information ---");
+            logSystem.accept("java.version");
+            logSystem.accept("java.vendor");
+            logSystem.accept("java.home");
+            logSystem.accept("os.name");
+            logSystem.accept("os.arch");
+            logSystem.accept("os.version");
+            rootLogger.info("--- End System Information ---");
+
+            // OpenJDK default
+            System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tc %2$s%n%4$s: %5$s%6$s%n");
+            SimpleFormatter formatter2 = new SimpleFormatter();
+            fileHandler.setFormatter(formatter2);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void play(Path bmsPath, BMSPlayerMode playerMode, boolean forceExit, Config config, PlayerConfig player, boolean songUpdated) {
 		//configuratorStage.setIconified(true);
 		if(config == null) {
             try {
