@@ -863,7 +863,7 @@ public class PlayConfigurationView implements Initializable {
                     loadingBarStage.initStyle(StageStyle.UTILITY);
 
                     ProgressBar progressBar = new ProgressBar();
-                    progressBar.setPrefWidth(330);
+                    progressBar.setPrefWidth(400);
 
                     Label messageLabel = new Label(bundle.getString("PROGRESS_BMS_LABEL"));
 					Supplier<String> getProcessStatusText = () -> String.format(
