@@ -10,6 +10,7 @@ import imgui.ImGui;
 import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,6 +28,10 @@ public class SongManagerMenu {
      * In-game local records cache, could be refactored into a fixed size one in the future
      */
     private static Map<String, List<ScoreData>> localHistoryCache = new HashMap<>();
+    /**
+     * Sort strategy
+     */
+    private static ImInt sortStrategy = new ImInt(0);
     /**
      * Whether show scores based on current selected mods or not
      */
@@ -68,7 +73,7 @@ public class SongManagerMenu {
                     ImGui.endPopup();
                 }
                 ImGui.bulletText("Local History");
-                // TODO: Add a sort button here
+                ImGui.combo("sort", sortStrategy, SortStrategy.items);
                 ImGui.checkbox("Show Selected Mods Scores", showSelectedModdedScore);
                 List<ScoreData> localHistory = loadLocalHistory(sha256);
                 renderLocalHistoryTable(localHistory);
@@ -111,7 +116,8 @@ public class SongManagerMenu {
      */
     private static List<ScoreData> loadLocalHistory(String sha256) {
         List<ScoreData> snapshot = localHistoryCache.computeIfAbsent(sha256, s -> selector.main.getPlayDataAccessor().readScoreDataLog(sha256));
-        // TODO: Sort strategy
+        SortStrategy strategy = SortStrategy.valueOf(sortStrategy.get());
+        snapshot.sort(strategy.getComparator());
         if (showSelectedModdedScore.get()) {
             Optional<Integer> freqValue = FreqTrainerMenu.isFreqTrainerEnabled() ? Optional.of(FreqTrainerMenu.getFreq()) :  Optional.empty();
             Optional<Integer> overrideJudge = JudgeTrainer.isActive() ? Optional.of(JudgeTrainer.getJudgeRank()) : Optional.empty();
@@ -199,5 +205,37 @@ public class SongManagerMenu {
 
     public static void forceDisableLastPlayedSort() {
         LAST_PLAYED_SORT.set(false);
+    }
+
+    private enum SortStrategy {
+        RECORD_TIME("Record Time", (lhs, rhs) -> (int)(rhs.getDate() - lhs.getDate()));
+
+        private final String name;
+        private final Comparator<ScoreData> comparator;
+
+        SortStrategy(String name, Comparator<ScoreData> comparator) {
+            this.name = name;
+            this.comparator = comparator;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Comparator<ScoreData> getComparator() {
+            return comparator;
+        }
+
+        public static SortStrategy valueOf(int i) {
+            String name = items[i];
+            for (SortStrategy value : SortStrategy.values()) {
+                if (value.getName().equals(name)) {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        public static String[] items = Arrays.stream(SortStrategy.values()).map(SortStrategy::getName).toArray(String[]::new);
     }
 }
