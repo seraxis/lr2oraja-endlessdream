@@ -298,9 +298,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	 *            LR2のルートパス
 	 */
 	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info) {
-		updateSongDatas(path, bmsroot, updateAll, info, null);
+		updateSongDatas(path, bmsroot, updateAll, info, new SongDatabaseUpdateListener());
 	}
 
+	/**
+	 * @param listener must be provided, cannot be null
+	 */
 	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
 		if(bmsroot == null || bmsroot.length == 0) {
 			logger.warn("楽曲ルートフォルダが登録されていません");
