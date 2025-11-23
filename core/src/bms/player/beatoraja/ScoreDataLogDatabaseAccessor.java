@@ -2,6 +2,9 @@ package bms.player.beatoraja;
 
 import java.sql.*;
 import java.util.*;
+
+import bms.player.beatoraja.select.QueryScoreContext;
+import bms.player.beatoraja.song.SongData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +15,7 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteConfig.SynchronousMode;
 import org.sqlite.SQLiteDataSource;
 
+import javax.management.Query;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -28,6 +32,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 	private final ResultSetHandler<List<ScoreData>> scoreHandler = new BeanListHandler<ScoreData>(ScoreData.class);
 
 	private final QueryRunner qr;
+	private static final int LOAD_CHUNK_SIZE = 1000;
 
 	public ScoreDataLogDatabaseAccessor(String path) throws ClassNotFoundException {
 		super( new Table("scoredatalog",
@@ -137,5 +142,112 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			logger.error("Failed to query table eddatalog: {}", e.getMessage());
 		}
 		return result;
+	}
+
+	public List<ScoreData> getScoreDataLog(String sha256, QueryScoreContext ctx) {
+		List<ScoreData> result = null;
+		try (Connection con = qr.getDataSource().getConnection()) {
+			PreparedStatement ps = con.prepareStatement("SELECT * FROM eddatalog WHERE sha256 = ? AND rate = ? AND overridejudge = ?");
+			ps.setString(1, sha256);
+			ps.setInt(2, ctx.freqValue() != null ? ctx.freqValue() : 0);
+			ps.setInt(3, ctx.overrideJudge() != null ? ctx.overrideJudge() : -1);
+			result = Validatable.removeInvalidElements(scoreHandler.handle(ps.executeQuery()));
+		} catch (Exception e) {
+			logger.error("Failed to query table eddatalog: {}", e.getMessage());
+		}
+		return result;
+	}
+
+	/**
+	 * TODO: Maybe we should make the definition of "best" programmable?
+	 */
+	public ScoreData getBestScoreDataLog(String sha256, QueryScoreContext ctx) {
+		List<ScoreData> rawLogs = getScoreDataLog(sha256, ctx);
+		if (rawLogs.isEmpty()) {
+			return null;
+		}
+		ScoreData result = rawLogs.get(0);
+		for (ScoreData score : rawLogs) {
+			if (score.getClear() > result.getClear()) {
+				result = score;
+			} else if (score.getClear() == result.getClear() && score.getExscore() > result.getExscore()) {
+				result = score;
+			}
+		}
+		return result;
+	}
+
+	public void getBestScoreDataLogs(ScoreDatabaseAccessor.ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
+		StringBuilder str = new StringBuilder(songs.length * 68);
+		getBestScoreDataLogs(collector, songs, ctx.lnMode(), str, true, ctx);
+		str.setLength(0);
+		getBestScoreDataLogs(collector, songs, ctx.lnMode(), str, false, ctx);
+	}
+
+	public void getBestScoreDataLogs(ScoreDatabaseAccessor.ScoreDataCollector collector, SongData[] songs, int mode, StringBuilder str, boolean hasLN, QueryScoreContext ctx) {
+		try (Connection con = qr.getDataSource().getConnection()) {
+			int songLength = songs.length;
+			int chunkLength = (songLength + LOAD_CHUNK_SIZE - 1) / LOAD_CHUNK_SIZE;
+			List<ScoreData> scores = new ArrayList<>();
+			for (int i = 0; i < chunkLength;++i) {
+				// [i * CHUNK_SIZE, min(length, (i + 1) * CHUNK_SIZE)
+				final int chunkStart = i * LOAD_CHUNK_SIZE;
+				final int chunkEnd = Math.min(songLength, (i + 1) * LOAD_CHUNK_SIZE);
+				for (int j = chunkStart; j < chunkEnd; ++j) {
+					SongData song = songs[j];
+					if((hasLN && song.hasUndefinedLongNote()) || (!hasLN && !song.hasUndefinedLongNote())) {
+						if (str.length() > 0) {
+							str.append(',');
+						}
+						str.append('\'').append(song.getSha256()).append('\'');
+					}
+				}
+
+				PreparedStatement ps = con.prepareStatement("SELECT * FROM eddatalog WHERE sha256 in (?) AND mode = ? AND rate = ? AND overridejudge = ?");
+				ps.setString(1, str.toString());
+				ps.setInt(2, mode);
+				ps.setInt(3, ctx.freqValue() != null ? ctx.freqValue() : 0);
+				ps.setInt(4, ctx.overrideJudge() != null ? ctx.overrideJudge() : -1);
+
+				List<ScoreData> subScores = Validatable.removeInvalidElements(scoreHandler.handle(ps.executeQuery()));
+				str.setLength(0);
+				scores.addAll(subScores);
+			}
+			scores.sort(Comparator.comparing(ScoreData::getSha256));
+			// For every chart, we calculate it's best score
+			List<ScoreData> bestScores = new ArrayList<>();
+			for (int i = 0; i <scores.size(); ++i) {
+				int j = i;
+				ScoreData bestScore = scores.get(i);
+				while (j + 1 < scores.size() && scores.get(j + 1).getSha256().equals(bestScore.getSha256())) {
+					ScoreData next = scores.get(j + 1);
+					if (next.getClear() > bestScore.getClear()) {
+						bestScore = next;
+					} else if (next.getClear() == bestScore.getClear() && next.getExscore() > bestScore.getExscore()) {
+						bestScore = next;
+					}
+					j++;
+				}
+				bestScores.add(bestScore);
+				i = j;
+			}
+			for(SongData song : songs) {
+				if((hasLN && song.hasUndefinedLongNote()) || (!hasLN && !song.hasUndefinedLongNote())) {
+					boolean b = true;
+					for (ScoreData score : bestScores) {
+						if(song.getSha256().equals(score.getSha256())) {
+							collector.collect(song, score);
+							b = false;
+							break;
+						}
+					}
+					if(b) {
+						collector.collect(song, null);
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed to query table eddatalog: {}", e.getMessage());
+		}
 	}
 }

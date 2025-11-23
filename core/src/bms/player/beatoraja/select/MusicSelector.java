@@ -127,6 +127,16 @@ public final class MusicSelector extends MainState {
 			protected void readScoreDatasFromSource(ScoreDataCollector collector, SongData[] songs, int lnmode) {
 				pda.readScoreDatas(collector, songs, lnmode);
 			}
+
+			@Override
+			protected ScoreData readScoreDatasFromSource(SongData song, QueryScoreContext ctx) {
+				return pda.readScoreData(song.getSha256(), song.hasUndefinedLongNote(), ctx);
+			}
+
+			@Override
+			protected void readScoresDatasFromSource(ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
+				pda.readScoreDatas(collector, songs, ctx);
+			}
 		};
 		
 		bar = new BarRenderer(this, manager);
