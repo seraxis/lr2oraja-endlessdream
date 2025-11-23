@@ -52,6 +52,9 @@ public class KonmaiDownloadSource implements HttpDownloadSource {
             // Konmai backend doesn't offer an 404 status code
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    throw new FileNotFoundException();
+                }
                 throw new RuntimeException("Unexpected http response code: " + responseCode);
             }
             RespData<ChartMeta> respData = om.readValue(conn.getInputStream(), new TypeReference<>() {

@@ -99,6 +99,7 @@ public class HttpDownloadProcessor {
         } catch (RuntimeException e) {
             e.printStackTrace();
             logger.error("[HttpDownloadProcessor] Cannot get download url from remote server[{}] due to unexpected exception: {}", sourceName, e.getMessage());
+			ImGuiNotify.error(String.format("%s returns a severe error: %s", sourceName, e.getMessage()));
             return;
         }
 
