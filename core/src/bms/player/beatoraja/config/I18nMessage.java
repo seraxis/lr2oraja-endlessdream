@@ -13,13 +13,21 @@ import java.util.ResourceBundle;
 public class I18nMessage {
 	private static ResourceBundle bundle;
 
-	public static class TEST {
-		public static final String WELCOME = "TEST_WELCOME";
-	}
-
 	public static class IR {
 		public static final String IR_SEND_SCORE_SUCCESS = "IR_SEND_SCORE_SUCCESS";
 		public static final String IR_SEND_SCORE_FAILED = "IR_SEND_SCORE_FAILED";
+	}
+
+	public static class TEST {
+		public static final String TEST_ERROR = "TEST_ERROR";
+	}
+
+	/**
+	 * For creating an error code automatically, all error messages should be registered here with their full-name
+	 */
+	private enum ErrorMessage {
+		IR_SEND_SCORE_FAILED,
+		TEST_ERROR;
 	}
 
 	/**
@@ -41,5 +49,17 @@ public class I18nMessage {
 
 	public static String getI18nMessage(String key, Object... args) {
 		return MessageFormat.format(getI18nMessage(key), args);
+	}
+
+	public static String getI18nError(String key, Object... args) {
+		try {
+			ErrorMessage errorMessage = ErrorMessage.valueOf(key);
+			// Error code starts from 1 (we don't want a code like 0000)
+			int errorCode = errorMessage.ordinal() + 1;
+			String originalMessage = getI18nMessage(key, args);
+			return String.format("[%04d]", errorCode) + originalMessage;
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
