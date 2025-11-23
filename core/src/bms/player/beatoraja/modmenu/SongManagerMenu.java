@@ -208,7 +208,8 @@ public class SongManagerMenu {
     }
 
     private enum SortStrategy {
-        RECORD_TIME("Record Time", (lhs, rhs) -> (int)(rhs.getDate() - lhs.getDate()));
+        RECORD_TIME("Record Time", (lhs, rhs) -> (int)(rhs.getDate() - lhs.getDate())),
+        EX_SCORE("EX Score", (lhs, rhs) -> rhs.getExscore() - lhs.getExscore()),;
 
         private final String name;
         private final Comparator<ScoreData> comparator;
