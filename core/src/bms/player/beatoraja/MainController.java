@@ -553,7 +553,8 @@ public class MainController {
 			});
 			irResendProcess.start();
 		}
-		ImGuiNotify.info(getI18nMessage(TEST.WELCOME, "Endless Dream"));
+		ImGuiNotify.error(getI18nError(TEST.TEST_ERROR));
+		logger.error(getI18nError(TEST.TEST_ERROR));
 
         lastConfigSave = System.nanoTime();
 	}
