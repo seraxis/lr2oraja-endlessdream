@@ -124,7 +124,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			}
 			con.commit();
 		} catch (Exception e) {
-			logger.error("スコア更新時の例外:" + e.getMessage());
+			logger.error("スコア更新時の例外:{}", e.getMessage());
 		}
 	}
 
@@ -134,7 +134,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			// TODO: One day we shall use prepared statement instead
 			result = Validatable.removeInvalidElements(qr.query(String.format("SELECT * FROM eddatalog WHERE sha256 = '%s'", sha256), scoreHandler));
 		} catch (Exception e) {
-			Logger.getGlobal().severe("Failed to query table eddatalog: " + e.getMessage());
+			logger.error("Failed to query table eddatalog: {}", e.getMessage());
 		}
 		return result;
 	}

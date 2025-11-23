@@ -27,6 +27,10 @@ public class SongManagerMenu {
      * In-game local records cache, could be refactored into a fixed size one in the future
      */
     private static Map<String, List<ScoreData>> localHistoryCache = new HashMap<>();
+    /**
+     * Whether show scores based on current selected mods or not
+     */
+    private static ImBoolean showSelectedModdedScore = new ImBoolean(false);
 
     private static ImBoolean LAST_PLAYED_SORT = new ImBoolean(false);
     private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -63,8 +67,9 @@ public class SongManagerMenu {
                     }
                     ImGui.endPopup();
                 }
+                ImGui.bulletText("Local History");
                 // TODO: Add a sort button here
-                // TODO: Add a mod filter button here
+                ImGui.checkbox("Show Selected Mods Scores", showSelectedModdedScore);
                 List<ScoreData> localHistory = loadLocalHistory(sha256);
                 renderLocalHistoryTable(localHistory);
             }
@@ -102,9 +107,26 @@ public class SongManagerMenu {
     /**
      * Load one chart's local history, currently it's not an async function because querying sqlite
      * is already pretty fast. We can do the refactor later if needed
+     * Returned scores would be sorted by current sort strategy and filtered by current filtering settings
      */
     private static List<ScoreData> loadLocalHistory(String sha256) {
-        return localHistoryCache.computeIfAbsent(sha256, s -> selector.main.getPlayDataAccessor().readScoreDataLog(sha256));
+        List<ScoreData> snapshot = localHistoryCache.computeIfAbsent(sha256, s -> selector.main.getPlayDataAccessor().readScoreDataLog(sha256));
+        // TODO: Sort strategy
+        if (showSelectedModdedScore.get()) {
+            Optional<Integer> freqValue = FreqTrainerMenu.isFreqTrainerEnabled() ? Optional.of(FreqTrainerMenu.getFreq()) :  Optional.empty();
+            Optional<Integer> overrideJudge = JudgeTrainer.isActive() ? Optional.of(JudgeTrainer.getJudgeRank()) : Optional.empty();
+            return snapshot.stream().filter(score -> {
+                if (freqValue.isPresent() && !freqValue.get().equals(score.getRate())) {
+                    return false;
+                }
+                if (overrideJudge.isPresent() && !overrideJudge.get().equals(score.getOverridejudge())) {
+                    return false;
+                }
+                return true;
+            }).toList();
+        } else {
+            return snapshot;
+        }
     }
 
     /**
