@@ -623,7 +623,7 @@ public class ResourceConfigurationView implements Initializable {
 			// An entry is defined by (TableURL --- > [ TableName, TableDescription ])
 			// sl,st,stardust,starlight
 			Map.entry("https://mqppppp.neocities.org/StardustTable.html", new Pair<String, String>("Stardust", "Beginner \u26061-\u26067")),
-			Map.entry("https://djkuroakari.github.io/starlighttable.html", new Pair<String, String>("Stardust", "Intermediate \u26067-\u260612")),
+			Map.entry("https://djkuroakari.github.io/starlighttable.html", new Pair<String, String>("Starlight", "Intermediate \u26067-\u260612")),
 			Map.entry("https://stellabms.xyz/sl/table.html", new Pair<String, String>("Satellite", "Insane \u260611-\u260519")),
 			Map.entry("https://stellabms.xyz/st/table.html", new Pair<String, String>("Stella", "High Insane to Overjoy \u260519-\u2605\u26057")),
 			// the insanes
