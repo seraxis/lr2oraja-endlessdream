@@ -181,7 +181,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		StringBuilder str = new StringBuilder(songs.length * 68);
 		getBestScoreDataLogs(collector, songs, ctx.lnMode(), str, true, ctx);
 		str.setLength(0);
-		getBestScoreDataLogs(collector, songs, ctx.lnMode(), str, false, ctx);
+		getBestScoreDataLogs(collector, songs, 0, str, false, ctx);
 	}
 
 	public void getBestScoreDataLogs(ScoreDatabaseAccessor.ScoreDataCollector collector, SongData[] songs, int mode, StringBuilder str, boolean hasLN, QueryScoreContext ctx) {

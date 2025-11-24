@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * スコアデータのキャッシュ
@@ -56,11 +57,9 @@ public abstract class ScoreDataCache {
      * Query specified one song's best score
      */
     public ScoreData readScoreData(SongData song, QueryScoreContext ctx) {
-        if (moddedScoreCache.containsKey(ctx)) {
-            ObjectMap<String, ScoreData> cache = moddedScoreCache.get(ctx);
-            if (cache.containsKey(song.getSha256())) {
-                return cache.get(song.getSha256());
-            }
+        Optional<ScoreData> cachedScore = readFromModdedCache(song.getSha256(), ctx);
+        if (cachedScore.isPresent()) {
+            return cachedScore.get();
         }
         ScoreData score = readScoreDatasFromSource(song, ctx);
         moddedScoreCache.putIfAbsent(ctx, new ObjectMap<>());
@@ -107,13 +106,11 @@ public abstract class ScoreDataCache {
     public void readScoreDatas(ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
         List<SongData> lost = new ArrayList<>();
         for (SongData song : songs) {
-            if (moddedScoreCache.containsKey(ctx)) {
-                ObjectMap<String, ScoreData> cache = moddedScoreCache.get(ctx);
-                if (cache.containsKey(song.getSha256())) {
-                    collector.collect(song, cache.get(song.getSha256()));
-                } else {
-                    lost.add(song);
-                }
+            Optional<ScoreData> optScoreData = readFromModdedCache(song.getSha256(), ctx);
+            if (optScoreData.isPresent()) {
+                collector.collect(song, optScoreData.get());
+            } else {
+                lost.add(song);
             }
         }
         if (lost.isEmpty()) {
@@ -169,5 +166,12 @@ public abstract class ScoreDataCache {
 
     protected void readScoresDatasFromSource(ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
         readScoreDatasFromSource(collector, songs, ctx.lnMode());
+    }
+
+    private Optional<ScoreData> readFromModdedCache(String sha256, QueryScoreContext ctx) {
+        if (!moddedScoreCache.containsKey(ctx)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(moddedScoreCache.get(ctx).get(sha256));
     }
 }
