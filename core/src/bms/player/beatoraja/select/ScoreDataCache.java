@@ -57,6 +57,9 @@ public abstract class ScoreDataCache {
      * Query specified one song's best score
      */
     public ScoreData readScoreData(SongData song, QueryScoreContext ctx) {
+        if (!ctx.isQueryModdedScore()) {
+            return readScoreData(song, ctx.lnMode());
+        }
         Optional<ScoreData> cachedScore = readFromModdedCache(song.getSha256(), ctx);
         if (cachedScore.isPresent()) {
             return cachedScore.get();
@@ -104,6 +107,10 @@ public abstract class ScoreDataCache {
     }
 
     public void readScoreDatas(ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
+        if (!ctx.isQueryModdedScore()) {
+            readScoreDatas(collector, songs, ctx.lnMode());
+            return ;
+        }
         List<SongData> lost = new ArrayList<>();
         for (SongData song : songs) {
             Optional<ScoreData> optScoreData = readFromModdedCache(song.getSha256(), ctx);
@@ -130,10 +137,10 @@ public abstract class ScoreDataCache {
     }
 
     boolean existsScoreDataCache(SongData song, QueryScoreContext ctx) {
-        if (!moddedScoreCache.containsKey(ctx)) {
-            return false;
+        if (!ctx.isQueryModdedScore()) {
+            return existsScoreDataCache(song, ctx.lnMode());
         }
-        return moddedScoreCache.get(ctx).containsKey(song.getSha256());
+        return readFromModdedCache(song.getSha256(), ctx).isPresent();
     }
 
     public void clear() {
@@ -149,6 +156,10 @@ public abstract class ScoreDataCache {
     }
 
     public void update(SongData song, QueryScoreContext ctx) {
+        if (!ctx.isQueryModdedScore()) {
+            update(song, ctx.lnMode());
+            return ;
+        }
         moddedScoreCache.putIfAbsent(ctx, new ObjectMap<>());
         ScoreData score = readScoreDatasFromSource(song, ctx);
         moddedScoreCache.get(ctx).put(song.getSha256(), score);
