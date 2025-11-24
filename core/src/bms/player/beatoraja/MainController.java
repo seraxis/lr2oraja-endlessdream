@@ -364,7 +364,7 @@ public class MainController {
 		// Dispose MusicSelector to unallocate loaded skin
 		selector.dispose();
 		initializeStates();
-		initializeDependentMenus();
+		updateStateReferences();
 		triggerLnWarning();
 		setTargetList();
 
@@ -446,7 +446,7 @@ public class MainController {
 		}
 		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
     	initializeStates();
-		initializeDependentMenus();
+		updateStateReferences();
 		MiscSettingMenu.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
@@ -570,7 +570,7 @@ public class MainController {
 		skinconfig = new SkinConfiguration(this, player);
 	}
 
-	private void initializeDependentMenus() {
+	private void updateStateReferences() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
 	}
