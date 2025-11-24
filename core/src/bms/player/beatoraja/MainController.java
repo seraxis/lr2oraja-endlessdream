@@ -361,8 +361,12 @@ public class MainController {
 		playdata = new PlayDataAccessor(config);
 
 		initializeIRConfig();
+		// Dispose MusicSelector to unallocate loaded skin
+		selector.dispose();
 		initializeStates();
-		initializeDependantMenus();
+		initializeDependentMenus();
+		triggerLnWarning();
+		setTargetList();
 
 		changeState(selector);
 		if (current.getStage() != null) {
@@ -442,7 +446,7 @@ public class MainController {
 		}
 		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
     	initializeStates();
-		initializeDependantMenus();
+		initializeDependentMenus();
 		MiscSettingMenu.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
@@ -475,25 +479,9 @@ public class MainController {
 		});
 		polling.start();
 
-        String lnModeName = switch (player.getLnmode()) {
-            case 1 -> "CN";
-            case 2 -> "HCN";
-            default -> "LN";
-        };
-        if (!lnModeName.equals("LN")) {
-            // give them a really insistent warning
-            String lnWarning = "Long Note mode is " + lnModeName + ".\n"
-                               + "This is not recommended.\n"
-                               + "Your scores may be incompatible with IR.\n"
-                               + "You may change this in play options.";
-            ImGuiNotify.warning(lnWarning, 8000);
-        }
+        triggerLnWarning();
 
-		Array<String> targetlist = new Array<String>(player.getTargetlist());
-		for(int i = 0;i < rivals.getRivalCount();i++) {
-			targetlist.add("RIVAL_" + (i + 1));
-		}
-		TargetProperty.setTargets(targetlist.toArray(String.class), this);
+		setTargetList();
 
 		Pixmap plainPixmap = new Pixmap(2,1, Pixmap.Format.RGBA8888);
 		plainPixmap.drawPixel(0,0, Color.toIntBits(255,0,0,0));
@@ -582,9 +570,33 @@ public class MainController {
 		skinconfig = new SkinConfiguration(this, player);
 	}
 
-	private void initializeDependantMenus() {
+	private void initializeDependentMenus() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
+	}
+
+	private void triggerLnWarning() {
+		String lnModeName = switch (player.getLnmode()) {
+			case 1 -> "CN";
+			case 2 -> "HCN";
+			default -> "LN";
+		};
+		if (!lnModeName.equals("LN")) {
+			// give them a really insistent warning
+			String lnWarning = "Long Note mode is " + lnModeName + ".\n"
+				+ "This is not recommended.\n"
+				+ "Your scores may be incompatible with IR.\n"
+				+ "You may change this in play options.";
+			ImGuiNotify.warning(lnWarning, 8000);
+		}
+	}
+
+	private void setTargetList() {
+		Array<String> targetlist = new Array<String>(player.getTargetlist());
+		for(int i = 0;i < rivals.getRivalCount();i++) {
+			targetlist.add("RIVAL_" + (i + 1));
+		}
+		TargetProperty.setTargets(targetlist.toArray(String.class), this);
 	}
 
 	private long prevtime;
