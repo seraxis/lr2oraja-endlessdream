@@ -79,7 +79,7 @@ public class Config implements Validatable {
 	/**
 	 * 最大FPS。垂直同期OFFの時のみ有効
 	 */
-	private int maxFramePerSecond = 240;
+	private int maxFramePerSecond = 1000;
 
 	private int prepareFramePerSecond = 0;
 	/**
@@ -360,7 +360,7 @@ public class Config implements Validatable {
 	}
 
 	public int getMaxFramePerSecond() {
-		return maxFramePerSecond;
+		return maxFramePerSecond = (maxFramePerSecond == 0) ? 1000 : maxFramePerSecond;
 	}
 
 	public void setMaxFramePerSecond(int maxFramePerSecond) {
@@ -828,8 +828,8 @@ public class Config implements Validatable {
 			audio = new AudioConfig();
 		}
 		audio.validate();
-		maxFramePerSecond = MathUtils.clamp(maxFramePerSecond, 0, 50000);
-		prepareFramePerSecond = MathUtils.clamp(prepareFramePerSecond, 0, 100000);
+		maxFramePerSecond = MathUtils.clamp(maxFramePerSecond, 0, 2000);
+        prepareFramePerSecond = MathUtils.clamp(prepareFramePerSecond, 0, 100000);
         maxSearchBarCount = MathUtils.clamp(maxSearchBarCount, 1, 100);
         songPreview = (songPreview != null) ? songPreview : SongPreview.LOOP;
 
