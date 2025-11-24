@@ -188,6 +188,34 @@ public class MainController {
 
 		playdata = new PlayDataAccessor(config);
 
+		initializeIRConfig();
+
+		switch(config.getAudioConfig().getDriver()) {
+			case PortAudio:
+				try {
+					audio = new PortAudioDriver(config);
+				} catch(Throwable e) {
+					e.printStackTrace();
+					config.getAudioConfig().setDriver(DriverType.OpenAL);
+				}
+				break;
+		}
+
+		timer = new TimerManager();
+		sound = new SystemSoundManager(this);
+
+		if(config.isUseDiscordRPC()) {
+			stateListener.add(new DiscordListener());
+		}
+
+		if(config.isUseObsWs()) {
+			obsListener = new ObsListener(config);
+			obsClient = obsListener.getObsClient();
+			stateListener.add(obsListener);
+		}
+	}
+
+	private void initializeIRConfig() {
 		Array<IRStatus> irarray = new Array<IRStatus>();
 		for(IRConfig irconfig : player.getIrconfig()) {
 			final IRConnection ir = IRConnectionManager.getIRConnection(irconfig.getIrname());
@@ -217,30 +245,6 @@ public class MainController {
 		ir = irarray.toArray(IRStatus.class);
 		
 		rivals.update(this);
-
-		switch(config.getAudioConfig().getDriver()) {
-		case PortAudio:
-			try {
-				audio = new PortAudioDriver(config);
-			} catch(Throwable e) {
-				e.printStackTrace();
-				config.getAudioConfig().setDriver(DriverType.OpenAL);
-			}
-			break;
-		}
-
-		timer = new TimerManager();
-		sound = new SystemSoundManager(this);
-		
-		if(config.isUseDiscordRPC()) {
-			stateListener.add(new DiscordListener());
-		}
-
-		if(config.isUseObsWs()) {
-			obsListener = new ObsListener(config);
-			obsClient = obsListener.getObsClient();
-			stateListener.add(obsListener);
-		}
 	}
 
 	public boolean hasObsListener() {
@@ -328,24 +332,52 @@ public class MainController {
 		}
 
 		if (newState != null && current != newState) {
-			newState.create();
-			if(newState.getSkin() != null) {
-				newState.getSkin().prepare(newState);
-			}
-			if(current != null) {
-				current.shutdown();
-				current.setSkin(null);
-			}
-			current = newState;
-			timer.setMainState(newState);
-			current.prepare();
-			updateMainStateListener(0);
+			changeState(newState);
 		}
 		if (current.getStage() != null) {
 			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
 		} else {
 			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
 		}
+	}
+
+	private void changeState(MainState newState) {
+		newState.create();
+		if(newState.getSkin() != null) {
+			newState.getSkin().prepare(newState);
+		}
+		if(current != null) {
+			current.shutdown();
+			current.setSkin(null);
+		}
+		current = newState;
+		timer.setMainState(newState);
+		current.prepare();
+		updateMainStateListener(0);
+	}
+
+	public void loadNewProfile(PlayerConfig pc) {
+		config.setPlayername(pc.getId());
+		player = pc;
+
+		playdata = new PlayDataAccessor(config);
+
+		initializeIRConfig();
+		// Dispose MusicSelector to unallocate loaded skin
+		selector.dispose();
+		initializeStates();
+		updateStateReferences();
+		triggerLnWarning();
+		setTargetList();
+
+		changeState(selector);
+		if (current.getStage() != null) {
+			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
+		} else {
+			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());
+		}
+
+		lastConfigSave = System.nanoTime();
 	}
 
 	private MainState createBMSPlayerState() {
@@ -390,7 +422,6 @@ public class MainController {
 
         try (var perf = PerformanceMetrics.get().Event("ImGui init")) {
             ImGuiRenderer.init();
-            SkinMenu.init(this, player);
         }
 
         try (var perf = PerformanceMetrics.get().Event("System font load")) {
@@ -415,24 +446,10 @@ public class MainController {
 //			audio = new GdxAudioDeviceDriver(config);
 //			break;
 		}
-
 		loudnessAnalyzer = new BMSLoudnessAnalyzer(config);
-		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
-        try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
-            selector = new MusicSelector(this, songUpdated);
-        }
-
-		if(player.getRequestEnable()) {
-		    streamController = new StreamController(selector);
-	        streamController.run();
-		}
-		SongManagerMenu.injectMusicSelector(selector);
+    	initializeStates();
+		updateStateReferences();
 		MiscSettingMenu.setMain(this);
-		decide = new MusicDecide(this);
-		result = new MusicResult(this);
-		gresult = new CourseResult(this);
-		keyconfig = new KeyConfiguration(this);
-		skinconfig = new SkinConfiguration(this, player);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
@@ -464,25 +481,9 @@ public class MainController {
 		});
 		polling.start();
 
-        String lnModeName = switch (player.getLnmode()) {
-            case 1 -> "CN";
-            case 2 -> "HCN";
-            default -> "LN";
-        };
-        if (!lnModeName.equals("LN")) {
-            // give them a really insistent warning
-            String lnWarning = "Long Note mode is " + lnModeName + ".\n"
-                               + "This is not recommended.\n"
-                               + "Your scores may be incompatible with IR.\n"
-                               + "You may change this in play options.";
-            ImGuiNotify.warning(lnWarning, 8000);
-        }
+        triggerLnWarning();
 
-		Array<String> targetlist = new Array<String>(player.getTargetlist());
-		for(int i = 0;i < rivals.getRivalCount();i++) {
-			targetlist.add("RIVAL_" + (i + 1));
-		}
-		TargetProperty.setTargets(targetlist.toArray(String.class), this);
+		setTargetList();
 
 		Pixmap plainPixmap = new Pixmap(2,1, Pixmap.Format.RGBA8888);
 		plainPixmap.drawPixel(0,0, Color.toIntBits(255,0,0,0));
@@ -550,6 +551,54 @@ public class MainController {
 		}
 
         lastConfigSave = System.nanoTime();
+	}
+
+	private void initializeStates() {
+		resource = new PlayerResource(audio, config, player, loudnessAnalyzer);
+
+		try (var perf = PerformanceMetrics.get().Event("MusicSelector constructor")) {
+			selector = new MusicSelector(this, songUpdated);
+		}
+
+		if(player.getRequestEnable()) {
+			streamController = new StreamController(selector);
+			streamController.run();
+		}
+
+		decide = new MusicDecide(this);
+		result = new MusicResult(this);
+		gresult = new CourseResult(this);
+		keyconfig = new KeyConfiguration(this);
+		skinconfig = new SkinConfiguration(this, player);
+	}
+
+	private void updateStateReferences() {
+		SkinMenu.init(this, player);
+		SongManagerMenu.injectMusicSelector(selector);
+	}
+
+	private void triggerLnWarning() {
+		String lnModeName = switch (player.getLnmode()) {
+			case 1 -> "CN";
+			case 2 -> "HCN";
+			default -> "LN";
+		};
+		if (!lnModeName.equals("LN")) {
+			// give them a really insistent warning
+			String lnWarning = "Long Note mode is " + lnModeName + ".\n"
+				+ "This is not recommended.\n"
+				+ "Your scores may be incompatible with IR.\n"
+				+ "You may change this in play options.";
+			ImGuiNotify.warning(lnWarning, 8000);
+		}
+	}
+
+	private void setTargetList() {
+		Array<String> targetlist = new Array<String>(player.getTargetlist());
+		for(int i = 0;i < rivals.getRivalCount();i++) {
+			targetlist.add("RIVAL_" + (i + 1));
+		}
+		TargetProperty.setTargets(targetlist.toArray(String.class), this);
 	}
 
 	private long prevtime;
