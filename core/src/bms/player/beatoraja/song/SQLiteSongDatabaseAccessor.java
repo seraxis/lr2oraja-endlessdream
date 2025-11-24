@@ -203,31 +203,35 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	}
 
 	public SongData[] getSongDatas(String sql, String score, String scorelog, String info) {
-		try (Statement stmt = qr.getDataSource().getConnection().createStatement()) {
-			stmt.execute("ATTACH DATABASE '" + score + "' as scoredb");
-			stmt.execute("ATTACH DATABASE '" + scorelog + "' as scorelogdb");
-			List<SongData> m;
+      	try (Connection conn = qr.getDataSource().getConnection()) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute("ATTACH DATABASE '" + score + "' as scoredb");
+                stmt.execute("ATTACH DATABASE '" + scorelog + "' as scorelogdb");
+                List<SongData> m = new ArrayList<>();
 
-			if(info != null) {
-				stmt.execute("ATTACH DATABASE '" + info + "' as infodb");
-				String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
-						+ "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
-						+ " FROM song INNER JOIN (information LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON information.sha256 = score.sha256) "
-						+ "ON song.sha256 = information.sha256 WHERE " + sql;
-				ResultSet rs = stmt.executeQuery(s);
-				m = songhandler.handle(rs);
-//				System.out.println(s + " -> result : " + m.size());
-				stmt.execute("DETACH DATABASE infodb");
-			} else {
-				String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
-						+ "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
-						+ " FROM song LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON song.sha256 = score.sha256 WHERE " + sql;
-				ResultSet rs = stmt.executeQuery(s);
-				m = songhandler.handle(rs);
-			}
-			stmt.execute("DETACH DATABASE scorelogdb");				
-			stmt.execute("DETACH DATABASE scoredb");
-			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
+                if(info != null) {
+                    stmt.execute("ATTACH DATABASE '" + info + "' as infodb");
+                    String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
+                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
+                            + " FROM song INNER JOIN (information LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON information.sha256 = score.sha256) "
+                            + "ON song.sha256 = information.sha256 WHERE " + sql;
+                    ResultSet rs = stmt.executeQuery(s);
+                    m = songhandler.handle(rs);
+    				// System.out.println(s + " -> result : " + m.size());
+                    stmt.execute("DETACH DATABASE infodb");
+                } else {
+                    String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
+                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
+                            + " FROM song LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON song.sha256 = score.sha256 WHERE " + sql;
+                    ResultSet rs = stmt.executeQuery(s);
+                    m = songhandler.handle(rs);
+                }
+                stmt.execute("DETACH DATABASE scorelogdb");
+                stmt.execute("DETACH DATABASE scoredb");
+                return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
+            } catch(Throwable e) {
+                e.printStackTrace();
+            }
 		} catch(Throwable e) {
 			e.printStackTrace();			
 		}
