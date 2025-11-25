@@ -599,6 +599,36 @@ public final class PlayerResource {
 		return reverseLookup;
 	}
 
+    public List<String> getReverseLookupLevels(String md5, String sha256) {
+        Set<String> urlSet = new HashSet<>(List.of(this.getConfig().getTableURL()));
+        TableDataAccessor tdaccessor = new TableDataAccessor(config.getTablepath());
+        TableData[] tds = tdaccessor.readAll();
+        List<String> reverseLookup = new ArrayList<>();
+        for (TableData td : tds) {
+            if (!urlSet.contains(td.getUrl())) {
+                continue;
+            }
+            TableFolder[] tfs = td.getFolder();
+            boolean found = false;
+            for (TableFolder tf : tfs) {
+                SongData[] tss = tf.getSong();
+                for (SongData ts : tss) {
+                    boolean matchOnMd5 = !ts.getMd5().isEmpty() && ts.getMd5().equals(this.getSongdata().getMd5());
+                    boolean matchOnSha256 = !ts.getSha256().isEmpty() && ts.getSha256().equals(this.getSongdata().getSha256());
+                    if (matchOnMd5 || matchOnSha256) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    reverseLookup.add(tf.getName());
+                    break;
+                }
+            }
+        }
+        return reverseLookup;
+    }
+
 	public ReplayData getChartOption() {
 		return chartOption;
 	}
