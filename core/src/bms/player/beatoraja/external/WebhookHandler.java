@@ -155,6 +155,7 @@ public class WebhookHandler {
                             formatRandom(rd))
                     );
                 }
+                description.append(formatLinks(currentState));
 
                 Map<String, String> footer = new HashMap<>();
                 embed.put("title", createTitle(currentState));
@@ -232,6 +233,24 @@ public class WebhookHandler {
         } else {
             return "(±0) :arrow_right:";
         }
+    }
+    
+    private static String formatLinks(MainState currentState) {
+        var score = currentState.resource.getScoreData();
+        var song = currentState.resource.getSongdata();
+        String ss = "";
+        var md5 = song.getMd5();
+        String lr2ir =
+                "http://www.dream-pro.info/~lavalse/LR2IR/search.cgi?mode=ranking&bmsmd5=";
+        if (md5 != null) { ss += " [LR2IR](" + lr2ir + md5 + ")"; }
+        String charturl = "https://bms-score-viewer.pages.dev/view?md5=";
+        if (md5 != null) ss += " |";
+        ss += " [Chart](" + charturl + md5 + ")";
+
+        String sha256 = song.getSha256();
+        var levels = currentState.resource.getReverseLookupLevels(md5, sha256);
+        for (var level : levels) { ss += " | " + level; }
+        return ss;
     }
 
     private static String formatPercent(ScoreData newScore, int maxScore) {
