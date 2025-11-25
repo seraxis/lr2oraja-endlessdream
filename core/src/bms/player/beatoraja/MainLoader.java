@@ -5,12 +5,8 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
 
-import de.damios.guacamole.gdx.log.LoggerService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,28 +16,24 @@ import bms.player.beatoraja.exceptions.PlayerConfigException;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import imgui.ImGui;
-import imgui.ImGuiIO;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
 
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.ParallelApplication;
+import org.lwjgl.system.Configuration;
 
-import bms.player.beatoraja.AudioConfig.DriverType;
 import bms.player.beatoraja.ir.IRConnectionManager;
 import bms.player.beatoraja.launcher.PlayConfigurationView;
 import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
 import bms.player.beatoraja.song.SongUtils;
-import org.slf4j.jul.JULServiceProvider;
 
 /**
  * 起動用クラス
@@ -225,10 +217,13 @@ public class MainLoader extends Application {
 
 			gdxConfig.setAudioConfig(config.getAudioConfig().getDeviceSimultaneousSources(), config.getAudioConfig().getDeviceBufferSize(), 1);
 
+			// tell LWJGL to do window resizes on the rendering thread
+			Configuration.GLFW_LIBRARY_NAME.set("glfw_async");
+
 			Config.DisplayMode displaymode = config.getDisplaymode();
 			//new Lwjgl3Application(main, gdxConfig);
 			Graphics.DisplayMode finalGdxDisplayMode = gdxDisplayMode;
-			new Lwjgl3Application(new ApplicationListener() {
+            new ParallelApplication(new ApplicationListener() {
 				public void resume() {
 					main.resume();
 				}
