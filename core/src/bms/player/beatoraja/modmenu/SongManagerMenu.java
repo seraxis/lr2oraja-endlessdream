@@ -75,10 +75,10 @@ public class SongManagerMenu {
             currentReverseLookupList.clear();
             return ;
         }
-        String currentMd5 = currentSongData.get().getMd5();
-        String currentSha256 = currentSongData.get().getSha256();
 
-        currentReverseLookupList = getReverseLookupData(currentMd5, currentSha256);
+        // Current song data is not used in this call, consider deleting upstream of this function
+        // getReverseLookupData uses the selectors resource object to get data for what song is currently selected
+        currentReverseLookupList = getReverseLookupData();
     }
 
     private static Optional<SongData> getCurrentSongData() {
@@ -99,8 +99,8 @@ public class SongManagerMenu {
         return Optional.empty();
     }
 
-    private static List<String> getReverseLookupData(String md5, String sha256) {
-        return selector.main.getPlayerResource().getReverseLookupData(md5, sha256);
+    private static List<String> getReverseLookupData() {
+        return selector.main.getPlayerResource().getReverseLookupData();
     }
 
     public static boolean isLastPlayedSortEnabled() {
