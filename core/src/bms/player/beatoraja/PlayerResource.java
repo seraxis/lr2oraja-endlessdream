@@ -569,7 +569,7 @@ public final class PlayerResource {
 		setTablelevel("");
 	}
 
-	public List<String> getReverseLookupData(String md5, String sha256) {
+	public List<String> getReverseLookupData() {
 		Set<String> urlSet = new HashSet<>(List.of(this.getConfig().getTableURL()));
 		TableDataAccessor tdaccessor = new TableDataAccessor(config.getTablepath());
 		TableData[] tds = tdaccessor.readAll();
@@ -599,7 +599,7 @@ public final class PlayerResource {
 		return reverseLookup;
 	}
 
-    public List<String> getReverseLookupLevels(String md5, String sha256) {
+    public List<String> getReverseLookupLevels() {
         Set<String> urlSet = new HashSet<>(List.of(this.getConfig().getTableURL()));
         TableDataAccessor tdaccessor = new TableDataAccessor(config.getTablepath());
         TableData[] tds = tdaccessor.readAll();
