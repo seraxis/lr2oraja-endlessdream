@@ -74,6 +74,8 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
 	private volatile boolean running = true;
 	private final Array<Runnable> runnables = new Array<Runnable>();
 	private final Array<Runnable> executedRunnables = new Array<Runnable>();
+	private final Array<Runnable> pollRunnables = new Array<Runnable>();
+	private final Array<Runnable> executedPollRunnables = new Array<Runnable>();
 	private final Array<LifecycleListener> lifecycleListeners = new Array<LifecycleListener>();
 	private static GLFWErrorCallback errorCallback;
 	private static GLVersion glVersion;
@@ -229,6 +231,14 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
 		while (running) {
 			audio.update();
             GLFW.glfwPollEvents();
+
+            synchronized (pollRunnables) {
+                executedPollRunnables.clear();
+                executedPollRunnables.addAll(pollRunnables);
+                pollRunnables.clear();
+            }
+            for (Runnable runnable : executedPollRunnables) { runnable.run(); }
+
             pollSync.sync(1000);
         }
 	}
@@ -414,6 +424,12 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
 	@Override
 	public Clipboard getClipboard () {
 		return clipboard;
+	}
+
+	public void postPollRunnable (Runnable runnable) {
+		synchronized (runnables) {
+			pollRunnables.add(runnable);
+		}
 	}
 
 	@Override
