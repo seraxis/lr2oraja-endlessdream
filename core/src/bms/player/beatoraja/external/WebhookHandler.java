@@ -1,7 +1,6 @@
 package bms.player.beatoraja.external;
 
 import bms.model.Mode;
-import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.ReplayData;
 import bms.player.beatoraja.ScoreData;
@@ -108,7 +107,6 @@ public class WebhookHandler {
 
     public Map<String, Object> createWebhookPayload(MainState currentState) {
         Map<String, Object> payload = new HashMap<>();
-        Config config = currentState.resource.getConfig();
 
         String webhookName = currentState.resource.getConfig().getWebhookName();
         payload.put("username", webhookName.isEmpty() ? "Endless Dream" : webhookName);
@@ -236,7 +234,6 @@ public class WebhookHandler {
     }
     
     private static String formatLinks(MainState currentState) {
-        var score = currentState.resource.getScoreData();
         var song = currentState.resource.getSongdata();
         String ss = "";
         var md5 = song.getMd5();
@@ -247,8 +244,7 @@ public class WebhookHandler {
         if (md5 != null) ss += " |";
         ss += " [Chart](" + charturl + md5 + ")";
 
-        String sha256 = song.getSha256();
-        var levels = currentState.resource.getReverseLookupLevels(md5, sha256);
+        var levels = currentState.resource.getReverseLookupLevels();
         for (var level : levels) { ss += " | " + level; }
         return ss;
     }
