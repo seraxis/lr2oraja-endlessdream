@@ -471,6 +471,7 @@ public class MainController {
 				if (time != now) {
 					time = now;
 					input.poll();
+                    timer.update();
 				} else {
 					try {
 						Thread.sleep(0, 500000);
@@ -606,8 +607,6 @@ public class MainController {
 	private final StringBuilder message = new StringBuilder();
 
 	public void render() {
-		timer.update();
-
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		current.render();
