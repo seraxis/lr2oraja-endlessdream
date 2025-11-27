@@ -153,11 +153,15 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
 		Lwjgl3Window window = createWindow(config, listener, 0);
 		if (config.glEmulation == Lwjgl3ApplicationConfiguration.GLEmulation.ANGLE_GLES20) postLoadANGLE();
 		windows.add(window);
+        boolean isMacOS = System.getProperty("os.name").toLowerCase().contains("mac");
 		try {
-            startRendering();
-			loop();
-            stopRendering();
-			// cleanupWindows();
+            if (isMacOS) { serialLoop(); }
+            else {
+                startRendering();
+                loop();
+                stopRendering();
+            }
+            // cleanupWindows();
 		} catch (Throwable t) {
 			if (t instanceof RuntimeException)
 				throw (RuntimeException)t;
@@ -168,7 +172,7 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
 		}
 	}
 
-    private Thread renderThread;
+    private Thread renderThread = null;
 
     private void startRendering() {
         Lwjgl3Window window = windows.get(0);
@@ -216,18 +220,59 @@ public class ParallelApplication implements Lwjgl3ApplicationBase {
     }
 
     private void stopRendering() {
+        if (renderThread == null) return;
         try { renderThread.join(); }
         catch (Exception e) { e.printStackTrace(); }
     }
 
     protected void loop () {
-		Array<Lwjgl3Window> closedWindows = new Array<Lwjgl3Window>();
 		while (running) {
 			audio.update();
             GLFW.glfwPollEvents();
             pollSync.sync(1000);
         }
 	}
+
+    protected void serialLoop () {
+        Lwjgl3Window window = windows.get(0);
+        int targetFramerate = window.getConfig().foregroundFPS;
+        window.makeCurrent();
+
+		while (running) {
+			audio.update();
+            GLFW.glfwPollEvents();
+
+            synchronized (lifecycleListeners) { window.update(); }
+
+            synchronized (runnables) {
+                executedRunnables.clear();
+                executedRunnables.addAll(runnables);
+                runnables.clear();
+            }
+            for (Runnable runnable : executedRunnables) { runnable.run(); }
+
+            synchronized (pollRunnables) {
+                executedPollRunnables.clear();
+                executedPollRunnables.addAll(pollRunnables);
+                pollRunnables.clear();
+            }
+            for (Runnable runnable : executedPollRunnables) { runnable.run(); }
+
+            if (window.shouldClose()) { break; }
+            if (targetFramerate > 0) { sync.sync(targetFramerate); }
+            else { pollSync.sync(1000); }
+        }
+
+        // Lifecycle listener methods have to be called before ApplicationListener methods
+        for (int i = lifecycleListeners.size - 1; i >= 0; i--) {
+            LifecycleListener l = lifecycleListeners.get(i);
+            l.pause();
+            l.dispose();
+        }
+        lifecycleListeners.clear();
+
+        window.dispose();
+    }
 
 	// protected void cleanupWindows () {
 	// 	synchronized (lifecycleListeners) {
