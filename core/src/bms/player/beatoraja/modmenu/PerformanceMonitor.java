@@ -32,6 +32,7 @@ public class PerformanceMonitor {
 
         // TODO: render 'watch' times in the same table
         if (ImGui.begin("Performance Monitor", showPerformanceMonitor)) {
+            ImGui.setNextItemOpen(true);
             if (ImGui.collapsingHeader("Watch")) {
                 updateWatchData();
                 renderWatchData();
