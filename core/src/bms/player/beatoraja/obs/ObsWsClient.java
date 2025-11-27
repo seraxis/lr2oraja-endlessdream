@@ -431,7 +431,7 @@ public class ObsWsClient {
 	}
 
 	public void saveLastRecording(String reason) {
-		if (!canSendRequest()) {
+		if (!this.isConnected && !canSendRequest()) {
 			return;
 		}
 
