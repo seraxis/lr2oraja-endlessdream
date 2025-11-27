@@ -157,16 +157,16 @@ public class ImGuiRenderer {
                 MiscSettingMenu.show(SHOW_MISC_SETTING);
             }
 
-            if (ImGui.treeNode("Controller Input Debug Information")) {
+            if (ImGui.treeNode("Endless Dream Debug Information")) {
                 float axis;
 
+                ImGui.text("Commit hash: " + Version.getGitCommitHash());
+                ImGui.text("Build time: " + Version.getBuildDate());
+                ImGui.text("GLFW version: " + GLFW.glfwGetVersionString());
                 for (Controller con : manager.getControllers()) {
                     ImGui.text("Controller Name: " + con.getName());
                     ImGui.text("Axis: " + con.getAxis(0));
                 }
-                ImGui.text("GLFW version: " + GLFW.glfwGetVersionString());
-                ImGui.text("Commit hash: " + Version.getGitCommitHash());
-                ImGui.text("Build time: " + Version.getBuildDate());
                 ImGui.treePop();
             }
             ImGui.end();
