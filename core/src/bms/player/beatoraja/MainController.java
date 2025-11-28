@@ -847,7 +847,7 @@ public class MainController {
 
         // save once every 5 minutes
         long now = System.nanoTime();
-        if ((now - lastConfigSave) < 5 * 60 * 1000000000L) { return; }
+        if ((now - lastConfigSave) < 2 * 60 * 1000000000L) { return; }
 
         if (configWrite != null && configWrite.isAlive()) {
             Logger.getGlobal().severe("Couldn't write config files - save process is stuck.");
