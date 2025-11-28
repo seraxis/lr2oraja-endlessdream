@@ -17,11 +17,10 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 
@@ -64,19 +63,19 @@ public class SkinWidgetManager {
             // NOTE: We're using skin object's name as id, we need to keep name is unique
             Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
             for (SkinObject skinObject : allSkinObjects) {
+                String skinObjectName = skinObject.getName();
                 SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
                 List<SkinWidgetDestination> destinations = new ArrayList<>();
                 for (int i = 0; i < dsts.length; ++i) {
-                    String combinedName = dsts.length == 1 ? skinObject.getName() : String.format("%s(%d)", skinObject.getName(), i);
+                    String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
+                    String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
                     destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
                 }
-                String skinObjectName = skinObject.getName();
-                Integer count = duplicatedSkinObjectNameCount.getOrDefault(skinObjectName, 0);
-                if (count > 0) {
-                    skinObjectName += String.format("(%d)", count);
-                }
-                widgets.add(new SkinWidget(skinObjectName, skinObject, destinations));
-                duplicatedSkinObjectNameCount.compute(skinObject.getName(), (pk, pv) -> pv == null ? 1 : pv + 1);
+                String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
+                Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
+                duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
+                String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
+                widgets.add(new SkinWidget(widgetName, skinObject, destinations));
             }
         }
     }
