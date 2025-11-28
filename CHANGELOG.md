@@ -33,37 +33,36 @@ New features:
 - Random Trainer now lets you shift or mirror the lane order (#89)
 - New launcher option (Music Select tab) to entirely skip the decide screen (#88)
 - Can now configure the lane cover, lift, and hidden in-game (misc settings) (#102)
-- Added basic support for sending scores to Discord via webhooks (#97)
+- Added support for sending scores to Discord via webhooks (#97)
 - In-game leaderboards for beatoraja IR and for LR2IR (read-only) (#109)
-- Automatically normalizing volume per-chart  (#105)
+- Automatically normalizing volume per-chart (#105)
 - In-game skin widget manager (#79)
 - Song select context menu, accessed with former autoplay and practice keys (#119)
 - Live skin configuration (#107)
 - New difficulty table management UI, allows adding from a built-in list of popular tables (#130)
 - Ghost battle against LR2IR scores; accessed through the new in-game LR2IR leaderboard (#131)
+- New option in the launcher to display LNs with CN endings (off by default) (#139)
 - OBS WebSocket control integration (#135)
 
 Behavior changes:
 - Changed the default analog scratch threshold from 100 to 50 (9b3a17b6f0d0a82b1c878a561f039e94cea76b36)
-- ImGui notifications (#74)
-- Playing courses with CONSTANT no longer grant assist clear (#86)
-- The spinning turntable emblem now spins nicer  (#94)
+- New ImGui presentation for all notifications (#74)
+- Playing courses with CONSTANT no longer grants assist clear (#86)
+- The spinning turntable emblem now spins nicer (#94)
 - The sound of quickly scrolling through the music select is now less loud (#93)
 - Improved audio when changing between scenes (#92)
 - Music preview generated with the preview generator tool will now have lower priority (#91)
 - Skins with large bitmap fonts will now load faster (#106)
 - Currently downloading songs now display a progress bar (#110)
 - Launcher: loading tables and BMS files will display a progress window. (#129) Please wait warmly...
-- Add FontAwesome icons to the ImGui modmenu and notification system (#141)
-- In-game song downloader menu now features button to retry failed download tasks (#134)
-- When playing a song with modifiers which would disable IR submission or saving a notification is generated (#122)
-- Improve the robustness of config saving and periodically save the current users config (#136)
 - Switching to CN/HCN LN modes has been disabled in game but remains an option in the launcher (#139)
 - Esc only closes the game when at the top level of music select, instead it closes the current open folder (#139)
-- There is an option in the launcher for forcing visual LN endings to render. Off by default (#139)
+- The game will now show a warning notification when playing a song with modifiers that disable score saving or IR submission (#122)
+- In-game song downloader menu now features button to retry failed download tasks (#134)
+- Configuration will now automatically save periodically (#136)
+- Re-enabled the Konmai downloading service (4022c3c5da2e27a5368c360417d8e726e09a0c57)
 
 Bug fixes:
-- Fixed Wayland JVM crash that affected users with nVidia graphics drivers (52a12e9b64852015ad8877be84d70829672325e0)
 - Fixed a crash when launching borderless without a set monitor (31f81b8cf87094cda152387cca74a9de5002ee4d)
 - Fixed several issues with loading osu files ([parser #2](https://github.com/seraxis/jbms-parser/pull/2))
 - On Linux, fixed opening chart folders with F3, the broken new version download link,
@@ -73,8 +72,15 @@ Bug fixes:
   displayed skin element made use of a blending mode. (fdc1d787a584af88f82c76756fa6d0be4ee48c2b)
 - Fixed a crash caused by incorrect entries in some difficulty tables. (#128)
 - Fixed the F4 fullscreen toggle button causing skins to malfunction with certain resolution configurations (#117)
+- Fixed a Wayland JVM crash that affected users with nVidia graphics drivers (52a12e9b64852015ad8877be84d70829672325e0)
+- Fixed a SQL usage bug that caused a memory leak while navigating music select  (ef7b0618cc58de744cc492173f2011a6f4dbdc7f)
 
 Known issues:
+- Downloading many charts simultaneously may cause the song database to lock up, requiring
+  a game restart and manual folder reload to see the new songs.
+- After changing music select skins using the new skin menu, some song wheel elements
+  from the previous skin might remain on the screen until the game is restarted.
+  After changing play skins, measure bars may display incorrectly until reload.
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case
   in their filenames. Can be manually resolved by renaming the offending files.
 - [Linux] When loading configuration files created on Windows, skin settings will fail
