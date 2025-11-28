@@ -234,6 +234,10 @@ public class ImGuiNotify {
         }
     }
 
+    public static boolean notificationsPresent() {
+        return notifications.size() > 0;
+    }
+
     public static void renderNotifications() {
         float height = 0.0f;
 

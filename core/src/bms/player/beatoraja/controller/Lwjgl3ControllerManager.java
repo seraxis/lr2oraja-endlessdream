@@ -1,6 +1,7 @@
 package bms.player.beatoraja.controller;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
+import com.badlogic.gdx.backends.lwjgl3.ParallelApplication;
 import org.lwjgl.glfw.GLFW;
 
 import com.badlogic.gdx.Gdx;
@@ -21,15 +22,17 @@ public class Lwjgl3ControllerManager implements ControllerManager {
 	final Array<ControllerListener> listeners = new Array<ControllerListener>();
 	
 	public Lwjgl3ControllerManager() {
-		GLFW.glfwSetWindowFocusCallback(windowHandle, this::setUnfocused);
-		pollState();
-		Gdx.app.postRunnable(new Runnable() {
+		// controller polling glfw functions must only be called from the main thread
+		// ParallelApplication runs a 1kHz event polling main thread,
+		// and postPollRunnable lets us schedule code to be called from it
+        ParallelApplication app = ((ParallelApplication)Gdx.app);
+        app.postPollRunnable(
+            () -> GLFW.glfwSetWindowFocusCallback(windowHandle, this::setUnfocused));
+        app.postPollRunnable(new Runnable() {
 			@Override
-			public void run () {
-				if (focused) {
-					pollState();
-				}
-				Gdx.app.postRunnable(this);
+			public void run() {
+                if (focused) { pollState(); }
+                app.postPollRunnable(this);
 			}
 		});
 	}
