@@ -36,6 +36,7 @@
         <li>Keys 3 and 5 now activate the Context Menu</li>
         <li>The Context Menu can be opened on a Song or top-level Table folder in Music Select</li>
         <li>Autoplay and Practice Mode functionality has been placed inside the Context Menu</li>
+        <li>The Context Menu can display all tables that a chart is found in and allows you to manage favourites among other features</li>
         </ul></li>
         <li><h4 id="lr2ir-and-lr2-g-battle-support">LR2IR and LR2 G-BATTLE Support</h4>
         <ul>
@@ -70,6 +71,7 @@
         <li>Automate scene switching from within the Endless Dream launcher</li>
         <li>Configure replay recording and saving with per-scene settings
         <ul>
+        <li>Use the Load Scenes button once to set up your scene transitions and recording points. Subsequent launches will use the last used settings.</li>
         <li>Recordings can be saved: always, whenever you take a screenshot, or whenever a replay is saved (Using the auto-save replay feature)</li>
         </ul></li>
         </ul></li>
@@ -85,11 +87,13 @@
         <li>You can force visual LN end caps to display in the Play Option tab in the launcher</li>
         <li>A list of default table URLs is provided in a new table in the Resource tab in the launcher
         <ul>
-        <li>You can quickly add popular tables into your active table list</li>
-        <li>You still need to reload your tables for this to take effect</li>
+        <li>You can quickly add popular tables from the Available table list into your Active table list</li>
+        <li>You still need to reload your tables for changes to take effect</li>
         </ul></li>
         <li>The Misc Settings mod menu window has more play settings that previously required a restart to configure</li>
         <li>Song Manager window in the mod menu now has an option to sort songs by least recently played</li>
+        <li>The Konmai chart download source can now be used as an alternative to Wriggle</li>
+        <li>German language translations of the launcher are now available</li>
         </ul></li>
         </ul>
         <h2 id="behavior-changes">Behavior changes</h2>
@@ -111,6 +115,9 @@
         <li>Song Downloader menu has a retry failed downloads button</li>
         <li>Config saving and loading has gotten more robust</li>
         <li>Your settings will now save periodically when you have the game open</li>
+        <li>FPS 0 now results in an FPS of 1000 which should reduce stutters, for a higher FPS target the target must be input manually</li>
+        <li>The Controller Debug Information dropdown has been renamed and contains Endless Dream build information along with its previous contents</li>
+        <li>Any URL can now be used for IPFS song fetching</li>
         </ul>
         <h2 id="bug-fixes">Bug fixes</h2>
         <ul>
@@ -127,6 +134,9 @@
         <ul>
         <li>[Linux] Certain skin fonts may only load partially due to incorrect letter case in their filenames. Can be manually resolved by renaming the offending files.</li>
         <li>[Linux] When loading configuration files created on Windows, skin settings will fail to transfer. Fix by replacing backslashes with forward slashes in the skin paths in saved skin settings in <code>config.json</code> and <code>config_play.json</code> in the player folder.</li>
+        <li>Switching skins in the Skin Configuration menu can leave artifacts (floating text, big bar lines, etc.) on some skins after switching. This currently requires a restart to resolve.</li>
+        <li>Chart downloads can occaisionally lock the database, requiring a manual restart and a folder refresh (F2) on the HTTP download folder.</li>
+        <li>Moving player config files between Windows and Linux causes skin settings to not properly load. This requires manual intervention to fix by replacing backslashes with forwardslashes in the offending file.</li>
         <li>Skin Widget Manager works abnormally when editing sliders or scrollbars</li>
         </ul>
     </body>

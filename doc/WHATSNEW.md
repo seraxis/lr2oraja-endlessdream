@@ -4,6 +4,7 @@
   - Keys 3 and 5 now activate the Context Menu
   - The Context Menu can be opened on a Song or top-level Table folder in Music Select
   - Autoplay and Practice Mode functionality has been placed inside the Context Menu
+  - The Context Menu can display all tables that a chart is found in and allows you to manage favourites among other features
 - #### LR2IR and LR2 G-BATTLE Support
   - Lunatic Rave 2 Internet Ranking song leaderboards are now accessible inside the Context Menu
   - Pressing play on a LR2IR leaderboard score will enter G-BATTLE
@@ -23,6 +24,7 @@
 - #### OBS Scene switcher and Automatic Recording
   - Automate scene switching from within the Endless Dream launcher
   - Configure replay recording and saving with per-scene settings
+    - Use the Load Scenes button once to set up your scene transitions and recording points. Subsequent launches will use the last used settings.
     - Recordings can be saved: always, whenever you take a screenshot, or whenever a replay is saved (Using the auto-save replay feature)
 - #### Automatically send screenshots to Discord with Webhooks
   - Send a plain image or a rich embed to as many channels as you'd like with webhooks as soon as you take a screenshot
@@ -32,10 +34,12 @@
   - An option to skip the DECIDE screen has been added to the Music Select tab in the launcher
   - You can force visual LN end caps to display in the Play Option tab in the launcher
   - A list of default table URLs is provided in a new table in the Resource tab in the launcher
-    - You can quickly add popular tables into your active table list
-    - You still need to reload your tables for this to take effect
+    - You can quickly add popular tables from the Available table list into your Active table list
+    - You still need to reload your tables for changes to take effect
   - The Misc Settings mod menu window has more play settings that previously required a restart to configure
   - Song Manager window in the mod menu now has an option to sort songs by least recently played
+  - The Konmai chart download source can now be used as an alternative to Wriggle
+  - German language translations of the launcher are now available
 
 ## Behavior changes
 - Playing courses with CONSTANT is now ASSIST CLEAR (previously CONSTANT had no effect)
@@ -53,6 +57,9 @@
 - Song Downloader menu has a retry failed downloads button
 - Config saving and loading has gotten more robust
 - Your settings will now save periodically when you have the game open
+- FPS 0 now results in an FPS of 1000 which should reduce stutters, for a higher FPS target the target must be input manually
+- The Controller Debug Information dropdown has been renamed and contains Endless Dream build information along with its previous contents
+- Any URL can now be used for IPFS song fetching
 
 ## Bug fixes
 - Fixed the Linux Wayland crash with NVIDIA graphics cards (no more gamescope!)
@@ -67,5 +74,6 @@
 ## Known issues:
 - [Linux] Certain skin fonts may only load partially due to incorrect letter case in their filenames. Can be manually resolved by renaming the offending files.
 - [Linux] When loading configuration files created on Windows, skin settings will fail to transfer. Fix by replacing backslashes with forward slashes in the skin paths in saved skin settings in `config.json` and `config_play.json` in the player folder.
-- [macOS] Videos in skins sometimes "flash"
+- Switching skins in the Skin Configuration menu can leave artifacts (floating text, big bar lines, etc.) on some skins after switching. This currently requires a restart to resolve.
+- Chart downloads can occasionally lock the database, requiring a manual restart and a folder refresh (F2) on the HTTP download folder.
 - Skin Widget Manager works abnormally when editing sliders or scrollbars
