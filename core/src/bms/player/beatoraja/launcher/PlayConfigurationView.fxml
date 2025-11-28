@@ -419,6 +419,7 @@
 
                     <CheckBox fx:id="enableHttp" mnemonicParsing="false" prefHeight="18.0" text="%ENABLE_HTTP" />
                     <ComboBox fx:id="httpDownloadSource" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <CheckBox fx:id="autoSwitchHttpDownloadSource" mnemonicParsing="false" prefHeight="18.0" text="%AUTO_SWITCH_HTTP_DOWNLOAD_SOURCE" />
                     <GridPane hgap="10" vgap="5">
                         <children>
                             <Label text="Default Http Server URL" prefHeight="25.0" GridPane.rowIndex="0" GridPane.columnIndex="0" />
