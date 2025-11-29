@@ -153,6 +153,7 @@ public class ResourceConfigurationView implements Initializable {
 		config.setBmsroot(bmsroot.getItems().toArray(new String[0]));
 		config.setUpdatesong(updatesong.isSelected());
 		config.setTableURL(TableInfo.toUrlArray(tableurl.getItems()));
+        config.setAvailableURL(TableInfo.toUrlArray(available_tables.getItems()));
 	}
 
     @FXML
