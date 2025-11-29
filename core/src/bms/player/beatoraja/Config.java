@@ -188,6 +188,7 @@ public class Config implements Validatable {
 	private String overrideDownloadURL = "";
 	private String downloadDirectory = DEFAULT_DOWNLOAD_DIRECTORY;
 	public static final String DEFAULT_DOWNLOAD_DIRECTORY = "http_download";
+	private boolean autoSwitchHttpDownloadSource = true;
 
 	private int irSendCount = 5;
 
@@ -826,7 +827,15 @@ public class Config implements Validatable {
 		}
 	}
 
-    public boolean validate() {
+	public boolean isAutoSwitchHttpDownloadSource() {
+		return autoSwitchHttpDownloadSource;
+	}
+
+	public void setAutoSwitchHttpDownloadSource(boolean autoSwitchHttpDownloadSource) {
+		this.autoSwitchHttpDownloadSource = autoSwitchHttpDownloadSource;
+	}
+
+	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
 

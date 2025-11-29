@@ -1,26 +1,25 @@
 package bms.tool.mdprocessor;
 
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.graphics.Color;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * In-game download processor. In charge of:
@@ -37,17 +36,18 @@ import java.util.regex.Pattern;
  */
 public class HttpDownloadProcessor {
     private static final Logger logger = LoggerFactory.getLogger(HttpDownloadProcessor.class);
-    public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCES = new HashMap<>();
+
+    public static final Map<String, HttpDownloadSourceMeta> DOWNLOAD_SOURCE_METAS = new HashMap<>();
     public static final int MAXIMUM_DOWNLOAD_COUNT = 5;
-    private String downloadDirectory;
+    private final String downloadDirectory;
 
     static {
-        // Wriggle
+        // Wriggle (default download source)
         HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
-        DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
+        DOWNLOAD_SOURCE_METAS.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
         // Konmai
         HttpDownloadSourceMeta konmaiDownloadSourceMeta = KonmaiDownloadSource.META;
-        DOWNLOAD_SOURCES.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
+        DOWNLOAD_SOURCE_METAS.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
     }
 
     // id => task
@@ -59,12 +59,22 @@ public class HttpDownloadProcessor {
     private final ExecutorService submitter = Executors.newSingleThreadExecutor();
     // A reference to the main controller, only used for updating folder and rendering the message
     private final MainController main;
-    private final HttpDownloadSource httpDownloadSource;
+    private final HttpDownloadSource preferredDownloadSource;
+    private final boolean autoSwitchHttpDownloadSource;
+    // Download source instances
+    private Map<String, HttpDownloadSource> DOWNLOAD_SOURCES = new HashMap<>();
 
-    public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource, String downloadDirectory) {
+    public HttpDownloadProcessor(MainController main, Config config) {
         this.main = main;
-        this.httpDownloadSource = httpDownloadSource;
-        this.downloadDirectory = downloadDirectory;
+        DOWNLOAD_SOURCES = DOWNLOAD_SOURCE_METAS.entrySet()
+                .stream()
+                .map(entry -> Pair.of(entry.getKey(), entry.getValue().build(config)))
+                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        this.preferredDownloadSource = DOWNLOAD_SOURCES.containsKey(config.getDownloadSource())
+                ? DOWNLOAD_SOURCES.get(config.getDownloadSource())
+                : DOWNLOAD_SOURCES.get(getDefaultDownloadSource().getName());
+        this.downloadDirectory = config.getDownloadDirectory();
+        this.autoSwitchHttpDownloadSource = config.isAutoSwitchHttpDownloadSource() && DOWNLOAD_SOURCE_METAS.size() != 1;
     }
 
     public static HttpDownloadSourceMeta getDefaultDownloadSource() {
@@ -81,20 +91,44 @@ public class HttpDownloadProcessor {
     public Map<Integer, DownloadTask> getAllTasks() { return tasks; }
 
     /**
+     * Submit a download task based on md5, and use the configured download source
+     */
+    public void submitMD5Task(String md5, String taskName) {
+        submitMD5Task(md5, taskName, this.preferredDownloadSource, new HashSet<>());
+    }
+
+    /**
      * Submit a download task based on md5
      *
      * @param md5      missing sabun's md5
      * @param taskName task name, normally sabun's name
+     * @param source specified download source, must be non-null
+     * @param triedSources the download sources that have already been tried
      */
-    public void submitMD5Task(String md5, String taskName) {
-        logger.info("[HttpDownloadProcessor] Trying to submit new download task[{}](based on md5: {})", taskName, md5);
-        String sourceName = httpDownloadSource.getName();
+    public void submitMD5Task(String md5, String taskName, HttpDownloadSource source, Set<String> triedSources) {
+        String sourceName = source.getName();
+        triedSources.add(sourceName);
+        logger.info("[HttpDownloadProcessor] Trying to submit new download task[{}](based on md5: {}, source: {})", taskName, md5, sourceName);
         String downloadURL;
         try {
-            downloadURL = httpDownloadSource.getDownloadURLBasedOnMd5(md5);
+            downloadURL = source.getDownloadURLBasedOnMd5(md5);
         } catch (FileNotFoundException e) {
             logger.error("[HttpDownloadProcessor] Remote server[{}] reports no such data", sourceName);
             ImGuiNotify.error(String.format("Cannot find specified song from %s", sourceName));
+            if (autoSwitchHttpDownloadSource) {
+                Optional<HttpDownloadSource> any = DOWNLOAD_SOURCES.entrySet()
+                        .stream()
+                        .filter(entry -> !triedSources.contains(entry.getKey()))
+                        .map(Map.Entry::getValue)
+                        .findAny();
+                if (any.isPresent()) {
+                    logger.info("[HttpDownloadProcessor] Trying to switch download source");
+                    submitMD5Task(md5, taskName, any.get(), triedSources);
+                } else {
+                    logger.info("[HttpDownloadProcessor] All download sources doesn't have this chart");
+                    ImGuiNotify.error("All download sources doesn't have this chart");
+                }
+            }
             return;
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -163,7 +197,7 @@ public class HttpDownloadProcessor {
                 result = downloadFileFromURL(downloadTask, String.format("%s.7z", hash));
             } catch (Exception e) {
                 e.printStackTrace();
-                ImGuiNotify.error(String.format("Failed downloading from %s due to %s", httpDownloadSource.getName(), e.getMessage()));
+                ImGuiNotify.error(String.format("Failed downloading from %s due to %s", preferredDownloadSource.getName(), e.getMessage()));
             }
             if (result == null) {
                 // Download failed, skip the remaining steps
@@ -224,7 +258,7 @@ public class HttpDownloadProcessor {
             int responseCode = conn.getResponseCode();
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    throw new FileNotFoundException("Package not found at " + httpDownloadSource.getName());
+                    throw new FileNotFoundException("Package not found at " + preferredDownloadSource.getName());
                 }
                 throw new IllegalStateException("Unexpected http response code: " + responseCode);
             }

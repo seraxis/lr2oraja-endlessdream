@@ -2,7 +2,6 @@ package bms.player.beatoraja.launcher;
 
 import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,29 +15,20 @@ import bms.player.beatoraja.exceptions.PlayerConfigException;
 import bms.player.beatoraja.external.ScoreDataImporter;
 
 import bms.tool.mdprocessor.HttpDownloadProcessor;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.animation.AnimationTimer;
-import javafx.beans.binding.Bindings;
-import org.apache.commons.lang3.compare.ComparableUtils;
 
 import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.play.JudgeAlgorithm;
-import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.song.*;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.AccessibleAttribute;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -264,6 +254,8 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private ComboBox<String> httpDownloadSource;
 	@FXML
+	private CheckBox autoSwitchHttpDownloadSource;
+	@FXML
 	private TextField defaultDownloadURL;
 	@FXML
 	private TextField overrideDownloadURL;
@@ -350,7 +342,7 @@ public class PlayConfigurationView implements Initializable {
 		initComboBox(autosavereplay3, autosaves);
 		initComboBox(autosavereplay4, autosaves);
 
-		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCES.keySet());
+		httpDownloadSource.getItems().setAll(HttpDownloadProcessor.DOWNLOAD_SOURCE_METAS.keySet());
 		notesdisplaytiming.setValueFactoryValues(PlayerConfig.JUDGETIMING_MIN, PlayerConfig.JUDGETIMING_MAX, 0, 1);
 		resourceController.init(this);
 		discordController.init(this);
@@ -483,6 +475,7 @@ public class PlayConfigurationView implements Initializable {
 
 		enableHttp.setSelected(config.isEnableHttp());
 		httpDownloadSource.setValue(config.getDownloadSource());
+		autoSwitchHttpDownloadSource.setSelected(config.isAutoSwitchHttpDownloadSource());
 		defaultDownloadURL.setText(config.getDefaultDownloadURL());
 		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
@@ -631,6 +624,7 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setEnableHttp(enableHttp.isSelected());
 		config.setDownloadSource(httpDownloadSource.getValue());
+		config.setAutoSwitchHttpDownloadSource(autoSwitchHttpDownloadSource.isSelected());
 		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
