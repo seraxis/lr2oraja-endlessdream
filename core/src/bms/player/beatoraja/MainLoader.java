@@ -6,6 +6,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import javax.swing.JOptionPane;
 
@@ -61,7 +62,12 @@ public class MainLoader extends Application {
 
 		Logger logger = Logger.getGlobal();
 		try {
-			logger.addHandler(new FileHandler("beatoraja_log.xml"));
+            // Temp fix for this branch. Currently logs on certain locale configurations will produce garbage output
+            // making them less useful than they are already. This should stem the bleeding for this next release
+            FileHandler fh = new FileHandler("endlessdream.log");
+            fh.setFormatter(new SimpleFormatter());
+            fh.setEncoding("UTF-8");
+			logger.addHandler(fh);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
