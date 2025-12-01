@@ -182,6 +182,7 @@ public abstract class PCM<T> {
 				try (WavInputStream input = new WavInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
 					switch(input.type) {
 					case 1:
+                    case 3:
 						{
 						channels = input.channels;
 						sampleRate = input.sampleRate;
@@ -220,50 +221,7 @@ public abstract class PCM<T> {
 						logger.info("Filename: {}", p);
 						break;
 					}
-					// IMA-ADPCM Decoder
-/* 					case 11:
-					{
-						ByteBuffer wavinput = wavfile.getReadOnlyData();
-						channels = input.channels;
-						sampleRate = input.sampleRate;
-						bitsPerSample = input.bitsPerSample;
-						int blockSize = ADPCMUtil.computeBlockSize(channels, sampleRate);
 
-						OptimizedByteArrayOutputStream output2 = new OptimizedByteArrayOutputStream(input.dataRemaining);
-						StreamUtils.copyStream(input, output2);
-						ByteBuffer input_test = ByteBuffer.wrap(output2.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
-						pcm.limit(output2.size());
-						if (wavinput == input_test) {
-							logger.info("They are the same");
-						} else {
-							logger.info("They are the different");
-						}
-						OptimizedByteArrayOutputStream output = new OptimizedByteArrayOutputStream(input.dataRemaining);
-						StreamUtils.copyStream(input, output);
-						ByteBuffer temp = ByteBuffer.wrap(output.getBuffer()).order(ByteOrder.LITTLE_ENDIAN);
-						temp.limit(output.size());
-
-						ADPCMDecoderConfig cfg =
-						    ADPCMDecoder.configure()
-							.setChannels(channels)
-							.setBlockSize(blockSize)
-							.setSampleRate(sampleRate)
-							.end();
-
-						ByteBuffer pcmOutput = ByteBuffer.allocate(wavfile.getNumSamples() * wavfile.getChannels() * 2);
-						pcm = new ADPCMDecoder(cfg).decode(wavinput, pcmOutput);
-
-						// pcm =
-						//     new ADPCMDecoder(cfg)
-						// 	.decode(
-						// 		temp,
-						// 		ByteBuffer.allocate(input.dataRemaining)
-						// 	);
-						pcm.rewind();
-
-						break;
-
-					} */
 					case 85:
 						// mp3
 					{
