@@ -262,8 +262,8 @@ public class MainLoader extends Application {
 			}, gdxConfig);
 			//System.exit(0);
 		} catch (Throwable e) {
-			e.printStackTrace();
 			logger.error("{} : {}", e.getClass().getName(), e.getMessage());
+			logger.error("Uncaught global exception: ", e);
 		}
 		System.exit(0);
 	}
