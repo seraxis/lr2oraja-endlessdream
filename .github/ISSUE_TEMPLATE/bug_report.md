@@ -10,7 +10,7 @@ assignees: ''
 ## Description
 <!-- Tell us what went wrong and how to recreate the issue (if applicable) -->
 
-## Platforrm
+## Platform
 <!-- Tell us what operating system you are on, and what version of the game you are running-->
 <!-- Open the mod menu with F5 and open the Endless Dream Debug Information and write the Commit Hash here -->
 
