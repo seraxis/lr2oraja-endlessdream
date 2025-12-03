@@ -12,6 +12,7 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 
 ### Key Features
 * In-game song downloader
+* LR2 GBATTLE support
 * Osu file support
 * On the fly ratemods/freq
 * Increased performance by using the latest graphics backends available to libgdx
@@ -25,10 +26,10 @@ Development builds are created for every commit and published as [releases](http
 > [!NOTE]
 > As of 0.3.0 the Java version has changed from 8 to 17, please check the releases page to update your installations java version
 
-- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-windows-0.3.0.jar)
-- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-linux-0.3.0.jar)
-- [**Macos Download (Apple Silicon)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-aarch64-0.3.0.jar)
-- [**Macos Download (Intel)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.3.0/lr2oraja-0.8.8-endlessdream-macos-0.3.0.jar)
+- [**Windows Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.4.0/lr2oraja-0.8.8-endlessdream-windows-0.4.0.jar)
+- [**Linux Download**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.4.0/lr2oraja-0.8.8-endlessdream-linux-0.4.0.jar)
+- [**Macos Download (Apple Silicon)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.4.0/lr2oraja-0.8.8-endlessdream-macos-aarch64-0.4.0.jar)
+- [**Macos Download (Intel)**](https://github.com/seraxis/lr2oraja-endlessdream/releases/download/v0.4.0/lr2oraja-0.8.8-endlessdream-macos-0.4.0.jar)
 
 ### Installing from scratch
 If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [beatoraja release page](https://mocha-repository.info/download.php).
