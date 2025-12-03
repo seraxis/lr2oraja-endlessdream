@@ -26,7 +26,7 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
-# 0.3.1 Prerelease
+# 0.4.0 Prerelease
 
 New features:
 - Song manager now lets you sort songs by least recently played first. (#96)

@@ -1,4 +1,4 @@
-# Endless Dream 0.3.1
+# Endless Dream 0.4.0
 ## New features
 - #### Context Menu
   - Keys 3 and 5 now activate the Context Menu
