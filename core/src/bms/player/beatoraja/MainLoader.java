@@ -35,6 +35,7 @@ import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
 import bms.player.beatoraja.song.SongUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * 起動用クラス
@@ -260,7 +261,7 @@ public class MainLoader extends Application {
 			//System.exit(0);
 		} catch (Throwable e) {
 			Logger.getGlobal().severe(e.getClass().getName() + " : " + e.getMessage());
-            Logger.getGlobal().severe("Uncaught global exception: " + e);
+            Logger.getGlobal().severe("Uncaught global exception: " + ExceptionUtils.getStackTrace(e));
 		}
 		System.exit(0);
 	}
