@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import javax.inject.Inject
@@ -100,6 +101,9 @@ abstract class GenerateBuildMetaInfo : DefaultTask() {
     @get:Inject
     abstract val execOperations: ExecOperations
 
+    @get:OutputFile
+    val outputFile = project.file("src/resources/build.properties")
+
     @TaskAction
     fun generate() {
         val gitHash: String = try {
@@ -119,8 +123,7 @@ abstract class GenerateBuildMetaInfo : DefaultTask() {
             sdf.format(Date())
         }
 
-        val output = project.file("src/resources/build.properties")
-        output.writeText(
+        outputFile.writeText(
             """
                 git_commit=${gitHash}
                 build_time=${buildTime}
@@ -130,6 +133,10 @@ abstract class GenerateBuildMetaInfo : DefaultTask() {
 }
 
 tasks.register<GenerateBuildMetaInfo>("generateBuildMetaInfo")
+
+tasks.processResources {
+    dependsOn("generateBuildMetaInfo")
+}
 
 // versions and bundles defined in ../gradle/libs.versions.toml
 dependencies {
