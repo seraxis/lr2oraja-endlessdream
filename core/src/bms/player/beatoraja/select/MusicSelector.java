@@ -4,6 +4,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
+
+import bms.player.beatoraja.play.GrooveGauge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
@@ -718,6 +720,27 @@ public final class MusicSelector extends MainState {
 		if (value >= 0 && value < 1) {
 			final int rankingMax = currentir != null ? Math.max(1, currentir.getTotalPlayer()) : 1;
 			rankingOffset = (int) (rankingMax * value);
+		}
+	}
+
+	public void gotoResultScene(String bmsPath, ScoreData score, FloatArray[] gaugeLog) {
+		if (resource.setBMSFile(Paths.get(bmsPath), BMSPlayerMode.AUTOPLAY)) {
+			resource.setScoreData(score);
+			// TODO: If we record the gauge data into database in the future, we can pass gauge data here
+			// As for now, filling it with empty data to avoid crash
+			resource.setGrooveGauge(GrooveGauge.create(resource.getBMSModel(), score.getGauge(), resource));
+			if (gaugeLog == null) {
+				gaugeLog = new FloatArray[resource.getGrooveGauge().getGaugeTypeLength()];
+				for (int i = 0; i < resource.getGrooveGauge().getGaugeTypeLength(); i++) {
+					gaugeLog[i] = new FloatArray();
+					gaugeLog[i].add(0.0f);
+				}
+			}
+
+			resource.setGauge(gaugeLog);
+			main.changeState(MainState.MainStateType.RESULT);
+		} else {
+			ImGuiNotify.error("Failed to load BMS");
 		}
 	}
 

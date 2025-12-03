@@ -1,11 +1,11 @@
 package bms.player.beatoraja.modmenu;
 
 import bms.model.Mode;
-import bms.player.beatoraja.Config;
-import bms.player.beatoraja.MainController;
-import bms.player.beatoraja.PlayConfig;
-import bms.player.beatoraja.PlayerConfig;
+import bms.player.beatoraja.*;
+import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.song.SongData;
+import com.badlogic.gdx.utils.FloatArray;
 import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiWindowFlags;
@@ -13,7 +13,10 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
@@ -108,9 +111,16 @@ public class MiscSettingMenu {
             if (ImGui.inputInt("Constant Fade-in", CONSTANT_VALUE)) {
                 getPlayConfig().setConstantFadeinTime(CONSTANT_VALUE.get());
             }
-        }
 
-        profileSwitcher();
+            profileSwitcher();
+
+            boolean inMusicSelect = MainController.getStateType(main.getCurrentState()) == MainState.MainStateType.MUSICSELECT;
+            ImGui.beginDisabled(!inMusicSelect);
+            if (ImGui.button("Goto Result Scene")) {
+                gotoResultScene();
+            }
+            ImGui.endDisabled();
+        }
 
         ImGui.end();
     }
@@ -184,5 +194,26 @@ public class MiscSettingMenu {
         if (reloadClicked) {
             loadPlayers();
         }
+    }
+
+    /**
+     * Goto the result scene with the last played chart result. This function is designed to be easy to port elsewhere
+     */
+    private static void gotoResultScene() {
+        // YAY SQL INJECTION
+        List<ScoreData> scoreDataList = main.getPlayDataAccessor().readScoreDatas("LENGTH(score.sha256) = 64 ORDER BY score.date DESC LIMIT 1");
+        if (scoreDataList.isEmpty()) {
+            ImGuiNotify.error("Failed to transaction to result scene because no score was found");
+            return ;
+        }
+        ScoreData score = scoreDataList.get(0);
+        String hash = score.getSha256();
+        SongData[] songDatas = main.getSongDatabase().getSongDatas(new String[]{hash});
+        if (songDatas.length == 0) {
+            ImGuiNotify.error("Failed to transaction to result scene because no song was found");
+            return ;
+        }
+        String path = songDatas[0].getPath();
+        ((MusicSelector) main.getCurrentState()).gotoResultScene(path, score, null);
     }
 }
