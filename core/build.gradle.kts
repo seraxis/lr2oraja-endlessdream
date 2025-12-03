@@ -3,6 +3,11 @@ import java.nio.file.FileSystems
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.TimeZone
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
 
 plugins {
     id("java-library")
@@ -92,11 +97,18 @@ tasks {
 }
 
 // Generate current build's meta info: git commit hash, commit time, etc
-tasks.register("generateBuildMetaInfo") {
-    val gitHash: String by lazy {
-        try {
+abstract class GenerateBuildMetaInfo : DefaultTask() {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @get:OutputFile
+    val outputFile = project.file("src/resources/build.properties")
+
+    @TaskAction
+    fun generate() {
+        val gitHash: String = try {
             val stdout = ByteArrayOutputStream()
-            exec {
+            execOperations.exec {
                 commandLine("git", "rev-parse", "--short", "HEAD")
                 standardOutput = stdout
             }
@@ -104,21 +116,26 @@ tasks.register("generateBuildMetaInfo") {
         } catch (e: Exception) {
             "unknown"
         }
-    }
 
-    val buildTime: String by lazy {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        sdf.format(Date())
-    }
+        val buildTime: String = run {
+            val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+            sdf.timeZone = TimeZone.getTimeZone("UTC")
+            sdf.format(Date())
+        }
 
-    var output = file("src/resources/build.properties")
-    output.writeText(
-        """
-            git_commit=${gitHash}
-            build_time=${buildTime} 
-        """.trimIndent()
-    )
+        outputFile.writeText(
+            """
+                git_commit=${gitHash}
+                build_time=${buildTime}
+            """.trimIndent()
+        )
+    }
+}
+
+tasks.register<GenerateBuildMetaInfo>("generateBuildMetaInfo")
+
+tasks.processResources {
+    dependsOn("generateBuildMetaInfo")
 }
 
 // versions and bundles defined in ../gradle/libs.versions.toml
