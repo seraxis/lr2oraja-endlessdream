@@ -26,7 +26,7 @@ this find-and-replace regex (VSCode flavor):
 - Replace: [@$1](https://github.com/$1)
 -->
 
-# 0.3.1 Prerelease
+# 0.4.0
 
 New features:
 - Song manager now lets you sort songs by least recently played first. (#96)
@@ -45,7 +45,7 @@ New features:
 - OBS WebSocket control integration (#135)
 
 Behavior changes:
-- Changed the default analog scratch threshold from 100 to 50 (9b3a17b6f0d0a82b1c878a561f039e94cea76b36)
+- Changed the default analog scratch threshold from 100 to 50 ([9b3a17b](https://github.com/seraxis/lr2oraja-endlessdream/commit/9b3a17b6f0d0a82b1c878a561f039e94cea76b36))
 - New ImGui presentation for all notifications (#74)
 - Playing courses with CONSTANT no longer grants assist clear (#86)
 - The spinning turntable emblem now spins nicer (#94)
@@ -60,20 +60,22 @@ Behavior changes:
 - The game will now show a warning notification when playing a song with modifiers that disable score saving or IR submission (#122)
 - In-game song downloader menu now features button to retry failed download tasks (#134)
 - Configuration will now automatically save periodically (#136)
-- Re-enabled the Konmai downloading service (4022c3c5da2e27a5368c360417d8e726e09a0c57)
+- Re-enabled the Konmai downloading service ([4022c3c](https://github.com/seraxis/lr2oraja-endlessdream/commit/4022c3c5da2e27a5368c360417d8e726e09a0c57))
+- The log is now stored in `endlessdream.log` in plaintext ([b5bd7d3](https://github.com/seraxis/lr2oraja-endlessdream/commit/b5bd7d31a74f72fbb7af0120c3d271513dbbf2e7))
 
 Bug fixes:
-- Fixed a crash when launching borderless without a set monitor (31f81b8cf87094cda152387cca74a9de5002ee4d)
+- Fixed a crash when launching borderless without a set monitor ([31f81b8](https://github.com/seraxis/lr2oraja-endlessdream/commit/31f81b8cf87094cda152387cca74a9de5002ee4d))
 - Fixed several issues with loading osu files ([parser #2](https://github.com/seraxis/jbms-parser/pull/2))
 - On Linux, fixed opening chart folders with F3, the broken new version download link,
   and the launcher becoming non-functional after starting the game (#98)
 - Fixed Discord rich presence on macOS (#127)
 - Fixed bitmap font text display incorrectly becoming transparent when the previously
-  displayed skin element made use of a blending mode. (fdc1d787a584af88f82c76756fa6d0be4ee48c2b)
+  displayed skin element made use of a blending mode. ([fdc1d78](https://github.com/seraxis/lr2oraja-endlessdream/commit/fdc1d787a584af88f82c76756fa6d0be4ee48c2b))
 - Fixed a crash caused by incorrect entries in some difficulty tables. (#128)
 - Fixed the F4 fullscreen toggle button causing skins to malfunction with certain resolution configurations (#117)
-- Fixed a Wayland JVM crash that affected users with nVidia graphics drivers (52a12e9b64852015ad8877be84d70829672325e0)
-- Fixed a SQL usage bug that caused a memory leak while navigating music select  (ef7b0618cc58de744cc492173f2011a6f4dbdc7f)
+- Fixed a Wayland JVM crash that affected users with NVIDIA graphics drivers ([52a12e9](https://github.com/seraxis/lr2oraja-endlessdream/commit/52a12e9b64852015ad8877be84d70829672325e0))
+- Fixed a SQL usage bug that caused a memory leak while navigating music select  ([ef7b061](https://github.com/seraxis/lr2oraja-endlessdream/commit/ef7b0618cc58de744cc492173f2011a6f4dbdc7f))
+- Fixed certain WAV files not playing properly ([c3ba70c](https://github.com/seraxis/lr2oraja-endlessdream/commit/c3ba70c06bd918dc7b369fd0f142abda5cee8ff4))
 
 Known issues:
 - Downloading many charts simultaneously may cause the song database to lock up, requiring
@@ -86,6 +88,8 @@ Known issues:
 - [Linux] When loading configuration files created on Windows, skin settings will fail
   to transfer. Fix by replacing backslashes with forward slashes in the skin paths in
   saved skin settings in `config.json` and `config_player.json` in the player folder.
+
+Thanks to [@seraxis](https://github.com/seraxis), [@Catizard](https://github.com/Catizard), [@Arctice](https://github.com/Arctice), [@llm96](https://github.com/llm96), [@Kolyasisan](https://github.com/Kolyasisan), [@pfych](https://github.com/pfych), [@NotAkitake](https://github.com/NotAkitake), [@Rac0r](https://github.com/Rac0r), and [@corndogit](https://github.com/corndogit)!
 
 # 0.3.0
 
