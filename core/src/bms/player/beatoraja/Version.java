@@ -24,7 +24,7 @@ public class Version {
     private static Properties buildMetaInfo = new Properties();
 
     static {
-        BUILD_TYPE = BuildType.PRERELEASE;
+        BUILD_TYPE = BuildType.STABLE;
         unqualifiedVersion = String.valueOf(VERSION_MAJOR) + '.' + VERSION_MINOR + '.' + VERSION_PATCH;
         version = BUILD_TYPE.prefix + unqualifiedVersion;
         versionLong = "LR2oraja Endless Dream " + (BUILD_TYPE.prefix.isBlank() ? "" : "pre-release ") + unqualifiedVersion;
