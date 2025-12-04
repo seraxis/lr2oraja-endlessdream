@@ -569,6 +569,8 @@ public class BMSPlayer extends MainState {
                 target != null ? target.decodeGhost() : null,
                 model.getTotalNotes());
         }
+
+        System.gc();
 	}
 
 	@Override

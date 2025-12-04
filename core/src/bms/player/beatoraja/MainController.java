@@ -471,6 +471,7 @@ public class MainController {
 				if (time != now) {
 					time = now;
 					input.poll();
+                    timer.update();
 				} else {
 					try {
 						Thread.sleep(0, 500000);
@@ -606,9 +607,6 @@ public class MainController {
 	private final StringBuilder message = new StringBuilder();
 
 	public void render() {
-//		input.poll();
-		timer.update();
-
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		current.render();
@@ -694,9 +692,7 @@ public class MainController {
         if (config.isEnableHttp()) { DownloadTaskState.update(); }
         PerformanceMetrics.get().commit();
 
-		imGui.start();
 		imGui.render();
-		imGui.end();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
