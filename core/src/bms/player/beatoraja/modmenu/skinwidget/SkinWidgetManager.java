@@ -1,5 +1,7 @@
-package bms.player.beatoraja.modmenu;
+package bms.player.beatoraja.modmenu.skinwidget;
 
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
 import com.badlogic.gdx.Gdx;
@@ -17,10 +19,11 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
 import java.text.DecimalFormat;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 
@@ -31,6 +34,8 @@ public class SkinWidgetManager {
     private static final List<SkinWidget> widgets = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
+
+    private static MainController main;
 
     static {
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("ID", new ImBoolean(true), true, null, null));
@@ -52,12 +57,17 @@ public class SkinWidgetManager {
 
     public static boolean focus = false;
 
+    public static void setMain(MainController main) {
+        SkinWidgetManager.main = main;
+        SkinPropertyWatcher.init(main);
+    }
+
     public static void changeSkin(Skin skin) {
         synchronized (LOCK) {
             widgets.clear();
             eventHistory.clear();
             if (skin == null) {
-                return ;
+                return;
             }
             SkinObject[] allSkinObjects = skin.getAllSkinObjects();
             // NOTE: We're using skin object's name as id, we need to keep name is unique
@@ -100,12 +110,15 @@ public class SkinWidgetManager {
                                 exportChanges();
                             }
 
-
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
                         if (ImGui.beginTabItem("History")) {
                             renderHistoryTable();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("Watcher")) {
+                            SkinPropertyWatcher.render();
                             ImGui.endTabItem();
                         }
                         ImGui.endTabBar();
@@ -115,8 +128,8 @@ public class SkinWidgetManager {
                         ImGui.beginTooltip();
                         ImGui.text(
                                 String.format("(%s, %s)",
-                                normalizeFloat(Gdx.input.getX()),
-                                normalizeFloat(windowHeight - Gdx.input.getY()))
+                                        normalizeFloat(Gdx.input.getX()),
+                                        normalizeFloat(windowHeight - Gdx.input.getY()))
                         );
                         ImGui.endTooltip();
                     }
@@ -195,13 +208,13 @@ public class SkinWidgetManager {
                         // If you want to implement a dynamic system, you can combine the event type & getter
                         // in a pair type: Pair<EventType, Function<SkinWidget, Float>
                         // The remaining things are trivial
-                        for (int i = 1; i <= colSize - 2;++i) {
+                        for (int i = 1; i <= colSize - 2; ++i) {
                             WidgetTableColumn column = showingColumns.get(i);
                             drawFloatValueColumn(i, eventHistory.hasEvent(dst.name, column.changeEventType), column.getter.apply(dst));
                         }
 
                         ImGui.tableSetColumnIndex(colSize - 1);
-                        if (ImGui.button("Edit")) {
+                        if (ImGui.button("Edit##SkinWidgetManager")) {
                             editingWidgetX.set(dst.getDstX());
                             editingWidgetY.set(dst.getDstY());
                             editingWidgetW.set(dst.getDstW());
@@ -214,7 +227,7 @@ public class SkinWidgetManager {
                             ImGui.inputFloat("y", editingWidgetY);
                             ImGui.inputFloat("w", editingWidgetW);
                             ImGui.inputFloat("h", editingWidgetH);
-                            if (ImGui.button("Submit")) {
+                            if (ImGui.button("Submit##SkinWidgetManager")) {
                                 dst.setDstX(editingWidgetX.get());
                                 dst.setDstY(editingWidgetY.get());
                                 dst.setDstW(editingWidgetW.get());
@@ -223,8 +236,8 @@ public class SkinWidgetManager {
                             }
 
                             if ((ImGui.checkbox("Move", move_overlay_enabled)
-                                 && move_overlay_enabled.get())
-                                || reset_move_overlay) {
+                                    && move_overlay_enabled.get())
+                                    || reset_move_overlay) {
                                 float w = dst.getDstW();
                                 float h = dst.getDstH();
                                 float x = dst.getDstX();
@@ -245,8 +258,8 @@ public class SkinWidgetManager {
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGrip, 1.f, .3f, .3f, 1.f);
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGripHovered, 1.f, 0.7f, .7f, 1.f);
                                 if (ImGui.begin("widget-overlay-popup",
-                                                move_overlay_enabled,
-                                                ImGuiWindowFlags.NoNav |
+                                        move_overlay_enabled,
+                                        ImGuiWindowFlags.NoNav |
                                                 ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing |
                                                 ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse |
                                                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar)) {
@@ -331,12 +344,14 @@ public class SkinWidgetManager {
         }
     }
 
+
+
     /**
      * This is a small helper function to draw columns in table, draw red text if the cell value has been modified
      *
-     * @param index column index
+     * @param index    column index
      * @param modified whether current cell's value has been modified
-     * @param value cell value
+     * @param value    cell value
      */
     private static void drawFloatValueColumn(int index, boolean modified, float value) {
         ImGui.tableSetColumnIndex(index);
@@ -364,7 +379,7 @@ public class SkinWidgetManager {
                     }
                 }
                 if (!(hasChangedX || hasChangedY || hasChangedW || hasChangedH)) {
-                    return ;
+                    return;
                 }
                 StringBuilder sb = new StringBuilder("{dst=").append(dst.name);
                 if (hasChangedX) {
@@ -400,7 +415,8 @@ public class SkinWidgetManager {
     /**
      * Represents one widget table's column
      */
-    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent, Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
+    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent,
+                                     Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
     }
 
     /**
@@ -531,7 +547,7 @@ public class SkinWidgetManager {
         public void submitMovement() {
             if (beforeMove == null) {
                 ImGuiNotify.error("Cannot submit the move result because there's no original position");
-                return ;
+                return;
             }
             float nextX = getDstX();
             float nextY = getDstY();

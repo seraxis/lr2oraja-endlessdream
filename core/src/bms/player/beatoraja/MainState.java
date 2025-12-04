@@ -1,7 +1,7 @@
 package bms.player.beatoraja;
 
 import bms.player.beatoraja.SkinConfig.Offset;
-import bms.player.beatoraja.modmenu.SkinWidgetManager;
+import bms.player.beatoraja.modmenu.skinwidget.SkinWidgetManager;
 import bms.player.beatoraja.skin.*;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;

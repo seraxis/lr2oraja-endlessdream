@@ -3,6 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.skinwidget.SkinWidgetManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -448,6 +450,7 @@ public class MainController {
     	initializeStates();
 		updateStateReferences();
 		MiscSettingMenu.setMain(this);
+        SkinWidgetManager.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
