@@ -448,6 +448,7 @@ public class MainController {
     	initializeStates();
 		updateStateReferences();
 		MiscSettingMenu.setMain(this);
+        SkinWidgetManager.setMain(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);
