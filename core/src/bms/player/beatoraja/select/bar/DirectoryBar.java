@@ -4,6 +4,7 @@ import java.util.Arrays;
 import bms.model.Mode;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.select.QueryScoreContext;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.utils.Array;
 
@@ -146,6 +147,6 @@ public abstract class DirectoryBar extends Bar {
 			}
 		};
 
-		selector.getScoreDataCache().readScoreDatas(collector, songs, selector.main.getPlayerConfig().getLnmode());
+		selector.getScoreDataCache().readScoreDatas(collector, songs, QueryScoreContext.create(selector.main.getPlayerConfig().getLnmode()));
 	}
 }

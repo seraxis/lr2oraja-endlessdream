@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
+
+import bms.player.beatoraja.select.QueryScoreContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -21,6 +23,7 @@ import bms.player.beatoraja.ScoreData.SongTrophy;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.ScoreLogDatabaseAccessor.ScoreLog;
 import bms.player.beatoraja.ir.LR2IRConnection;
+import bms.player.beatoraja.modmenu.SongManagerMenu;
 import bms.player.beatoraja.song.SongData;
 
 import com.badlogic.gdx.utils.Json;
@@ -171,6 +174,13 @@ public final class PlayDataAccessor {
 		return scoredb.getScoreData(hash, ln ? lnmode : 0);
 	}
 
+	public ScoreData readScoreData(String hash, boolean ln, QueryScoreContext ctx) {
+		if (!ctx.isQueryModdedScore()) {
+			return readScoreData(hash, ln, ctx.lnMode());
+		}
+		return scoredatalogdb.getBestScoreDataLog(hash, ctx);
+	}
+
 	/**
 	 * スコアデータをまとめて読み込み、collectorに渡す
 	 * @param collector スコアデータのcollector
@@ -180,6 +190,14 @@ public final class PlayDataAccessor {
 	public void readScoreDatas(ScoreDataCollector collector, SongData[] songs, int lnmode) {
 		scoredb.getScoreDatas(collector, songs, lnmode);
 	}
+
+	public void readScoreDatas(ScoreDataCollector collector, SongData[] songs, QueryScoreContext ctx) {
+		if (!ctx.isQueryModdedScore()) {
+			readScoreDatas(collector, songs, ctx.lnMode());
+		}
+		scoredatalogdb.getBestScoreDataLogs(collector, songs, ctx);
+	}
+
 
 	public List<ScoreData> readScoreDatas(String sql) {
 		return scoredb.getScoreDatas(sql);
@@ -285,6 +303,7 @@ public final class PlayDataAccessor {
 			newscore.setClearcount(score.getClearcount());
 			newscore.setScorehash(getScoreHash(newscore));
 
+			SongManagerMenu.invalidCache(newscore.getSha256());
 			scoredatalogdb.setScoreDataLog(newscore);
 		}
 
@@ -357,6 +376,16 @@ public final class PlayDataAccessor {
 			hash += s;
 		}
 		return readScoreData(hash, ln, lnmode, option, constraint);
+	}
+
+	/**
+	 * Load one specific chart's play history
+	 *
+	 * @param hash chart's hash
+	 * @return play records
+	 */
+	public List<ScoreData> readScoreDataLog(String hash) {
+		return scoredatalogdb.getScoreDataLog(hash);
 	}
 
 	/**
