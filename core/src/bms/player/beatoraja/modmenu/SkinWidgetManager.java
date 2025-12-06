@@ -2,6 +2,8 @@ package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.player.beatoraja.skin.SkinProperty;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
