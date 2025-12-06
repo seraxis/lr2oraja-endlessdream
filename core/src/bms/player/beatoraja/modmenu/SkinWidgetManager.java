@@ -1,7 +1,15 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.player.beatoraja.skin.SkinProperty.PropertyType;
+import bms.player.beatoraja.skin.property.BooleanPropertyFactory;
+import bms.player.beatoraja.skin.property.FloatPropertyFactory;
+import bms.player.beatoraja.skin.property.IntegerPropertyFactory;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
+import bms.tool.utils.Either;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
@@ -11,16 +19,16 @@ import imgui.ImGuiListClipper;
 import imgui.ImVec2;
 import imgui.callback.ImListClipperCallback;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiComboFlags;
 import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
+import imgui.type.ImString;
 
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 
@@ -28,9 +36,12 @@ public class SkinWidgetManager {
     private static final double eps = 1e-5;
     private static final Object LOCK = new Object();
     private static final EventHistory eventHistory = new EventHistory();
+    private static final List<Watcher> watchers = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
+
+    private static MainController main;
 
     static {
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("ID", new ImBoolean(true), true, null, null));
@@ -47,17 +58,24 @@ public class SkinWidgetManager {
     private static final ImFloat editingWidgetH = new ImFloat(0);
     private static final ImBoolean SHOW_CURSOR_POSITION = new ImBoolean(true);
 
+    private static String addingWatcherType = PropertyType.Boolean.name();
+    private static ImString addingWatcherIdOrName = new ImString(64);
+
     private static final ImBoolean move_overlay_enabled = new ImBoolean(false);
     private static boolean reset_move_overlay = false;
 
     public static boolean focus = false;
+
+    public static void setMain(MainController main) {
+        SkinWidgetManager.main = main;
+    }
 
     public static void changeSkin(Skin skin) {
         synchronized (LOCK) {
             widgets.clear();
             eventHistory.clear();
             if (skin == null) {
-                return ;
+                return;
             }
             SkinObject[] allSkinObjects = skin.getAllSkinObjects();
             // NOTE: We're using skin object's name as id, we need to keep name is unique
@@ -100,12 +118,15 @@ public class SkinWidgetManager {
                                 exportChanges();
                             }
 
-
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
                         if (ImGui.beginTabItem("History")) {
                             renderHistoryTable();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("Watcher")) {
+                            renderWatcherTable();
                             ImGui.endTabItem();
                         }
                         ImGui.endTabBar();
@@ -115,8 +136,8 @@ public class SkinWidgetManager {
                         ImGui.beginTooltip();
                         ImGui.text(
                                 String.format("(%s, %s)",
-                                normalizeFloat(Gdx.input.getX()),
-                                normalizeFloat(windowHeight - Gdx.input.getY()))
+                                        normalizeFloat(Gdx.input.getX()),
+                                        normalizeFloat(windowHeight - Gdx.input.getY()))
                         );
                         ImGui.endTooltip();
                     }
@@ -195,13 +216,13 @@ public class SkinWidgetManager {
                         // If you want to implement a dynamic system, you can combine the event type & getter
                         // in a pair type: Pair<EventType, Function<SkinWidget, Float>
                         // The remaining things are trivial
-                        for (int i = 1; i <= colSize - 2;++i) {
+                        for (int i = 1; i <= colSize - 2; ++i) {
                             WidgetTableColumn column = showingColumns.get(i);
                             drawFloatValueColumn(i, eventHistory.hasEvent(dst.name, column.changeEventType), column.getter.apply(dst));
                         }
 
                         ImGui.tableSetColumnIndex(colSize - 1);
-                        if (ImGui.button("Edit")) {
+                        if (ImGui.button("Edit##SkinWidgetManager")) {
                             editingWidgetX.set(dst.getDstX());
                             editingWidgetY.set(dst.getDstY());
                             editingWidgetW.set(dst.getDstW());
@@ -214,7 +235,7 @@ public class SkinWidgetManager {
                             ImGui.inputFloat("y", editingWidgetY);
                             ImGui.inputFloat("w", editingWidgetW);
                             ImGui.inputFloat("h", editingWidgetH);
-                            if (ImGui.button("Submit")) {
+                            if (ImGui.button("Submit##SkinWidgetManager")) {
                                 dst.setDstX(editingWidgetX.get());
                                 dst.setDstY(editingWidgetY.get());
                                 dst.setDstW(editingWidgetW.get());
@@ -223,8 +244,8 @@ public class SkinWidgetManager {
                             }
 
                             if ((ImGui.checkbox("Move", move_overlay_enabled)
-                                 && move_overlay_enabled.get())
-                                || reset_move_overlay) {
+                                    && move_overlay_enabled.get())
+                                    || reset_move_overlay) {
                                 float w = dst.getDstW();
                                 float h = dst.getDstH();
                                 float x = dst.getDstX();
@@ -245,8 +266,8 @@ public class SkinWidgetManager {
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGrip, 1.f, .3f, .3f, 1.f);
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGripHovered, 1.f, 0.7f, .7f, 1.f);
                                 if (ImGui.begin("widget-overlay-popup",
-                                                move_overlay_enabled,
-                                                ImGuiWindowFlags.NoNav |
+                                        move_overlay_enabled,
+                                        ImGuiWindowFlags.NoNav |
                                                 ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing |
                                                 ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse |
                                                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar)) {
@@ -331,12 +352,90 @@ public class SkinWidgetManager {
         }
     }
 
+    private static void renderWatcherTable() {
+        if (ImGui.button("Add##SkinPropertyWatcher")) {
+            // NOTE: We don't reset watcher's type here because user are more likely to add
+            // same type of watchers in a row
+            addingWatcherIdOrName.set("");
+            ImGui.openPopup("Add Skin Property Watcher");
+        }
+        ImGui.sameLine();
+        if (ImGui.button("Refresh All##SkinPropertyWatcher")) {
+            watchers.forEach(watcher -> watcher.evaluate(main.getCurrentState()));
+        }
+        if (ImGui.beginPopup("Add Skin Property Watcher", ImGuiWindowFlags.AlwaysAutoResize)) {
+            if (ImGui.beginCombo("type##SkinPropertyWatcher", addingWatcherType, ImGuiComboFlags.HeightLarge)) {
+                for (PropertyType propertyType : PropertyType.values()) {
+                    ImGui.pushID(propertyType.name());
+                    if (ImGui.selectable(propertyType.name())) {
+                        addingWatcherType = propertyType.name();
+                    }
+                    ImGui.popID();
+                }
+                ImGui.endCombo();
+            }
+            ImGui.inputText("ID/Name", addingWatcherIdOrName);
+            if (ImGui.button("Submit##SkinPropertyWatcher")) {
+                Optional<Watcher> watcher = Watcher.create(
+                        PropertyType.valueOf(addingWatcherType),
+                        addingWatcherIdOrName.get(),
+                        main.getCurrentState()
+                );
+                if (watcher.isPresent()) {
+                    watchers.add(watcher.get());
+                } else {
+                    ImGuiNotify.error("No such property");
+                }
+                ImGui.closeCurrentPopup();
+            }
+            ImGui.endPopup();
+        }
+        if (ImGui.beginTable("Watchers", 4, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("Type");
+            ImGui.tableSetupColumn("Symbol");
+            ImGui.tableSetupColumn("Value");
+            ImGui.tableSetupColumn("Op");
+            ImGui.tableHeadersRow();
+            ImGuiListClipper.forEach(watchers.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    ImGui.pushID(row);
+
+                    ImGui.tableNextRow();
+                    Watcher watcher = watchers.get(row);
+
+                    ImGui.tableNextColumn();
+                    ImGui.text(watcher.type.name());
+
+                    ImGui.tableNextColumn();
+                    ImGui.text(String.valueOf(watcher.getSymbol()));
+
+                    ImGui.tableNextColumn();
+                    ImGui.text(watcher.value);
+
+                    ImGui.tableNextColumn();
+                    if (ImGui.button(FontAwesomeIcons.Redo)) {
+                        watcher.evaluate(main.getCurrentState());
+                    }
+                    ImGui.sameLine();
+                    if (ImGui.button(FontAwesomeIcons.WindowClose)) {
+                        watchers.remove(watcher);
+                    }
+
+                    ImGui.popID();
+                }
+            });
+            ImGui.endTable();
+        }
+    }
+
     /**
      * This is a small helper function to draw columns in table, draw red text if the cell value has been modified
      *
-     * @param index column index
+     * @param index    column index
      * @param modified whether current cell's value has been modified
-     * @param value cell value
+     * @param value    cell value
      */
     private static void drawFloatValueColumn(int index, boolean modified, float value) {
         ImGui.tableSetColumnIndex(index);
@@ -364,7 +463,7 @@ public class SkinWidgetManager {
                     }
                 }
                 if (!(hasChangedX || hasChangedY || hasChangedW || hasChangedH)) {
-                    return ;
+                    return;
                 }
                 StringBuilder sb = new StringBuilder("{dst=").append(dst.name);
                 if (hasChangedX) {
@@ -400,7 +499,8 @@ public class SkinWidgetManager {
     /**
      * Represents one widget table's column
      */
-    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent, Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
+    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent,
+                                     Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
     }
 
     /**
@@ -531,7 +631,7 @@ public class SkinWidgetManager {
         public void submitMovement() {
             if (beforeMove == null) {
                 ImGuiNotify.error("Cannot submit the move result because there's no original position");
-                return ;
+                return;
             }
             float nextX = getDstX();
             float nextY = getDstY();
@@ -724,6 +824,78 @@ public class SkinWidgetManager {
                 targetNameToEvents.putIfAbsent(event.getName(), new ArrayList<>());
                 targetNameToEvents.get(event.getName()).add(event);
             }
+        }
+    }
+
+    private static class Watcher {
+        private final PropertyType type;
+        private final Either<Integer, String> idOrName;
+        private String value;
+
+        /**
+         * Create a watcher, which initial value is evaluated by current 'state'
+         *
+         * @param type  the watching property's type
+         * @param input skin property's id or name
+         * @param state current game state
+         * @return empty when property doesn't exist
+         */
+        public static Optional<Watcher> create(PropertyType type, String input, MainState state) {
+            Either<Integer, String> idOrName = Either.parseInteger(input);
+            Optional<String> evaluated = Either.unwrap(idOrName.apply(
+                    id -> evaluate(id, type, state),
+                    name -> evaluate(name, type, state)
+            ));
+            return evaluated.map(value -> new Watcher(type, idOrName, value));
+        }
+
+        /**
+         * Evaluate the watching property
+         *
+         * @implNote If a watcher is ever created, it's not possible that it doesn't be connected
+         * to a skin property, so we should be safe to unwrap the optional returned by 'evaluate'
+         */
+        public void evaluate(MainState state) {
+            this.value = Either.unwrap(idOrName.apply(
+                    id -> evaluate(id, type, state),
+                    name -> evaluate(name, type, state)
+            )).orElse("[!] Failed to evaluate");
+        }
+
+        public String getSymbol() {
+            return idOrName.isLeft() ? String.valueOf(idOrName.getLeft()) : idOrName.getRight();
+        }
+
+        private Watcher(PropertyType type, Either<Integer, String> idOrName, String value) {
+            this.type = type;
+            this.idOrName = idOrName;
+            this.value = value;
+        }
+
+        private static Optional<String> evaluate(int id, PropertyType type, MainState state) {
+            return switch (type) {
+                case Boolean -> Optional.ofNullable(BooleanPropertyFactory.getBooleanProperty(id))
+                        .map(booleanProperty -> String.valueOf(booleanProperty.get(state)));
+                case Float -> Optional.ofNullable(FloatPropertyFactory.getFloatProperty(id))
+                        .map(floatProperty -> String.valueOf(floatProperty.get(state)));
+                case Integer -> Optional.ofNullable(IntegerPropertyFactory.getIntegerProperty(id))
+                        .map(integerProperty -> String.valueOf(integerProperty.get(state)));
+                case String -> Optional.ofNullable(StringPropertyFactory.getStringProperty(id))
+                        .map(stringProperty -> String.valueOf(stringProperty.get(state)));
+                default -> Optional.empty();
+            };
+        }
+
+        private static Optional<String> evaluate(String name, PropertyType type, MainState state) {
+            return switch (type) {
+                case Float -> Optional.ofNullable(FloatPropertyFactory.getFloatProperty(name))
+                        .map(floatProperty -> String.valueOf(floatProperty.get(state)));
+                case Integer -> Optional.ofNullable(IntegerPropertyFactory.getIntegerProperty(name))
+                        .map(integerProperty -> String.valueOf(integerProperty.get(state)));
+                case String -> Optional.ofNullable(StringPropertyFactory.getStringProperty(name))
+                        .map(stringProperty -> String.valueOf(stringProperty.get(state)));
+                default -> Optional.empty();
+            };
         }
     }
 }
