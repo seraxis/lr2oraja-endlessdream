@@ -14,8 +14,12 @@ import bms.player.beatoraja.result.AbstractResult;
 import bms.player.beatoraja.result.CourseResult;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
+import bms.player.beatoraja.skin.SkinManualEntry;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.utils.IntMap;
+import com.github.therapi.runtimejavadoc.CommentFormatter;
+import com.github.therapi.runtimejavadoc.FieldJavadoc;
+import com.github.therapi.runtimejavadoc.RuntimeJavadoc;
 
 import java.util.*;
 
@@ -53,8 +57,10 @@ public class StringPropertyFactory {
 	}
 	
 	public enum StringType {
-		
-		rival(1, (state) -> {
+        /**
+         * In music select scene, it's the selected rival's name. Otherwise, it's based on the target score
+         */
+        rival(1, (state) -> {
 			if (state instanceof MusicSelector selector) {
 				final PlayerInformation rival = selector.getRival();
 				return rival != null ? rival.getName() : "";
@@ -63,7 +69,13 @@ public class StringPropertyFactory {
 				return rival != null ? rival.getPlayer() : "";
 			}
 		}),
+		/**
+		 * Current profile's player name
+		 */
 		player(2, (state) -> (state.resource.getPlayerConfig().getName())),
+		/**
+		 * In music select scene, it's the selected score rank target. Otherwise, it's based on the target score
+		 */
 		target(3, (state) -> {
 			if (state instanceof MusicSelector) {
 				return TargetProperty.getTargetName(state.resource.getPlayerConfig().getTargetid());					
@@ -72,6 +84,11 @@ public class StringPropertyFactory {
 				return target != null ? target.getPlayer() : "";
 			}
 		}),
+		/**
+		 * In music select scene, it's the current bar's name. In music decide and course result scene, it's the
+		 * course's title. Otherwise, it's the song's title.
+		 * When enabling rate mode, song's title has a special prefix like [1.20x] represents the current rate
+		 */
 		title(10, (state) -> {
 			if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof DirectoryBar) {
 				return selector.getSelectedBar().getTitle();
@@ -86,6 +103,9 @@ public class StringPropertyFactory {
 			}
 			return song != null ? song.getTitle() : "";
 		}),
+		/**
+		 * In music select scene, it's the current bar's sub title. Otherwise, it's the current song's sub title
+		 */
         subtitle(11, (state) -> {
 			if (state instanceof MusicSelector selector && selector.getSelectedBar() instanceof FunctionBar) {
 				return ((FunctionBar) selector.getSelectedBar()).getSubtitle();
@@ -311,7 +331,11 @@ public class StringPropertyFactory {
 		public static StringType get(int id) {
 			return ID_MAP.get(id);
 		}
-		
+
+        public SkinManualEntry<StringType> intoManualEntry() {
+            return new SkinManualEntry<>(this, this.name(), this.id);
+        }
+
 		private StringType(int id, StringProperty property) {
 			this.id = id;
 			this.property = property;
@@ -406,4 +430,17 @@ public class StringPropertyFactory {
 			};
 		}		
 	}
+
+    public static void main(String[] args) {
+        CommentFormatter formatter = new CommentFormatter();
+        FieldJavadoc javadoc = RuntimeJavadoc.getJavadoc(StringType.rival);
+        if (javadoc.isEmpty()) {
+            System.out.println("No documentation");
+            return ;
+        }
+
+        System.out.println(javadoc.getName());
+        System.out.println(formatter.format(javadoc.getComment()));
+        System.out.println();
+    }
 }

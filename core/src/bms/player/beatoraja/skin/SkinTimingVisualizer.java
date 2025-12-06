@@ -75,7 +75,7 @@ public final class SkinTimingVisualizer extends SkinObject {
 
 	public void prepare(long time, MainState state) {
 		if(!(state instanceof BMSPlayer)) {
-			draw = false;
+			undraw("Current scene is not play scene");
 			return;
 		}
 		super.prepare(time, state);

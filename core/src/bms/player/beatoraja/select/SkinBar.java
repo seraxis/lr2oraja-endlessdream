@@ -214,7 +214,7 @@ public final class SkinBar extends SkinObject {
     	if(render == null) {
     		render = ((MusicSelector) state).getBarRender();
     		if(render == null) {
-    			draw = false;
+				undraw("BarRender is not exist");
     			return;
     		}
     	}

@@ -1,6 +1,17 @@
 package bms.player.beatoraja.skin;
 
 public class SkinProperty {
+    public enum PropertyType {
+        Boolean,
+        Event,
+        Float,
+        Integer,
+        String,
+        Timer,
+	    // LR2 specials
+	    Number,
+	    Button,
+    }
 
 	public static final int IMAGE_STAGEFILE = 100;
 	public static final int IMAGE_BACKBMP = 101;

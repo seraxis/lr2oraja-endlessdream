@@ -104,7 +104,7 @@ public class SkinGauge extends SkinObject {
 			gauge = state.resource.getGrooveGauge();
 		}
 		if (gauge == null) {
-			draw = false;
+			undraw("Gauge is null");
 			return;
 		}
 

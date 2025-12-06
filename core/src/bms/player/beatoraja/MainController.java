@@ -3,7 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
+import bms.player.beatoraja.modmenu.skin.debugger.SkinDebugger;
+import bms.player.beatoraja.modmenu.skin.debugger.SkinWidgetManager;
 import bms.player.beatoraja.rivals.RivalDataAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -424,6 +425,10 @@ public class MainController {
             ImGuiRenderer.init();
         }
 
+		try (var perf = PerformanceMetrics.get().Event("Skin manual init")) {
+			SkinPropertyManual.init();
+		}
+
         try (var perf = PerformanceMetrics.get().Event("System font load")) {
 			FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(config.getSystemfontpath()));
 			FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -450,6 +455,7 @@ public class MainController {
     	initializeStates();
 		updateStateReferences();
 		MiscSettingMenu.setMain(this);
+		SkinDebugger.init(this);
 		if (bmsfile != null) {
 			if(resource.setBMSFile(bmsfile, auto)) {
 				changeState(MainStateType.PLAY);

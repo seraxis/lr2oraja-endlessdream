@@ -126,7 +126,7 @@ public class SkinImage extends SkinObject {
 	
 	public void prepare(long time, MainState state, int value, float offsetX, float offsetY) {		
         if(image == null || value < 0) {
-            draw = false;
+			undraw("No image or value is less than 0");
             return;
         }
 		super.prepare(time, state, offsetX, offsetY);
@@ -135,8 +135,8 @@ public class SkinImage extends SkinObject {
         }
         currentImage = getImage(value, time, state);
         if(currentImage == null) {
-            draw = false;
-            return;        	
+			undraw("No image");
+            return;
         }
 	}
 
