@@ -15,6 +15,7 @@ import bms.player.beatoraja.result.CourseResult;
 import bms.player.beatoraja.result.MusicResult;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
+import bms.player.beatoraja.skin.SkinManualEntry;
 import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.SongData;
 
@@ -676,10 +677,14 @@ public class BooleanPropertyFactory {
 		 * StringProperty
 		 */
 		private final BooleanProperty property;
-		
+
 		private BooleanType(int id, BooleanProperty property) {
 			this.id = id;
 			this.property = property;
+		}
+
+		public SkinManualEntry<BooleanType> intoManualEntry() {
+			return new SkinManualEntry<>(this, this.name(), this.id);
 		}
 	}
 }

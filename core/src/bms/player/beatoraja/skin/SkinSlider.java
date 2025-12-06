@@ -107,8 +107,8 @@ public final class SkinSlider extends SkinObject {
 			return;
 		}
 		if((currentImage = source.getImage(time, state)) == null) {
-			draw = false;
-			return;			
+			undraw("No image");
+			return;
 		}
 		currentValue = ref != null ? ref.get(state) : 0;
 	}

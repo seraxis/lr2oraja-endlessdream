@@ -2,6 +2,7 @@ package bms.player.beatoraja.skin;
 
 import bms.player.beatoraja.DisposableObject;
 import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.modmenu.skin.debugger.SkinWidgetManager;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
 import bms.player.beatoraja.skin.property.*;
 
@@ -99,6 +100,7 @@ public abstract class SkinObject extends DisposableObject {
 	private long endtime;
 
 	public boolean draw;
+	private boolean registeredRemovedReason = false;
 	// Controlled by debugger instead of constraints defined by skin
 	public boolean visible = true;
 	public Rectangle region = new Rectangle();
@@ -305,7 +307,7 @@ public abstract class SkinObject extends DisposableObject {
 
 		if (timer != null) {
 			if (timer.isOff(state)) {
-				draw = false;
+				undraw("Timer is passed");
 				return;
 			}
 			time -= timer.get(state);
@@ -324,7 +326,7 @@ public abstract class SkinObject extends DisposableObject {
 			}
 		}
 		if (starttime > time) {
-			draw = false;
+			undraw("Loop is ended");
 			return;
 		}
 		nowtime = time;
@@ -505,7 +507,7 @@ public abstract class SkinObject extends DisposableObject {
 	public void prepare(long time, MainState state, float offsetX, float offsetY) {
 		for (BooleanProperty draw : dstdraw) {
 			if(!draw.get(state)) {
-				this.draw = false;
+				undraw("Draw condition is not met");
 				return;
 			}
 		}
@@ -515,7 +517,7 @@ public abstract class SkinObject extends DisposableObject {
 		region.y += offsetY;
 		if (mouseRect != null && !mouseRect.contains(state.main.getInputProcessor().getMouseX() -region.x,
 				state.main.getInputProcessor().getMouseY() - region.y)) {
-			draw = false;
+			undraw("Mouse input area is not met");
 			return;
 		}
 
@@ -638,6 +640,14 @@ public abstract class SkinObject extends DisposableObject {
 
 	public void setRelative(boolean relative) {
 		this.relative = relative;
+	}
+
+	protected void undraw(String reason) {
+		this.draw = false;
+		if (!this.registeredRemovedReason) {
+			this.registeredRemovedReason = true;
+			SkinWidgetManager.registerRemovedObject(this.name, reason);
+		}
 	}
 
 	/**
