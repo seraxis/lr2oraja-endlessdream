@@ -425,6 +425,8 @@ public class BMSPlayerInputProcessor {
 			return isControlKeyPressed(ControlKeys.F12);
 		case TOGGLE_MOD_MENU:
 			return isControlKeyPressed(ControlKeys.F5) || isControlKeyPressed(ControlKeys.INSERT);
+		case COPY_HIGHLIGHTED_MENU_TEXT:
+			return isControlKeyPressed(ControlKeys.KEY_C, MASK_CTRL);
 		}
 		return false;
 	}

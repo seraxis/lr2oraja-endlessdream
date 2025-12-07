@@ -277,6 +277,7 @@ public class KeyBoardInputProcesseor extends BMSPlayerInputDevice implements Inp
 		INSERT(27, Keys.INSERT, false),
 		DEL(28, Keys.FORWARD_DEL, false),
 		ESCAPE(29, Keys.ESCAPE, false),
+		KEY_C(30, Keys.C, false)
 		;
 		
 		public final int id;
