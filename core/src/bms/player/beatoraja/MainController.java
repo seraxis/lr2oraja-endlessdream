@@ -1033,8 +1033,12 @@ public class MainController {
 	private UpdateThread updateSong;
 
 	public void updateSong(String path) {
+		updateSong(path, false);
+	}
+
+	public void updateSong(String path, boolean updateParentWhenMissing) {
 		if (updateSong == null || !updateSong.isAlive()) {
-			updateSong = new SongUpdateThread(path);
+			updateSong = new SongUpdateThread(path, updateParentWhenMissing);
 			updateSong.start();
 		} else {
 			logger.warn("楽曲更新中のため、更新要求は取り消されました");
@@ -1080,15 +1084,17 @@ public class MainController {
 	class SongUpdateThread extends UpdateThread {
 
 		private final String path;
+		private final boolean updateParentWhenMissing;
 
-		public SongUpdateThread(String path) {
-			super("updating folder : " + (path == null ? "ALL" : path));
+		public SongUpdateThread(String path, boolean updateParentWhenMissing) {
+			super("updating folder : " + (path == null ? "ALL" : path) + ", update parent when missing :" + (updateParentWhenMissing ? "yes" : "no"));
 			this.path = path;
+			this.updateParentWhenMissing = updateParentWhenMissing;
 		}
 
 		public void run() {
 			ImGuiNotify.info(this.message);
-			getSongDatabase().updateSongDatas(path, config.getBmsroot(), false, getInfoDatabase());
+			getSongDatabase().updateSongDatas(path, config.getBmsroot(), false, updateParentWhenMissing, getInfoDatabase());
 		}
 	}
 

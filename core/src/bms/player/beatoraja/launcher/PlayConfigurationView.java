@@ -911,7 +911,7 @@ public class PlayConfigurationView implements Initializable {
                 SongInformationAccessor infodb = config.isUseSongInfo() ?
                         new SongInformationAccessor(Paths.get("songinfo.db").toString()) : null;
                 logger.info("song.db更新開始");
-                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, infodb, songDatabaseUpdateListener);
+                songdb.updateSongDatas(updatepath, config.getBmsroot(), updateAll, false, infodb, songDatabaseUpdateListener);
                 logger.info("song.db更新完了");
                 songUpdated = true;
 

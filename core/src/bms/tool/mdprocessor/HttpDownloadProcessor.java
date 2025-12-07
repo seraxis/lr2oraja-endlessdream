@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -172,8 +173,9 @@ public class HttpDownloadProcessor {
             }
             // 2) Extract the compressed archive & update download directory automatically
             boolean successfullyExtracted = false;
+            String bmsDirectory = null;
             try {
-                extractCompressedFile(result.toFile(), null);
+                bmsDirectory = extractCompressedFile(result.toFile(), null);
                 successfullyExtracted = true;
                 downloadTask.setDownloadTaskStatus(DownloadTask.DownloadTaskStatus.Extracted);
             } catch (Exception e) {
@@ -185,7 +187,7 @@ public class HttpDownloadProcessor {
                 // I don't think this has any issue since user can always turn back to root directory
                 // and update the download directory manually
                 ImGuiNotify.info("Successfully downloaded & extracted. Trying to rebuild download directory");
-                main.updateSong(downloadDirectory);
+                main.updateSong(bmsDirectory, true);
                 // If everything works well, trying to delete the downloaded archive
                 try {
                     Files.delete(result);
@@ -291,13 +293,20 @@ public class HttpDownloadProcessor {
      *
      * @param file       compressed archive
      * @param targetPath target directory, fallback to DOWNLOAD_DIRECTORY if null
+     * @return the path to the directory just extracted
      */
-    private void extractCompressedFile(File file, Path targetPath) {
+    private String extractCompressedFile(File file, Path targetPath) {
         Path resultDirectory = targetPath == null ? Path.of(downloadDirectory) : targetPath;
+        String bmsDirectory = null;
         try (SevenZFile sevenZFile = SevenZFile.builder().setFile(file).get()) {
             SevenZArchiveEntry entry;
             while ((entry = sevenZFile.getNextEntry()) != null) {
-                if (entry.isDirectory()) continue;
+                if (entry.isDirectory()) {
+                    if (bmsDirectory == null) {
+                        bmsDirectory = Paths.get(resultDirectory.toString(), entry.getName()).toAbsolutePath().toString();
+                    }
+                    continue;
+                }
                 File outputFile = new File(resultDirectory.toString(), entry.getName());
                 outputFile.getParentFile().mkdirs();
 
@@ -314,5 +323,6 @@ public class HttpDownloadProcessor {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
         }
+        return bmsDirectory;
     }
 }

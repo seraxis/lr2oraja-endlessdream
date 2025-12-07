@@ -47,6 +47,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	private final QueryRunner qr;
 	
 	private List<SongDatabaseAccessorPlugin> plugins = new ArrayList();
+	/**
+	 * Used in updateSongDatas and it's variants. This design is based on an assumption that we cannot delete an
+	 * directory at runtime. Therefore, we can cache the result of the parent directory's existence so we don't
+	 * have to query it every time we updating the inner directory
+	 */
+	private Set<String> checkedParent = new HashSet<>();
 	
 	public SQLiteSongDatabaseAccessor(String filepath, String[] bmsroot) throws ClassNotFoundException {
 		super(new Table("folder", 
@@ -301,17 +307,35 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	 * @param path
 	 *            LR2のルートパス
 	 */
-	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info) {
-		updateSongDatas(path, bmsroot, updateAll, info, new SongDatabaseUpdateListener());
+	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, boolean updateParentWhenMissing, SongInformationAccessor info) {
+		updateSongDatas(path, bmsroot, updateAll, updateParentWhenMissing, info, new SongDatabaseUpdateListener());
 	}
 
 	/**
 	 * @param listener must be provided, cannot be null
 	 */
-	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
+	public void updateSongDatas(String path, String[] bmsroot, boolean updateAll, boolean updateParentWhenMissing, SongInformationAccessor info, SongDatabaseUpdateListener listener) {
 		if(bmsroot == null || bmsroot.length == 0) {
 			logger.warn("楽曲ルートフォルダが登録されていません");
 			return;
+		}
+		if (updateParentWhenMissing) {
+			String parent = Paths.get(path).toAbsolutePath().getParent().toString();
+			if (!checkedParent.contains(parent)) {
+				try {
+					List<FolderData> folders = qr.query("SELECT * FROM folder WHERE path = '" + parent + "'", folderhandler);
+					if (folders.isEmpty()) {
+						// We're updating an inner bms directory and it's parent it's not present
+						// Therefore, we need to hijack the parameter 'path' to it's parent directory to correctly
+						// setup the folder hierarchy
+						path = parent;
+						checkedParent.add(parent);
+					}
+				} catch (Exception e) {
+					logger.error("song.db更新時の例外:{}", e.getMessage());
+					return ;
+				}
+			}
 		}
 		SongDatabaseUpdater updater = new SongDatabaseUpdater(updateAll, bmsroot, info);
 		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(p -> Paths.get(p)) : Stream.of(Paths.get(path)), listener);
