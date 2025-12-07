@@ -65,7 +65,7 @@ public interface SongDatabaseAccessor {
 	 * @param updateAll
 	 *            更新の必要がないものも更新するかどうか
 	 */
-	public void updateSongDatas(String updatepath, String[] bmsroot, boolean updateAll, SongInformationAccessor info);
+	public void updateSongDatas(String updatepath, String[] bmsroot, boolean updateAll, boolean updateParentWhenMissing, SongInformationAccessor info);
 
-	void updateSongDatas(String updatePath, String[] bmsroot, boolean updateAll, SongInformationAccessor info, SongDatabaseUpdateListener listener);
+	void updateSongDatas(String updatePath, String[] bmsroot, boolean updateAll, boolean updateParentWhenMissing, SongInformationAccessor info, SongDatabaseUpdateListener listener);
 }
