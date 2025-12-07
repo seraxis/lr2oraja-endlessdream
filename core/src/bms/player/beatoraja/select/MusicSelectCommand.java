@@ -141,7 +141,7 @@ public enum MusicSelectCommand {
 		if (current instanceof GradeBar) {
 			final SongData[] songs = ((GradeBar) current).getSongDatas();
             for (SongData song : songs) {
-                Logger.getGlobal().info("Missing song md5: " + song.getMd5());
+	            LoggerFactory.getLogger(MusicSelectCommand.class).info("Missing song md5: {}", song.getMd5());
                 if (song.getMd5() != null && !song.getMd5().isEmpty()) {
                     selector.main.getHttpDownloadProcessor().submitMD5Task(song.getMd5(),
                                                                            song.getTitle());
