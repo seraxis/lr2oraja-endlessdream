@@ -32,10 +32,10 @@ public class JudgeCountTracker {
 	}
 
 	public void track(int lane, int judge, boolean fast, int count) {
-		JudgeResult judgeResult = JudgeResult.valueOf(judge);
+		JudgeResult judgeResult = JudgeResult.valueOf(judge, fast);
 		counts.get(Pair.of(lane, judgeResult)).addAndGet(count);
 		// TODO: Allow user define their own interval?
-		if (judgeResult != JudgeResult.PGREAT) {
+		if (judgeResult != JudgeResult.EARLY_PGREAT && judgeResult != JudgeResult.LATE_PGREAT) {
 			Pair<AtomicInteger, AtomicInteger> fs = fsCounts.get(lane);
 			if (fast) {
 				fs.getLeft().incrementAndGet();

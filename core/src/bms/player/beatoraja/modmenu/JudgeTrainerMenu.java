@@ -7,10 +7,8 @@ import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
-import javafx.util.Pair;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
@@ -18,6 +16,31 @@ import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
 public class JudgeTrainerMenu {
     private static ImBoolean OVERRIDE_CHART_JUDGE = new ImBoolean(false);
     private static ImInt OVERRIDE_JUDGE_RANK = new ImInt(0);
+
+    private enum JudgeCountRow {
+        PGREAT("PGREAT", new JudgeResult[]{JudgeResult.EARLY_PGREAT, JudgeResult.LATE_PGREAT}),
+        GREAT("GREAT", new JudgeResult[]{JudgeResult.EARLY_GREAT, JudgeResult.LATE_GREAT}),
+        GOOD("GOOD", new JudgeResult[]{JudgeResult.EARLY_GOOD, JudgeResult.LATE_GOOD}),
+        BAD("BAD", new JudgeResult[]{JudgeResult.EARLY_BAD, JudgeResult.LATE_BAD}),
+        POOR("POOR", new JudgeResult[]{JudgeResult.EARLY_POOR, JudgeResult.LATE_POOR}),
+        EPOOR("EPOOR", new JudgeResult[]{JudgeResult.EARLY_MISS});
+
+        private final String name;
+        private final JudgeResult[] correspondingJudgeResults;
+
+        JudgeCountRow(String name, JudgeResult[] correspondingJudgeResults) {
+            this.name = name;
+            this.correspondingJudgeResults = correspondingJudgeResults;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public JudgeResult[] getCorrespondingJudgeResults() {
+            return correspondingJudgeResults;
+        }
+    }
 
     public static void show(ImBoolean showJudgeTrainer) {
         float relativeX = windowWidth * 0.455f;
@@ -53,13 +76,17 @@ public class JudgeTrainerMenu {
             }
             ImGui.tableHeadersRow();
             // Judgements
-            for (JudgeResult judgeResult : JudgeResult.values()) {
+            for (JudgeCountRow row : JudgeCountRow.values()) {
                 ImGui.tableNextRow();
                 ImGui.tableNextColumn();
-                ImGui.text(judgeResult.getName());
+                ImGui.text(row.getName());
                 for (int i = 0;i < columnCount; ++i) {
                     ImGui.tableNextColumn();
-                    ImGui.text(String.valueOf(tracker.getCount(i, judgeResult)));
+                    int finalI = i;
+                    int count = Arrays.stream(row.getCorrespondingJudgeResults())
+                                    .mapToInt(judgeResult -> tracker.getCount(finalI, judgeResult))
+                                    .sum();
+                    ImGui.text(String.valueOf(count));
                 }
             }
             // Fast/Slow
