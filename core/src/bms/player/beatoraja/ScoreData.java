@@ -4,9 +4,10 @@ import bms.model.Mode;
 import bms.player.beatoraja.input.BMSPlayerInputDevice;
 import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.player.beatoraja.play.JudgeAlgorithm;
+import com.badlogic.gdx.utils.FloatArray;
 
 import java.io.*;
-import java.util.Base64;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -131,6 +132,8 @@ public class ScoreData implements Validatable {
 	 * プレイモード
 	 */
 	private final Mode playmode;
+
+	private FloatArray[] gaugelog;
 
 	private JudgeAlgorithm judgeAlgorithm;
 	
@@ -487,6 +490,14 @@ public class ScoreData implements Validatable {
 
 	public void setGhost(String value){
 		ghost = value;
+	}
+
+	public FloatArray[] getGaugelog() {
+		return gaugelog;
+	}
+
+	public void setGaugelog(FloatArray[] gaugelog) {
+		this.gaugelog = gaugelog;
 	}
 
 	public int[] decodeGhost() {
