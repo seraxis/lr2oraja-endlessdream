@@ -64,7 +64,6 @@ public class MainController {
 	private final Calendar cl = Calendar.getInstance();
 	private long mouseMovedTime;
 
-	private BMSPlayer bmsplayer;
 	private MusicDecide decide;
 	private MusicSelector selector;
 	private MusicResult result;
@@ -381,9 +380,6 @@ public class MainController {
 	}
 
 	private MainState createBMSPlayerState() {
-		if (bmsplayer != null) {
-			bmsplayer.dispose();
-		}
 		return new BMSPlayer(this, resource);
 	}
 
@@ -723,7 +719,7 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-			Gdx.input.setCursorCatched(current == bmsplayer && time > mouseMovedTime + 5000);
+			Gdx.input.setCursorCatched(current instanceof BMSPlayer && time > mouseMovedTime + 5000);
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
@@ -832,9 +828,6 @@ public class MainController {
 	public void dispose() {
 		saveConfig();
 
-		if (bmsplayer != null) {
-			bmsplayer.dispose();
-		}
 		if (selector != null) {
 			selector.dispose();
 		}
