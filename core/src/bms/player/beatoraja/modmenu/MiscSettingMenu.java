@@ -13,10 +13,13 @@ import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import imgui.type.ImInt;
 
+import javax.print.DocFlavor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
@@ -116,8 +119,12 @@ public class MiscSettingMenu {
 
             boolean inMusicSelect = MainController.getStateType(main.getCurrentState()) == MainState.MainStateType.MUSICSELECT;
             ImGui.beginDisabled(!inMusicSelect);
-            if (ImGui.button("Goto Result Scene")) {
+            if (ImGui.button("Goto Result Scene##MiscSettingMenu")) {
                 gotoResultScene();
+            }
+            ImGui.sameLine();
+            if (ImGui.button("Goto Course Result Scene##MiscSettingMenu")) {
+                gotoCourseResultScene();
             }
             ImGui.endDisabled();
         }
@@ -197,12 +204,12 @@ public class MiscSettingMenu {
     }
 
     /**
-     * Goto the result scene with the last played chart result. This function is designed to be easy to port elsewhere
+     * Goto the result scene with the last played chart result.
      */
     private static void gotoResultScene() {
         // YAY SQL INJECTION
         List<ScoreData> scoreDataList = main.getPlayDataAccessor().readScoreDatas("LENGTH(score.sha256) = 64 ORDER BY score.date DESC LIMIT 1");
-        if (scoreDataList.isEmpty()) {
+        if (scoreDataList == null || scoreDataList.isEmpty()) {
             ImGuiNotify.error("Failed to transaction to result scene because no score was found");
             return ;
         }
@@ -215,5 +222,41 @@ public class MiscSettingMenu {
         }
         String path = songDatas[0].getPath();
         ((MusicSelector) main.getCurrentState()).gotoResultScene(path, score, null);
+    }
+
+    /**
+     * Goto the course result scene with the last played course result.
+     */
+    private static void gotoCourseResultScene() {
+        if (!main.isCourseDataInitialized()) {
+            ImGuiNotify.warning("Preparing course data, please wait");
+            return ;
+        }
+        // YAY SQL INJECTION AGAIN
+        List<ScoreData> scoreDataList = main.getPlayDataAccessor().readScoreDatas("LENGTH(score.sha256) > 64 ORDER BY score.date DESC LIMIT 1");
+        if (scoreDataList == null || scoreDataList.isEmpty()) {
+            ImGuiNotify.error("Failed to transaction to course result scene because no score was found");
+            return ;
+        }
+        ScoreData score = scoreDataList.get(0);
+        String sha256s = score.getSha256();
+        List<String> hashes = new ArrayList<>();
+        while (!sha256s.isEmpty()) {
+            String ss = sha256s.substring(0, 64);
+            hashes.add(ss);
+            sha256s = sha256s.substring(64);
+        }
+        SongData[] songDatas = main.getSongDatabase().getSongDatas(hashes.toArray(String[]::new));
+        Optional<CourseData> courseData = main.getCourseDataResource().getCourseDataBySha256(hashes);
+        if (courseData.isEmpty()) {
+            List<String> md5List = Arrays.stream(songDatas).map(SongData::getMd5).toList();
+            courseData = main.getCourseDataResource().getCourseDataByMd5(md5List);
+        }
+        if (courseData.isEmpty()) {
+            ImGuiNotify.error("Failed to transaction to course result scene because no related course was found");
+            return ;
+        }
+        courseData.get().setSong(songDatas);
+        ((MusicSelector) main.getCurrentState()).gotoCourseResultScene(courseData.get(), score, null);
     }
 }

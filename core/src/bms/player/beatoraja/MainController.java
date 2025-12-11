@@ -3,6 +3,11 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +142,11 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
+	private CourseDataResource courseDataResource;
+
+	private Future<Boolean> initializeCourseData = null;
+	private ExecutorService startupTaskExecutor = Executors.newSingleThreadExecutor();
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -213,6 +223,15 @@ public class MainController {
 			obsClient = obsListener.getObsClient();
 			stateListener.add(obsListener);
 		}
+
+		initializeCourseData = startupTaskExecutor.submit(() -> {
+			TableDataAccessor tableDataAccessor = new TableDataAccessor(config.getTablepath());
+			List<CourseData> courseDatas = Arrays.stream(tableDataAccessor.readAll())
+					.flatMap(td -> Arrays.stream(td.getCourse()))
+					.toList();
+			courseDataResource = new CourseDataResource(courseDatas);
+			return true;
+		});
 	}
 
 	private void initializeIRConfig() {
@@ -1024,6 +1043,18 @@ public class MainController {
 
 	public void setHttpDownloadProcessor(HttpDownloadProcessor httpDownloadProcessor) {
 		this.httpDownloadProcessor = httpDownloadProcessor;
+	}
+
+	public boolean isCourseDataInitialized() {
+		if (initializeCourseData == null) {
+			logger.error("Course data initialize task is not executed correctly");
+			return false;
+		}
+		return initializeCourseData.isDone();
+	}
+
+	public CourseDataResource getCourseDataResource() {
+		return courseDataResource;
 	}
 
 	public void switchTimer(int id, boolean on) {
