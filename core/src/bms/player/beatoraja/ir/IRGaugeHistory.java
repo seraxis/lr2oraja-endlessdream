@@ -20,6 +20,9 @@ public record IRGaugeHistory(List<Float> easy, List<Float> groove, List<Float> h
 	 * @see bms.player.beatoraja.play.BMSPlayer
 	 */
 	public static IRGaugeHistory fromGaugeLog(FloatArray[] gaugeLog) {
+		if (gaugeLog == null) {
+			return new IRGaugeHistory(emptyGaugeData(), emptyGaugeData(), emptyGaugeData(), emptyGaugeData());
+		}
 		return new IRGaugeHistory(
 				gaugeLog.length > 1 ? convert(gaugeLog[1]) : emptyGaugeData(),
 				gaugeLog.length > 2 ? convert(gaugeLog[2]) : emptyGaugeData(),
