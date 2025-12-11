@@ -195,6 +195,10 @@ public class ImGuiRenderer {
         ImGui.destroyContext();
     }
 
+    public static Boolean getShowModMenu() {
+        return SHOW_MOD_MENU.get();
+    }
+
     public static void toggleMenu() {
         SHOW_MOD_MENU.set(!SHOW_MOD_MENU.get());
     }

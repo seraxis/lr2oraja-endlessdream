@@ -44,6 +44,8 @@ import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
 
+import static bms.player.beatoraja.modmenu.ImGuiRenderer.getShowModMenu;
+
 /**
  * アプリケーションのルートクラス
  *
@@ -719,7 +721,7 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-			Gdx.input.setCursorCatched(current instanceof BMSPlayer && time > mouseMovedTime + 5000);
+			Gdx.input.setCursorCatched(!getShowModMenu() && current instanceof BMSPlayer && time > mouseMovedTime + 5000);
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
