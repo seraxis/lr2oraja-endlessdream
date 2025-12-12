@@ -167,6 +167,17 @@ public class CourseResult extends AbstractResult {
 		stop(getSound(COURSE_CLEAR) != null ? COURSE_CLEAR : RESULT_CLEAR);
 		stop(getSound(COURSE_FAIL) != null ? COURSE_FAIL : RESULT_FAIL);
 		stop(getSound(COURSE_CLOSE) != null ? COURSE_CLOSE : RESULT_CLOSE);
+		// NOTE: This line is preventing crash from specific executions:
+		// 1) Course result scene (by pressing goto course scene)
+		// 2) Return to music select scene
+		// 3) Music result scene (by pressing goto result scene)
+		// 4) Exiting from music result scene, the game itself will crash immediately
+		// This crash is because when trying to exist music result scene, the game will check if we're currently
+		// playing a course, this is by checking 'courseBMSModels' from resource is whether empty or not
+		// During the step (1), we have set course data into resource. And if we don't remove it manually here,
+		// it will be still exist at step 3. And the game would think we're playing a course and try to do some
+		// silly things that causes the game to crash.
+		resource.clearCourseBMSModels();
 	}
 
 	public void render() {
