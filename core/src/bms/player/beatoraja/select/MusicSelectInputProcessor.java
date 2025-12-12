@@ -397,6 +397,9 @@ public final class MusicSelectInputProcessor {
         if(input.isActivated(KeyCommand.COPY_SONG_SHA256_HASH)) {
             select.execute(MusicSelectCommand.COPY_SHA256_HASH);
         }
+        if(input.isActivated(KeyCommand.COPY_HIGHLIGHTED_MENU_TEXT)) {
+            select.execute(MusicSelectCommand.COPY_HIGHLIGHTED_MENU_TEXT);
+        }
 
         if (input.isControlKeyPressed(ControlKeys.ESCAPE)) {
             boolean isTopLevel = select.getBarManager().getDirectory().isEmpty();

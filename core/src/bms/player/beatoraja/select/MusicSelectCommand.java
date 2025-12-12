@@ -4,7 +4,6 @@ import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.BMSPlayerMode;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Queue;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -12,7 +11,7 @@ import javafx.scene.input.ClipboardContent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 
@@ -202,7 +201,18 @@ public enum MusicSelectCommand {
             }
             else if (bar.updateBar(current)) { selector.play(FOLDER_OPEN); }
         }
-    });
+    }),
+	COPY_HIGHLIGHTED_MENU_TEXT(selector -> {
+		Bar current = selector.getBarManager().getSelected();
+		String content = current.getTitle();
+		if (content != null && !content.isEmpty()) {
+			Clipboard clipboard = Clipboard.getSystemClipboard();
+			ClipboardContent clipboardContent = new ClipboardContent();
+			clipboardContent.putString(content);
+			clipboard.setContent(clipboardContent);
+			ImGuiNotify.info(String.format("Copied highlighted menu text: %s", content));
+		}
+	});
 
     public final Consumer<MusicSelector> function;
 
