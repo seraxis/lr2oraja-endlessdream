@@ -120,6 +120,14 @@ public class ScoreData implements Validatable {
 	 */
 	private int gauge;
 	/**
+	 * Rate percentage, e.g. 120 == 1.2x
+	 */
+	private int rate;
+	/**
+	 * Override judgement, -1 as didn't use
+	 */
+	private int overridejudge = -1;
+	/**
 	 * 入力デバイス
 	 */
 	private BMSPlayerInputDevice.Type deviceType;
@@ -235,6 +243,18 @@ public class ScoreData implements Validatable {
 	}
 	public void setLms(int lms) {
 		this.lms = lms;
+	}
+	public int getRate() {
+		return rate;
+	}
+	public void setRate(int rate) {
+		this.rate = rate;
+	}
+	public int getOverridejudge() {
+		return overridejudge;
+	}
+	public void setOverridejudge(int overridejudge) {
+		this.overridejudge = overridejudge;
 	}
 
 	public int getJudgeCount(int judge) {
