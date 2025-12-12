@@ -44,6 +44,8 @@ import bms.player.beatoraja.song.*;
 import bms.player.beatoraja.stream.StreamController;
 import bms.tool.mdprocessor.MusicDownloadProcessor;
 
+import static bms.player.beatoraja.modmenu.ImGuiRenderer.getShowModMenu;
+
 /**
  * アプリケーションのルートクラス
  *
@@ -64,7 +66,6 @@ public class MainController {
 	private final Calendar cl = Calendar.getInstance();
 	private long mouseMovedTime;
 
-	private BMSPlayer bmsplayer;
 	private MusicDecide decide;
 	private MusicSelector selector;
 	private MusicResult result;
@@ -381,9 +382,6 @@ public class MainController {
 	}
 
 	private MainState createBMSPlayerState() {
-		if (bmsplayer != null) {
-			bmsplayer.dispose();
-		}
 		return new BMSPlayer(this, resource);
 	}
 
@@ -723,7 +721,9 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-			Gdx.input.setCursorCatched(current == bmsplayer && time > mouseMovedTime + 5000);
+            if (!getShowModMenu() && current instanceof BMSPlayer) {
+                Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
+            }
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
@@ -832,9 +832,6 @@ public class MainController {
 	public void dispose() {
 		saveConfig();
 
-		if (bmsplayer != null) {
-			bmsplayer.dispose();
-		}
 		if (selector != null) {
 			selector.dispose();
 		}
