@@ -721,7 +721,9 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-			Gdx.input.setCursorCatched(!getShowModMenu() && current instanceof BMSPlayer && time > mouseMovedTime + 5000);
+            if (!getShowModMenu() && current instanceof BMSPlayer) {
+                Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
+            }
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
