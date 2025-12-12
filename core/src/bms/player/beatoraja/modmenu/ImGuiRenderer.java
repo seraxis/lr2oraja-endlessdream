@@ -93,7 +93,17 @@ public class ImGuiRenderer {
         imGuiGl3.init("#version 150");
     }
 
-    public static void start() {
+    public static void render() {
+        boolean render = SHOW_MOD_MENU.get() || ImGuiNotify.notificationsPresent();
+        if (!render) { return; }
+
+        startFrame();
+        renderMenu();
+        ImGuiNotify.renderNotifications();
+        endFrame();
+    }
+
+    public static void startFrame() {
         if (tmpProcessor != null) {
            Gdx.input.setInputProcessor(tmpProcessor);
             tmpProcessor = null;
@@ -103,7 +113,18 @@ public class ImGuiRenderer {
         ImGui.newFrame();
     }
 
-    public static void render() {
+    public static void endFrame() {
+        ImGui.render();
+        imGuiGl3.renderDrawData(ImGui.getDrawData());
+
+        if (ImGui.getIO().getWantCaptureKeyboard()
+                || ImGui.getIO().getWantCaptureMouse()) {
+            tmpProcessor = Gdx.input.getInputProcessor();
+            Gdx.input.setInputProcessor(null);
+        }
+    }
+
+    public static void renderMenu() {
         // Relative from top left corner, so 44% from the left, 2% from the top
         float relativeX = windowWidth * 0.44f;
         float relativeY = windowHeight * 0.02f;
@@ -171,21 +192,8 @@ public class ImGuiRenderer {
             }
             ImGui.end();
         }
-
-        ImGuiNotify.renderNotifications();
     }
 
-
-    public static void end() {
-        ImGui.render();
-        imGuiGl3.renderDrawData(ImGui.getDrawData());
-
-        if (ImGui.getIO().getWantCaptureKeyboard()
-                || ImGui.getIO().getWantCaptureMouse()) {
-            tmpProcessor = Gdx.input.getInputProcessor();
-            Gdx.input.setInputProcessor(null);
-        }
-    }
 
     public static void dispose() {
         imGuiGl3.shutdown();
