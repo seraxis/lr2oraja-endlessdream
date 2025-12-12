@@ -6,7 +6,7 @@ import bms.player.beatoraja.ir.IRChartData;
 import bms.player.beatoraja.ir.IRResponse;
 import bms.player.beatoraja.ir.IRScoreData;
 import bms.player.beatoraja.ir.LeaderboardEntry;
-import bms.player.beatoraja.ir.LR2IRConnection;
+import bms.player.beatoraja.ir.LR2IRAccessor;
 import bms.player.beatoraja.ir.LR2GhostData;
 import bms.player.beatoraja.play.GhostBattlePlay;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
@@ -55,7 +55,7 @@ public class LeaderBoardBar extends DirectoryBar {
                                                  .toArray(LeaderboardEntry[] ::new);
             return fromIRScoreData(leaderboard);
 		} else {
-			Pair<IRScoreData, LeaderboardEntry[]> scores = LR2IRConnection.getScoreData(new IRChartData(songData));
+			Pair<IRScoreData, LeaderboardEntry[]> scores = LR2IRAccessor.getScoreData(new IRChartData(songData));
 			IRScoreData localScore = scores.getKey();
 			LeaderboardEntry[] scoreData = scores.getValue();
 			if (localScore != null) {
@@ -138,7 +138,7 @@ public class LeaderBoardBar extends DirectoryBar {
                 ImGuiNotify.warning("LR2IR Ghost battle is currently only supported for 7K.");
             }
 
-            LR2GhostData ghost = LR2IRConnection.getGhostData(songData.getMd5(), entry.getLR2Id());
+            LR2GhostData ghost = LR2IRAccessor.getGhostData(songData.getMd5(), entry.getLR2Id());
             // ghost might be null in case of issues with fetching or parsing
             // the ghost data; whatever caused the error should have already
             // been reported by this point
