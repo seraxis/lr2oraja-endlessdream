@@ -17,4 +17,11 @@ public record QueryScoreContext(int lnMode, Integer freqValue, Integer overrideJ
 		Integer overrideJudge = JudgeTrainer.isActive() ? JudgeTrainer.getJudgeRank() : null;
 		return new  QueryScoreContext(lnMode, freqValue, overrideJudge);
 	}
+
+	@Override
+	public int hashCode() {
+		// lnMode \in [0, 3), freqValue \in [0, 200), overrideJudge \in [0, 5)
+		// So we can simply "concat" them as the hash code
+		return freqValue * 100 + lnMode * 10 + overrideJudge;
+	}
 }
