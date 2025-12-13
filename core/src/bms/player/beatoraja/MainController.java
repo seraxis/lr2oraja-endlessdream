@@ -137,6 +137,8 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
+	private boolean legacySkinMode = false;
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -1016,6 +1018,14 @@ public class MainController {
 
 	public void setMicroTimer(int id, long microtime) {
 		timer.setMicroTimer(id, microtime);
+	}
+
+	public boolean isLegacySkinMode() {
+		return legacySkinMode;
+	}
+
+	public void setLegacySkinMode(boolean legacySkinMode) {
+		this.legacySkinMode = legacySkinMode;
 	}
 
 	public HttpDownloadProcessor getHttpDownloadProcessor() {
