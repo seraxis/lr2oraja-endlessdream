@@ -40,6 +40,7 @@ public class SkinMenu {
     private static boolean ready = false;
     private static ImBoolean liveEditing = new ImBoolean(true);
     private static ImBoolean freezeTimers = new ImBoolean(false);
+    private static ImBoolean legacyMode = new ImBoolean(false);
 
     private static MainState observedState;
     private static SkinType currentSkinType;
@@ -156,6 +157,9 @@ public class SkinMenu {
         ImGui.sameLine();
         if (ImGui.checkbox("Freeze timers###freeze-mode", freezeTimers)) {
             main.getTimer().setFrozen(freezeTimers.get());
+        }
+        if (ImGui.checkbox("Load skin in legacy mode###legacy-mode", legacyMode)) {
+            main.setLegacySkinMode(legacyMode.get());
         }
     }
 

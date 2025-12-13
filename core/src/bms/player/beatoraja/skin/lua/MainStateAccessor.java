@@ -35,6 +35,13 @@ public class MainStateAccessor {
 		table.set("event_exec", this.new event_exec());
 		table.set("event_index", this.new event_index());
 
+		if (!state.main.isLegacySkinMode()) {
+			// Endless Dream flag
+			table.set("is_endlessdream", LuaValue.TRUE);
+			// Endless Dream only properties
+			EndlessDreamPropertyFactory.initialize(table);
+		}
+
 		// 具体的な数値の取得・設定など
 		table.set("rate", new ZeroArgFunction() {
 			@Override

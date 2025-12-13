@@ -34,7 +34,7 @@ public class StringPropertyFactory {
 	 */
 	public static StringProperty getStringProperty(final int id) {
 		StringType type = StringType.get(id);
-		return type != null ? type.property : null;
+		return type == null ? EndlessDreamPropertyFactory.getStringProperty(id) : type.property;
 	}
 	
 	/**
@@ -49,7 +49,7 @@ public class StringPropertyFactory {
 				return t.property;
 			}
 		}
-		return null;
+		return EndlessDreamPropertyFactory.getStringProperty(name);
 	}
 	
 	public enum StringType {
@@ -316,7 +316,11 @@ public class StringPropertyFactory {
 			this.id = id;
 			this.property = property;
 		}
-		
+
+		public int getId() {
+			return id;
+		}
+
 		private static StringProperty createSkincategory(final int index) {
 			return (state) -> {
 				if (state instanceof SkinConfiguration) {
