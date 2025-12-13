@@ -1,5 +1,6 @@
 package bms.player.beatoraja.skin.property;
 
+import bms.player.beatoraja.skin.SkinProperty;
 import com.badlogic.gdx.utils.IntMap;
 import org.luaj.vm2.LuaNumber;
 import org.luaj.vm2.LuaTable;
@@ -32,6 +33,7 @@ public class EndlessDreamPropertyFactory {
 	private static final IntMap<StringType> stringPropertyMap = new IntMap<>();
 	private static final IntMap<BooleanType> booleanPropertyMap = new IntMap<>();
 	private static final IntMap<FloatType> floatPropertyMap = new IntMap<>();
+	private static final IntMap<IntegerType> integerPropertyMap = new IntMap<>();
 
 	public static StringProperty getStringProperty(int id) {
 		StringType r = stringPropertyMap.get(id);
@@ -68,6 +70,11 @@ public class EndlessDreamPropertyFactory {
 		return b == null ? null : b.property;
 	}
 
+	public static IntegerProperty getIntegerProperty(int optionId) {
+		IntegerType i = integerPropertyMap.get(optionId);
+		return i == null ? null : i.property;
+	}
+
 	/**
 	 * Initialize the dynamic id and expose them to lua env
 	 * @param table main_state table
@@ -100,6 +107,17 @@ public class EndlessDreamPropertyFactory {
 			int nextID = ++booleanMaximumID;
 			booleanPropertyMap.put(nextID, booleanType);
 			table.set(booleanType.name(), new ZeroArgFunction() {
+				@Override
+				public LuaValue call() {
+					return LuaNumber.valueOf(nextID);
+				}
+			});
+		}
+		int integerMaximumID = getIntegerPropertyMaximumID();
+		for (IntegerType integerType : IntegerType.values()) {
+			int nextID = ++integerMaximumID;
+			integerPropertyMap.put(nextID, integerType);
+			table.set(integerType.name(), new ZeroArgFunction() {
 				@Override
 				public LuaValue call() {
 					return LuaNumber.valueOf(nextID);
@@ -160,6 +178,23 @@ public class EndlessDreamPropertyFactory {
 		}
 	}
 
+	public enum IntegerType {
+		;
+
+		/**
+		 * Integer Property
+		 */
+		private final IntegerProperty property;
+
+		IntegerType(IntegerProperty property) {
+			this.property = property;
+		}
+
+		public IntegerProperty getProperty() {
+			return property;
+		}
+	}
+
 	private static int getStringPropertyMaximumID() {
 		int r = 0;
 		for (StringPropertyFactory.StringType stringType : StringPropertyFactory.StringType.values()) {
@@ -182,6 +217,15 @@ public class EndlessDreamPropertyFactory {
 		for (BooleanPropertyFactory.BooleanType booleanType : BooleanPropertyFactory.BooleanType.values()) {
 			r = Math.max(r, booleanType.getId());
 		}
+		return r;
+	}
+
+	private static int getIntegerPropertyMaximumID() {
+		int r = 0;
+		for (IntegerPropertyFactory.ValueType valueType : IntegerPropertyFactory.ValueType.values()) {
+			r = Math.max(r, valueType.getId());
+		}
+		r = Math.max(r, SkinProperty.NUMBER_MAXBPM_DURATION_GREEN_LANECOVER_OFF);
 		return r;
 	}
 }
