@@ -109,6 +109,8 @@ public class IRScoreData {
 	public final BMSPlayerRule rule;
 	
 	public final String skin;
+
+	public IRGaugeHistory gaugeHistory;
 	
 	public IRScoreData(ScoreData score) {
 		this.sha256 = score.getSha256();
@@ -141,6 +143,7 @@ public class IRScoreData {
 		this.judgeAlgorithm = score.getJudgeAlgorithm();
 		this.rule = score.getRule();
 		this.skin = score.getSkin();
+		this.gaugeHistory = IRGaugeHistory.fromGaugeLog(score.getGaugelog());
 	}
 	
 	public int getExscore() {

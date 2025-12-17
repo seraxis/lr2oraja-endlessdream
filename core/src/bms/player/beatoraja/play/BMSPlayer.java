@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1024,6 +1025,7 @@ public class BMSPlayer extends MainState {
 		}
 		score.setClear(clear.id);
 		score.setGauge(gauge.isTypeChanged() ? -1 : gauge.getType());
+		score.setGaugelog(gaugelog);
 		score.setOption(playinfo.randomoption + (model.getMode().player == 2
 				? (playinfo.randomoption2 * 10 + playinfo.doubleoption * 100) : 0));
 		score.setSeed((model.getMode().player == 2 ? playinfo.randomoption2seed * 65536 * 256 : 0) + playinfo.randomoptionseed);
