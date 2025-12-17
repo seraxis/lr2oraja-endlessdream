@@ -36,8 +36,9 @@ public record IRGaugeHistory(List<Float> easy, List<Float> groove, List<Float> h
 		if (floatArray == null || floatArray.items == null) {
 			return ret;
 		}
-		for (float item : floatArray.items) {
-			ret.add(item);
+		// Don't use for-range on floatArray.items, its capacity can be different with size!
+		for (int i = 0; i < floatArray.size; i++) {
+			ret.add(floatArray.items[i]);
 		}
 		return ret;
 	}
