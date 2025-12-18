@@ -14,13 +14,15 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
 import org.msgpack.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 public class WSClient extends WebSocketClient {
+    private static Logger logger = LoggerFactory.getLogger(WSClient.class);
 
     public WSClient(URI serverUri) {
         super(serverUri);
@@ -87,17 +89,17 @@ public class WSClient extends WebSocketClient {
             case STC_PLAYERS_SCORE -> {
                 ScoreMessage scoreMessage = new ScoreMessage(value);
                 if (!Client.state.getPeers().containsKey(scoreMessage.getPlayer())) {
-                    Logger.getGlobal().severe("[!] Player not found for score update");
+                    logger.error("[!] Player not found for score update");
                     return ;
                 }
                 Client.state.getPeers().get(scoreMessage.getPlayer()).setScore(scoreMessage.getScore());
             }
             case STC_PLAYERS_READY_UPDATE -> {
-                Logger.getGlobal().info("[+] Got updated ready status");
+                logger.info("[+] Got updated ready status");
                 Client.updateReadyState(value);
             }
             case STC_SELECTED_CHART_RANDOM -> {
-                Logger.getGlobal().info("[+] Received selected bms");
+                logger.info("[+] Received selected bms");
                 SelectedBMSMessage selectedBMSMessage = new SelectedBMSMessage(value);
                 String md5 = selectedBMSMessage.getMd5();
 
@@ -116,22 +118,18 @@ public class WSClient extends WebSocketClient {
                 //	}
 
                 if (!Client.state.getHost().equals(Client.state.getRemoteId())) {
-                    Logger.getGlobal().severe("[+] Received random: " + selectedBMSMessage.getRandomSeed());
+	                logger.error("[+] Received random: {}", selectedBMSMessage.getRandomSeed());
                     Client.state.setRandomSeed(selectedBMSMessage.getRandomSeed());
                 }
                 SongDatabaseAccessor songDataAccessor = MainLoader.getScoreDatabaseAccessor();
                 String[] queryHash = new String[1];
                 queryHash[0] = md5;
                 SongData[] songDatas = songDataAccessor.getSongDatas(queryHash);
-                if (songDatas.length == 0) {
-                    Client.state.getSelectedSongRemote().setPath("");
-                    Client.state.setCurrentSongData(null);
+                boolean missingChart = songDatas.length == 0;
+                Client.state.setLobbySongData(missingChart ? null : songDatas[0]);
+                if (missingChart) {
                     Lobby.addToLog("[!] You do not have this chart!");
                     send(ClientToServer.CTS_MISSING_CHART, "".getBytes());
-                } else {
-                    Client.state.setCurrentSongData(songDatas[0]);
-                    Client.state.getSelectedSongRemote().setPath(songDatas[0].getPath());
-                    Client.state.setAutoSelectFlag(true);
                 }
             }
             case STC_USERLIST -> {
@@ -144,7 +142,7 @@ public class WSClient extends WebSocketClient {
                     Lobby.addToLog(message.getMessage());
                 } else {
                     if (!Client.state.getPeers().containsKey(message.getPlayer())) {
-                        Logger.getGlobal().info("[!] Player not found for message");
+                        logger.info("[!] Player not found for message");
                         return ;
                     }
                     Lobby.addToLogWithUser(message.getMessage(), message.getPlayer());

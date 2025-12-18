@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.arena.client.ArenaBar;
 import bms.player.beatoraja.arena.client.Client;
 import bms.player.beatoraja.arena.lobby.Lobby;
@@ -17,22 +18,21 @@ public class ArenaMenu {
     public static boolean isShow = false;
     private static MusicSelector selector;
 
-    public static void setMusicSelector(MusicSelector selector) {
+    static {
+        MainController.registerBeforeRenderTask((main) -> {
+            if (Client.state.getAutoSelectFlag()) {
+                selectCurrentLobbySong();
+                Client.state.setAutoSelectFlag(false);
+            }
+        });
+    }
+
+    public static void init(String username, MusicSelector selector) {
+        Client.userName.set(username);
         ArenaMenu.selector = selector;
     }
 
-    public static void init(String username) {
-        Client.userName.set(username);
-    }
-
     public static void show(ImBoolean showArenaMenu) {
-        // This tweak must be called in game's main thread, otherwise the game crashes immediately
-        // because we cannot dispose a texture outside of glfw context
-        if (Client.state.getAutoSelectFlag()) {
-            selectCurrentLobbySong();
-            // There's a risk of race condition
-            Client.state.setAutoSelectFlag(false);
-        }
         ImGui.begin("EndlessDream ArenaEX", showArenaMenu, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus);
         {
             isFocused = ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
@@ -97,6 +97,12 @@ public class ArenaMenu {
         }
     }
 
+    /**
+     * Auto select the current chosen song in lobby
+     *
+     * @implSpec This function must be called in game's main thread, otherwise the game crashes immediately
+     *  because we cannot dispose a texture outside of glfw context
+     */
     public static void selectCurrentLobbySong() {
         SongData songData = Client.state.getCurrentSongData();
         if (songData != null) {
@@ -107,5 +113,15 @@ public class ArenaMenu {
             // This line might break something if we're not currently at music select scene
             selector.getBarManager().updateBar(bar);
         }
+    }
+
+    public static void refreshMissingChartState() {
+        MainController.pushOneShotAfterRenderTask(main -> {
+            String md5 = Client.state.getSelectedSongRemote().getMd5();
+            SongData[] songDatas = main.getSongDatabase().getSongDatas(new String[]{md5});
+            if (songDatas != null && songDatas.length > 0) {
+                Client.state.setLobbySongData(songDatas[0]);
+            }
+        });
     }
 }
