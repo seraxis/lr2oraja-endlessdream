@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.arena.client.ArenaBar;
 import bms.player.beatoraja.arena.client.Client;
 import bms.player.beatoraja.arena.lobby.Lobby;
@@ -21,18 +22,12 @@ public class ArenaMenu {
         ArenaMenu.selector = selector;
     }
 
-    public static void init(String username) {
+    public static void init(MainController main, String username) {
+        main.registerBeforeImGuiRenderTask(ArenaMenu::selectCurrentLobbySong);
         Client.userName.set(username);
     }
 
     public static void show(ImBoolean showArenaMenu) {
-        // This tweak must be called in game's main thread, otherwise the game crashes immediately
-        // because we cannot dispose a texture outside of glfw context
-        if (Client.state.getAutoSelectFlag()) {
-            selectCurrentLobbySong();
-            // There's a risk of race condition
-            Client.state.setAutoSelectFlag(false);
-        }
         ImGui.begin("EndlessDream ArenaEX", showArenaMenu, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus);
         {
             isFocused = ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
@@ -97,15 +92,24 @@ public class ArenaMenu {
         }
     }
 
+    /**
+     * Auto select the current chosen song in lobby
+     *
+     * @implSpec This function must be called in game's main thread, otherwise the game crashes immediately
+     *  because we cannot dispose a texture outside of glfw context
+     */
     public static void selectCurrentLobbySong() {
-        SongData songData = Client.state.getCurrentSongData();
-        if (songData != null) {
-            ArenaBar bar = new ArenaBar(selector, songData);
-            selector.getBarManager().replaceArenaSelection(bar);
-            selector.getBarManager().updateBar();
-            selector.getBarManager().setSelected(bar);
-            // This line might break something if we're not currently at music select scene
-            selector.getBarManager().updateBar(bar);
+        if (Client.state.getAutoSelectFlag()) {
+            SongData songData = Client.state.getCurrentSongData();
+            if (songData != null) {
+                ArenaBar bar = new ArenaBar(selector, songData);
+                selector.getBarManager().replaceArenaSelection(bar);
+                selector.getBarManager().updateBar();
+                selector.getBarManager().setSelected(bar);
+                // This line might break something if we're not currently at music select scene
+                selector.getBarManager().updateBar(bar);
+            }
+            Client.state.setAutoSelectFlag(false);
         }
     }
 }

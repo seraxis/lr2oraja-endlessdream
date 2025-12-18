@@ -137,6 +137,9 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
+	private final List<Runnable> beforeImGuiRenderTasks = new ArrayList<>();
+	private final List<Runnable> afterImGuiRenderTasks = new ArrayList<>();
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -259,6 +262,14 @@ public class MainController {
 		if (config.isUseObsWs() && obsClient != null) {
 			obsClient.saveLastRecording(reason);
 		}
+	}
+
+	public void registerBeforeImGuiRenderTask(Runnable task) {
+		beforeImGuiRenderTasks.add(task);
+	}
+
+	public void registerAfterImGuiRenderTask(Runnable task) {
+		afterImGuiRenderTasks.add(task);
 	}
 
 	public SkinOffset getOffset(int index) {
@@ -575,6 +586,7 @@ public class MainController {
 	private void updateStateReferences() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
+		ArenaMenu.init(this, resource.getPlayerConfig().getName());
 		ArenaMenu.setMusicSelector(selector);
 	}
 
@@ -695,9 +707,11 @@ public class MainController {
         if (config.isEnableHttp()) { DownloadTaskState.update(); }
         PerformanceMetrics.get().commit();
 
+		beforeImGuiRender();
 		imGui.start();
 		imGui.render();
 		imGui.end();
+		afterImGuiRender();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
@@ -882,6 +896,14 @@ public class MainController {
 
 	public void resume() {
 		current.resume();
+	}
+
+	private void beforeImGuiRender() {
+		beforeImGuiRenderTasks.forEach(Runnable::run);
+	}
+
+	private void afterImGuiRender() {
+		afterImGuiRenderTasks.forEach(Runnable::run);
 	}
 
 	public void saveConfig(){
