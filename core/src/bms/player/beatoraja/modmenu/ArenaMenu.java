@@ -19,7 +19,12 @@ public class ArenaMenu {
     private static MusicSelector selector;
 
     public static void init(String username, MusicSelector selector) {
-        MainController.registerBeforeImGuiRenderTask(ArenaMenu::selectCurrentLobbySong);
+        MainController.registerBeforeImGuiRenderTask(() -> {
+            if (Client.state.getAutoSelectFlag()) {
+                selectCurrentLobbySong();
+                Client.state.setAutoSelectFlag(false);
+            }
+        });
         Client.userName.set(username);
         ArenaMenu.selector = selector;
     }
@@ -96,17 +101,14 @@ public class ArenaMenu {
      *  because we cannot dispose a texture outside of glfw context
      */
     public static void selectCurrentLobbySong() {
-        if (Client.state.getAutoSelectFlag()) {
-            SongData songData = Client.state.getCurrentSongData();
-            if (songData != null) {
-                ArenaBar bar = new ArenaBar(selector, songData);
-                selector.getBarManager().replaceArenaSelection(bar);
-                selector.getBarManager().updateBar();
-                selector.getBarManager().setSelected(bar);
-                // This line might break something if we're not currently at music select scene
-                selector.getBarManager().updateBar(bar);
-            }
-            Client.state.setAutoSelectFlag(false);
+        SongData songData = Client.state.getCurrentSongData();
+        if (songData != null) {
+            ArenaBar bar = new ArenaBar(selector, songData);
+            selector.getBarManager().replaceArenaSelection(bar);
+            selector.getBarManager().updateBar();
+            selector.getBarManager().setSelected(bar);
+            // This line might break something if we're not currently at music select scene
+            selector.getBarManager().updateBar(bar);
         }
     }
 }
