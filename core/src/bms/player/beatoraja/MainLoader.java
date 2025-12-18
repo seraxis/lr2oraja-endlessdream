@@ -8,7 +8,9 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import de.damios.guacamole.gdx.log.LoggerService;
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
@@ -111,7 +113,14 @@ public class MainLoader extends Application {
 
 		if (Files.exists(Config.configpath) && (bmsPath != null || auto != null)) {
 			IRConnectionManager.getAllAvailableIRConnectionName();
-			play(bmsPath, auto, true, null, null, bmsPath != null);
+			if (UIUtils.isMac) {
+				BMSPlayerMode finalAuto = auto;
+				Platform.runLater(() -> {
+					play(bmsPath, finalAuto, true, null, null, bmsPath != null);
+				});
+			} else {
+				play(bmsPath, auto, true, null, null, bmsPath != null);
+			}
 		} else {
 			launch(args);
 		}
