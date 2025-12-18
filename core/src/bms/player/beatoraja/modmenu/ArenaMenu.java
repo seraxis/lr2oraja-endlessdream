@@ -18,13 +18,10 @@ public class ArenaMenu {
     public static boolean isShow = false;
     private static MusicSelector selector;
 
-    public static void setMusicSelector(MusicSelector selector) {
-        ArenaMenu.selector = selector;
-    }
-
-    public static void init(MainController main, String username) {
-        main.registerBeforeImGuiRenderTask(ArenaMenu::selectCurrentLobbySong);
+    public static void init(String username, MusicSelector selector) {
+        MainController.registerBeforeImGuiRenderTask(ArenaMenu::selectCurrentLobbySong);
         Client.userName.set(username);
+        ArenaMenu.selector = selector;
     }
 
     public static void show(ImBoolean showArenaMenu) {

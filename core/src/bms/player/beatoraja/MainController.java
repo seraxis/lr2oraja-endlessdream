@@ -3,6 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,8 +139,9 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
-	private final List<Runnable> beforeImGuiRenderTasks = new ArrayList<>();
-	private final List<Runnable> afterImGuiRenderTasks = new ArrayList<>();
+	private final static List<Runnable> beforeImGuiRenderTasks = new ArrayList<>();
+	private final static List<Runnable> afterImGuiRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> oneShotAfterImGuiRenderTasks = new ArrayList<>();
 
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
@@ -264,12 +267,28 @@ public class MainController {
 		}
 	}
 
-	public void registerBeforeImGuiRenderTask(Runnable task) {
+	/**
+	 * Register a task that'll be executed each time before rendering the imgui
+	 */
+	public static void registerBeforeImGuiRenderTask(Runnable task) {
 		beforeImGuiRenderTasks.add(task);
 	}
 
-	public void registerAfterImGuiRenderTask(Runnable task) {
+	/**
+	 * Register a task that'll be executed each time after rendering the imgui
+	 */
+	public static void registerAfterImGuiRenderTask(Runnable task) {
 		afterImGuiRenderTasks.add(task);
+	}
+
+	/**
+	 * Push a task that'll be executed exactly once after rendering the imgui
+	 *
+	 * @apiNote This function should be called inside render function, otherwise, the caller must ensure the race
+	 * condition won't happen
+	 */
+	public static void pushOneShotAfterImGuiRenderTask(Consumer<MainController> task) {
+		oneShotAfterImGuiRenderTasks.add(task);
 	}
 
 	public SkinOffset getOffset(int index) {
@@ -586,8 +605,7 @@ public class MainController {
 	private void updateStateReferences() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
-		ArenaMenu.init(this, resource.getPlayerConfig().getName());
-		ArenaMenu.setMusicSelector(selector);
+		ArenaMenu.init(resource.getPlayerConfig().getName(), selector);
 	}
 
 	private void triggerLnWarning() {
@@ -904,6 +922,10 @@ public class MainController {
 
 	private void afterImGuiRender() {
 		afterImGuiRenderTasks.forEach(Runnable::run);
+		for (Consumer<MainController> task : oneShotAfterImGuiRenderTasks) {
+			task.accept(this);
+		}
+		oneShotAfterImGuiRenderTasks.clear();
 	}
 
 	public void saveConfig(){

@@ -1,6 +1,7 @@
 package bms.player.beatoraja.arena.lobby;
 
 
+import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.arena.client.Client;
 import imgui.type.ImBoolean;
 import io.github.catizard.jlr2arenaex.enums.ClientToServer;
@@ -91,6 +92,14 @@ public class Lobby {
         ImGui.pushItemWidth(mainWindowWidth - (fontSize * 3) - buttonWidth - gapSize);
         ImGui.inputText("Path", new ImString(Client.state.getSelectedSongRemote().getPath()), ImGuiInputTextFlags.ReadOnly);
         ImGui.popItemWidth();
+
+        ImGui.beginDisabled(!Client.state.isMissingChart());
+        if (ImGui.button("Download Missing Chart##Lobby")) {
+            MainController.pushOneShotAfterImGuiRenderTask((main) -> {
+                main.getHttpDownloadProcessor().submitMD5Task(Client.state.getSelectedSongRemote().getMd5(),  Client.state.getSelectedSongRemote().getTitle());
+            });
+        }
+        ImGui.endDisabled();
 
         ImGui.separator();
         if (ImGui.beginTabBar("##Tabs")) {
