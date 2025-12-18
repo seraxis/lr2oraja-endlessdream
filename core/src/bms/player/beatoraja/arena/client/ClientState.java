@@ -23,6 +23,8 @@ public class ClientState {
     private final AtomicInteger randomSeed = new AtomicInteger();
     // Random flip
     private Boolean randomFlip = false;
+    // Doesn't have current selected song
+    private boolean missingChart = false;
 
     public Map<Address, Peer> getPeers() {
         return peers;
@@ -88,6 +90,14 @@ public class ClientState {
         this.randomFlip = randomFlip;
     }
 
+    public boolean isMissingChart() {
+        return missingChart;
+    }
+
+    public void setMissingChart(boolean missingChart) {
+        this.missingChart = missingChart;
+    }
+
     public Optional<Integer> getMaxScore() {
         if (currentSongData == null) {
             return Optional.empty();
@@ -100,5 +110,18 @@ public class ClientState {
             return Optional.empty();
         }
         return Optional.of(currentSongData.getNotes());
+    }
+
+    public void setLobbySongData(SongData songData) {
+        if (songData == null) {
+            selectedSongRemote.setPath("");
+            currentSongData = null;
+            missingChart = true;
+        } else {
+            selectedSongRemote.setPath(songData.getPath());
+            currentSongData = songData;
+            missingChart = false;
+            autoSelectFlag = true;
+        }
     }
 }

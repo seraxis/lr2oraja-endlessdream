@@ -6,13 +6,16 @@ import bms.player.beatoraja.modmenu.ImGuiNotify;
 import imgui.type.ImBoolean;
 import imgui.type.ImString;
 import org.msgpack.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 public class Client {
+    private static Logger logger = LoggerFactory.getLogger(Client.class);
+
     public static ImString userName = new ImString("", 128);
     public static ImBoolean connected = new ImBoolean(false);
     public static ImString host = new ImString("", 128);
@@ -77,9 +80,9 @@ public class Client {
     public static void updatePeerState(Value value) {
         updatePeerList(value);
 
-        Logger.getGlobal().info("[+] Connected users:");
+        logger.info("[+] Connected users:");
         Client.state.getPeers().forEach((address, peer) -> {
-            Logger.getGlobal().info("- " + peer.getUserName());
+	        logger.info("- {}", peer.getUserName());
         });
     }
 
@@ -97,7 +100,7 @@ public class Client {
                 .stream()
                 .allMatch(e -> e.getValue().isReady() && e.getValue().getSelectedMD5().equals(selectedMD5));
         if (allReady) {
-            Logger.getGlobal().info("[+] All player in lobby are ready");
+            logger.info("[+] All player in lobby are ready");
             if (accepter != null) {
                 accepter.accept(true);
             }
