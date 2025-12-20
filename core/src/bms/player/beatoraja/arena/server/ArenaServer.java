@@ -2,13 +2,15 @@ package bms.player.beatoraja.arena.server;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
 import imgui.type.ImBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.logging.Logger;
 
 /**
  * A simple static wrapper of server instance of JLR2ArenaEx
  */
 public class ArenaServer {
+    private static Logger logger = LoggerFactory.getLogger(ArenaServer.class);
     private static io.github.catizard.jlr2arenaex.server.ArenaServer server = null;
     private static boolean serverAutoRotate = false;
     public static final ImBoolean serverStarted = new ImBoolean(false);
@@ -20,6 +22,7 @@ public class ArenaServer {
             server.setExceptionHandler((e) -> {
                 e.printStackTrace();
                 String err = String.format("Server internal error: %s", e.getMessage());
+                logger.error("Server internal error: ", e);
                 Logger.getGlobal().severe(err);
                 ImGuiNotify.error(err);
                 stop();
