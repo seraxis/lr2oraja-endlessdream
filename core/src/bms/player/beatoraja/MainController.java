@@ -139,9 +139,10 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
-	private final static List<Runnable> beforeImGuiRenderTasks = new ArrayList<>();
-	private final static List<Runnable> afterImGuiRenderTasks = new ArrayList<>();
-	private final static List<Consumer<MainController>> oneShotAfterImGuiRenderTasks = new ArrayList<>();
+	private final static List<Runnable> beforeRenderTasks = new ArrayList<>();
+	private final static List<Runnable> afterRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> oneShotBeforeRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> oneShotAfterRenderTasks = new ArrayList<>();
 
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
@@ -268,27 +269,37 @@ public class MainController {
 	}
 
 	/**
-	 * Register a task that'll be executed each time before rendering the imgui
+	 * Register a task that'll be executed each time before render
 	 */
-	public static void registerBeforeImGuiRenderTask(Runnable task) {
-		beforeImGuiRenderTasks.add(task);
+	public static void registerBeforeRenderTask(Runnable task) {
+		beforeRenderTasks.add(task);
 	}
 
 	/**
-	 * Register a task that'll be executed each time after rendering the imgui
+	 * Register a task that'll be executed each time after render
 	 */
-	public static void registerAfterImGuiRenderTask(Runnable task) {
-		afterImGuiRenderTasks.add(task);
+	public static void registerAfterRenderTask(Runnable task) {
+		afterRenderTasks.add(task);
 	}
 
 	/**
-	 * Push a task that'll be executed exactly once after rendering the imgui
+	 * Push a task that'll be executed exactly once after render
 	 *
 	 * @apiNote This function should be called inside render function, otherwise, the caller must ensure the race
 	 * condition won't happen
 	 */
-	public static void pushOneShotAfterImGuiRenderTask(Consumer<MainController> task) {
-		oneShotAfterImGuiRenderTasks.add(task);
+	public static void pushOneShotBeforeRenderTask(Consumer<MainController> task) {
+		oneShotBeforeRenderTasks.add(task);
+	}
+
+	/**
+	 * Push a task that'll be executed exactly once after render
+	 *
+	 * @apiNote This function should be called inside render function, otherwise, the caller must ensure the race
+	 * condition won't happen
+	 */
+	public static void pushOneShotAfterRenderTask(Consumer<MainController> task) {
+		oneShotAfterRenderTasks.add(task);
 	}
 
 	public SkinOffset getOffset(int index) {
@@ -725,11 +736,9 @@ public class MainController {
         if (config.isEnableHttp()) { DownloadTaskState.update(); }
         PerformanceMetrics.get().commit();
 
-		beforeImGuiRender();
 		imGui.start();
 		imGui.render();
 		imGui.end();
-		afterImGuiRender();
 
 		// TODO renderループに入れるのではなく、MusicDownloadProcessorのListenerとして実装したほうがいいのでは
 		if(download != null && download.isDownload()){
@@ -916,16 +925,20 @@ public class MainController {
 		current.resume();
 	}
 
-	private void beforeImGuiRender() {
-		beforeImGuiRenderTasks.forEach(Runnable::run);
-	}
-
-	private void afterImGuiRender() {
-		afterImGuiRenderTasks.forEach(Runnable::run);
-		for (Consumer<MainController> task : oneShotAfterImGuiRenderTasks) {
+	public void beforeRender() {
+		beforeRenderTasks.forEach(Runnable::run);
+		for (Consumer<MainController> task : oneShotBeforeRenderTasks) {
 			task.accept(this);
 		}
-		oneShotAfterImGuiRenderTasks.clear();
+		oneShotBeforeRenderTasks.clear();
+	}
+
+	public void afterRender() {
+		afterRenderTasks.forEach(Runnable::run);
+		for (Consumer<MainController> task : oneShotAfterRenderTasks) {
+			task.accept(this);
+		}
+		oneShotAfterRenderTasks.clear();
 	}
 
 	public void saveConfig(){

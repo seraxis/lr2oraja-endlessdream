@@ -95,7 +95,7 @@ public class Lobby {
 
         ImGui.beginDisabled(!Client.state.isMissingChart());
         if (ImGui.button("Download Missing Chart##Lobby")) {
-            MainController.pushOneShotAfterImGuiRenderTask((main) -> {
+            MainController.pushOneShotAfterRenderTask((main) -> {
                 main.getHttpDownloadProcessor().submitMD5Task(Client.state.getSelectedSongRemote().getMd5(),  Client.state.getSelectedSongRemote().getTitle());
             });
         }

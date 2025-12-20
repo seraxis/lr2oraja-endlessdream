@@ -19,7 +19,7 @@ public class ArenaMenu {
     private static MusicSelector selector;
 
     public static void init(String username, MusicSelector selector) {
-        MainController.registerBeforeImGuiRenderTask(() -> {
+        MainController.registerBeforeRenderTask(() -> {
             if (Client.state.getAutoSelectFlag()) {
                 selectCurrentLobbySong();
                 Client.state.setAutoSelectFlag(false);
