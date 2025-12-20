@@ -23,7 +23,6 @@ public class ArenaServer {
                 e.printStackTrace();
                 String err = String.format("Server internal error: %s", e.getMessage());
                 logger.error("Server internal error: ", e);
-                Logger.getGlobal().severe(err);
                 ImGuiNotify.error(err);
                 stop();
             });
