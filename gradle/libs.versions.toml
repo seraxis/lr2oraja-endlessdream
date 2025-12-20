@@ -24,6 +24,7 @@ ebur128java = "1.2.6-2"
 jna = "5.13.0"
 websocket = "1.6.0"
 slf4j = "2.0.17"
+jlr2arenaex = "0.4.0"
 
 
 [libraries]
@@ -86,6 +87,8 @@ msgpack = { group = "org.msgpack", name = "msgpack-core", version.ref = "msgpack
 javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "websocket" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-jul = { group = "org.slf4j", name = "slf4j-jdk14", version.ref = "slf4j" }
+
+jlr2arenaex = { group = "com.github.Catizard", name = "JLR2ArenaEx", version.ref = "jlr2arenaex" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]

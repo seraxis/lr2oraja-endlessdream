@@ -31,7 +31,7 @@ version = libs.versions.beatoraja.get()
 
 sourceSets {
     main {
-        java.srcDirs(listOf("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser", "dependencies/JLR2ArenaEx"))
+        java.srcDirs(listOf("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser"))
         resources.srcDirs(listOf("src/"))
     }
 }
@@ -173,6 +173,8 @@ dependencies {
     implementation(libs.bundles.slf4j)
 
     implementation(libs.bundles.msgpack)
+
+    implementation(libs.jlr2arenaex)
 
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
