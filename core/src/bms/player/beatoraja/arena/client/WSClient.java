@@ -125,17 +125,11 @@ public class WSClient extends WebSocketClient {
                 String[] queryHash = new String[1];
                 queryHash[0] = md5;
                 SongData[] songDatas = songDataAccessor.getSongDatas(queryHash);
-                if (songDatas.length == 0) {
-                    Client.state.getSelectedSongRemote().setPath("");
-                    Client.state.setCurrentSongData(null);
-                    Client.state.setMissingChart(true);
+                boolean missingChart = songDatas.length == 0;
+                Client.state.setLobbySongData(missingChart ? null : songDatas[0]);
+                if (missingChart) {
                     Lobby.addToLog("[!] You do not have this chart!");
                     send(ClientToServer.CTS_MISSING_CHART, "".getBytes());
-                } else {
-                    Client.state.setCurrentSongData(songDatas[0]);
-                    Client.state.getSelectedSongRemote().setPath(songDatas[0].getPath());
-                    Client.state.setAutoSelectFlag(true);
-                    Client.state.setMissingChart(false);
                 }
             }
             case STC_USERLIST -> {

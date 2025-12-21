@@ -18,13 +18,16 @@ public class ArenaMenu {
     public static boolean isShow = false;
     private static MusicSelector selector;
 
-    public static void init(String username, MusicSelector selector) {
-        MainController.registerBeforeRenderTask(() -> {
+    static {
+        MainController.registerBeforeRenderTask((main) -> {
             if (Client.state.getAutoSelectFlag()) {
                 selectCurrentLobbySong();
                 Client.state.setAutoSelectFlag(false);
             }
         });
+    }
+
+    public static void init(String username, MusicSelector selector) {
         Client.userName.set(username);
         ArenaMenu.selector = selector;
     }

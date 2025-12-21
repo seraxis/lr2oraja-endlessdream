@@ -139,8 +139,8 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
-	private final static List<Runnable> beforeRenderTasks = new ArrayList<>();
-	private final static List<Runnable> afterRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> beforeRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> afterRenderTasks = new ArrayList<>();
 	private final static List<Consumer<MainController>> oneShotBeforeRenderTasks = new ArrayList<>();
 	private final static List<Consumer<MainController>> oneShotAfterRenderTasks = new ArrayList<>();
 
@@ -271,14 +271,14 @@ public class MainController {
 	/**
 	 * Register a task that'll be executed each time before render
 	 */
-	public static void registerBeforeRenderTask(Runnable task) {
+	public static void registerBeforeRenderTask(Consumer<MainController> task) {
 		beforeRenderTasks.add(task);
 	}
 
 	/**
 	 * Register a task that'll be executed each time after render
 	 */
-	public static void registerAfterRenderTask(Runnable task) {
+	public static void registerAfterRenderTask(Consumer<MainController> task) {
 		afterRenderTasks.add(task);
 	}
 
@@ -926,7 +926,7 @@ public class MainController {
 	}
 
 	public void beforeRender() {
-		beforeRenderTasks.forEach(Runnable::run);
+		beforeRenderTasks.forEach(task -> task.accept(this));
 		for (Consumer<MainController> task : oneShotBeforeRenderTasks) {
 			task.accept(this);
 		}
@@ -934,7 +934,7 @@ public class MainController {
 	}
 
 	public void afterRender() {
-		afterRenderTasks.forEach(Runnable::run);
+		afterRenderTasks.forEach(task -> task.accept(this));
 		for (Consumer<MainController> task : oneShotAfterRenderTasks) {
 			task.accept(this);
 		}

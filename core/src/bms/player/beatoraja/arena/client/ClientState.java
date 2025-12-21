@@ -111,4 +111,17 @@ public class ClientState {
         }
         return Optional.of(currentSongData.getNotes());
     }
+
+    public void setLobbySongData(SongData songData) {
+        if (songData == null) {
+            selectedSongRemote.setPath("");
+            currentSongData = null;
+            missingChart = true;
+        } else {
+            selectedSongRemote.setPath(songData.getPath());
+            currentSongData = songData;
+            missingChart = false;
+            autoSelectFlag = true;
+        }
+    }
 }
