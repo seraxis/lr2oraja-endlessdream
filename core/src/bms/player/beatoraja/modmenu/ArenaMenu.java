@@ -114,4 +114,14 @@ public class ArenaMenu {
             selector.getBarManager().updateBar(bar);
         }
     }
+
+    public static void refreshMissingChartState() {
+        MainController.pushOneShotAfterRenderTask(main -> {
+            String md5 = Client.state.getSelectedSongRemote().getMd5();
+            SongData[] songDatas = main.getSongDatabase().getSongDatas(new String[]{md5});
+            if (songDatas != null && songDatas.length > 0) {
+                Client.state.setLobbySongData(songDatas[0]);
+            }
+        });
+    }
 }

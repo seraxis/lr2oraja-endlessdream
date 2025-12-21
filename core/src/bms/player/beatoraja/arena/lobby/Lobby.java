@@ -83,9 +83,17 @@ public class Lobby {
         ImGui.inputText("Artist", new ImString(Client.state.getSelectedSongRemote().getArtist()), ImGuiInputTextFlags.ReadOnly);
         // NOTE: When trying to jump to the arena bar automatically, current scene should be musicselector
         // otherwise the jump won't work
-        if (ImGui.button(FontAwesomeIcons.ArrowRight)) {
-            ArenaMenu.selectCurrentLobbySong();
+        ImGui.beginDisabled(Client.state.getSelectedSongRemote() == null || Client.state.getSelectedSongRemote().getMd5().isEmpty());
+        if (Client.state.isMissingChart()) {
+            if (ImGui.button(FontAwesomeIcons.Undo + "##ArenaLoby")) {
+                ArenaMenu.refreshMissingChartState();
+            }
+        } else {
+            if (ImGui.button(FontAwesomeIcons.ArrowRight + "##ArenaLobby")) {
+                ArenaMenu.selectCurrentLobbySong();
+            }
         }
+        ImGui.endDisabled();
         buttonWidth = ImGui.calcTextSizeX(FontAwesomeIcons.ArrowRight) + ImGui.getStyle().getFramePaddingX() * 2;
 
         ImGui.sameLine();
