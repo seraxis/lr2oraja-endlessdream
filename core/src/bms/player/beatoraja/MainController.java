@@ -3,6 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Consumer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +139,11 @@ public class MainController {
 
 	public List<IRSendStatus> irSendStatus = new ArrayList<IRSendStatus>();
 
+	private final static List<Consumer<MainController>> beforeRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> afterRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> oneShotBeforeRenderTasks = new ArrayList<>();
+	private final static List<Consumer<MainController>> oneShotAfterRenderTasks = new ArrayList<>();
+
 	public MainController(Path f, Config config, PlayerConfig player, BMSPlayerMode auto, boolean songUpdated) {
 		this.auto = auto;
 		this.config = config;
@@ -259,6 +266,40 @@ public class MainController {
 		if (config.isUseObsWs() && obsClient != null) {
 			obsClient.saveLastRecording(reason);
 		}
+	}
+
+	/**
+	 * Register a task that'll be executed each time before render
+	 */
+	public static void registerBeforeRenderTask(Consumer<MainController> task) {
+		beforeRenderTasks.add(task);
+	}
+
+	/**
+	 * Register a task that'll be executed each time after render
+	 */
+	public static void registerAfterRenderTask(Consumer<MainController> task) {
+		afterRenderTasks.add(task);
+	}
+
+	/**
+	 * Push a task that'll be executed exactly once after render
+	 *
+	 * @apiNote This function should be called inside render function, otherwise, the caller must ensure the race
+	 * condition won't happen
+	 */
+	public static void pushOneShotBeforeRenderTask(Consumer<MainController> task) {
+		oneShotBeforeRenderTasks.add(task);
+	}
+
+	/**
+	 * Push a task that'll be executed exactly once after render
+	 *
+	 * @apiNote This function should be called inside render function, otherwise, the caller must ensure the race
+	 * condition won't happen
+	 */
+	public static void pushOneShotAfterRenderTask(Consumer<MainController> task) {
+		oneShotAfterRenderTasks.add(task);
 	}
 
 	public SkinOffset getOffset(int index) {
@@ -575,6 +616,7 @@ public class MainController {
 	private void updateStateReferences() {
 		SkinMenu.init(this, player);
 		SongManagerMenu.injectMusicSelector(selector);
+		ArenaMenu.init(resource.getPlayerConfig().getName(), selector);
 	}
 
 	private void triggerLnWarning() {
@@ -881,6 +923,22 @@ public class MainController {
 
 	public void resume() {
 		current.resume();
+	}
+
+	public void beforeRender() {
+		beforeRenderTasks.forEach(task -> task.accept(this));
+		for (Consumer<MainController> task : oneShotBeforeRenderTasks) {
+			task.accept(this);
+		}
+		oneShotBeforeRenderTasks.clear();
+	}
+
+	public void afterRender() {
+		afterRenderTasks.forEach(task -> task.accept(this));
+		for (Consumer<MainController> task : oneShotAfterRenderTasks) {
+			task.accept(this);
+		}
+		oneShotAfterRenderTasks.clear();
 	}
 
 	public void saveConfig(){

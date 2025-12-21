@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.arena.lobby.GraphMenu;
 import bms.player.beatoraja.Version;
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
 
@@ -9,6 +10,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
 import com.badlogic.gdx.controllers.Controller;
 
 import imgui.*;
+import imgui.extension.implot.ImPlot;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -43,6 +45,8 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
     private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
+    private static ImBoolean SHOW_ARENA_MENU = new ImBoolean(false);
+    private static ImBoolean SHOW_GRAPH_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_WIDGET_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_MENU = new ImBoolean(false);
@@ -61,6 +65,7 @@ public class ImGuiRenderer {
         windowHeight = lwjglGraphics.getHeight();
 
         ImGui.createContext();
+        ImPlot.createContext();
         ImGuiIO io = ImGui.getIO();
         io.setIniFilename("layout.ini");
         io.getFonts().addFontDefault();
@@ -124,6 +129,8 @@ public class ImGuiRenderer {
                 PerformanceMonitor.reloadEventTree();
             }
             ImGui.checkbox("Show Misc Setting Window", SHOW_MISC_SETTING);
+            ImGui.checkbox("Show Arena Menu", SHOW_ARENA_MENU);
+            ImGui.checkbox("Show Graph", SHOW_GRAPH_MENU);
 
             if (SHOW_FREQ_PLUS.get()) {
                 FreqTrainerMenu.show(SHOW_FREQ_PLUS);
@@ -156,6 +163,15 @@ public class ImGuiRenderer {
             if (SHOW_MISC_SETTING.get()) {
                 MiscSettingMenu.show(SHOW_MISC_SETTING);
             }
+            if (SHOW_ARENA_MENU.get()) {
+                ArenaMenu.show(SHOW_ARENA_MENU);
+            } else {
+                ArenaMenu.isFocused = false;
+            }
+            if (SHOW_GRAPH_MENU.get()) {
+                GraphMenu.show(SHOW_GRAPH_MENU);
+            }
+
 
             if (ImGui.treeNode("Endless Dream Debug Information")) {
                 float axis;
@@ -180,8 +196,7 @@ public class ImGuiRenderer {
         ImGui.render();
         imGuiGl3.renderDrawData(ImGui.getDrawData());
 
-        if (ImGui.getIO().getWantCaptureKeyboard()
-                || ImGui.getIO().getWantCaptureMouse()) {
+        if (ImGui.getIO().getWantCaptureKeyboard() || ImGui.getIO().getWantCaptureMouse()) {
             tmpProcessor = Gdx.input.getInputProcessor();
             Gdx.input.setInputProcessor(null);
         }
@@ -193,6 +208,7 @@ public class ImGuiRenderer {
         imGuiGlfw.shutdown();
         imGuiGlfw = null;
         ImGui.destroyContext();
+        ImPlot.destroyContext();
     }
 
     public static void toggleMenu() {

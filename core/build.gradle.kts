@@ -172,6 +172,10 @@ dependencies {
     implementation(libs.javawebsocket)
     implementation(libs.bundles.slf4j)
 
+    implementation(libs.bundles.msgpack)
+
+    implementation(libs.jlr2arenaex)
+
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
     implementation(":luaj-jse:3.0.2-custom")

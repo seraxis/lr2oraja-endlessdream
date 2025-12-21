@@ -239,7 +239,9 @@ public class MainLoader extends Application {
 
 				public void render() {
                     try (var perf = PerformanceMetrics.get().Watch("render")) {
+						main.beforeRender();
                         main.render();
+						main.afterRender();
                     }
                 }
 
