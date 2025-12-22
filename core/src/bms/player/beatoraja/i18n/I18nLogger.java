@@ -1,11 +1,11 @@
 package bms.player.beatoraja.i18n;
 
-import bms.player.beatoraja.config.I18nMessage;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 /**
  * I18nLogger is a proxy that composes a Logger interface from slf4j and a resource bundle.
@@ -24,6 +24,31 @@ public class I18nLogger implements Logger {
 		this.bundle = bundle;
 	}
 
+	// A TranslationHelper is an Either<String, Unit>
+	private class TranslationHelper {
+		private String translated = null;
+
+		public TranslationHelper(String msg) {
+			if (bundle.containsKey(msg)) {
+				translated = bundle.getString(msg);
+			}
+		}
+
+		public TranslationHelper(String msg, Object... args) {
+			if (bundle.containsKey(msg)) {
+				translated = MessageFormat.format(msg, args);
+			}
+		}
+
+		public void execute(Consumer<String> onTranslated, Runnable onPlainString) {
+			if (translated != null) {
+				onTranslated.accept(translated);
+			} else {
+				onPlainString.run();
+			}
+		}
+	}
+
 	@Override
 	public String getName() {
 		return logger.getName();
@@ -36,27 +61,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void trace(String msg) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		new TranslationHelper(msg).execute(
+				logger::trace,
+				() -> logger.trace(msg)
+		);
 	}
 
 	@Override
 	public void trace(String format, Object arg) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		new TranslationHelper(format, arg).execute(
+				logger::trace,
+				() -> logger.trace(format, arg)
+		);
 	}
 
 	@Override
 	public void trace(String format, Object arg1, Object arg2) {
-		logger.trace(format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				logger::trace,
+				() -> logger.trace(format, arg1, arg2)
+		);
 	}
 
 	@Override
 	public void trace(String format, Object... arguments) {
-		logger.trace(format, arguments);
+		new TranslationHelper(format, arguments).execute(
+				logger::trace,
+				() -> logger.trace(format, arguments)
+		);
 	}
 
 	@Override
 	public void trace(String msg, Throwable t) {
-		logger.trace(msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.trace(translated, t),
+				() -> logger.trace(msg, t)
+		);
 	}
 
 	@Override
@@ -66,27 +106,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void trace(Marker marker, String msg) {
-		logger.trace(marker, msg);
+		new TranslationHelper(msg).execute(
+				translated -> logger.trace(marker, translated),
+				() -> logger.trace(marker, msg)
+		);
 	}
 
 	@Override
 	public void trace(Marker marker, String format, Object arg) {
-		logger.trace(marker, format, arg);
+		new TranslationHelper(format, arg).execute(
+				translated -> logger.trace(marker, translated),
+				() -> logger.trace(marker, format, arg)
+		);
 	}
 
 	@Override
 	public void trace(Marker marker, String format, Object arg1, Object arg2) {
-		logger.trace(marker, format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				translated -> logger.trace(marker, translated),
+				() -> logger.trace(marker, format, arg1, arg2)
+		);
 	}
 
 	@Override
 	public void trace(Marker marker, String format, Object... argArray) {
-		logger.trace(marker, format, argArray);
+		new TranslationHelper(format, argArray).execute(
+				translated -> logger.trace(marker, translated),
+				() -> logger.trace(marker, format, argArray)
+		);
 	}
 
 	@Override
 	public void trace(Marker marker, String msg, Throwable t) {
-		logger.trace(marker, msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.trace(marker, translated, t),
+				() -> logger.trace(marker, msg, t)
+		);
 	}
 
 	@Override
@@ -96,27 +151,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void debug(String msg) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		new TranslationHelper(msg).execute(
+				logger::debug,
+				() -> logger.debug(msg)
+		);
 	}
 
 	@Override
 	public void debug(String format, Object arg) {
-		throw new UnsupportedOperationException("Not supported yet.");
+		new TranslationHelper(format, arg).execute(
+				logger::debug,
+				() -> logger.debug(format, arg)
+		);
 	}
 
 	@Override
 	public void debug(String format, Object arg1, Object arg2) {
-		logger.debug(format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				logger::debug,
+				() -> logger.debug(format, arg1, arg2)
+		);
 	}
 
 	@Override
 	public void debug(String format, Object... arguments) {
-		logger.debug(format, arguments);
+		new TranslationHelper(format, arguments).execute(
+				logger::debug,
+				() -> logger.debug(format, arguments)
+		);
 	}
 
 	@Override
 	public void debug(String msg, Throwable t) {
-		logger.debug(msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.debug(translated, t),
+				() -> logger.debug(msg, t)
+		);
 	}
 
 	@Override
@@ -126,27 +196,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void debug(Marker marker, String msg) {
-		logger.debug(marker, msg);
+		new TranslationHelper(msg).execute(
+				translated -> logger.debug(marker, translated),
+				() -> logger.debug(marker, msg)
+		);
 	}
 
 	@Override
 	public void debug(Marker marker, String format, Object arg) {
-		logger.debug(marker, format, arg);
+		new TranslationHelper(format, arg).execute(
+				translated -> logger.debug(marker, translated),
+				() -> logger.debug(marker, format, arg)
+		);
 	}
 
 	@Override
 	public void debug(Marker marker, String format, Object arg1, Object arg2) {
-		logger.debug(marker, format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				translated -> logger.debug(marker, translated),
+				() -> logger.debug(marker, format, arg1, arg2)
+		);
 	}
 
 	@Override
-	public void debug(Marker marker, String format, Object... arguments) {
-		logger.debug(marker, format, arguments);
+	public void debug(Marker marker, String format, Object... argArray) {
+		new TranslationHelper(format, argArray).execute(
+				translated -> logger.debug(marker, translated),
+				() -> logger.debug(marker, format, argArray)
+		);
 	}
 
 	@Override
 	public void debug(Marker marker, String msg, Throwable t) {
-		logger.debug(marker, msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.debug(marker, translated, t),
+				() -> logger.debug(marker, msg, t)
+		);
 	}
 
 	@Override
@@ -156,39 +241,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void info(String msg) {
-		if (bundle.containsKey(msg)) {
-			logger.info(bundle.getString(msg));
-		} else {
-			logger.info(msg);
-		}
+		new TranslationHelper(msg).execute(
+				logger::info,
+				() -> logger.info(msg)
+		);
 	}
 
 	@Override
 	public void info(String format, Object arg) {
-		if (bundle.containsKey(format)) {
-			logger.info(MessageFormat.format(bundle.getString(format), arg));
-		} else {
-			logger.info(format, arg);
-		}
+		new TranslationHelper(format, arg).execute(
+				logger::info,
+				() -> logger.info(format, arg)
+		);
 	}
 
 	@Override
 	public void info(String format, Object arg1, Object arg2) {
-		if (bundle.containsKey(format)) {
-			logger.info(MessageFormat.format(bundle.getString(format), arg1, arg2));
-		} else {
-			logger.info(format, arg1, arg2);
-		}
+		new TranslationHelper(format, arg1, arg2).execute(
+				logger::info,
+				() -> logger.info(format, arg1, arg2)
+		);
 	}
 
 	@Override
 	public void info(String format, Object... arguments) {
-		logger.info(format, arguments);
+		new TranslationHelper(format, arguments).execute(
+				logger::info,
+				() -> logger.info(format, arguments)
+		);
 	}
 
 	@Override
 	public void info(String msg, Throwable t) {
-		logger.info(msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.info(translated, t),
+				() -> logger.info(msg, t)
+		);
 	}
 
 	@Override
@@ -198,27 +286,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void info(Marker marker, String msg) {
-		logger.info(marker, msg);
+		new TranslationHelper(msg).execute(
+				translated -> logger.info(marker, translated),
+				() -> logger.info(marker, msg)
+		);
 	}
 
 	@Override
 	public void info(Marker marker, String format, Object arg) {
-		logger.info(marker, format, arg);
+		new TranslationHelper(format, arg).execute(
+				translated -> logger.info(marker, translated),
+				() -> logger.info(marker, format, arg)
+		);
 	}
 
 	@Override
 	public void info(Marker marker, String format, Object arg1, Object arg2) {
-		logger.info(marker, format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				translated -> logger.info(marker, translated),
+				() -> logger.info(marker, format, arg1, arg2)
+		);
 	}
 
 	@Override
-	public void info(Marker marker, String format, Object... arguments) {
-		logger.info(marker, format, arguments);
+	public void info(Marker marker, String format, Object... argArray) {
+		new TranslationHelper(format, argArray).execute(
+				translated -> logger.info(marker, translated),
+				() -> logger.info(marker, format, argArray)
+		);
 	}
 
 	@Override
 	public void info(Marker marker, String msg, Throwable t) {
-		logger.info(marker, msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.info(marker, translated, t),
+				() -> logger.info(marker, msg, t)
+		);
 	}
 
 	@Override
@@ -228,27 +331,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void warn(String msg) {
-		logger.warn(msg);
+		new TranslationHelper(msg).execute(
+				logger::warn,
+				() -> logger.warn(msg)
+		);
 	}
 
 	@Override
 	public void warn(String format, Object arg) {
-		logger.warn(format, arg);
-	}
-
-	@Override
-	public void warn(String format, Object... arguments) {
-		logger.warn(format, arguments);
+		new TranslationHelper(format, arg).execute(
+				logger::warn,
+				() -> logger.warn(format, arg)
+		);
 	}
 
 	@Override
 	public void warn(String format, Object arg1, Object arg2) {
-		logger.warn(format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				logger::warn,
+				() -> logger.warn(format, arg1, arg2)
+		);
+	}
+
+	@Override
+	public void warn(String format, Object... arguments) {
+		new TranslationHelper(format, arguments).execute(
+				logger::warn,
+				() -> logger.warn(format, arguments)
+		);
 	}
 
 	@Override
 	public void warn(String msg, Throwable t) {
-		logger.warn(msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.warn(translated, t),
+				() -> logger.warn(msg, t)
+		);
 	}
 
 	@Override
@@ -258,27 +376,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void warn(Marker marker, String msg) {
-		logger.warn(marker, msg);
+		new TranslationHelper(msg).execute(
+				translated -> logger.warn(marker, translated),
+				() -> logger.warn(marker, msg)
+		);
 	}
 
 	@Override
 	public void warn(Marker marker, String format, Object arg) {
-		logger.warn(marker, format, arg);
+		new TranslationHelper(format, arg).execute(
+				translated -> logger.warn(marker, translated),
+				() -> logger.warn(marker, format, arg)
+		);
 	}
 
 	@Override
 	public void warn(Marker marker, String format, Object arg1, Object arg2) {
-		logger.warn(marker, format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				translated -> logger.warn(marker, translated),
+				() -> logger.warn(marker, format, arg1, arg2)
+		);
 	}
 
 	@Override
-	public void warn(Marker marker, String format, Object... arguments) {
-		logger.warn(marker, format, arguments);
+	public void warn(Marker marker, String format, Object... argArray) {
+		new TranslationHelper(format, argArray).execute(
+				translated -> logger.warn(marker, translated),
+				() -> logger.warn(marker, format, argArray)
+		);
 	}
 
 	@Override
 	public void warn(Marker marker, String msg, Throwable t) {
-		logger.warn(marker, msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.warn(marker, translated, t),
+				() -> logger.warn(marker, msg, t)
+		);
 	}
 
 	@Override
@@ -288,27 +421,42 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String msg) {
-		logger.error(msg);
+		new TranslationHelper(msg).execute(
+				logger::error,
+				() -> logger.error(msg)
+		);
 	}
 
 	@Override
 	public void error(String format, Object arg) {
-		logger.error(format, arg);
+		new TranslationHelper(format, arg).execute(
+				logger::error,
+				() -> logger.error(format, arg)
+		);
 	}
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
-		logger.error(format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				logger::error,
+				() -> logger.error(format, arg1, arg2)
+		);
 	}
 
 	@Override
 	public void error(String format, Object... arguments) {
-		logger.error(format, arguments);
+		new TranslationHelper(format, arguments).execute(
+				logger::error,
+				() -> logger.error(format, arguments)
+		);
 	}
 
 	@Override
 	public void error(String msg, Throwable t) {
-		logger.error(msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.error(translated, t),
+				() -> logger.error(msg, t)
+		);
 	}
 
 	@Override
@@ -318,26 +466,41 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String msg) {
-		logger.error(marker, msg);
+		new TranslationHelper(msg).execute(
+				translated -> logger.error(marker, translated),
+				() -> logger.error(marker, msg)
+		);
 	}
 
 	@Override
 	public void error(Marker marker, String format, Object arg) {
-		logger.error(marker, format, arg);
+		new TranslationHelper(format, arg).execute(
+				translated -> logger.error(marker, translated),
+				() -> logger.error(marker, format, arg)
+		);
 	}
 
 	@Override
 	public void error(Marker marker, String format, Object arg1, Object arg2) {
-		logger.error(marker, format, arg1, arg2);
+		new TranslationHelper(format, arg1, arg2).execute(
+				translated -> logger.error(marker, translated),
+				() -> logger.error(marker, format, arg1, arg2)
+		);
 	}
 
 	@Override
-	public void error(Marker marker, String format, Object... arguments) {
-		logger.error(marker, format, arguments);
+	public void error(Marker marker, String format, Object... argArray) {
+		new TranslationHelper(format, argArray).execute(
+				translated -> logger.error(marker, translated),
+				() -> logger.error(marker, format, argArray)
+		);
 	}
 
 	@Override
 	public void error(Marker marker, String msg, Throwable t) {
-		logger.error(marker, msg, t);
+		new TranslationHelper(msg).execute(
+				translated -> logger.error(marker, translated, t),
+				() -> logger.error(marker, msg, t)
+		);
 	}
 }
