@@ -8,6 +8,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
+import bms.player.beatoraja.i18n.I18nLoggerFactory;
 import de.damios.guacamole.gdx.log.LoggerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ import org.slf4j.jul.JULServiceProvider;
  * @author exch
  */
 public class MainLoader extends Application {
-	private static final Logger logger = LoggerFactory.getLogger(MainLoader.class);
+	private static final Logger logger = I18nLoggerFactory.getLogger(MainLoader.class);
 
 	private static final boolean ALLOWS_32BIT_JAVA = false;
 
@@ -66,13 +67,6 @@ public class MainLoader extends Application {
 		if(!ALLOWS_32BIT_JAVA && !System.getProperty( "os.arch" ).contains( "64")) {
 			JOptionPane.showMessageDialog(null, "This Application needs 64bit-Java.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
-		}
-
-		java.util.logging.Logger rootLogger = LogManager.getLogManager().getLogger("");
-		try {
-			rootLogger.addHandler(new FileHandler("beatoraja_log.xml"));
-		} catch (Throwable e) {
-			e.printStackTrace();
 		}
 
 		BMSPlayerMode auto = null;

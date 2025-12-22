@@ -553,8 +553,6 @@ public class MainController {
 			});
 			irResendProcess.start();
 		}
-		ImGuiNotify.error(getI18nError(TEST.TEST_ERROR));
-		logger.error(getI18nError(TEST.TEST_ERROR));
 
         lastConfigSave = System.nanoTime();
 	}
@@ -1177,16 +1175,13 @@ public class MainController {
 			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
 			retry++;
 			if(send1.isSucceeded()) {
-				ImGuiNotify.success(getI18nMessage(IR.IR_SEND_SCORE_SUCCESS, song.getTitle()));
 				logger.info("IRスコア送信完了 : {}", song.getTitle());
 				isSent = true;
 				return true;
 			} else {
-				ImGuiNotify.error(getI18nMessage(IR.IR_SEND_SCORE_FAILED, send1.getMessage()));
 				logger.warn("IRスコア送信失敗 : {}", send1.getMessage());
 				return false;
 			}
-
 		}
 	}
 }

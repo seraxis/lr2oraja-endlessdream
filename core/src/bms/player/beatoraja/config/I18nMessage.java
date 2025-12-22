@@ -1,6 +1,7 @@
 package bms.player.beatoraja.config;
 
 import java.text.MessageFormat;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -13,13 +14,15 @@ import java.util.ResourceBundle;
 public class I18nMessage {
 	private static ResourceBundle bundle;
 
-	public static class IR {
-		public static final String IR_SEND_SCORE_SUCCESS = "IR_SEND_SCORE_SUCCESS";
-		public static final String IR_SEND_SCORE_FAILED = "IR_SEND_SCORE_FAILED";
+	public static Locale getDefaultBundleLocale() {
+		if (bundle == null) {
+			bundle = ResourceBundle.getBundle("resources.UIResources", Locale.getDefault());
+		}
+		return bundle.getLocale();
 	}
 
-	public static class TEST {
-		public static final String TEST_ERROR = "TEST_ERROR";
+	public static boolean hasKey(String key) {
+		return bundle.containsKey(key);
 	}
 
 	/**
