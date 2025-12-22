@@ -1,3 +1,4 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
 import java.io.ByteArrayOutputStream
 import java.nio.file.FileSystems
 import java.text.SimpleDateFormat
@@ -55,24 +56,6 @@ tasks {
             false -> "".plus(libs.versions.endlessdream.get())
         }
 
-        // Include IR JAR in uberjar
-        val runDirProp = System.getProperty("runDir")
-        val useIRProp = System.getProperty("useIR")
-        when(runDirProp != null
-                && gradle.startParameter.taskNames.any() { it.contains("runShadow") }
-                && useIRProp.toBoolean()
-        ) {
-            true -> {
-                println("Including IR jars")
-                val runDir = FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
-                val irJars : FileTree = fileTree(runDir.resolve("./ir")) {
-                    include("*.jar")
-                }
-                from(irJars)
-            }
-            false -> { println("Skipping IR jar inclusion") }
-        }
-
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
         archiveClassifier.set(classifierPlatform)
@@ -86,6 +69,10 @@ tasks {
         val runDir = when(runDirProp != null)  {
             true -> FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
             false -> projectDir.resolve("../assets")
+        }
+        val useIRProp = System.getProperty("useIR")
+        if (runDirProp != null && useIRProp.toBoolean()) {
+            application.applicationDefaultJvmArgs += "-DcustomIRDirectory=$runDir/ir"
         }
         workingDir = runDir
     }
