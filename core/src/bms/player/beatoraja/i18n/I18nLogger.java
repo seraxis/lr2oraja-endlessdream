@@ -26,7 +26,7 @@ public class I18nLogger implements Logger {
 
 	// A TranslationHelper is an Either<String, Unit>
 	private class TranslationHelper {
-		private String translated = null;
+		protected String translated = null;
 
 		public TranslationHelper(String msg) {
 			if (bundle.containsKey(msg)) {
@@ -45,6 +45,25 @@ public class I18nLogger implements Logger {
 				onTranslated.accept(translated);
 			} else {
 				onPlainString.run();
+			}
+		}
+	}
+
+	private class ErrorMessageHelper extends TranslationHelper {
+		public ErrorMessageHelper(String msg) {
+			super(msg);
+			appendErrorCode(msg);
+		}
+
+		public ErrorMessageHelper(String msg, Object... args) {
+			super(msg, args);
+			appendErrorCode(msg);
+		}
+
+		private void appendErrorCode(String msg) {
+			if (translated != null) {
+				I18nError error = I18nError.valueOf(msg);
+				this.translated = String.format("[%04d] %s", error.ordinal() + 1, translated);
 			}
 		}
 	}
@@ -421,7 +440,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String msg) {
-		new TranslationHelper(msg).execute(
+		new ErrorMessageHelper(msg).execute(
 				logger::error,
 				() -> logger.error(msg)
 		);
@@ -429,7 +448,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String format, Object arg) {
-		new TranslationHelper(format, arg).execute(
+		new ErrorMessageHelper(format, arg).execute(
 				logger::error,
 				() -> logger.error(format, arg)
 		);
@@ -437,7 +456,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
-		new TranslationHelper(format, arg1, arg2).execute(
+		new ErrorMessageHelper(format, arg1, arg2).execute(
 				logger::error,
 				() -> logger.error(format, arg1, arg2)
 		);
@@ -445,7 +464,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String format, Object... arguments) {
-		new TranslationHelper(format, arguments).execute(
+		new ErrorMessageHelper(format, arguments).execute(
 				logger::error,
 				() -> logger.error(format, arguments)
 		);
@@ -453,7 +472,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(String msg, Throwable t) {
-		new TranslationHelper(msg).execute(
+		new ErrorMessageHelper(msg).execute(
 				translated -> logger.error(translated, t),
 				() -> logger.error(msg, t)
 		);
@@ -466,7 +485,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String msg) {
-		new TranslationHelper(msg).execute(
+		new ErrorMessageHelper(msg).execute(
 				translated -> logger.error(marker, translated),
 				() -> logger.error(marker, msg)
 		);
@@ -474,7 +493,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String format, Object arg) {
-		new TranslationHelper(format, arg).execute(
+		new ErrorMessageHelper(format, arg).execute(
 				translated -> logger.error(marker, translated),
 				() -> logger.error(marker, format, arg)
 		);
@@ -482,7 +501,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String format, Object arg1, Object arg2) {
-		new TranslationHelper(format, arg1, arg2).execute(
+		new ErrorMessageHelper(format, arg1, arg2).execute(
 				translated -> logger.error(marker, translated),
 				() -> logger.error(marker, format, arg1, arg2)
 		);
@@ -490,7 +509,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String format, Object... argArray) {
-		new TranslationHelper(format, argArray).execute(
+		new ErrorMessageHelper(format, argArray).execute(
 				translated -> logger.error(marker, translated),
 				() -> logger.error(marker, format, argArray)
 		);
@@ -498,7 +517,7 @@ public class I18nLogger implements Logger {
 
 	@Override
 	public void error(Marker marker, String msg, Throwable t) {
-		new TranslationHelper(msg).execute(
+		new ErrorMessageHelper(msg).execute(
 				translated -> logger.error(marker, translated, t),
 				() -> logger.error(marker, msg, t)
 		);
