@@ -23,11 +23,13 @@ ebur128java = "1.2.6-2"
 jna = "5.13.0"
 websocket = "1.6.0"
 slf4j = "2.0.17"
+kbmstable-parser = "1.0.0"
 
 
 [libraries]
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-serialization-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 
 gdx-core = { group = "com.badlogicgames.gdx", name = "gdx", version.ref = "gdx" }
 gdx-backend = { group = "com.badlogicgames.gdx", name = "gdx-backend-lwjgl3", version.ref = "gdx" }
@@ -82,6 +84,8 @@ jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref 
 javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "websocket" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-jul = { group = "org.slf4j", name = "slf4j-jdk14", version.ref = "slf4j" }
+
+kbmstableparser = { group = "io.github.catizard", name = "kbmstable-parser", version.ref = "kbmstable-parser" }
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]
