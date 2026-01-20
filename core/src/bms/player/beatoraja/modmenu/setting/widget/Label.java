@@ -99,7 +99,7 @@ public class Label implements SizedWidget {
 		}
 
 		public static Builder assistIconLabelBuilder(String hint, float hintWidth) {
-			return iconLabelBuilder(hint)
+			return iconLabelBuilder(FontAwesomeIcons.Child)
 					.color(ImColor.rgb("#FF9FF9"))
 					.hint(hint)
 					.hintWidth(hintWidth);
