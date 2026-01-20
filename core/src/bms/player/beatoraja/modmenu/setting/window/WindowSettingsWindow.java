@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu.setting.window;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.Resolution;
+import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import bms.player.beatoraja.modmenu.setting.widget.*;
 import bms.tool.util.Pair;
 
@@ -12,7 +13,13 @@ import java.util.List;
 public class WindowSettingsWindow extends TiledOptionBasedWindow {
 	private final EnumComboWidget<Resolution> screenResolution = new EnumComboWidget<>("##Screen Resolution", Resolution.class, config::setResolution);
 	// TODO: Boolean option is using "enableHttp" for a temporary placeholder
-	private final CheckboxWidget enableFullscreen = new CheckboxWidget("##Enable Fullscreen", config::setEnableHttp);
+	private final EnumComboWidget<Config.DisplayMode> windowMode = new EnumComboWidget<>("##Window Mode", Config.DisplayMode.class, newValue -> {
+		// NOTE: The reason that we use this 'complex' strategy is because:
+		//  1. If we call switchDisplayMode here, inside a imgui render process, imgui would directly crash out. The reason why is clear.
+		//  2. If we try to adapt a lifecycle like "afterRender" (see arena for example), it crashes too because calling gdx's graphic
+		//      functions would cause mystery multithread issues like the switching fullscreen method would be invoked random times.
+		SettingMenu.mainRef.pushDisplayModeFlag(newValue);
+	});
 	private final CheckboxWidget enableBoardlessWindow = new CheckboxWidget("##Enable Boardless Window", config::setEnableHttp);
 	private final StringComboWidget frameLimiter = new StringComboWidget("##Frame Limiter", new String[]{"Not implemented yet"}, config::setMaxFramePerSecond);
 	private final StringComboWidget customFPS = new StringComboWidget("##Set Custom FPS", new String[]{"Not implemented yet"}, config::setMaxFramePerSecond);
@@ -25,8 +32,7 @@ public class WindowSettingsWindow extends TiledOptionBasedWindow {
 	private final List<Pair<String, List<TiledOption<?>>>> options = List.of(
 			Pair.of("Window", Arrays.asList(
 					new TiledOption<>("Screen Resolution", config::getResolution, screenResolution),
-					new TiledOption<>("Enable Fullscreen", config::isEnableHttp, enableFullscreen),
-					new TiledOption<>("Enable Boardless Window", config::isEnableHttp, enableBoardlessWindow)
+					new TiledOption<>("Window Mode", config::getDisplaymode, windowMode)
 			)),
 			Pair.of("Frame Limiter", Arrays.asList(
 					new TiledOption<>("Frame Limiter", config::getMaxFramePerSecond, frameLimiter),

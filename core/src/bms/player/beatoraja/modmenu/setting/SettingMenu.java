@@ -34,6 +34,7 @@ public class SettingMenu {
 	 * Whether we are focusing the setting menu or not
 	 */
 	public static boolean focus = false;
+	public static MainController mainRef;
 
 	private static final int TAB_WIDTH = 30;
 	private static final int PANEL_WIDTH = 100 - TAB_WIDTH;
@@ -66,6 +67,7 @@ public class SettingMenu {
 	};
 
 	public static void init(MainController main) {
+		mainRef = main;
 		SCREEN_WIDTH = main.getConfig().getWindowWidth();
 		SCREEN_HEIGHT = main.getConfig().getWindowHeight();
 		HORIZONTAL_MARGIN = 0.15f * main.getConfig().getWindowWidth();
