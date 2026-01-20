@@ -15,15 +15,15 @@ public class WindowSettingsWindow extends TiledOptionBasedWindow {
 	// TODO: Boolean option is using "enableHttp" for a temporary placeholder
 	private final EnumComboWidget<Config.DisplayMode> windowMode = new EnumComboWidget<>("##Window Mode", Config.DisplayMode.class, newValue -> {
 		// NOTE: The reason that we use this 'complex' strategy is because:
-		//  1. If we call switchDisplayMode here, inside a imgui render process, imgui would directly crash out. The reason why is clear.
-		//  2. If we try to adapt a lifecycle like "afterRender" (see arena for example), it crashes too because calling gdx's graphic
-		//      functions would cause mystery multithread issues like the switching fullscreen method would be invoked random times.
+		//  1. If we call switchDisplayMode here, inside a imgui render process, imgui would directly crash out.
+		//      The reason why is clear.
+		//  2. If we try to adapt a lifecycle like "afterRender" (see arena for example), it crashes too because
+		//      calling libgdx's graphic functions would cause mystery multithread issues like the switching fullscreen
+		//      method would be invoked random times.
 		SettingMenu.mainRef.pushDisplayModeFlag(newValue);
 	});
-	private final CheckboxWidget enableBoardlessWindow = new CheckboxWidget("##Enable Boardless Window", config::setEnableHttp);
-	private final StringComboWidget frameLimiter = new StringComboWidget("##Frame Limiter", new String[]{"Not implemented yet"}, config::setMaxFramePerSecond);
-	private final StringComboWidget customFPS = new StringComboWidget("##Set Custom FPS", new String[]{"Not implemented yet"}, config::setMaxFramePerSecond);
-	private final CheckboxWidget vsync = new CheckboxWidget("##Vsync", config::setVsync);
+	private final DragIntegerWidget maximumFPSCap = new DragIntegerWidget("##Maximum FPS Cap", config::setMaxFramePerSecond);
+	private final CheckboxWidget vsync = new CheckboxWidget("##Vsync", config::setVsyncAtRuntime);
 	private final CheckboxWidget displayFPS = new CheckboxWidget("##Display FPS Counter", config::setDisplayFPS);
 	private final StringComboWidget displayBGA = new StringComboWidget("##Display BGA", new String[]{"On", "Auto", "Off"}, StringComboWidget.PredefinedWidth.Short, config::setBga);
 	private final StringComboWidget bgaExpand = new StringComboWidget("##BGA Expand", new String[]{"Full", "Keep Aspect Ratio", "Off"}, StringComboWidget.PredefinedWidth.Medium, config::setBgaExpand);
@@ -35,8 +35,7 @@ public class WindowSettingsWindow extends TiledOptionBasedWindow {
 					new TiledOption<>("Window Mode", config::getDisplaymode, windowMode)
 			)),
 			Pair.of("Frame Limiter", Arrays.asList(
-					new TiledOption<>("Frame Limiter", config::getMaxFramePerSecond, frameLimiter),
-					new TiledOption<>("Set Custom FPS", config::getMaxFramePerSecond, customFPS),
+					new TiledOption<>("Maximum FPS Cap", config::getMaxFramePerSecond, maximumFPSCap),
 					new TiledOption<>("Vertical Sync", config::isVsync, vsync),
 					new TiledOption<>("Display FPS", config::isDisplayFPS, displayFPS)
 			)),

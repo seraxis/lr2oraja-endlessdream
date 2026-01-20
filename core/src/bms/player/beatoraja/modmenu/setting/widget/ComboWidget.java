@@ -79,8 +79,4 @@ public class ComboWidget<T> extends ActionWidget<T> {
 	public float getWidth() {
 		return width;
 	}
-
-	private Map<T, Integer> reverse(Map<T, Integer> map) {
-		return null;
-	}
 }

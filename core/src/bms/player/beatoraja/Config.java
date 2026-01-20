@@ -9,6 +9,7 @@ import java.nio.file.*;
 import java.text.ParseException;
 
 import bms.tool.util.Pair;
+import com.badlogic.gdx.Gdx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -349,6 +350,11 @@ public class Config implements Validatable {
 
 	public void setVsync(boolean vsync) {
 		this.vsync = vsync;
+	}
+
+	public void setVsyncAtRuntime(boolean vsync) {
+		setVsync(vsync);
+		Gdx.graphics.setVSync(vsync);
 	}
 
 	public int getBga() {
