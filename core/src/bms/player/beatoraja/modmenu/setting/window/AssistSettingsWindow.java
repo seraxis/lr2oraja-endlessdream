@@ -4,7 +4,7 @@ import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.modmenu.setting.widget.CheckboxWidget;
 import bms.player.beatoraja.modmenu.setting.widget.DragIntegerWidget;
-import bms.player.beatoraja.modmenu.setting.widget.IconLabel;
+import bms.player.beatoraja.modmenu.setting.widget.Label;
 import bms.player.beatoraja.modmenu.setting.widget.TiledOption;
 import bms.tool.util.Pair;
 
@@ -27,19 +27,21 @@ public class AssistSettingsWindow extends TiledOptionBasedWindow {
 
 	private final List<Pair<String, List<TiledOption<?>>>> options = Arrays.asList(
 			Pair.of("Assist Options", Arrays.asList(
-					new TiledOption<>("Enable Constant", getPlayConfig()::isEnableConstant, enableConstant).addRightIcon(
-							IconLabel.assist()
+					new TiledOption<>("Enable Constant", getPlayConfig()::isEnableConstant, enableConstant).addIcon(
+							Label.defaultAssistIconLabel()
+					).addDescription(
+							"The notes fade-in time would be a constant value instead of being affected by bpm"
 					),
-					new TiledOption<>("Constant fade-in time", getPlayConfig()::getConstantFadeinTime, constantFadeInTime).addRightIcon(
-							IconLabel.assist()
+					new TiledOption<>("Constant fade-in time", getPlayConfig()::getConstantFadeinTime, constantFadeInTime).addIcon(
+							Label.defaultAssistIconLabel()
 					),
-					new TiledOption<>("BPM Guide", playerConfig::isBpmguide, bpmGuide).addRightIcon(
-							IconLabel.assist()
+					new TiledOption<>("BPM Guide", playerConfig::isBpmguide, bpmGuide).addIcon(
+							Label.defaultAssistIconLabel()
 					)
 			)),
 			Pair.of("Expand Judge", Arrays.asList(
-					new TiledOption<>("Enable Expand Judge", playerConfig::isCustomJudge, enableExpandJudge).addRightIcon(
-							IconLabel.assist("Your play would be restricted to assist clear if this option is flagged and any timing window below is larger than 100%", 240F)
+					new TiledOption<>("Enable Expand Judge", playerConfig::isCustomJudge, enableExpandJudge).addIcon(
+							Label.assistIconLabel("Your play would be restricted to assist clear if this option is flagged and any timing window below is larger than 100%", 240F)
 					),
 					new TiledOption<>("Key Perfect Great", playerConfig::getKeyJudgeWindowRatePerfectGreat, expandJudgeKeyPG),
 					new TiledOption<>("Key Great", playerConfig::getKeyJudgeWindowRateGreat, expandJudgeKeyGR),

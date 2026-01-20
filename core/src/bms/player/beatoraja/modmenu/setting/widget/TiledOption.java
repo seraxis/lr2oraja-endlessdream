@@ -16,13 +16,13 @@ public class TiledOption<V> implements Widget {
 		this.tile = new Tile(optionName, action);
 	}
 
-	public TiledOption<V> addLeftIcon(IconLabel icon) {
-		this.tile.addLeftIcon(icon);
+	public TiledOption<V> addIcon(Label icon) {
+		this.tile.addIcon(icon);
 		return this;
 	}
 
-	public TiledOption<V> addRightIcon(IconLabel icon) {
-		this.tile.addRightIcon(icon);
+	public TiledOption<V> addDescription(String description) {
+		this.tile.addDescription(description);
 		return this;
 	}
 
