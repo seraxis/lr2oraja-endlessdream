@@ -77,14 +77,17 @@ public class Tile implements Widget {
 			float textY = (windowHeight - textHeight) / 2;
 			ImGui.setCursorPosY(textY);
 			ImGui.setCursorPosX(ImGui.getCursorPosX() + 8F);
+
+			ImGui.columns(2, false);
+			ImGui.setColumnWidth(0, Label.IconLabelWidth + 8F);
+
 			if (this.iconLabel != null) {
 				this.iconLabel.render();
-				ImGui.sameLine();
-			} else {
-				ImGuiStyle style = ImGui.getStyle();
-				ImGui.setCursorPosX(ImGui.getCursorPosX() + Label.IconLabelWidth + style.getFramePaddingX());
 			}
+			ImGui.nextColumn();
 			ImGui.text(this.name);
+			ImGui.columns(1);
+
 			if (descriptionLabel != null) {
 				ImGui.sameLine();
 				descriptionLabel.render();

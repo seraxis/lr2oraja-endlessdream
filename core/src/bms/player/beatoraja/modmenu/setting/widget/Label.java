@@ -14,7 +14,7 @@ import imgui.flag.ImGuiCol;
  *  here. Instead, we hardcoded the font data in ImguiRenderer :/
  */
 public class Label implements SizedWidget {
-	public static float IconLabelWidth = 15F;
+	public static float IconLabelWidth = 16F;
 
 	private String hint;
 	private float hintWidth = DefaultHintWidth;
@@ -23,7 +23,6 @@ public class Label implements SizedWidget {
 	private int color = DefaultColor;
 	public static final int DefaultColor = ImColor.rgb(0, 0, 0);
 	private ImFont font;
-	private float width = 0F;
 
 	private Label(String name) {
 		this.name = name;
@@ -45,9 +44,6 @@ public class Label implements SizedWidget {
 		}
 		if (font != null) {
 			ImGui.pushFont(font);
-		}
-		if (width > 0) {
-			ImGui.setNextItemWidth(width);
 		}
 		ImGui.text(this.name);
 		if (this.hint != null) {
@@ -79,6 +75,20 @@ public class Label implements SizedWidget {
 		return Builder.assistIconLabelBuilder(hint, hintWidth).build();
 	}
 
+	public static Label restartIconLabel() {
+		return new Builder(FontAwesomeIcons.PowerOff)
+				.color(ImColor.rgb("#49E670"))
+				.hint("Need restart to make it take effect")
+				.build();
+	}
+
+	public static Label warningIconLabel(String hint) {
+		return new Builder(FontAwesomeIcons.ExclamationTriangle)
+				.color(ImColor.rgb("#CC5C76"))
+				.hint(hint)
+				.build();
+	}
+
 	public static class Builder {
 		private final Label label;
 
@@ -93,13 +103,8 @@ public class Label implements SizedWidget {
 					.color(ImColor.rgb(0, 128, 128));
 		}
 
-		public static Builder iconLabelBuilder(String icon) {
-			return new Builder(icon)
-					.width(IconLabelWidth);
-		}
-
 		public static Builder assistIconLabelBuilder(String hint, float hintWidth) {
-			return iconLabelBuilder(FontAwesomeIcons.Child)
+			return new Builder(FontAwesomeIcons.Child)
 					.color(ImColor.rgb("#FF9FF9"))
 					.hint(hint)
 					.hintWidth(hintWidth);
@@ -112,11 +117,6 @@ public class Label implements SizedWidget {
 
 		public Builder hintWidth(float hintWidth) {
 			label.hintWidth = hintWidth;
-			return this;
-		}
-
-		public Builder width(float width) {
-			label.width = width;
 			return this;
 		}
 

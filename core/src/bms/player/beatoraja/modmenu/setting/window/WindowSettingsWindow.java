@@ -12,7 +12,6 @@ import java.util.List;
 
 public class WindowSettingsWindow extends TiledOptionBasedWindow {
 	private final EnumComboWidget<Resolution> screenResolution = new EnumComboWidget<>("##Screen Resolution", Resolution.class, config::setResolution);
-	// TODO: Boolean option is using "enableHttp" for a temporary placeholder
 	private final EnumComboWidget<Config.DisplayMode> windowMode = new EnumComboWidget<>("##Window Mode", Config.DisplayMode.class, newValue -> {
 		// NOTE: The reason that we use this 'complex' strategy is because:
 		//  1. If we call switchDisplayMode here, inside a imgui render process, imgui would directly crash out.
@@ -31,8 +30,12 @@ public class WindowSettingsWindow extends TiledOptionBasedWindow {
 
 	private final List<Pair<String, List<TiledOption<?>>>> options = List.of(
 			Pair.of("Window", Arrays.asList(
-					new TiledOption<>("Screen Resolution", config::getResolution, screenResolution),
-					new TiledOption<>("Window Mode", config::getDisplaymode, windowMode)
+					new TiledOption<>("Screen Resolution", config::getResolution, screenResolution).addIcon(
+							Label.restartIconLabel()
+					),
+					new TiledOption<>("Window Mode", config::getDisplaymode, windowMode).addIcon(
+							Label.warningIconLabel("Settings menu is working abnormally if you changed from windowed to fullscreen")
+					)
 			)),
 			Pair.of("Frame Limiter", Arrays.asList(
 					new TiledOption<>("Maximum FPS Cap", config::getMaxFramePerSecond, maximumFPSCap),
