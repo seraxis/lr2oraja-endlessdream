@@ -73,9 +73,9 @@ public class SettingMenu {
 		HORIZONTAL_MARGIN = 0.15f * main.getConfig().getWindowWidth();
 		VERTICAL_MARGIN = 0.15f * main.getConfig().getWindowHeight();
 		windows = Arrays.asList(
+				new SongSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new AudioSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new WindowSettingsWindow(main.getConfig(), main.getPlayerConfig()),
-				new SelectSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new PlaySettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new AssistSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new KeySettingsWindow(main.getConfig(), main.getPlayerConfig()),

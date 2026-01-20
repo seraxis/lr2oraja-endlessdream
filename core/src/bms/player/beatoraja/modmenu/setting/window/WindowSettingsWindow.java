@@ -34,7 +34,7 @@ public class WindowSettingsWindow extends TiledOptionBasedWindow {
 							Label.restartIconLabel()
 					),
 					new TiledOption<>("Window Mode", config::getDisplaymode, windowMode).addIcon(
-							Label.warningIconLabel("Settings menu is working abnormally if you changed from windowed to fullscreen")
+							Label.warningIconLabel("Settings menu will be working abnormally if you changed from windowed to fullscreen")
 					)
 			)),
 			Pair.of("Frame Limiter", Arrays.asList(

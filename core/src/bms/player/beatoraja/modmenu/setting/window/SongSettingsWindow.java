@@ -10,9 +10,9 @@ import bms.tool.util.Pair;
 import java.util.Arrays;
 import java.util.List;
 
-public class SelectSettingsWindow extends TiledOptionBasedWindow {
-	public SelectSettingsWindow(Config config, PlayerConfig playerConfig) {
-		super("Select", config, playerConfig);
+public class SongSettingsWindow extends TiledOptionBasedWindow {
+	public SongSettingsWindow(Config config, PlayerConfig playerConfig) {
+		super("Song", config, playerConfig);
 	}
 
 	private static String[] sortStrategies = new String[BarSorter.values().length];
