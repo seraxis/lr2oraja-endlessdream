@@ -1,10 +1,14 @@
 package bms.player.beatoraja.modmenu.setting.window;
 
+import bms.model.Mode;
 import bms.player.beatoraja.Config;
+import bms.player.beatoraja.PlayModeConfig;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
+import bms.player.beatoraja.modmenu.setting.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
+import bms.player.beatoraja.modmenu.setting.widget.VerticalKeyBindingWidget;
 import com.badlogic.gdx.Input;
 import imgui.ImColor;
 import imgui.ImGui;
@@ -13,11 +17,19 @@ import imgui.flag.ImGuiTableColumnFlags;
 import imgui.flag.ImGuiTableFlags;
 import imgui.type.ImBoolean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class KeySettingsWindow extends BaseSettingWindow {
+	// NOTE: The initial value must be null to trigger the update process for initialization
+	private Mode previousMode = null;
 	private int[] previousKeys;
 	private int[] keys;
 	private int currentEditing = 0;
 	private final ImBoolean editing = new ImBoolean(false);
+
+	private final List<KeyBinding> keyBindings = new ArrayList<>();
+	private final VerticalKeyBindingWidget verticalKeyBindingWidget = new VerticalKeyBindingWidget("##Play Keys Vertical Binding", keyBindings, this::rebindPlayKey);
 
 	public KeySettingsWindow(Config config, PlayerConfig playerConfig) {
 		super(config, playerConfig);
@@ -30,6 +42,31 @@ public class KeySettingsWindow extends BaseSettingWindow {
 
 	@Override
 	public void render() {
+		Mode newPlayMode = SettingMenu.getCurrentPlayMode();
+		if (previousMode != newPlayMode) {
+			keyBindings.clear();
+			keyBindings.addAll(KeyBinding.keyBoardPlayKeys(playerConfig, newPlayMode));
+		}
+		previousMode = newPlayMode;
+		if (ImGui.beginTabBar("##KeySettings Tab Bar")) {
+			if (ImGui.beginTabItem("Vertical##KeySettings")) {
+				renderVerticalTab();
+				ImGui.endTabItem();
+			}
+			if (ImGui.beginTabItem("Block##KeySettings")) {
+				renderBlockTab();
+				ImGui.endTabItem();
+			}
+			ImGui.endTabBar();
+		}
+	}
+
+	private void renderVerticalTab() {
+		SettingMenu.currentPlayModeSelect.render();
+		verticalKeyBindingWidget.render();
+	}
+
+	private void renderBlockTab() {
 		ImGui.beginDisabled(editing.get());
 		SettingMenu.currentPlayModeSelect.render();
 		ImGui.endDisabled();
@@ -101,6 +138,21 @@ public class KeySettingsWindow extends BaseSettingWindow {
 	public void refresh() {
 		keys = getPlayModeConfig().getKeyboardConfig().getKeyAssign();
 		previousKeys = new int[keys.length];
+	}
+
+	private void rebindPlayKey(KeyBinding keyBinding) {
+		PlayModeConfig.KeyboardConfig kbConfig = getPlayModeConfig().getKeyboardConfig();
+		switch (keyBinding.mapping()) {
+			case -1 -> kbConfig.setSelect(keyBinding.keyCode());
+			case -2 -> kbConfig.setStart(keyBinding.keyCode());
+			default -> kbConfig.getKeyAssign()[keyBinding.mapping()] = keyBinding.keyCode();
+		}
+		for (int i = 0; i < keyBindings.size(); ++i) {
+			if (keyBindings.get(i).name().equals(keyBinding.name())) {
+				keyBindings.set(i, keyBinding);
+				break;
+			}
+		}
 	}
 
 	private void resetEditingState() {
