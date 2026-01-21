@@ -46,7 +46,6 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_RANDOM_TRAINER = new ImBoolean(false);
     private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
     private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
-    private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_WIDGET_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
@@ -131,7 +130,6 @@ public class ImGuiRenderer {
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
             if (ImGui.checkbox("Show Skin Configuration Window", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
             ImGui.checkbox("Show Skin Widget Manager Window", SHOW_SKIN_WIDGET_MANAGER);
-            ImGui.checkbox("Show Song Manager Window", SHOW_SONG_MANAGER);
             ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
             if (ImGui.checkbox("Show Performance Monitor Window", SHOW_PERFORMANCE_MONITOR) &&
                 SHOW_PERFORMANCE_MONITOR.get()) {
@@ -147,9 +145,6 @@ public class ImGuiRenderer {
             }
             if (SHOW_JUDGE_TRAINER.get()) {
                 JudgeTrainerMenu.show(SHOW_JUDGE_TRAINER);
-            }
-            if (SHOW_SONG_MANAGER.get()) {
-                SongManagerMenu.show(SHOW_SONG_MANAGER);
             }
             // TODO: This menu should based on config. Should not be rendered if user doesn't flag the http download feature
             if (SHOW_DOWNLOAD_MENU.get()) {

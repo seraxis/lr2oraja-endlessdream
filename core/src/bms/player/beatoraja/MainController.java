@@ -572,7 +572,6 @@ public class MainController {
 
 	private void updateStateReferences() {
 		SkinMenu.init(this, player);
-		SongManagerMenu.injectMusicSelector(selector);
 		SettingMenu.init(this);
 	}
 
