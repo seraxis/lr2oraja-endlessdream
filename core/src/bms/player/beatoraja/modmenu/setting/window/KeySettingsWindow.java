@@ -62,14 +62,10 @@ public class KeySettingsWindow extends BaseSettingWindow {
 	}
 
 	private void renderVerticalTab() {
-		SettingMenu.currentPlayModeSelect.render();
 		verticalKeyBindingWidget.render();
 	}
 
 	private void renderBlockTab() {
-		ImGui.beginDisabled(editing.get());
-		SettingMenu.currentPlayModeSelect.render();
-		ImGui.endDisabled();
 		if (ImGui.checkbox("Edit##KeySettings", editing)) {
 			if (editing.get()) {
 				// From not editing to editing

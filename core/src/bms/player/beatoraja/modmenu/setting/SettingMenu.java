@@ -86,14 +86,19 @@ public class SettingMenu {
 	}
 
 	public static void render(ImBoolean show) {
-		ImGui.setNextWindowPos(HORIZONTAL_MARGIN, VERTICAL_MARGIN, ImGuiCond.Once);
+		ImGui.setNextWindowPos(HORIZONTAL_MARGIN, VERTICAL_MARGIN - 20F, ImGuiCond.Once);
 		float windowWidth = SCREEN_WIDTH - 2 * HORIZONTAL_MARGIN;
-		float windowHeight = SCREEN_HEIGHT - 2 * VERTICAL_MARGIN;
+		float windowHeight = SCREEN_HEIGHT - 2 * VERTICAL_MARGIN + 20F;
 		ImGui.setNextWindowSize(windowWidth, windowHeight, ImGuiCond.Once);
 
 		if (ImGui.begin("Setting Menu", show, ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoMove)) {
+			if (ImGui.beginChild("Setting Menu##Title", windowWidth, 18F, false, ImGuiWindowFlags.NoBackground)) {
+				currentPlayModeSelect.render();
+				ImGui.sameLine();
+				ImGui.text("LR2Oraja ~endless dream~ Settings");
+			}
+			ImGui.endChild();
 			if (ImGui.beginChild("Setting Menu##Sidebar", SIDEBAR_WIDTH + 8F, 0F, false, ImGuiWindowFlags.NoBackground)) {
-
 				if (ImGui.beginTable("Setting Menu##SideBar##buttons", 1, ImGuiTableFlags.None, SIDEBAR_WIDTH + 8F, SIDEBAR_HEIGHT)) {
 					for (int i = 0; i < windows.size(); i++) {
 						ImGui.tableNextRow();
