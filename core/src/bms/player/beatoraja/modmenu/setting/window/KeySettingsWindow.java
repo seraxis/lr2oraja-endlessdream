@@ -4,18 +4,11 @@ import bms.model.Mode;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayModeConfig;
 import bms.player.beatoraja.PlayerConfig;
-import bms.player.beatoraja.modmenu.FontAwesomeIcons;
-import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
 import bms.player.beatoraja.modmenu.setting.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
+import bms.player.beatoraja.modmenu.setting.widget.BlockKeyBindingWidget;
 import bms.player.beatoraja.modmenu.setting.widget.VerticalKeyBindingWidget;
-import com.badlogic.gdx.Input;
-import imgui.ImColor;
 import imgui.ImGui;
-import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiTableColumnFlags;
-import imgui.flag.ImGuiTableFlags;
-import imgui.type.ImBoolean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +16,11 @@ import java.util.List;
 public class KeySettingsWindow extends BaseSettingWindow {
 	// NOTE: The initial value must be null to trigger the update process for initialization
 	private Mode previousMode = null;
-	private int[] previousKeys;
-	private int[] keys;
-	private int currentEditing = 0;
-	private final ImBoolean editing = new ImBoolean(false);
+	public static boolean editing = false;
 
 	private final List<KeyBinding> keyBindings = new ArrayList<>();
-	private final VerticalKeyBindingWidget verticalKeyBindingWidget = new VerticalKeyBindingWidget("##Play Keys Vertical Binding", keyBindings, this::rebindPlayKey);
+	private final VerticalKeyBindingWidget verticalKeyBindingWidget = new VerticalKeyBindingWidget(keyBindings, this::rebindPlayKey, newValue -> editing = newValue);
+	private final BlockKeyBindingWidget blockKeyBindingWidget = new BlockKeyBindingWidget(keyBindings, this::rebindPlayKey, newValue -> editing = newValue);
 
 	public KeySettingsWindow(Config config, PlayerConfig playerConfig) {
 		super(config, playerConfig);
@@ -66,74 +57,11 @@ public class KeySettingsWindow extends BaseSettingWindow {
 	}
 
 	private void renderBlockTab() {
-		if (ImGui.checkbox("Edit##KeySettings", editing)) {
-			if (editing.get()) {
-				// From not editing to editing
-				System.arraycopy(keys, 0, previousKeys, 0, keys.length);
-			} else {
-				// From editing to not editing
-				resetEditingState();
-			}
-		}
-		if (ImGui.beginTable("##KeySettingsMenuKeyTable", keys.length, ImGuiTableFlags.SizingFixedFit)) {
-			for (int i = 0; i < keys.length;++i) {
-				ImGui.tableSetupColumn("" + i, 50, ImGuiTableColumnFlags.WidthFixed);
-			}
-			ImGui.tableNextRow();
-			for (int i = 0; i < keys.length;++i) {
-				if (i == currentEditing) {
-					ImGui.tableSetColumnIndex(i);
-					float width = ImGui.getColumnWidth();
-					float arrowWidth = ImGui.calcTextSizeX(FontAwesomeIcons.ArrowDown);
-					ImGui.setCursorPosX(ImGui.getCursorPosX() + (width - arrowWidth) * 0.5F);
-					ImGui.text(FontAwesomeIcons.ArrowDown);
-				}
-			}
-			ImGui.tableNextRow();
-			for (int i = 0; i < keys.length; ++i) {
-				ImGui.pushID(i);
-				ImGui.tableSetColumnIndex(i);
-				if (i == keys.length - 2 || i == keys.length - 1) {
-					ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(125   ,0,0));
-					ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(230,230,230));
-				} else if (i % 2 == 0) {
-					ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(0,0,139));
-					ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(230,230,230));
-				} else {
-					ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(230,230,230));
-					ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(49,49,49));
-				}
-				ImGui.button(Input.Keys.toString(keys[i]), 50, 80);
-				if (i != keys.length - 1) {
-					ImGui.sameLine();
-				}
-				ImGui.popStyleColor(2);
-				ImGui.popID();
-			}
-			ImGui.endTable();
-		}
-		if (editing.get()) {
-			int lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
-			if (lastPressedKey != -1) {
-				if (lastPressedKey == Input.Keys.ESCAPE) {
-					// Escaping before every key has been set, rollback the changes
-					resetEditingState();
-					return ;
-				}
-				keys[currentEditing] = lastPressedKey;
-				currentEditing++;
-			}
-			if (currentEditing == keys.length) {
-				currentEditing = 0;
-				editing.set(false);
-			}
-		}
+		blockKeyBindingWidget.render();
 	}
 
 	@Override
 	public void refresh() {
-		keys = getPlayModeConfig().getKeyboardConfig().getKeyAssign();
-		previousKeys = new int[keys.length];
 	}
 
 	private void rebindPlayKey(KeyBinding keyBinding) {
@@ -149,11 +77,5 @@ public class KeySettingsWindow extends BaseSettingWindow {
 				break;
 			}
 		}
-	}
-
-	private void resetEditingState() {
-		System.arraycopy(previousKeys, 0, keys, 0, keys.length);
-		currentEditing = 0;
-		editing.set(false);
 	}
 }

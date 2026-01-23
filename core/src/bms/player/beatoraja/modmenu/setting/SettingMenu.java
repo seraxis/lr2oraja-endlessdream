@@ -60,9 +60,11 @@ public class SettingMenu {
 
 		@Override
 		public void render() {
+			ImGui.beginDisabled(KeySettingsWindow.editing);
 			if (ImGui.combo("##SettingsMenu##CurrentPlayMode", value, PLAY_MODE_OPTIONS)) {
 				SettingMenu.setCurrentPlayMode(Mode.getMode(PLAY_MODE_OPTIONS[value.get()]));
 			}
+			ImGui.endDisabled();
 		}
 	};
 

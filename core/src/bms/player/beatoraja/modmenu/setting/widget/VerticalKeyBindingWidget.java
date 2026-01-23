@@ -1,7 +1,6 @@
 package bms.player.beatoraja.modmenu.setting.widget;
 
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
-import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.modmenu.setting.KeyBinding;
 import com.badlogic.gdx.Input;
 import imgui.ImGui;
@@ -35,20 +34,25 @@ import java.util.function.Consumer;
  *  to keyBindings, method setKeyBindings must be called.
  */
 public class VerticalKeyBindingWidget implements Widget {
-	private final String name;
 	private final List<KeyBinding> keyBindings;
 	private final Consumer<KeyBinding> newBindingHook;
+	private final Consumer<Boolean> editingHook;
 	private int editingLine;
 
-	public VerticalKeyBindingWidget(String name, List<KeyBinding> keyBindings, Consumer<KeyBinding> newBindingHook) {
-		this.name = name;
+	/**
+	 * @param keyBindings    key bindings, read only reference
+	 * @param newBindingHook hook function, triggered when this widget wants to submit a new key binding
+	 * @param editingHook    hook function, triggered when this widget changed editing state
+	 */
+	public VerticalKeyBindingWidget( List<KeyBinding> keyBindings, Consumer<KeyBinding> newBindingHook, Consumer<Boolean> editingHook) {
 		this.keyBindings = keyBindings;
 		this.newBindingHook = newBindingHook;
+		this.editingHook = editingHook;
 	}
 
 	@Override
 	public void render() {
-		if (ImGui.beginTable(name, 3)) {
+		if (ImGui.beginTable("##VerticalKeyBindingWidgetTable", 3)) {
 			ImGui.tableSetupColumn("Keys");
 			ImGui.tableSetupColumn("Bind");
 			ImGui.tableSetupColumn("Operations");
@@ -64,6 +68,7 @@ public class VerticalKeyBindingWidget implements Widget {
 				ImGui.tableSetColumnIndex(2);
 				if (ImGui.button("Edit##VerticalKeyBindingWidget")) {
 					editingLine = i;
+					editingHook.accept(true);
 					ImGui.openPopup("##VerticalKeyBindingWidget##ListenKeyPressed");
 				}
 				if (ImGui.beginPopup("##VerticalKeyBindingWidget##ListenKeyPressed")) {
@@ -73,6 +78,7 @@ public class VerticalKeyBindingWidget implements Widget {
 						if (lastPressedKey != Input.Keys.ESCAPE) {
 							newBindingHook.accept(keyBindings.get(editingLine).newKeyCode(lastPressedKey));
 						}
+						editingHook.accept(false);
 						ImGui.closeCurrentPopup();
 					}
 					ImGui.endPopup();
@@ -85,6 +91,5 @@ public class VerticalKeyBindingWidget implements Widget {
 			}
 			ImGui.endTable();
 		}
-
 	}
 }
