@@ -1,8 +1,10 @@
 package bms.player.beatoraja.modmenu.setting.widget;
 
+import bms.model.Mode;
 import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
 import bms.player.beatoraja.modmenu.setting.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import com.badlogic.gdx.Input;
 import imgui.ImColor;
 import imgui.ImGui;
@@ -44,6 +46,11 @@ public class BlockKeyBindingWidget implements Widget {
 
 	@Override
 	public void render() {
+		Mode currentPlayMode = SettingMenu.getCurrentPlayMode();
+		if (currentPlayMode != Mode.BEAT_5K && currentPlayMode != Mode.BEAT_7K && currentPlayMode != Mode.POPN_5K && currentPlayMode != Mode.POPN_9K) {
+			ImGui.text("Current play mode hasn't been supported");
+			return ;
+		}
 		if (ImGui.checkbox("Edit##KeySettings", editing)) {
 			if (editing.get()) {
 				// From not editing to editing
@@ -54,12 +61,14 @@ public class BlockKeyBindingWidget implements Widget {
 			}
 			editingHook.accept(editing.get());
 		}
-		if (ImGui.beginTable("##BlockKeyBindingWidgetTable", keyBindings.size(), ImGuiTableFlags.SizingFixedFit)) {
-			for (int i = 0; i < keyBindings.size(); ++i) {
+		// TODO: Currently this widget doesn't support binding SELECT or START key
+		List<KeyBinding> playKeyBindings = getPlayKeyBindings();
+		if (ImGui.beginTable("##BlockKeyBindingWidgetTable", playKeyBindings.size(), ImGuiTableFlags.SizingFixedFit)) {
+			for (int i = 0; i < playKeyBindings.size(); ++i) {
 				ImGui.tableSetupColumn(Integer.toString(i), 50, ImGuiTableColumnFlags.WidthFixed);
 			}
 			ImGui.tableNextRow();
-			for (int i = 0; i < keyBindings.size(); ++i) {
+			for (int i = 0; i < playKeyBindings.size(); ++i) {
 				if (i == currentEditing) {
 					ImGui.tableSetColumnIndex(i);
 					float width = ImGui.getColumnWidth();
@@ -69,10 +78,10 @@ public class BlockKeyBindingWidget implements Widget {
 				}
 			}
 			ImGui.tableNextRow();
-			for (int i = 0; i < keyBindings.size(); ++i) {
+			for (int i = 0; i < playKeyBindings.size(); ++i) {
 				ImGui.pushID(i);
 				ImGui.tableSetColumnIndex(i);
-				if (i == keyBindings.size() - 2 || i == keyBindings.size() - 1) {
+				if (i == playKeyBindings.size() - 2 || i == playKeyBindings.size() - 1) {
 					ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(125, 0, 0));
 					ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(230, 230, 230));
 				} else if (i % 2 == 0) {
@@ -82,8 +91,8 @@ public class BlockKeyBindingWidget implements Widget {
 					ImGui.pushStyleColor(ImGuiCol.Button, ImColor.rgb(230, 230, 230));
 					ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(49, 49, 49));
 				}
-				ImGui.button(Input.Keys.toString(keyBindings.get(i).keyCode()), 50, 80);
-				if (i != keyBindings.size() - 1) {
+				ImGui.button(Input.Keys.toString(playKeyBindings.get(i).keyCode()), 50, 80);
+				if (i != playKeyBindings.size() - 1) {
 					ImGui.sameLine();
 				}
 				ImGui.popStyleColor(2);
@@ -99,15 +108,22 @@ public class BlockKeyBindingWidget implements Widget {
 					resetEditingState();
 					return;
 				}
-				newBindingHook.accept(keyBindings.get(currentEditing).newKeyCode(lastPressedKey));
+				newBindingHook.accept(playKeyBindings.get(currentEditing).newKeyCode(lastPressedKey));
 				currentEditing++;
 			}
-			if (currentEditing == keyBindings.size()) {
+			if (currentEditing == playKeyBindings.size()) {
 				currentEditing = 0;
 				editing.set(false);
 				editingHook.accept(false);
 			}
 		}
+	}
+
+	/**
+	 * @return a copy of keyBindings that don't have SELECT & START key
+	 */
+	private List<KeyBinding> getPlayKeyBindings() {
+		return keyBindings.stream().filter(keyBinding -> keyBinding.mapping() != -1 && keyBinding.mapping() != -2).toList();
 	}
 
 	private void resetEditingState() {
