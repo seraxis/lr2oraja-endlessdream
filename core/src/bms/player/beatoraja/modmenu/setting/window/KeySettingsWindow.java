@@ -4,9 +4,11 @@ import bms.model.Mode;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayModeConfig;
 import bms.player.beatoraja.PlayerConfig;
+import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.setting.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import bms.player.beatoraja.modmenu.setting.widget.BlockKeyBindingWidget;
+import bms.player.beatoraja.modmenu.setting.widget.Label;
 import bms.player.beatoraja.modmenu.setting.widget.VerticalKeyBindingWidget;
 import imgui.ImGui;
 
@@ -33,6 +35,7 @@ public class KeySettingsWindow extends BaseSettingWindow {
 
 	@Override
 	public void render() {
+		new Label.Builder(FontAwesomeIcons.ExclamationTriangle + "Please don't leave this panel until you have configured your bindings.").colorHex("#CC5C76").build().render();
 		Mode newPlayMode = SettingMenu.getCurrentPlayMode();
 		if (previousMode != newPlayMode) {
 			keyBindings.clear();

@@ -77,14 +77,14 @@ public class Label implements SizedWidget {
 
 	public static Label restartIconLabel() {
 		return new Builder(FontAwesomeIcons.PowerOff)
-				.color(ImColor.rgb("#49E670"))
+				.colorHex("#49E670")
 				.hint("Need restart to make it take effect")
 				.build();
 	}
 
 	public static Label warningIconLabel(String hint) {
 		return new Builder(FontAwesomeIcons.ExclamationTriangle)
-				.color(ImColor.rgb("#CC5C76"))
+				.colorHex("#CC5C76")
 				.hint(hint)
 				.build();
 	}
@@ -105,7 +105,7 @@ public class Label implements SizedWidget {
 
 		public static Builder assistIconLabelBuilder(String hint, float hintWidth) {
 			return new Builder(FontAwesomeIcons.Child)
-					.color(ImColor.rgb("#FF9FF9"))
+					.colorHex("#FF9FF9")
 					.hint(hint)
 					.hintWidth(hintWidth);
 		}
@@ -128,6 +128,10 @@ public class Label implements SizedWidget {
 		public Builder color(int color) {
 			label.color = color;
 			return this;
+		}
+
+		public Builder colorHex(String hex) {
+			return color(ImColor.rgb(hex));
 		}
 
 		public Label build() {
