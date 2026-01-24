@@ -17,8 +17,8 @@ import java.util.List;
  */
 public record KeyBinding(String name, int keyCode, int mapping) {
 	public static List<KeyBinding> keyBoardPlayKeys(PlayerConfig playerConfig, Mode mode) {
-		String[] keys = KeyConfiguration.KEYS[mode.ordinal()];
-		int[] keysa = KeyConfiguration.KEYSA[mode.ordinal()];
+		String[] keys = KeyConfiguration.getKeyNames(mode);
+		int[] keysa = KeyConfiguration.getKeyAssigns(mode);
 		PlayModeConfig playConfig = playerConfig.getPlayConfig(mode);
 		PlayModeConfig.KeyboardConfig kbConfig = playConfig.getKeyboardConfig();
 		List<KeyBinding> bindings = new ArrayList<>();

@@ -45,7 +45,7 @@ public class KeyConfiguration extends MainState {
 	private static final Mode[] MODE_HINT = { Mode.BEAT_5K,Mode.BEAT_7K, Mode.POPN_9K, Mode.BEAT_10K, Mode.BEAT_14K, Mode.KEYBOARD_24K,
 			Mode.KEYBOARD_24K_DOUBLE };
 
-	public static final String[][] KEYS = {
+	private static final String[][] KEYS = {
 			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "F-SCR", "R-SCR", "START", "SELECT" },
 			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "F-SCR", "R-SCR", "START", "SELECT" },
 			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "8 KEY", "9 KEY", "START", "SELECT" },
@@ -63,7 +63,7 @@ public class KeyConfiguration extends MainState {
 					"2P-E1", "2P-F1", "2P-F#1", "2P-G1", "2P-G#1", "2P-A1", "2P-A#1", "2P-B1", "2P-C2", "2P-C#2",
 					"2P-D2", "2P-D#2", "2P-E2", "2P-F2", "2P-F#2", "2P-G2", "2P-G#2", "2P-A2", "2P-A#2", "2P-B2",
 					"2P-WHEEL-UP", "2P-WHEEL-DOWN", "START", "SELECT" } };;
-	public static final int[][] KEYSA = { { 0, 1, 2, 3, 4, 5, 6, -1, -2 },
+	private static final int[][] KEYSA = { { 0, 1, 2, 3, 4, 5, 6, -1, -2 },
 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -2 },
 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -2 },
 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -1, -2 },
@@ -609,5 +609,25 @@ public class KeyConfiguration extends MainState {
 			titlefont.dispose();
 			titlefont = null;
 		}
+	}
+
+	public static String[] getKeyNames(Mode mode) {
+		return KEYS[internalIndex(mode)];
+	}
+
+	public static int[] getKeyAssigns(Mode mode) {
+		return KEYSA[internalIndex(mode)];
+	}
+
+	private static int internalIndex(Mode mode) {
+		return switch (mode) {
+			case BEAT_5K, POPN_5K -> 0;
+			case BEAT_7K -> 1;
+			case POPN_9K -> 2;
+			case BEAT_10K -> 3;
+			case BEAT_14K -> 4;
+			case KEYBOARD_24K -> 5;
+			case KEYBOARD_24K_DOUBLE -> 6;
+		};
 	}
 }
