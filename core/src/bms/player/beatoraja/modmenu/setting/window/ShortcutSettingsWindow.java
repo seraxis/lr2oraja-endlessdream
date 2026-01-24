@@ -38,7 +38,6 @@ public class ShortcutSettingsWindow extends BaseSettingWindow {
 					new PlainKeyBinding("Change chart sort strategy", Input.Keys.NUM_2, -1),
 					new PlainKeyBinding("Change LN mode", Input.Keys.NUM_3, -1),
 					new PlainKeyBinding("Select replay log", Input.Keys.NUM_4, -1),
-					new PlainKeyBinding("Show detail options", Input.Keys.NUM_5, -1),
 					new PlainKeyBinding("Open key configuration", Input.Keys.NUM_6, -1),
 					new PlainKeyBinding("Cycle through rivals", Input.Keys.NUM_7, -1),
 					new PlainKeyBinding("Show songs in same folder", Input.Keys.NUM_8, -1),
@@ -49,6 +48,7 @@ public class ShortcutSettingsWindow extends BaseSettingWindow {
 					new PlayKeyBinding("Replay", 7, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()),
 					new PlayKeyBinding("Options menu 1", -1, getKeyboardConfig().getSelect(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
 					new PlayKeyBinding("Options menu 2", -2, getKeyboardConfig().getStart(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
+					new PlainKeyBinding("Options menu 3", Input.Keys.NUM_5, -1),
 					new ArbitraryKeyBinding("Options menu 3", "", "START+SELECT KEY (hold)")
 			)),
 			Pair.of("Play", Arrays.asList(
