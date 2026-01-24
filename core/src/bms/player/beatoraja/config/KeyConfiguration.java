@@ -74,7 +74,7 @@ public class KeyConfiguration extends MainState {
 					-2 } };
 	private static final int playerOffset = 100;
 
-	private static final String[] SELECTKEY = { "7 KEYS", "9 KEYS", "14 KEYS" };
+	public static final String[] SELECTKEY = { "7 KEYS", "9 KEYS", "14 KEYS" };
 
 	private int cursorpos = 0;
 	private int scrollpos = 0;

@@ -4,6 +4,7 @@ import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.ScoreData;
+import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import bms.player.beatoraja.modmenu.setting.widget.CheckboxWidget;
 import bms.player.beatoraja.modmenu.setting.widget.Label;
@@ -47,7 +48,8 @@ public class SongSettingsWindow extends BaseSettingWindow {
 	}
 
 	private static final String[] sortStrategies = new String[BarSorter.values().length];
-	private static final CheckboxWidget useLastPlayedSort = new CheckboxWidget("##Last Played Sort", (newValue) -> lastPlayedSort.set(newValue));
+	private final CheckboxWidget useLastPlayedSort = new CheckboxWidget("##Last Played Sort", lastPlayedSort::set);
+	private final StringComboWidget selectKeyMode = new StringComboWidget("##Select Key Mode", KeyConfiguration.SELECTKEY, playerConfig::setMusicselectinput);
 
 	static {
 		for (int i = 0; i < BarSorter.values().length; i++) {
@@ -106,7 +108,10 @@ public class SongSettingsWindow extends BaseSettingWindow {
 	private List<Pair<String, List<TiledOption<?>>>> options = List.of(
 			Pair.of("Song Select", Arrays.asList(
 					new TiledOption<>("Sort Strategy", playerConfig::getSort, songSortStrategy),
-					new TiledOption<>("Sort by last played", () -> lastPlayedSort.get(), useLastPlayedSort)
+					new TiledOption<>("Sort by Last Played", lastPlayedSort::get, useLastPlayedSort),
+					new TiledOption<>("Key Mode", playerConfig::getMusicselectinput, selectKeyMode).addDescription(
+							"Many features in music select scene is defined by key1, key2, etc. This option defines which key mode bindings you want to use in music select scene. If there's no explicit reason, keep it same as your play mode(normally 7k)"
+					)
 			))
 	);
 
