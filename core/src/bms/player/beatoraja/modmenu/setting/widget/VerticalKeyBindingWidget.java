@@ -1,7 +1,7 @@
 package bms.player.beatoraja.modmenu.setting.widget;
 
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
-import bms.player.beatoraja.modmenu.setting.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
 import com.badlogic.gdx.Input;
 import imgui.ImGui;
 
@@ -35,6 +35,7 @@ import java.util.function.Consumer;
  */
 public class VerticalKeyBindingWidget implements Widget {
 	private final List<KeyBinding> keyBindings;
+	private boolean hasOperations = true;
 	private final Consumer<KeyBinding> newBindingHook;
 	private final Consumer<Boolean> editingHook;
 	private int editingLine;
@@ -44,18 +45,26 @@ public class VerticalKeyBindingWidget implements Widget {
 	 * @param newBindingHook hook function, triggered when this widget wants to submit a new key binding
 	 * @param editingHook    hook function, triggered when this widget changed editing state
 	 */
-	public VerticalKeyBindingWidget( List<KeyBinding> keyBindings, Consumer<KeyBinding> newBindingHook, Consumer<Boolean> editingHook) {
+	public VerticalKeyBindingWidget(List<KeyBinding> keyBindings, Consumer<KeyBinding> newBindingHook, Consumer<Boolean> editingHook) {
 		this.keyBindings = keyBindings;
 		this.newBindingHook = newBindingHook;
 		this.editingHook = editingHook;
 	}
 
+	public VerticalKeyBindingWidget removeOperations() {
+		hasOperations = false;
+		return this;
+	}
+
 	@Override
 	public void render() {
-		if (ImGui.beginTable("##VerticalKeyBindingWidgetTable", 3)) {
+		int columns = hasOperations ? 3 : 2;
+		if (ImGui.beginTable("##VerticalKeyBindingWidgetTable", columns)) {
 			ImGui.tableSetupColumn("Keys");
 			ImGui.tableSetupColumn("Bind");
-			ImGui.tableSetupColumn("Operations");
+			if (hasOperations) {
+				ImGui.tableSetupColumn("Operations");
+			}
 			ImGui.tableHeadersRow();
 			for (int i = 0; i < keyBindings.size(); i++) {
 				ImGui.pushID(i);
@@ -64,28 +73,30 @@ public class VerticalKeyBindingWidget implements Widget {
 				ImGui.tableSetColumnIndex(0);
 				ImGui.text(keyBinding.name());
 				ImGui.tableSetColumnIndex(1);
-				ImGui.text(keyBinding.keyCode() == -1 ? "-" : Input.Keys.toString(keyBinding.keyCode()));
-				ImGui.tableSetColumnIndex(2);
-				if (ImGui.button("Edit##VerticalKeyBindingWidget")) {
-					editingLine = i;
-					editingHook.accept(true);
-					ImGui.openPopup("##VerticalKeyBindingWidget##ListenKeyPressed");
-				}
-				if (ImGui.beginPopup("##VerticalKeyBindingWidget##ListenKeyPressed")) {
-					ImGui.text("Listening...Please press any key you want to bind");
-					int lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
-					if (lastPressedKey != -1) {
-						if (lastPressedKey != Input.Keys.ESCAPE) {
-							newBindingHook.accept(keyBindings.get(editingLine).newKeyCode(lastPressedKey));
-						}
-						editingHook.accept(false);
-						ImGui.closeCurrentPopup();
+				ImGui.text(keyBinding.keyName());
+				if (hasOperations) {
+					ImGui.tableSetColumnIndex(2);
+					if (ImGui.button("Edit##VerticalKeyBindingWidget")) {
+						editingLine = i;
+						editingHook.accept(true);
+						ImGui.openPopup("##VerticalKeyBindingWidget##ListenKeyPressed");
 					}
-					ImGui.endPopup();
-				}
-				ImGui.sameLine();
-				if (ImGui.button("Clear##VerticalKeyBindingWidget")) {
-					newBindingHook.accept(keyBinding.erase());
+					if (ImGui.beginPopup("##VerticalKeyBindingWidget##ListenKeyPressed")) {
+						ImGui.text("Listening...Please press any key you want to bind");
+						int lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
+						if (lastPressedKey != -1) {
+							if (lastPressedKey != Input.Keys.ESCAPE) {
+								newBindingHook.accept(keyBindings.get(editingLine).newKeyCode(lastPressedKey));
+							}
+							editingHook.accept(false);
+							ImGui.closeCurrentPopup();
+						}
+						ImGui.endPopup();
+					}
+					ImGui.sameLine();
+					if (ImGui.button("Clear##VerticalKeyBindingWidget")) {
+						newBindingHook.accept(keyBinding.erase());
+					}
 				}
 				ImGui.popID();
 			}

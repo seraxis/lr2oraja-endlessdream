@@ -23,4 +23,8 @@ public abstract class BaseSettingWindow implements SettingWindow {
 	public PlayConfig getPlayConfig() {
 		return getPlayModeConfig().getPlayconfig();
 	}
+
+	public PlayModeConfig.KeyboardConfig getKeyboardConfig() {
+		return getPlayModeConfig().getKeyboardConfig();
+	}
 }

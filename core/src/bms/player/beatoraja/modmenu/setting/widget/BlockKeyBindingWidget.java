@@ -3,7 +3,7 @@ package bms.player.beatoraja.modmenu.setting.widget;
 import bms.model.Mode;
 import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
-import bms.player.beatoraja.modmenu.setting.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import com.badlogic.gdx.Input;
 import imgui.ImColor;

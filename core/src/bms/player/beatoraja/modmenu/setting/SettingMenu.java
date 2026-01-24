@@ -81,6 +81,7 @@ public class SettingMenu {
 				new PlaySettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new AssistSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new KeySettingsWindow(main.getConfig(), main.getPlayerConfig()),
+				new ShortcutSettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new ReplaySettingsWindow(main.getConfig(), main.getPlayerConfig()),
 				new DebugWindow(main.getConfig(), main.getPlayerConfig())
 		);

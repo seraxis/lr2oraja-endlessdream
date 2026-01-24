@@ -5,7 +5,7 @@ import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayModeConfig;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.modmenu.FontAwesomeIcons;
-import bms.player.beatoraja.modmenu.setting.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import bms.player.beatoraja.modmenu.setting.widget.BlockKeyBindingWidget;
 import bms.player.beatoraja.modmenu.setting.widget.Label;
