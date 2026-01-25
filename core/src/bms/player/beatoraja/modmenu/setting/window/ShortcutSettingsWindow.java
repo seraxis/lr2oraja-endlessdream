@@ -42,10 +42,10 @@ public class ShortcutSettingsWindow extends BaseSettingWindow {
 					new PlainKeyBinding("Cycle through rivals", Input.Keys.NUM_7, -1),
 					new PlainKeyBinding("Show songs in same folder", Input.Keys.NUM_8, -1),
 					new PlainKeyBinding("Display song text file", Input.Keys.NUM_9, -1),
-					new PlayKeyBinding("Play", 1, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Open Context Menu", 3, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Open Context Menu", 5, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Replay", 7, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Play", 0, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Open Context Menu", 2, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Open Context Menu", 4, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Replay", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()),
 					new PlayKeyBinding("Options menu 1", -1, getKeyboardConfig().getSelect(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
 					new PlayKeyBinding("Options menu 2", -2, getKeyboardConfig().getStart(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
 					new PlainKeyBinding("Options menu 3", Input.Keys.NUM_5, -1),
@@ -68,11 +68,11 @@ public class ShortcutSettingsWindow extends BaseSettingWindow {
 					new ArbitraryKeyBinding("Save replay in slot 2", "", "2"),
 					new ArbitraryKeyBinding("Save replay in slot 3", "", "3"),
 					new ArbitraryKeyBinding("Save replay in slot 4", "", "4"),
-					new PlayKeyBinding("Back to music select", 1, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Back to music select", 3, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Retry same song with same pattern option", 5, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
-					new PlayKeyBinding("Switch gauge display", 6, getKeyboardConfig().getKeyAssign()[5], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Retry same song with same note pattern", 7, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()).requiringHold()
+					new PlayKeyBinding("Back to music select", 0, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Back to music select", 2, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Retry same song with same pattern option", 4, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
+					new PlayKeyBinding("Switch gauge display", 5, getKeyboardConfig().getKeyAssign()[5], -1, SettingMenu.getCurrentPlayMode()),
+					new PlayKeyBinding("Retry same song with same note pattern", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()).requiringHold()
 			))
 	);
 
