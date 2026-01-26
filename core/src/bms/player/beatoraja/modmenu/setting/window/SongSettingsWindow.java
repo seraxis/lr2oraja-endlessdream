@@ -105,6 +105,7 @@ public class SongSettingsWindow extends BaseSettingWindow {
 
 	private final StringComboWidget songSortStrategy = new StringComboWidget("##Sort Strategy", sortStrategies, playerConfig::setSort);
 	private final CheckboxWidget showMissingChart = new CheckboxWidget("##Show Missing Chart", config::setShowNoSongExistingBar);
+	private final CheckboxWidget forceMissingChartAtTail = new CheckboxWidget("##Force the missing charts to be placed at end", config::setForceMissingChartAtTail);
 
 	private List<Pair<String, List<TiledOption<?>>>> options = List.of(
 			Pair.of("Song Select", Arrays.asList(
@@ -115,7 +116,8 @@ public class SongSettingsWindow extends BaseSettingWindow {
 					),
 					new TiledOption<>("Show missing charts", config::isShowNoSongExistingBar, showMissingChart).addDescription(
 							"This option won't work if you're using http download too"
-					)
+					),
+					new TiledOption<>("Force the missing charts to be placed at end", config::isForceMissingChartAtTail, forceMissingChartAtTail)
 			))
 	);
 

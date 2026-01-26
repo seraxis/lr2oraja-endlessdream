@@ -102,6 +102,10 @@ public class Config implements Validatable {
 	 */
 	private boolean showNoSongExistingBar = true;
 	/**
+	 * Whether to place the non-existent charts at the end of the other charts or not
+	 */
+	private boolean forceMissingChartAtTail = false;
+	/**
 	 * 選曲バー移動速度の最初
 	 */
 	private int scrolldurationlow = 300;
@@ -503,6 +507,14 @@ public class Config implements Validatable {
 
 	public void setShowNoSongExistingBar(boolean showNoExistingSongBar) {
 		this.showNoSongExistingBar = showNoExistingSongBar;
+	}
+
+	public boolean isForceMissingChartAtTail() {
+		return forceMissingChartAtTail;
+	}
+
+	public void setForceMissingChartAtTail(boolean forceMissingChartAtTail) {
+		this.forceMissingChartAtTail = forceMissingChartAtTail;
 	}
 
 	public int getScrollDurationLow(){

@@ -383,10 +383,20 @@ public class BarManager {
 
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
-			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
-                if (SongSettingsWindow.isLastPlayedSortEnabled()) {
-                    Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
-                }
+				Comparator<Bar> comp = sorter.sorter;
+				if (SongSettingsWindow.isLastPlayedSortEnabled()) {
+					comp = BarSorter.LASTUPDATE.sorter;
+				}
+				if (select.resource.getConfig().isForceMissingChartAtTail()) {
+					Comparator<Bar> preComp = (lhs, rhs) -> {
+						if (lhs instanceof SongBar lsb && rhs instanceof SongBar rsb) {
+							return (rsb.existsSong() ? 1 : 0) - (lsb.existsSong() ? 1 : 0);
+						}
+						return 0;
+					};
+					comp = preComp.thenComparing(comp);
+				}
+			    Sort.instance().sort(newcurrentsongs, comp);
 			}
 
 			Array<Bar> bars = new Array<Bar>();
