@@ -5,6 +5,7 @@ import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
 import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Input;
 import imgui.ImColor;
 import imgui.ImGui;
@@ -101,14 +102,18 @@ public class BlockKeyBindingWidget implements Widget {
 			ImGui.endTable();
 		}
 		if (editing.get()) {
-			int lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
-			if (lastPressedKey != -1) {
-				if (lastPressedKey == Input.Keys.ESCAPE) {
+			Pair<Integer, Integer> lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
+			Integer keyCode = lastPressedKey.getFirst();
+			Integer modifier = lastPressedKey.getSecond();
+			if (keyCode != -1) {
+				if (keyCode == Input.Keys.ESCAPE) {
 					// Escaping before every key has been set, rollback the changes
 					resetEditingState();
 					return;
 				}
-				newBindingHook.accept(playKeyBindings.get(currentEditing).newKeyCode(lastPressedKey));
+				playKeyBindings.get(currentEditing).setKeyCode(keyCode);
+				playKeyBindings.get(currentEditing).setModifier(modifier);
+				newBindingHook.accept(playKeyBindings.get(currentEditing));
 				currentEditing++;
 			}
 			if (currentEditing == playKeyBindings.size()) {

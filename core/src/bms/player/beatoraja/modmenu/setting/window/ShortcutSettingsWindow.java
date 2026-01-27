@@ -3,10 +3,7 @@ package bms.player.beatoraja.modmenu.setting.window;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
-import bms.player.beatoraja.modmenu.setting.keybinding.ArbitraryKeyBinding;
-import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
-import bms.player.beatoraja.modmenu.setting.keybinding.PlainKeyBinding;
-import bms.player.beatoraja.modmenu.setting.keybinding.PlayKeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.*;
 import bms.player.beatoraja.modmenu.setting.widget.VerticalKeyBindingWidget;
 import bms.tool.util.Pair;
 import com.badlogic.gdx.Input;
@@ -21,35 +18,40 @@ import java.util.List;
 public class ShortcutSettingsWindow extends BaseSettingWindow {
 	private final List<Pair<String, List<KeyBinding>>> keyBindings = Arrays.asList(
 			Pair.of("Global", Arrays.asList(
-					new PlainKeyBinding("Refresh folder/difficult table", Input.Keys.F2, -1),
-					new PlainKeyBinding("Change fullscreen/windowed", Input.Keys.F4, -1),
-					new PlainKeyBinding("Toggle Mod Menu", Input.Keys.F5, -1),
-					new PlainKeyBinding("Take a screen shot", Input.Keys.F6, -1)
+					/* TODO: Unable to configure at present */ new PlainKeyBinding("Change fullscreen/windowed", Input.Keys.F4, 0, -1),
+					/* TODO: Unable to configure at present */ new PlainKeyBinding("Toggle Mod Menu", Input.Keys.F5, 0, -1),
+					/* F6 -> */ GlobalKeyBindings.FIRE_SCREEN_SHOT.keyBinding(),
+					/* TODO: Unable to configure at present */ new PlainKeyBinding("Post on twitter", Input.Keys.F7, 0, -1)
 			)),
 			Pair.of("Music Select", Arrays.asList(
-					new PlainKeyBinding("Open Settings Menu", Input.Keys.F1, -1),
-					new PlainKeyBinding("Open chart's directory in explorer", Input.Keys.F3, -1),
-					new PlainKeyBinding("Set song as favorite song", Input.Keys.F8, -1),
-					new PlainKeyBinding("Set chart as favorite chart", Input.Keys.F9, -1),
-					new PlainKeyBinding("Autoplay all songs in folder", Input.Keys.F10, -1),
-					new PlainKeyBinding("Open chart page in the primary IR", Input.Keys.F11, -1),
-					new PlainKeyBinding("Open skin settings", Input.Keys.F12, -1),
-					new PlainKeyBinding("Change play mode filter", Input.Keys.NUM_1, -1),
-					new PlainKeyBinding("Change chart sort strategy", Input.Keys.NUM_2, -1),
-					new PlainKeyBinding("Change LN mode", Input.Keys.NUM_3, -1),
-					new PlainKeyBinding("Select replay log", Input.Keys.NUM_4, -1),
-					new PlainKeyBinding("Open key configuration", Input.Keys.NUM_6, -1),
-					new PlainKeyBinding("Cycle through rivals", Input.Keys.NUM_7, -1),
-					new PlainKeyBinding("Show songs in same folder", Input.Keys.NUM_8, -1),
-					new PlainKeyBinding("Display song text file", Input.Keys.NUM_9, -1),
-					new PlayKeyBinding("Play", 0, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Open Context Menu", 2, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Open Context Menu", 4, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Replay", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Options menu 1", -1, getKeyboardConfig().getSelect(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
-					new PlayKeyBinding("Options menu 2", -2, getKeyboardConfig().getStart(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
-					new PlainKeyBinding("Options menu 3", Input.Keys.NUM_5, -1),
-					new ArbitraryKeyBinding("Options menu 3", "", "START+SELECT KEY (hold)")
+					/* TODO: Unable to configure at present */ new PlainKeyBinding("Open Settings Menu", Input.Keys.F1, 0, -1),
+					/* F2 -> */ MusicSelectKeyBindings.UPDATE_FOLDER.keyBinding(),
+					/* F3 -> */ MusicSelectKeyBindings.OPEN_CHART_DIRECTORY_IN_EXPLORER.keyBinding(),
+					/* F8 -> */ MusicSelectKeyBindings.FAVORITE_SONG.keyBinding(),
+					/* F9 -> */ MusicSelectKeyBindings.FAVORITE_CHART.keyBinding(),
+					/* F10 -> */ MusicSelectKeyBindings.AUTOPLAY_ALL_SONGS_IN_FOLDER.keyBinding(),
+					/* F11 -> */ MusicSelectKeyBindings.OPEN_CHART_PAGE_IN_PRIMARY_IR.keyBinding(),
+					/* F12 -> */ MusicSelectKeyBindings.OPEN_SKIN_SETTINGS.keyBinding(),
+					/* NUM_0 -> */ MusicSelectKeyBindings.FOCUS_SEARCH_TEXT.keyBinding(),
+					/* NUM_1 -> */ MusicSelectKeyBindings.SWITCH_PLAY_MODE.keyBinding(),
+					/* NUM_2 -> */ MusicSelectKeyBindings.SWITCH_SORT_STRATEGY.keyBinding(),
+					/* NUM_3 -> (Changing LN Mode in endless dream is banned) */
+					/* NUM_4 -> */ MusicSelectKeyBindings.SELECT_REPLAY_LOG.keyBinding(),
+					/* NUM_6 -> */ MusicSelectKeyBindings.OPEN_KEY_CONFIGURATION.keyBinding(),
+					/* NUM_7 -> */ MusicSelectKeyBindings.CYCLE_THROUGH_RIVALS.keyBinding(),
+					/* NUM_8 -> */ MusicSelectKeyBindings.SHOW_SONGS_IN_SAME_FOLDER.keyBinding(),
+					/* NUM_9 -> */ MusicSelectKeyBindings.DISPLAY_SONG_TEXT_FILE.keyBinding(),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Play", 0, getKeyboardConfig().getKeyAssign()[0], -1, SettingMenu.getCurrentPlayMode()),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Open Context Menu", 2, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Open Context Menu", 4, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Replay", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Options menu 1", -1, getKeyboardConfig().getSelect(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
+					/* PLAY KEY RELATED -> */ new PlayKeyBinding("Options menu 2", -2, getKeyboardConfig().getStart(), -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
+					/* NUM_5 -> */ MusicSelectKeyBindings.OPTIONS_MENU_3.keyBinding(),
+					/* PLAY KEY RELATED -> */ new ArbitraryKeyBinding("Options menu 3", "", "START+SELECT KEY (hold)"),
+					/* CTRL+F3 -> */ MusicSelectKeyBindings.COPY_SONG_MD5_HASH.keyBinding(),
+					/* SHIFT+F3 -> */ MusicSelectKeyBindings.COPY_SONG_SHA256_HASH.keyBinding(),
+					/* CTRL+C */ MusicSelectKeyBindings.COPY_HIGHLIGHTED_MENU_TEXT.keyBinding()
 			)),
 			Pair.of("Play", Arrays.asList(
 					new ArbitraryKeyBinding("Toggle Sudden+", "", "START KEY x2"),
@@ -72,11 +74,21 @@ public class ShortcutSettingsWindow extends BaseSettingWindow {
 					new PlayKeyBinding("Back to music select", 2, getKeyboardConfig().getKeyAssign()[2], -1, SettingMenu.getCurrentPlayMode()),
 					new PlayKeyBinding("Retry same song with same pattern option", 4, getKeyboardConfig().getKeyAssign()[4], -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
 					new PlayKeyBinding("Switch gauge display", 5, getKeyboardConfig().getKeyAssign()[5], -1, SettingMenu.getCurrentPlayMode()),
-					new PlayKeyBinding("Retry same song with same note pattern", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()).requiringHold()
+					new PlayKeyBinding("Retry same song with same note pattern", 6, getKeyboardConfig().getKeyAssign()[6], -1, SettingMenu.getCurrentPlayMode()).requiringHold(),
+					/* F11 -> */ ResultKeyBindings.OPEN_CHART_PAGE_IN_PRIMARY_IR.keyBinding()
 			))
 	);
 
-	private final List<Pair<String, VerticalKeyBindingWidget>> widgets = keyBindings.stream().map(category -> Pair.of(category.getFirst(), new VerticalKeyBindingWidget(category.getSecond(), null, null).removeOperations())).toList();
+	private final List<Pair<String, VerticalKeyBindingWidget>> widgets = keyBindings.stream()
+			.map(category -> Pair.of(
+							category.getFirst(),
+							new VerticalKeyBindingWidget(
+									category.getSecond(),
+									playerConfig::submitKeyBindingModifier, null
+							).removeKeyBindingOperationsOnDemand(keyBinding -> !keyBinding.scene().isEmpty())
+					)
+			)
+			.toList();
 
 	public ShortcutSettingsWindow(Config config, PlayerConfig playerConfig) {
 		super(config, playerConfig);

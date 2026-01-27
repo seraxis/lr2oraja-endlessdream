@@ -1,8 +1,15 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Input;
 import imgui.ImGui;
 import imgui.flag.ImGuiKey;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
+
+import static bms.player.beatoraja.input.KeyBoardInputProcesseor.*;
 
 public class ImGuiKeyHelper {
 	/**
@@ -10,14 +17,62 @@ public class ImGuiKeyHelper {
 	 *
 	 * @apiNote Call this function on demand! Don't call it blindly in render loop
 	 */
-	public static int getLastPressedKey() {
+	public static Pair<Integer, Integer> getLastPressedKey() {
+		return getLastKeyOnDemand(ImGui::isKeyPressed);
+	}
+
+	/**
+	 * Get the last keys that has been pressed down in LibGDX keycode
+	 *
+	 * @implNote The difference between the 'pressed' and 'down' is when you holding a key, the pressed state only exists
+	 *  for one rendering frame but down is keeping until you release it. This is the reason that we need to use this
+	 *  function for binding the shortcuts that could be composed by multiple keys.
+	 * @apiNote Call this function on demand! Don't call it blindly in render loop
+	 */
+	public static Pair<Integer, Integer> getLastDownKey() {
+		return getLastKeyOnDemand(ImGui::isKeyDown);
+	}
+
+	private static Pair<Integer, Integer> getLastKeyOnDemand(Predicate<Integer> p) {
+		int mainKey = 0;
+		int modifier = 0;
 		for (int i = ImGuiKey.NamedKey_BEGIN; i < ImGuiKey.NamedKey_END; i++) {
-			if (!ImGui.isKeyPressed(i)) {
+			if (!p.test(i)) {
 				continue;
 			}
-			return translateKey(i);
+			if (mainKey == 0 || isModifierKey(mainKey)) {
+				mainKey = i;
+			}
+			if (isModifierKey(i)) {
+				if (i == ImGuiKey.LeftCtrl || i == ImGuiKey.RightCtrl) {
+					modifier |= MASK_CTRL;
+				}
+				if (i == ImGuiKey.LeftAlt || i == ImGuiKey.RightAlt) {
+					modifier |= MASK_ALT;
+				}
+				if (i == ImGuiKey.LeftShift || i == ImGuiKey.RightShift) {
+					modifier |= MASK_SHIFT;
+				}
+			}
 		}
-		return -1;
+		return mainKey == 0 ? Pair.of(-1, 0) : Pair.of(translateKey(mainKey), modifier);
+	}
+
+	public static List<Integer> getKeyState() {
+		List<Integer> keys = new ArrayList<Integer>();
+		for (int i = ImGuiKey.NamedKey_BEGIN; i < ImGuiKey.NamedKey_END; i++) {
+			if (ImGui.isKeyPressed(i)) {
+				keys.add(i);
+			}
+		}
+		return keys;
+	}
+
+	private static boolean isModifierKey(int imguiKeyCode) {
+		return imguiKeyCode == ImGuiKey.LeftCtrl || imguiKeyCode == ImGuiKey.RightCtrl
+			|| imguiKeyCode == ImGuiKey.LeftAlt || imguiKeyCode == ImGuiKey.RightAlt
+			|| imguiKeyCode == ImGuiKey.LeftShift || imguiKeyCode == ImGuiKey.RightShift;
+//			|| imguiKeyCode == ImGuiKey.LeftSuper || imguiKeyCode == ImGuiKey.RightSuper;
 	}
 
 	private static int translateKey(int imguiKeyCode) {

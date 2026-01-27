@@ -4,6 +4,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBindingModifier;
+import bms.player.beatoraja.modmenu.setting.keybinding.MusicSelectKeyBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.text.ParseException;
@@ -252,8 +256,58 @@ public final class PlayerConfig {
 	private boolean notifyRequest = false;
 	private int maxRequestCount = 30;
 
+	// Scene shortcuts modifier
+
+	private KeyBindingModifier[] musicSelectKeyBindingModifiers = new KeyBindingModifier[0];
+
 	public PlayerConfig() {
 		validate();
+	}
+
+	public void applyMusicSelectKeyBindingModifiers() {
+		if (musicSelectKeyBindingModifiers == null) return;
+		for (KeyBindingModifier modifier : musicSelectKeyBindingModifiers) {
+			MusicSelectKeyBindings.fromName(modifier.getName())
+					.ifPresent(keyBinding -> {
+						if (keyBinding.keyCode() != modifier.getKeyCode()) {
+							keyBinding.setKeyCode(modifier.getKeyCode());
+						}
+						if (keyBinding.disabled() != modifier.isDisabled()) {
+							keyBinding.setDisabled(modifier.isDisabled());
+						}
+						if (keyBinding.modifier() != modifier.getModifier()) {
+							keyBinding.setModifier(modifier.getModifier());
+						}
+					});
+		};
+	}
+
+	public void submitKeyBindingModifier(KeyBinding keyBinding) {
+		KeyBindingModifier[] modifiers = switch (keyBinding.scene()) {
+			case "MusicSelect" -> musicSelectKeyBindingModifiers;
+			default -> throw new IllegalStateException("Unexpected key binding scene: " + keyBinding.scene());
+		};
+		for (KeyBindingModifier modifier : modifiers) {
+			if (!modifier.getName().equals(keyBinding.name())) {
+				continue;
+			}
+			if (modifier.getKeyCode() != keyBinding.keyCode()) {
+				modifier.setKeyCode(keyBinding.keyCode());
+			}
+			if (modifier.getModifier() != keyBinding.modifier()) {
+				modifier.setModifier(keyBinding.modifier());
+			}
+			if (modifier.isDisabled() != keyBinding.disabled()) {
+				modifier.setDisabled(keyBinding.disabled());
+			}
+			return ;
+		}
+		KeyBindingModifier[] newModifiers = Arrays.copyOf(modifiers, modifiers.length + 1);
+		newModifiers[modifiers.length] = new KeyBindingModifier(keyBinding);
+		switch(keyBinding.scene()) {
+			case "MusicSelect" -> musicSelectKeyBindingModifiers = newModifiers;
+			default -> throw new IllegalStateException("Unexpected key binding scene: " + keyBinding.scene());
+		}
 	}
 
     public String getName() {
@@ -1007,6 +1061,8 @@ public final class PlayerConfig {
 			// 旧コンフィグ読み込み。そのうち削除
 			player = loadPlayerConfigFromOldPath(path_old);
 		}
+
+		player.applyMusicSelectKeyBindingModifiers();
 
 		return validatePlayerConfig(playerid, player);
 	}

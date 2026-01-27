@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import bms.player.beatoraja.modmenu.setting.SettingMenu;
+import bms.player.beatoraja.modmenu.setting.keybinding.GlobalKeyBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -757,7 +758,7 @@ public class MainController {
             // }
 
             // screen shot
-            if (input.isActivated(KeyCommand.SAVE_SCREENSHOT)) {
+            if (input.isKeyPressed(GlobalKeyBindings.FIRE_SCREEN_SHOT)) {
                 if (screenshot == null || !screenshot.isAlive()) {
             		final byte[] pixels = ScreenUtils.getFrameBufferPixels(0, 0, Gdx.graphics.getBackBufferWidth(),Gdx.graphics.getBackBufferHeight(), true);
                     screenshot = new Thread(() -> {

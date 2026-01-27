@@ -14,7 +14,7 @@ public class PlayKeyBinding extends KeyBinding {
 	}
 
 	public PlayKeyBinding(String name, String description, int keyIndex, int keyCode, int mapping, Mode playMode) {
-		super(name, description, keyCode, mapping);
+		super(name, description, "", keyCode, 0, mapping, false);
 		this.keyIndex = keyIndex;
 		this.playMode = playMode;
 	}
@@ -30,11 +30,6 @@ public class PlayKeyBinding extends KeyBinding {
 
 	public void setPlayMode(Mode playMode) {
 		this.playMode = playMode;
-	}
-
-	@Override
-	public KeyBinding newKeyCode(int newKeyCode) {
-		return new PlayKeyBinding(name(), description(), keyIndex, newKeyCode, mapping(), playMode);
 	}
 
 	@Override
