@@ -4,13 +4,14 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
+
+import bms.player.beatoraja.modmenu.setting.keybinding.MusicSelectKeyBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
@@ -19,15 +20,12 @@ import bms.player.beatoraja.*;
 import bms.player.beatoraja.Config.SongPreview;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
-import bms.player.beatoraja.input.KeyCommand;
-import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
-import imgui.ImGui;
 
 /**
  * 選曲部分。 楽曲一覧とカーソルが指す楽曲のステータスを表示し、選択した楽曲を 曲決定部分に渡す。
@@ -316,9 +314,9 @@ public final class MusicSelector extends MainState {
 	public void input() {
 		final BMSPlayerInputProcessor input = main.getInputProcessor();
 
-		if (input.getControlKeyState(ControlKeys.NUM6)) {
+		if (input.getMusicSelectKeyState(MusicSelectKeyBindings.OPEN_KEY_CONFIGURATION)) {
 			main.changeState(MainStateType.CONFIG);
-		} else if (input.isActivated(KeyCommand.OPEN_SKIN_CONFIGURATION)) {
+		} else if (input.isKeyPressed(MusicSelectKeyBindings.OPEN_SKIN_SETTINGS)) {
 			main.changeState(MainStateType.SKINCONFIG);
 		}
 

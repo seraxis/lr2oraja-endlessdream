@@ -65,12 +65,10 @@ public class BMSLoudnessAnalyzer {
 		this.available = checkLibraryAvailable();
 		this.cacheDir = Paths.get("cache/normalize");
 
-		if (config.getAudioConfig().isNormalizeVolume()) {
-			try {
-				Files.createDirectories(cacheDir);
-			} catch (Exception e) {
-				logger.warn("Failed to create cache directory: {}", e.getMessage());
-			}
+		try {
+			Files.createDirectories(cacheDir);
+		} catch (Exception e) {
+			logger.warn("Failed to create cache directory: {}", e.getMessage());
 		}
 
 		if (available) {

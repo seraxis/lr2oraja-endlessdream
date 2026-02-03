@@ -6,12 +6,13 @@ import java.io.BufferedInputStream;
 import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.setting.window.SongSettingsWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Queue;
@@ -383,7 +384,7 @@ public class BarManager {
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
 			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
-                if (SongManagerMenu.isLastPlayedSortEnabled()) {
+                if (SongSettingsWindow.isLastPlayedSortEnabled()) {
                     Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
                 }
 			}
@@ -479,7 +480,7 @@ public class BarManager {
 
 	public void close() {
 		if(dir.size == 0) {
-            SongManagerMenu.forceDisableLastPlayedSort();
+            SongSettingsWindow.forceDisableLastPlayedSort();
 			select.executeEvent(EventType.sort);
 			return;
 		}

@@ -2,7 +2,8 @@ package bms.player.beatoraja.input;
 
 public enum KeyCommand {
 
-	SHOW_FPS,
+	// SHOW_FPS,
+	SHOW_SETTING,
 	UPDATE_FOLDER,
 	OPEN_EXPLORER,
 	COPY_SONG_MD5_HASH,

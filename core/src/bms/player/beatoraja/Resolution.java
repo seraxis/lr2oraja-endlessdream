@@ -1,5 +1,9 @@
 package bms.player.beatoraja;
 
+import bms.tool.util.Pair;
+
+import java.util.Arrays;
+
 /**
  * 解像度
  * 
@@ -36,8 +40,16 @@ public enum Resolution {
 		this.height = height;
 	}
 
+	public static Resolution valueOf(Pair<Integer, Integer> value) {
+		return Arrays.stream(Resolution.values()).filter(r -> r.width == value.getFirst() && r.height == value.getSecond()).findFirst().orElse(null);
+	}
+
 	@Override
 	public String toString() {
 		return name() + " (" + width + " x " + height + ")";
+	}
+
+	public String toPlainString() {
+		return String.format("%dx%d", width, height);
 	}
 }

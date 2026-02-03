@@ -5,11 +5,12 @@ import bms.player.beatoraja.SystemSoundManager.SoundType;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.modmenu.setting.keybinding.MusicSelectKeyBindings;
+import bms.player.beatoraja.modmenu.setting.window.SongSettingsWindow;
 import bms.player.beatoraja.select.MusicSelectKeyProperty.MusicSelectKey;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 
-import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
@@ -70,7 +71,7 @@ public final class MusicSelectInputProcessor {
         final BarManager barManager = select.getBarManager();
         final Bar current = select.getBarManager().getSelected();
 
-        if (input.isControlKeyPressed(ControlKeys.NUM0)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.FOCUS_SEARCH_TEXT)) {
             // 検索用ポップアップ表示。これ必要？
             Gdx.input.getTextInput(new Input.TextInputListener() {
                 @Override
@@ -88,12 +89,12 @@ public final class MusicSelectInputProcessor {
         }
 
         // KEYフィルターの切り替え
-        if (input.isControlKeyPressed(ControlKeys.NUM1)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.SWITCH_PLAY_MODE)) {
             select.executeEvent(EventType.mode);
         }
         // ソートの切り替え
-        if (input.isControlKeyPressed(ControlKeys.NUM2)) {
-            SongManagerMenu.forceDisableLastPlayedSort();
+        if (input.isKeyPressed(MusicSelectKeyBindings.SWITCH_SORT_STRATEGY)) {
+            SongSettingsWindow.forceDisableLastPlayedSort();
             select.executeEvent(EventType.sort);
         }
         // LNモードの切り替え
@@ -114,7 +115,7 @@ public final class MusicSelectInputProcessor {
             }
         }
 
-        if (input.isControlKeyPressed(ControlKeys.NUM4)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.SELECT_REPLAY_LOG)) {
             // change replay
             select.execute(MusicSelectCommand.NEXT_REPLAY);
         }
@@ -247,7 +248,7 @@ public final class MusicSelectInputProcessor {
                 config.setMineMode(config.getMineMode() == 1 ? 0 : 1);
                 select.play(OPTION_CHANGE);
             }
-        } else if (input.getControlKeyState(ControlKeys.NUM5) || (input.startPressed() && input.isSelectPressed())) {
+        } else if (input.getMusicSelectKeyState(MusicSelectKeyBindings.OPTIONS_MENU_3) || (input.startPressed() && input.isSelectPressed())) {
             bar.resetInput();
             // show detail option
             select.setPanelState(3);
@@ -344,13 +345,13 @@ public final class MusicSelectInputProcessor {
                 }
             }
 
-            if (input.isControlKeyPressed(ControlKeys.NUM7)) {
+            if (input.isKeyPressed(MusicSelectKeyBindings.CYCLE_THROUGH_RIVALS)) {
                 select.executeEvent(EventType.rival);
             }
-            if (input.isControlKeyPressed(ControlKeys.NUM8)) {
+            if (input.isKeyPressed(MusicSelectKeyBindings.SHOW_SONGS_IN_SAME_FOLDER)) {
                 select.execute(MusicSelectCommand.SHOW_SONGS_ON_SAME_FOLDER);
             }
-            if (input.isControlKeyPressed(ControlKeys.NUM9)) {
+            if (input.isKeyPressed(MusicSelectKeyBindings.DISPLAY_SONG_TEXT_FILE)) {
                 select.executeEvent(EventType.open_document);
             }
             // close folder
@@ -359,18 +360,18 @@ public final class MusicSelectInputProcessor {
                 select.getBarManager().close();
             }
 
-    		if(input.isActivated(KeyCommand.AUTOPLAY_FOLDER)) {
+    		if (input.isKeyPressed(MusicSelectKeyBindings.AUTOPLAY_ALL_SONGS_IN_FOLDER)) {
     			if(current instanceof DirectoryBar) {
     				select.selectSong(BMSPlayerMode.AUTOPLAY);
     			}
     		}
-    		if(input.isActivated(KeyCommand.OPEN_IR)) {
+    		if (input.isKeyPressed(MusicSelectKeyBindings.OPEN_CHART_PAGE_IN_PRIMARY_IR)) {
                 select.executeEvent(EventType.open_ir);
             }
-    		if(input.isActivated(KeyCommand.ADD_FAVORITE_SONG)) {
+    		if (input.isKeyPressed(MusicSelectKeyBindings.FAVORITE_SONG)) {
                 select.executeEvent(EventType.favorite_song);
     		}
-    		if(input.isActivated(KeyCommand.ADD_FAVORITE_CHART)) {
+    		if (input.isKeyPressed(MusicSelectKeyBindings.FAVORITE_CHART)) {
                 select.executeEvent(EventType.favorite_chart);
     		}
 
@@ -382,22 +383,22 @@ public final class MusicSelectInputProcessor {
         }
         select.timer.switchTimer(TIMER_SONGBAR_CHANGE, true);
         // update folder
-		if(input.isActivated(KeyCommand.UPDATE_FOLDER)) {
+		if (input.isKeyPressed(MusicSelectKeyBindings.UPDATE_FOLDER)) {
             select.executeEvent(EventType.update_folder);
         }
         // open explorer with selected song
-		if(input.isActivated(KeyCommand.OPEN_EXPLORER)) {
+		if (input.isKeyPressed(MusicSelectKeyBindings.OPEN_CHART_DIRECTORY_IN_EXPLORER)) {
             select.executeEvent(EventType.open_with_explorer);
         }
         // copy song MD5 hash
-        if(input.isActivated(KeyCommand.COPY_SONG_MD5_HASH)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.COPY_SONG_MD5_HASH)) {
             select.execute(MusicSelectCommand.COPY_MD5_HASH);
         }
         // copy song SHA256 hash
-        if(input.isActivated(KeyCommand.COPY_SONG_SHA256_HASH)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.COPY_SONG_SHA256_HASH)) {
             select.execute(MusicSelectCommand.COPY_SHA256_HASH);
         }
-        if(input.isActivated(KeyCommand.COPY_HIGHLIGHTED_MENU_TEXT)) {
+        if (input.isKeyPressed(MusicSelectKeyBindings.COPY_HIGHLIGHTED_MENU_TEXT)) {
             select.execute(MusicSelectCommand.COPY_HIGHLIGHTED_MENU_TEXT);
         }
 

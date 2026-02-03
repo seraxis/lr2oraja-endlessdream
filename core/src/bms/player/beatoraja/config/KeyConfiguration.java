@@ -74,7 +74,7 @@ public class KeyConfiguration extends MainState {
 					-2 } };
 	private static final int playerOffset = 100;
 
-	private static final String[] SELECTKEY = { "7 KEYS", "9 KEYS", "14 KEYS" };
+	public static final String[] SELECTKEY = { "7 KEYS", "9 KEYS", "14 KEYS" };
 
 	private int cursorpos = 0;
 	private int scrollpos = 0;
@@ -609,5 +609,25 @@ public class KeyConfiguration extends MainState {
 			titlefont.dispose();
 			titlefont = null;
 		}
+	}
+
+	public static String[] getKeyNames(Mode mode) {
+		return KEYS[internalIndex(mode)];
+	}
+
+	public static int[] getKeyAssigns(Mode mode) {
+		return KEYSA[internalIndex(mode)];
+	}
+
+	private static int internalIndex(Mode mode) {
+		return switch (mode) {
+			case BEAT_5K, POPN_5K -> 0;
+			case BEAT_7K -> 1;
+			case POPN_9K -> 2;
+			case BEAT_10K -> 3;
+			case BEAT_14K -> 4;
+			case KEYBOARD_24K -> 5;
+			case KEYBOARD_24K_DOUBLE -> 6;
+		};
 	}
 }

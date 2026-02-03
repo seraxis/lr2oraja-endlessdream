@@ -5,6 +5,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.setting.keybinding.ResultKeyBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,7 +238,7 @@ public class CourseResult extends AbstractResult {
 				saveReplayData(3);				
 			}
 
-			if(inputProcessor.isActivated(KeyCommand.OPEN_IR)) {
+			if (inputProcessor.isKeyPressed(ResultKeyBindings.OPEN_CHART_PAGE_IN_PRIMARY_IR)) {
 				this.executeEvent(EventType.open_ir);
 			}
 		}

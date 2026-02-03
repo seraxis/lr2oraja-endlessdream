@@ -4,6 +4,11 @@ import bms.player.beatoraja.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+
+import bms.player.beatoraja.modmenu.setting.keybinding.GlobalKeyBindings;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
+import bms.player.beatoraja.modmenu.setting.keybinding.MusicSelectKeyBindings;
+import bms.player.beatoraja.modmenu.setting.keybinding.ResultKeyBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -323,6 +328,30 @@ public class BMSPlayerInputProcessor {
 		return kbinput.isKeyPressed(key.keycode);
 	}
 
+	public boolean getMusicSelectKeyState(MusicSelectKeyBindings keyBinding) {
+		return !keyBinding.disabled() && kbinput.getKeyState(keyBinding.keyCode());
+	}
+
+	public boolean isKeyPressed(MusicSelectKeyBindings keyBinding) {
+		return isKeyPressed(keyBinding.keyBinding());
+	}
+
+	public boolean isKeyPressed(GlobalKeyBindings keyBinding) {
+		return isKeyPressed(keyBinding.keyBinding());
+	}
+
+	public boolean isKeyPressed(ResultKeyBindings keyBinding) {
+		return isKeyPressed(keyBinding.keyBinding());
+	}
+
+	public boolean isKeyPressed(KeyBinding keyBinding) {
+		return !keyBinding.disabled() && (
+				keyBinding.modifier() == 0
+						? kbinput.isKeyPressed(keyBinding.keyCode())
+						: kbinput.isKeyPressed(keyBinding.keyCode(), keyBinding.modifier())
+				);
+	}
+
 	public boolean isControlKeyPressed(ControlKeys key, int heldModifiers, int... notHeldModifiers) {
 		return kbinput.isKeyPressed(key.keycode, heldModifiers, notHeldModifiers);
 	}
@@ -397,7 +426,7 @@ public class BMSPlayerInputProcessor {
 		final int MASK_CTRL_SHIFT = KeyBoardInputProcesseor.MASK_CTRL|KeyBoardInputProcesseor.MASK_SHIFT;
 
 		switch(key) {
-		case SHOW_FPS:
+		case SHOW_SETTING:
 			return isControlKeyPressed(ControlKeys.F1);
 		case UPDATE_FOLDER:
 			return isControlKeyPressed(ControlKeys.F2);
