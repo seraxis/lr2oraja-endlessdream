@@ -32,8 +32,26 @@ Based on [LR2oraja](https://github.com/wcko87/lr2oraja), which is itself a fork 
 
 Development builds are created for every commit and published as [releases](https://github.com/seraxis/lr2oraja-endlessdream/releases)
 
-### Installing from scratch
-If you don't have an existing beatoraja installation download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version, or choose a version yourself from the [beatoraja release page](https://mocha-repository.info/download.php).
+### Installation
+
+#### From Scratch
+
+1. Download the latest [`beatoraja-0.8.8 JRE`](https://mocha-repository.info/download/beatoraja0.8.8-jre-win64.zip) bundled version.
+2. Unzip the file
+3. Copy the unzipped directory to any directory on your computer where you keep applications
+4. Download the latest Endless Dream for your operating system [from the bottom of the release page](https://github.com/seraxis/lr2oraja-endlessdream/releases/tag/v0.4.0)
+5. Go to your beatoraja directory and delete `beatoraja.jar`.
+6. Copy the downloaded `lr2oraja.*.jar` from Step 4 into your beatoraja directory.
+7. Rename the `lr2oraja.*.jar` file to `beatoraja.jar`
+
+#### From an Existing Beatoraja Install
+
+1. Create a copy of your existing beatoraja install directory.
+2. Rename the copy to `endless-dream`.
+3. Download the latest Endless Dream for your operating system [from the bottom of the release page](https://github.com/seraxis/lr2oraja-endlessdream/releases/tag/v0.4.0)
+4. Go to your `endless-dream` directory and delete `beatoraja.jar`.
+5. Copy the downloaded `lr2oraja.*.jar` from Step 3 into your beatoraja directory.
+6. Rename the `lr2oraja.*.jar` file to `beatoraja.jar`
 
 ### Post Install
 Once you're set up with a copy of LR2oraja Endless Dream you might want to check out the excellent [Beatoraja English Guide](https://github.com/wcko87/beatoraja-english-guide/wiki) that has answers to all of your questions about beatoraja and BMS, including a list of skins, where to get songs, and how to use tables.
