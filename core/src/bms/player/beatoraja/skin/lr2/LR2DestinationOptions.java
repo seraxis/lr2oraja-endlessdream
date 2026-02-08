@@ -5,6 +5,8 @@ import bms.player.beatoraja.skin.SkinManualEntry;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
+import static bms.player.beatoraja.skin.SkinProperty.*;
+
 /**
  * LR2 destination options
  */
@@ -603,6 +605,29 @@ public enum LR2DestinationOptions {
 	@Nullable
 	public static LR2DestinationOptions valueOf(int v) {
 		return Arrays.stream(LR2DestinationOptions.values()).filter(def -> def.value == v).findAny().orElse(null);
+	}
+
+	/**
+	 * Some of the lr2 definitions cannot be mapped directly because their place has been taken or it's implemented
+	 *  elsewhere. This function helps converting them. The original value would be returned if it's no need to be
+	 *  converted or don't know how.
+	 */
+	public static int convert(int v) {
+		return switch (v) {
+			case 106 -> OPTION_SELECT_BAR_EXHARD_CLEARED;
+			case 107 -> OPTION_SELECT_BAR_PERFECT_CLEARED;
+			case 108 -> OPTION_SELECT_BAR_MAX_CLEARED;
+			case 109 -> OPTION_SELECT_BAR_ASSIST_EASY_CLEARED;
+			case 110 -> OPTION_1P_AAA;
+			case 111 -> OPTION_1P_AA;
+			case 112 -> OPTION_1P_A;
+			case 113 -> OPTION_1P_B;
+			case 114 -> OPTION_1P_C;
+			case 115 -> OPTION_1P_D;
+			case 116 -> OPTION_1P_E;
+			case 117 -> OPTION_1P_F;
+			default -> v;
+		};
 	}
 
 	public SkinManualEntry<LR2DestinationOptions> intoManualEntry() {

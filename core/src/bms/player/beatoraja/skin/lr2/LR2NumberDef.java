@@ -353,6 +353,38 @@ public enum LR2NumberDef {
 		return Arrays.stream(LR2NumberDef.values()).filter(def -> def.value == v).findAny().orElse(null);
 	}
 
+	/**
+	 * Some of the lr2 definitions cannot be mapped directly because their place has been taken or it's implemented
+	 *  elsewhere. This function helps converting them. The original value would be returned if it's no need to be
+	 *  converted or don't know how.
+	 */
+	public static int convert(int v) {
+		if (v == LR2NumberDef.IRRank.value) {
+			return NUMBER_IR_RANK;
+		} else if (v == LR2NumberDef.IRPlayers.value) {
+			return NUMBER_IR_TOTALPLAYER;
+		} else if (v == IRClearRate.value) {
+			return NUMBER_IR_PLAYER_TOTAL_CLEAR_RATE;
+		} else if (v == RatePercent.value) {
+			return NUMBER_SCORE_RATE;
+		} else if (v == StandardDeviation.value) {
+			return NUMBER_STDDEV_TIMING;
+		} else if (v == StandardDeviationDecimal.value) {
+			return NUMBER_STDDEV_TIMING_AFTERDOT;
+		} else if (v == HitMean.value) {
+			return NUMBER_AVERAGE_TIMING;
+		} else if (v == HitMeanDecimal.value) {
+			return NUMBER_AVERAGE_TIMING_AFTERDOT;
+		} else if (v == Total.value) {
+			return NUMBER_SONGGAUGE_TOTAL;
+		} else if (v == GreenNumber.value) {
+			return NUMBER_DURATION_GREEN;
+		} else if (v == WhiteNumber.value) {
+			return NUMBER_DURATION;
+		}
+		return v;
+	}
+
 	public SkinManualEntry<LR2NumberDef> intoManualEntry() {
 		return new SkinManualEntry<>(this, this.name, this.value);
 	}

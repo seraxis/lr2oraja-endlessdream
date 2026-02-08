@@ -157,6 +157,7 @@ dependencies {
 
     implementation(libs.javawebsocket)
     implementation(libs.bundles.slf4j)
+    implementation(libs.reflections)
 
     // runtime-javadoc is split into an annotation processor and a library
     annotationProcessor(libs.runtime.javadoc.scribe)

@@ -1,9 +1,12 @@
 package bms.player.beatoraja.skin.lr2;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.rmi.UnexpectedException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -19,6 +22,8 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.lr2.LR2SkinLoader.Command;
 import bms.player.beatoraja.skin.SkinHeader.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static bms.player.beatoraja.Resolution.*;
 
@@ -28,6 +33,7 @@ import static bms.player.beatoraja.Resolution.*;
  * @author exch
  */
 public class LR2SkinHeaderLoader extends LR2SkinLoader {
+	private static final Logger logger = LoggerFactory.getLogger(LR2SkinHeaderLoader.class);
 	
 	SkinHeader header = new SkinHeader();
 	Array<CustomFile> files = new Array<CustomFile>();
@@ -55,20 +61,39 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 		header.setPath(f);
 
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
+			Context ctx = new Context(op);
 			lines.forEach(line -> {
 				try {
-					processLine(line, state);				
+					processLine(ctx, line, state);
 				} catch(Throwable e) {
-					e.printStackTrace();
+					logger.error("Failed to load LR2 skin", e);
 				}
 			});
-		};
+		} catch (UncheckedIOException e) {
+			logger.error("Failed loading LR2 skin with charset MS932", e);
+			logger.info("Trying to reload LR2 skin at {} without charset", f);
+			header = new SkinHeader();
+			files.clear();
+			options.clear();
+			offsets.clear();
+			header.setPath(f);
+			Context ctx = new Context(op);
+			try (Stream<String> lines = Files.lines(f)) {
+				lines.forEach(line -> {
+					try {
+						processLine(ctx, line, state);
+					} catch (Throwable ex) {
+						logger.error("Failed to load LR2 skin", ex);
+					}
+				});
+			}
+		}
 		header.setCustomOptions(options.toArray(CustomOption.class));
 		header.setCustomFiles(files.toArray(CustomFile.class));
 		header.setCustomOffsets(offsets.toArray(CustomOffset.class));
 		
 		header.setSkinConfigProperty(property);
-		
+
 		for (CustomOption option : header.getCustomOptions()) {
 			for(int i = 0;i < option.option.length;i++) {
 				op.put(option.option[i], option.getSelectedOption() == option.option[i] ? 1 : 0);
@@ -85,6 +110,10 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		loader.header.setSkinType(SkinType.getSkinTypeById(Integer.parseInt(str[1])));
 		loader.header.setName(str[2]);
 		loader.header.setAuthor(str[3]);
+		loader.options.add(new CustomOption("Resolution",
+				Arrays.stream(Resolution.values()).mapToInt(res -> res.ordinal() * -1 - 1).toArray(),
+				Arrays.stream(Resolution.values()).map(Enum::name).toArray(String[]::new))
+		);
 		switch (loader.header.getSkinType()) {
 			case PLAY_5KEYS:
 			case PLAY_7KEYS:
@@ -105,13 +134,13 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		}
 	}),
 	RESOLUTION ((loader, str) -> {
-		final Resolution res[] = {SD, HD, FULLHD, ULTRAHD};
+		final Resolution[] res = {SD, HD, FULLHD, ULTRAHD};
 		loader.header.setResolution(res[Integer.parseInt(str[1])]);
 	}),
 	CUSTOMOPTION ((loader, str) -> {
-		List<String> contents = new ArrayList<String>();
+		List<String> contents = new ArrayList<>();
 		for(int i = 3;i < str.length;i++) {
-			if(str[i] != null && str[i].length() > 0) {
+			if(str[i] != null && !str[i].isEmpty()) {
 				contents.add(str[i]);
 			}
 		}
@@ -119,7 +148,7 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		for(int i = 0;i < op.length;i++) {
 			op[i] = Integer.parseInt(str[2]) + i;
 		}
-		loader.options.add(new CustomOption(str[1], op, contents.toArray(new String[contents.size()])));
+		loader.options.add(new CustomOption(str[1], op, contents.toArray(new String[0])));
 	}),
 	CUSTOMFILE ((loader, str) -> {
 		loader.files.add(new CustomFile(str[1], str[2].replace("LR2files\\Theme", loader.skinpath).replace("\\", "/"), str.length >= 4 ? str[3] : null));
@@ -156,7 +185,7 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 	private HeaderCommand(BiConsumer<LR2SkinHeaderLoader, String[]> function) {
 		this.function = function;
 	}
-	
+
 	public void execute(LR2SkinHeaderLoader loader, String[] str) {
 		function.accept(loader, str);
 	}

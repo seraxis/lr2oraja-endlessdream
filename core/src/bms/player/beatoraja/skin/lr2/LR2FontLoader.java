@@ -38,8 +38,9 @@ public class LR2FontLoader extends LR2SkinLoader {
 
 //		long l = System.nanoTime();
 		try (Stream<String> lines = Files.lines(p, Charset.forName("MS932"))) {
+			Context ctx = new Context(op);
 			lines.forEach(line -> {
-				processLine(line, null);				
+				processLine(ctx, line, null);
 			});
 		};
 //		System.out.println(p.toString() + " -> " + (System.nanoTime() - l));
