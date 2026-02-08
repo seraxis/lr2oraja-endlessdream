@@ -29,7 +29,7 @@ public class Version {
         BUILD_TYPE = BuildType.PRERELEASE;
         unqualifiedVersion = String.valueOf(VERSION_MAJOR) + '.' + VERSION_MINOR + '.' + VERSION_PATCH;
         version = BUILD_TYPE.prefix + unqualifiedVersion;
-        versionLong = "LR2oraja Endless Dream " + (BUILD_TYPE.prefix.isBlank() ? "" : "pre-release ") + unqualifiedVersion;
+        versionLong = "LR2oraja Endless Dream " + (BUILD_TYPE.prefix.isBlank() ? "" : "pre") + unqualifiedVersion + "-RIAN";
         tryLoadingBuildMetaInfo();
     }
 
