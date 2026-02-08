@@ -1,6 +1,7 @@
 package bms.player.beatoraja.external;
 
 import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
@@ -86,9 +87,27 @@ public class ScreenShotFileExporter implements ScreenShotExporter {
 
         Pixmap pixmap = new Pixmap(Gdx.graphics.getBackBufferWidth(), Gdx.graphics.getBackBufferHeight(), Pixmap.Format.RGBA8888);
         try {
-            String path = "screenshot/" + sdf.format(Calendar.getInstance().getTime()) + stateName + ".png";
+            Config.ScreenShotFormat format = currentState.resource.getConfig().getScreenshotFormat();
+            String ext = (format == Config.ScreenShotFormat.JPG) ? ".jpg" : ".png";
+            String path = "screenshot/" + sdf.format(Calendar.getInstance().getTime()) + stateName + ext;
+            
             BufferUtils.copy(pixels, 0, pixmap.getPixels(), pixels.length);
-            PixmapIO.writePNG(new FileHandle(path), pixmap);
+            
+            if (format == Config.ScreenShotFormat.JPG) {
+                int width = pixmap.getWidth();
+                int height = pixmap.getHeight();
+                BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int color = pixmap.getPixel(x, y);
+                        image.setRGB(x, y, color >>> 8); 
+                    }
+                }
+                ImageIO.write(image, "jpg", new File(path));
+            } else {
+                PixmapIO.writePNG(new FileHandle(path), pixmap);
+            }
+            
             logger.info("スクリーンショット保存:" + path);
             pixmap.dispose();
             ImGuiNotify.info(String.format("Screen shot saved: %s", path), 2000);

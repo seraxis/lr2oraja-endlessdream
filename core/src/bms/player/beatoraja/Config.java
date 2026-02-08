@@ -214,6 +214,21 @@ public class Config implements Validatable {
 	private HashMap<String, String> obsScenes = new HashMap<>();
 	private HashMap<String, String> obsActions = new HashMap<>();
 
+	public enum ScreenShotFormat {
+		PNG, JPG
+	}
+
+	private ScreenShotFormat screenshotFormat = ScreenShotFormat.PNG;
+
+	public ScreenShotFormat getScreenshotFormat() {
+		return screenshotFormat;
+	}
+
+	public void setScreenshotFormat(ScreenShotFormat screenshotFormat) {
+		this.screenshotFormat = screenshotFormat;
+	}
+
+
 	/**
 	 * Bank of available tables
 	 *

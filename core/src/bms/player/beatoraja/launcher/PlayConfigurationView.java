@@ -24,6 +24,7 @@ import org.apache.commons.lang3.compare.ComparableUtils;
 
 import bms.model.Mode;
 import bms.player.beatoraja.*;
+import bms.player.beatoraja.Config.ScreenShotFormat;
 import bms.player.beatoraja.play.JudgeAlgorithm;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.song.*;
@@ -306,6 +307,8 @@ public class PlayConfigurationView implements Initializable {
 
 	@FXML
 	public CheckBox clipboardScreenshot;
+	@FXML
+	private ComboBox<ScreenShotFormat> screenshotFormat;
 
 	static void initComboBox(ComboBox<Integer> combo, final String[] values) {
 		combo.setCellFactory((param) -> new OptionListCell(values));
@@ -355,6 +358,7 @@ public class PlayConfigurationView implements Initializable {
 		resourceController.init(this);
 		discordController.init(this);
 		obsController.init(this);
+		screenshotFormat.getItems().setAll(ScreenShotFormat.values());
 
 		checkNewVersion();
 		logger.info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
@@ -477,6 +481,7 @@ public class PlayConfigurationView implements Initializable {
 
         usecim.setSelected(config.isCacheSkinImage());
         clipboardScreenshot.setSelected(config.isSetClipboardWhenScreenshot());
+        screenshotFormat.setValue(config.getScreenshotFormat());
 
 		enableIpfs.setSelected(config.isEnableIpfs());
 		ipfsurl.setText(config.getIpfsUrl());
@@ -634,6 +639,7 @@ public class PlayConfigurationView implements Initializable {
 		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
+		config.setScreenshotFormat(screenshotFormat.getValue());
 
 		commitPlayer();
 
