@@ -239,6 +239,16 @@ public class LaneRenderer {
 		}
 	}
 	
+	// 【追加】 ハイスピードを指定した値だけ変化させるメソッド
+	public void addHispeed(float delta) {
+		float current = playconfig.getHispeed();
+		float next = current + delta;
+		// 範囲チェック (0.0より大きく20.0未満)
+		if (next > 0 && next < 20) {
+			playconfig.setHispeed(next);
+		}
+	}
+
 	public PlayConfig getPlayConfig() {
 		return playconfig;
 	}

@@ -272,6 +272,32 @@ public final class ControlInputProcessor {
 
 	private void changeCoverValue(int key, boolean up) {
 		final BMSPlayerInputProcessor input = player.main.getInputProcessor();
+		final LaneRenderer lanerender = player.getLanerender();
+
+		// 【修正】 自動調整(皿チョン)が無効、かつカバー類が全て無効の場合のみ、ハイスピードを手動変更する
+		// (!hispeedAutoAdjust を追加することで、皿チョン使用時はこのブロックをスキップし、従来通りの動作をさせる)
+		if (!hispeedAutoAdjust && !lanerender.isEnableLanecover() && !lanerender.isEnableLift() && !lanerender.isEnableHidden()) {
+			if(input.isAnalogInput(key)) {
+				// 【修正】 アナログ入力（スクラッチ）の場合は、変化量 × 0.01 を加算する
+				int dTicks = input.getAnalogDiffAndReset(key, 200) * (up ? 1 : -1);
+				if (dTicks != 0) {
+					lanerender.addHispeed(dTicks * 0.01f);
+				}
+			} else {
+				// ボタン入力（キーボード等）の場合は、従来通り設定値(0.25等)に従う
+				if (input.getKeyState(key)) {
+					long l = System.currentTimeMillis();
+					if(laneCoverStartTiming == Long.MIN_VALUE) laneCoverStartTiming = l;
+					if (l - lanecovertiming > 50) {
+						lanerender.changeHispeed(up);
+						lanecovertiming = l;
+					}
+				} else if(laneCoverStartTiming != Long.MIN_VALUE) {
+					laneCoverStartTiming = Long.MIN_VALUE;
+				}
+			}
+			return;
+		}
 
 		// move lane cover by START + Scratch
 		if(input.isAnalogInput(key)) {
