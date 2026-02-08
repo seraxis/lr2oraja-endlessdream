@@ -36,6 +36,9 @@ public class MusicResult extends AbstractResult {
 
 	private ResultKeyProperty property;
 
+	// 【追加】 元のモードを保存する変数
+	private Mode originalMode;
+
 	public MusicResult(MainController main) {
 		super(main);
 	}
@@ -44,6 +47,32 @@ public class MusicResult extends AbstractResult {
 		for(int i = 0;i < REPLAY_SIZE;i++) {
 			saveReplay[i] = main.getPlayDataAccessor().existsReplayData(resource.getBMSModel(),
 					resource.getPlayerConfig().getLnmode(), i) ? ReplayStatus.EXIST : ReplayStatus.NOT_EXIST ;			
+		}
+
+		// 【修正】 モード強制変更ロジック（保存処理追加）
+		Mode mode = resource.getBMSModel().getMode();
+
+		// 現在のモードをバックアップ
+		this.originalMode = resource.getPlayerConfig().getMode();
+
+		// モード変更があったかどうかのフラグ
+		boolean modeChanged = false;
+
+		// 【修正】 リザルト画面では5鍵/10鍵曲でも、7鍵/14鍵コントローラーの入力(Key 6,7等)を使えるようにする
+		if (mode == Mode.BEAT_5K) {
+			mode = Mode.BEAT_7K;
+			resource.getPlayerConfig().setMode(mode); // 入力プロセッサのモードも7鍵に切り替え
+			modeChanged = true;
+		} else if (mode == Mode.BEAT_10K) {
+			mode = Mode.BEAT_14K;
+			resource.getPlayerConfig().setMode(mode); // 入力プロセッサのモードも14鍵に切り替え
+			modeChanged = true;
+		}
+
+		// 【修正】 入力プロセッサに新しいモード(7K/14K)のキー設定を適用する
+		// これを行わないと、キーボード入力が5鍵設定のまま動作し、6,7鍵目が反応しない
+		if (modeChanged) {
+			main.getInputProcessor().setPlayConfig(resource.getPlayerConfig().getPlayConfig(mode));
 		}
 
 		property = ResultKeyProperty.get(resource.getBMSModel().getMode());
@@ -158,6 +187,15 @@ public class MusicResult extends AbstractResult {
 	}
 
 	public void shutdown() {
+		// 【追加】 モードを復元する
+		if (this.originalMode != null) {
+			resource.getPlayerConfig().setMode(this.originalMode);
+			main.getInputProcessor().setPlayConfig(resource.getPlayerConfig().getPlayConfig(this.originalMode));
+		}
+
+		// 【追加】 キー入力状態を全リセットする (ボタン押しっぱなし判定の引き継ぎ防止)
+		main.getInputProcessor().resetAllKeyState();
+
 		stop(RESULT_CLEAR);
 		stop(RESULT_FAIL);
 		stop(RESULT_CLOSE);
