@@ -1,6 +1,7 @@
 package bms.player.beatoraja.select;
 
 import static bms.player.beatoraja.SystemSoundManager.SoundType.FOLDER_CLOSE;
+import static bms.player.beatoraja.SystemSoundManager.SoundType.OPTION_CHANGE;
 
 import java.io.BufferedInputStream;
 import java.lang.reflect.Method;
@@ -41,6 +42,10 @@ import bms.player.beatoraja.song.SongInformationAccessor;
 public class BarManager {
 	private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
 	
+	// 【追加】 難易度フィルター (0:ALL, 1:BEG, 2:NOR, 3:HYP, 4:ANO, 5:INS)
+	private int difficultyFilter = 0;
+
+
 	private final MusicSelector select;
 	/**
 	 * 難易度表バー一覧
@@ -281,6 +286,9 @@ public class BarManager {
 		boolean showInvisibleCharts = false;
 		boolean isSortable = true;
 
+		// -------------------------------------------------------------
+		// リスト生成処理 (元のBarManagerのロジックに準拠)
+		// -------------------------------------------------------------
 		if (MainLoader.getIllegalSongCount() > 0) {
 			l.addAll(SongBar.toSongBarArray(select.getSongDatabase().getSongDatas(MainLoader.getIllegalSongs())));
 		} else if (bar == null) {
@@ -288,21 +296,19 @@ public class BarManager {
 			if (dir.size > 0) {
 				prevbar = dir.first();
 			}
-            if (prevbar instanceof ContextMenuBar) {
-                prevbar = ((ContextMenuBar)prevbar).getPrevious();
-            }
 			dir.clear();
 			sourcebars.clear();
 			l.addAll(new FolderBar(select, null, "e2977170").getChildren());
 			l.add(courses);
 			l.addAll(favorites);
 			appendFolders.keySet().forEach((key) -> {
-			    l.add(appendFolders.get(key));
+				l.add(appendFolders.get(key));
 			});
 			l.addAll(tables);
 			l.addAll(commands);
 			l.addAll(search);
 		} else if (bar instanceof DirectoryBar) {
+			// 【修正】 ここで不可視譜面の設定を取得
 			showInvisibleCharts = ((DirectoryBar)bar).isShowInvisibleChart();
 			if(dir.indexOf((DirectoryBar) bar, true) != -1) {
 				while(dir.last() != bar) {
@@ -333,7 +339,7 @@ public class BarManager {
 			Array<Bar> remove = new Array<Bar>();
 			for (Bar b : l) {
 				if ((b instanceof SongBar && !((SongBar) b).existsSong())
-					|| b instanceof GradeBar && !((GradeBar) b).existsAllSongs()) {
+						|| b instanceof GradeBar && !((GradeBar) b).existsAllSongs()) {
 					remove.add(b);
 				}
 			}
@@ -342,12 +348,24 @@ public class BarManager {
 
 		if (l.size > 0) {
 			final PlayerConfig config = select.resource.getPlayerConfig();
+
+			// 【修正1】 フリーズ対策：リストのバックアップを作成
+			final Array<Bar> originalList = new Array<>(l);
+
 			int modeIndex = 0;
 			for(;modeIndex < MusicSelector.MODE.length && MusicSelector.MODE[modeIndex] != config.getMode();modeIndex++);
 			for(int trialCount = 0; trialCount < MusicSelector.MODE.length; trialCount++, modeIndex++) {
+				// 【修正1の続き】 試行ごとにリストを初期状態にリセット
+				l.clear();
+				l.addAll(originalList);
+
 				final Mode mode = MusicSelector.MODE[modeIndex % MusicSelector.MODE.length];
 				config.setMode(mode);
 				Array<Bar> remove = new Array<Bar>();
+
+				// -------------------------------------------------------------
+				// 1. 基本的な除外処理
+				// -------------------------------------------------------------
 				for (Bar b : l) {
 					if(b instanceof SongBar && ((SongBar) b).getSongData() != null) {
 						final SongData song = ((SongBar) b).getSongData();
@@ -357,9 +375,90 @@ public class BarManager {
 						}
 					}
 				}
-				if(l.size != remove.size) {
-					l.removeAll(remove, true);
+				l.removeAll(remove, true);
+
+				// -------------------------------------------------------------
+				// 2. 難易度フィルタリング (親フォルダ基準)
+				// -------------------------------------------------------------
+				if (this.difficultyFilter != 0 && l.size > 0) {
+					remove.clear();
+					java.util.HashMap<String, java.util.ArrayList<SongBar>> songGroups = new java.util.HashMap<>();
+
+					for (Bar b : l) {
+						if (b instanceof SongBar) {
+							SongBar sb = (SongBar) b;
+							SongData sd = sb.getSongData();
+							if (sd != null && sd.getPath() != null) {
+								String key;
+								try {
+									String path = sd.getPath();
+									java.io.File file = new java.io.File(path);
+									String parentPath = file.getParent();
+									key = (parentPath != null) ? parentPath : path;
+								} catch (Exception e) {
+									key = sd.getTitle() + "_" + sd.getArtist() + "_" + sb.hashCode();
+								}
+								if (!songGroups.containsKey(key)) {
+									songGroups.put(key, new java.util.ArrayList<>());
+								}
+								songGroups.get(key).add(sb);
+							}
+						}
+					}
+
+					// B. 各グループから表示対象を選出
+					for (java.util.ArrayList<SongBar> group : songGroups.values()) {
+						java.util.ArrayList<SongBar> matches = new java.util.ArrayList<>();
+
+						// 最高難易度を探すための変数（初期値はあり得ない低い値）
+						int maxDiff = -1;
+
+						// 1. フィルタ一致の抽出 & フォルダ内の最高難易度を特定
+						for (SongBar sb : group) {
+							int d = sb.getSongData().getDifficulty();
+
+							// フィルタ設定と一致するものをリストアップ
+							if (d == this.difficultyFilter) {
+								matches.add(sb);
+							}
+
+							// フォルダ内の最高難易度を更新
+							if (d > maxDiff) {
+								maxDiff = d;
+							}
+						}
+
+						// 2. 削除対象の決定
+						if (!matches.isEmpty()) {
+							// フィルタ一致譜面がある場合: リストに含まれないものを全て削除
+							for (SongBar sb : group) {
+								if (!matches.contains(sb)) {
+									remove.add(sb);
+								}
+							}
+						} else {
+							// フィルタ一致譜面がない場合: 特定した「最高難易度(maxDiff)」と一致しないものを削除
+							// これにより、同じ最高難易度の譜面が複数あっても全て残ります
+							for (SongBar sb : group) {
+								if (sb.getSongData().getDifficulty() != maxDiff) {
+									remove.add(sb);
+								}
+							}
+						}
+					}
+					if (l.size != remove.size) {
+						l.removeAll(remove, true);
+					}
+				}
+
+				// 曲が見つかった場合
+				if(l.size > 0) {
 					break;
+				} else {
+					// 【修正2】 曲が見つからず、最後の試行だった場合はリストを空にする
+					if (trialCount == MusicSelector.MODE.length - 1) {
+						l.clear();
+					}
 				}
 			}
 
@@ -382,25 +481,45 @@ public class BarManager {
 
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
-			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
-                if (SongManagerMenu.isLastPlayedSortEnabled()) {
-                    Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
-                }
+				Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
 			}
 
 			Array<Bar> bars = new Array<Bar>();
-			if (select.main.getPlayerConfig().isRandomSelect()
-				&& !(bar instanceof ContextMenuBar)) {
+			if (select.main.getPlayerConfig().isRandomSelect()) {
 				try {
 					for (RandomFolder randomFolder : randomFolderList) {
 						SongData[] randomTargets = Stream.of(newcurrentsongs).filter(
-								songBar -> songBar instanceof SongBar && ((SongBar) songBar).getSongData().getPath() != null)
+										songBar -> songBar instanceof SongBar && ((SongBar) songBar).getSongData().getPath() != null)
 								.map(songBar -> ((SongBar) songBar).getSongData()).toArray(SongData[]::new);
 						if (randomFolder.getFilter() != null) {
 							Set<String> filterKey = randomFolder.getFilter().keySet();
 							randomTargets = Stream.of(randomTargets).filter(r -> {
 								ScoreData scoreData = select.getScoreDataCache().readScoreData(r, config.getLnmode());
-                                return randomFolder.filterSong(scoreData);
+								for (String key : filterKey) {
+									String getterMethodName = "get" + key.substring(0, 1).toUpperCase()
+											+ key.substring(1);
+									try {
+										Object value = randomFolder.getFilter().get(key);
+										if (scoreData == null) {
+											if (value instanceof String && !"".equals((String) value)) {
+												return false;
+											}
+											if (value instanceof Integer && 0 != (Integer) value) {
+												return false;
+											}
+										} else {
+											Method getterMethod = ScoreData.class.getMethod(getterMethodName);
+											Object propertyValue = getterMethod.invoke(scoreData);
+											if (!propertyValue.equals(value)) {
+												return false;
+											}
+										}
+									} catch (Throwable e) {
+										e.printStackTrace();
+										return false;
+									}
+								}
+								return true;
 							}).toArray(SongData[]::new);
 						}
 						if ((randomFolder.getFilter() != null && randomTargets.length >= 1)
@@ -418,35 +537,78 @@ public class BarManager {
 			bars.addAll(newcurrentsongs);
 
 			currentsongs = bars.toArray(Bar.class);
-			
+
+			// 【修正3】 クラッシュ対策: 空ならnullにする
+			if (currentsongs.length == 0) {
+				currentsongs = null;
+			}
+
 			select.getBarRender().updateBarText();
 
 			selectedindex = 0;
 
-			// 変更前と同じバーがあればカーソル位置を保持する
+			// -------------------------------------------------------------
+			// カーソル位置復元 (親フォルダ追従機能付き)
+			// -------------------------------------------------------------
 			if (sourcebar != null) {
 				prevbar = sourcebar;
 			}
 			if (prevbar != null) {
 				if (prevbar instanceof SongBar && ((SongBar) prevbar).existsSong()) {
 					final SongBar prevsong = (SongBar) prevbar;
-					for (int i = 0; i < currentsongs.length; i++) {
-						if (currentsongs[i] instanceof SongBar && ((SongBar) currentsongs[i]).existsSong() &&
-								((SongBar) currentsongs[i]).getSongData().getSha256()
-								.equals(prevsong.getSongData().getSha256())) {
-							selectedindex = i;
-							break;
-						}
-					}
-				} else {
-					for (int i = 0; i < currentsongs.length; i++) {
-						if (currentsongs[i].getClass() == prevbar.getClass() && currentsongs[i].getTitle().equals(prevbar.getTitle())) {
-							selectedindex = i;
-							break;
+					boolean found = false;
+
+					if (currentsongs != null) {
+						for (int i = 0; i < currentsongs.length; i++) {
+							if (currentsongs[i] instanceof SongBar && ((SongBar) currentsongs[i]).existsSong() &&
+									((SongBar) currentsongs[i]).getSongData().getSha256()
+											.equals(prevsong.getSongData().getSha256())) {
+								selectedindex = i;
+								found = true;
+								break;
+							}
 						}
 					}
 
+					if (!found && prevsong.getSongData() != null && prevsong.getSongData().getPath() != null && currentsongs != null) {
+						String prevParent = null;
+						try {
+							prevParent = new java.io.File(prevsong.getSongData().getPath()).getParent();
+						} catch (Exception e) {}
+
+						if (prevParent != null) {
+							for (int i = 0; i < currentsongs.length; i++) {
+								if (currentsongs[i] instanceof SongBar && ((SongBar) currentsongs[i]).existsSong()) {
+									SongData sd = ((SongBar) currentsongs[i]).getSongData();
+									if (sd != null && sd.getPath() != null) {
+										try {
+											String currParent = new java.io.File(sd.getPath()).getParent();
+											if (prevParent.equals(currParent)) {
+												selectedindex = i;
+												break;
+											}
+										} catch (Exception e) {}
+									}
+								}
+							}
+						}
+					}
+
+				} else {
+					if (currentsongs != null) {
+						for (int i = 0; i < currentsongs.length; i++) {
+							if (currentsongs[i].getClass() == prevbar.getClass() && currentsongs[i].getTitle().equals(prevbar.getTitle())) {
+								selectedindex = i;
+								break;
+							}
+						}
+					}
 				}
+			}
+
+			if (currentsongs != null && currentsongs.length > selectedindex) {
+				select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
+						currentsongs[selectedindex].getRivalScore());
 			}
 
 			if (loader != null) {
@@ -454,8 +616,12 @@ public class BarManager {
 			}
 			loader = new BarContentsLoaderThread(select, currentsongs);
 			loader.start();
-			select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
-					currentsongs[selectedindex].getRivalScore());
+
+			// ガード追加
+			if (currentsongs != null && currentsongs.length > selectedindex) {
+				select.getScoreDataProperty().update(currentsongs[selectedindex].getScore(),
+						currentsongs[selectedindex].getRivalScore());
+			}
 
 			StringBuilder str = new StringBuilder();
 			for (Bar b : dir) {
@@ -468,13 +634,19 @@ public class BarManager {
 			return true;
 		}
 
+		// -------------------------------------------------------------
+		// 【修正4】 無限ループ・フリーズ回避のためのフォールバック処理
+		// -------------------------------------------------------------
 		if (dir.size > 0) {
-			updateBar(dir.last());
+			return updateBar(dir.last());
+		} else if (bar != null) {
+			return updateBar(null);
 		} else {
-			updateBar(null);
+			currentsongs = null;
+			selectedindex = 0;
+			logger.warn("楽曲がありません");
+			return false;
 		}
-		logger.warn("楽曲がありません");
-		return false;
 	}
 
 	public void close() {
@@ -850,4 +1022,36 @@ public class BarManager {
 			stop = true;
 		}
 	}
+
+	// ---------------------------------------------------------
+	// 【追加】 難易度フィルター操作用メソッド
+	// ---------------------------------------------------------
+
+	/**
+	 * 現在の難易度フィルター設定を取得します
+	 */
+	public int getDifficultyFilter() {
+		return this.difficultyFilter;
+	}
+
+	/**
+	 * 難易度フィルターを順次切り替えます (ALL -> BEG -> ... -> INS -> ALL)
+	 * 切り替え時にフォルダクローズ音を鳴らします。
+	 */
+	public void toggleDifficultyFilter() {
+		this.difficultyFilter = (this.difficultyFilter + 1) % 6;
+		this.updateBar();
+		select.play(OPTION_CHANGE);
+	}
+
+	/**
+	 * 難易度フィルターを直接指定します
+	 * @param difficulty 0:ALL, 1:BEG, 2:NOR, 3:HYP, 4:ANO, 5:INS
+	 */
+	public void setDifficultyFilter(int difficulty) {
+		this.difficultyFilter = (difficulty < 0 || difficulty > 5) ? 0 : difficulty;
+		this.updateBar();
+		select.play(OPTION_CHANGE);
+	}
+
 }

@@ -46,6 +46,9 @@ public final class MusicSelectInputProcessor {
 
     boolean isOptionKeyPressed = false;
     boolean isOptionKeyReleased = false;
+    
+    // 【追加】 難易度フィルターボタンの押しっぱなし判定用フラグ
+    private boolean isDiffFilterPressed = false;
 
     // ノーツ表示時間変更のカウンタ
     private long timeChangeDuration;
@@ -99,9 +102,60 @@ public final class MusicSelectInputProcessor {
         // LNモードの切り替え
         // endless dream - switching ln disabled in-game
         // you can only change this in configuration
-        // if (input.isControlKeyPressed(ControlKeys.NUM3)) {
-        //     select.executeEvent(EventType.lnmode);
-        // }
+        if (input.isControlKeyPressed(ControlKeys.NUM3)) {
+            select.executeEvent(EventType.lnmode);
+        }
+
+        // -------------------------------------------------------------
+        // 【修正】 難易度フィルター切り替え
+        // -------------------------------------------------------------
+        boolean currentDiffFilterPress = false;
+
+        // 【修正】 config.getMode() の nullチェックを追加
+        bms.model.Mode currentMode = config.getMode();
+        // モードが未定(null)の場合は 7KEYS (ID=7) をデフォルトとして扱う、または処理をスキップする
+        int modeId = (currentMode != null) ? currentMode.id : 7;
+
+        bms.player.beatoraja.PlayModeConfig pmConfig = config.getPlayConfig(modeId);
+
+        if (pmConfig != null) {
+            // 1. キーボード入力の確認
+            if (pmConfig.getKeyboardConfig() != null) {
+                int key = pmConfig.getKeyboardConfig().getDiffFilter();
+                // 設定があり(0以外)、かつ押されている場合
+                if (key > 0 && Gdx.input.isKeyPressed(key)) {
+                    currentDiffFilterPress = true;
+                }
+            }
+
+            // 2. コントローラー入力の確認 (キーボードが押されていない場合のみ)
+            if (!currentDiffFilterPress) {
+                bms.player.beatoraja.PlayModeConfig.ControllerConfig[] ccs = pmConfig.getController();
+                if (ccs != null) {
+                    for (com.badlogic.gdx.controllers.Controller c : com.badlogic.gdx.controllers.Controllers.getControllers()) {
+                        for(bms.player.beatoraja.PlayModeConfig.ControllerConfig cc : ccs) {
+                            int btn = cc.getDiffFilter();
+                            // ボタン設定があり(0以上)、かつ押されている場合
+                            if(btn >= 0 && c.getButton(btn)) {
+                                currentDiffFilterPress = true;
+                                break;
+                            }
+                        }
+                        if(currentDiffFilterPress) break;
+                    }
+                }
+            }
+        }
+        // 3. 実行判定 (押された瞬間だけ実行するエッジ検出)
+        if (currentDiffFilterPress) {
+            if (!isDiffFilterPressed) {
+                select.getBarManager().toggleDifficultyFilter();
+                isDiffFilterPressed = true; // 押しっぱなし状態にする
+            }
+        } else {
+            isDiffFilterPressed = false; // 離されたらリセット
+        }
+        // -------------------------------------------------------------
 
         final MusicSelectKeyProperty property = MusicSelectKeyProperty.values()[config.getMusicselectinput()];
 

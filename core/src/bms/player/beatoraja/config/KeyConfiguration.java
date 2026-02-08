@@ -46,31 +46,31 @@ public class KeyConfiguration extends MainState {
 			Mode.KEYBOARD_24K_DOUBLE };
 
 	private static final String[][] KEYS = {
-			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "F-SCR", "R-SCR", "START", "SELECT" },
-			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "F-SCR", "R-SCR", "START", "SELECT" },
-			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "8 KEY", "9 KEY", "START", "SELECT" },
+			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "F-SCR", "R-SCR","DIFF FILTER", "START", "SELECT" },
+			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "F-SCR", "R-SCR","DIFF FILTER", "START", "SELECT" },
+			{ "1 KEY", "2 KEY", "3 KEY", "4 KEY", "5 KEY", "6 KEY", "7 KEY", "8 KEY", "9 KEY","DIFF FILTER", "START", "SELECT" },
 			{ "1P-1 KEY", "1P-2 KEY", "1P-3 KEY", "1P-4 KEY", "1P-5 KEY", "1P-F-SCR",
 				"1P-R-SCR", "2P-1 KEY", "2P-2 KEY", "2P-3 KEY", "2P-4 KEY", "2P-5 KEY", 
-				"2P-F-SCR", "2P-R-SCR", "START", "SELECT" },
+				"2P-F-SCR", "2P-R-SCR","DIFF FILTER", "START", "SELECT" },
 			{ "1P-1 KEY", "1P-2 KEY", "1P-3 KEY", "1P-4 KEY", "1P-5 KEY", "1P-6 KEY", "1P-7 KEY", "1P-F-SCR",
 					"1P-R-SCR", "2P-1 KEY", "2P-2 KEY", "2P-3 KEY", "2P-4 KEY", "2P-5 KEY", "2P-6 KEY", "2P-7 KEY",
-					"2P-F-SCR", "2P-R-SCR", "START", "SELECT" },
+					"2P-F-SCR", "2P-R-SCR","DIFF FILTER", "START", "SELECT" },
 			{ "C1", "C#1", "D1", "D#1", "E1", "F1", "F#1", "G1", "G#1", "A1", "A#1", "B1", "C2", "C#2", "D2", "D#2",
-					"E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2", "WHEEL-UP", "WHEEL-DOWN", "START", "SELECT" },
+					"E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2", "WHEEL-UP", "WHEEL-DOWN","DIFF FILTER", "START", "SELECT" },
 			{ "1P-C1", "1P-C#1", "1P-D1", "1P-D#1", "1P-E1", "1P-F1", "1P-F#1", "1P-G1", "1P-G#1", "1P-A1", "1P-A#1",
 					"1P-B1", "1P-C2", "1P-C#2", "1P-D2", "1P-D#2", "1P-E2", "1P-F2", "1P-F#2", "1P-G2", "1P-G#2",
 					"1P-A2", "1P-A#2", "1P-B2", "1P-WHEEL-UP", "1P-WHEEL-DOWN", "2P-C1", "2P-C#1", "2P-D1", "2P-D#1",
 					"2P-E1", "2P-F1", "2P-F#1", "2P-G1", "2P-G#1", "2P-A1", "2P-A#1", "2P-B1", "2P-C2", "2P-C#2",
 					"2P-D2", "2P-D#2", "2P-E2", "2P-F2", "2P-F#2", "2P-G2", "2P-G#2", "2P-A2", "2P-A#2", "2P-B2",
-					"2P-WHEEL-UP", "2P-WHEEL-DOWN", "START", "SELECT" } };;
-	private static final int[][] KEYSA = { { 0, 1, 2, 3, 4, 5, 6, -1, -2 },
-			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -2 },
-			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -1, -2 },
-			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -1, -2 },
-			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, -1, -2 },
-			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -2 },
+					"2P-WHEEL-UP", "2P-WHEEL-DOWN","DIFF FILTER", "START", "SELECT" } };;
+	private static final int[][] KEYSA = { { 0, 1, 2, 3, 4, 5, 6, -3, -1, -2 },
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -3, -1, -2 },
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, -3, -1, -2 },
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -3, -1, -2 },
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, -3, -1, -2 },
+			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -3, -1, -2 },
 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
-					29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1,
+					29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -3, -1,
 					-2 } };
 	private static final int playerOffset = 100;
 
@@ -404,6 +404,8 @@ public class KeyConfiguration extends MainState {
 			return keyboardConfig.getStart();
 		} else if (index == -2) {
 			return keyboardConfig.getSelect();
+		} else if (index == -3) { // 【追加】
+			return keyboardConfig.getDiffFilter();
 		}
 		return 0;
 	}
@@ -419,6 +421,8 @@ public class KeyConfiguration extends MainState {
 			keyboardConfig.setStart(keyboard.getLastPressedKey());
 		} else if (index == -2) {
 			keyboardConfig.setSelect(keyboard.getLastPressedKey());
+		} else if (index == -3) { // 【追加】
+			keyboardConfig.setDiffFilter(keyboard.getLastPressedKey());
 		}
 	}
 
@@ -430,6 +434,8 @@ public class KeyConfiguration extends MainState {
 			keyString = keyboardConfig.getMouseScratchConfig().getStartString();
 		} else if (index == -2) {
 			keyString = keyboardConfig.getMouseScratchConfig().getSelectString();
+		} else if (index == -3) { // 【追加】
+			keyString = keyboardConfig.getMouseScratchConfig().getDiffFilterString();
 		}
 		if (keyString == null) {
 			return defaultKeyString;
@@ -447,6 +453,8 @@ public class KeyConfiguration extends MainState {
 			keyboardConfig.getMouseScratchConfig().setStart(lastMouseScratch);
 		} else if (index == -2) {
 			keyboardConfig.getMouseScratchConfig().setSelect(lastMouseScratch);
+		} else if (index == -3) { // 【追加】
+			keyboardConfig.getMouseScratchConfig().setDiffFilter(lastMouseScratch);
 		}
 	}
 
@@ -457,6 +465,8 @@ public class KeyConfiguration extends MainState {
 			return controllerConfigs[device].getStart();
 		} else if (index == -2) {
 			return controllerConfigs[device].getSelect();
+		} else if (index == -3) { // 【追加】
+			return controllerConfigs[device].getDiffFilter();
 		}
 		return 0;
 	}
@@ -480,6 +490,8 @@ public class KeyConfiguration extends MainState {
 			controllerConfigs[cindex].setStart(bmc.getLastPressedButton());
 		} else if (index == -2) {
 			controllerConfigs[cindex].setSelect(bmc.getLastPressedButton());
+		} else if (index == -3) { // 【追加】
+			controllerConfigs[cindex].setDiffFilter(bmc.getLastPressedButton());
 		}
 	}
 
@@ -490,6 +502,8 @@ public class KeyConfiguration extends MainState {
 			return midiconfig.getStart();
 		} else if (index == -2) {
 			return midiconfig.getSelect();
+		} else if (index == -3) { // 【追加】
+			return midiconfig.getDiffFilter();
 		}
 		return new MidiConfig.Input();
 	}
@@ -502,6 +516,15 @@ public class KeyConfiguration extends MainState {
 			}
 			keyboardConfig.getMouseScratchConfig().getKeyAssign()[index] = -1;
 			midiconfig.setKeyAssign(index, null);
+		}
+		// 【追加】 indexが-3 (DiffFilter) の場合のリセット処理
+		if (index == -3) {
+			keyboardConfig.setDiffFilter(-1);
+			for (PlayModeConfig.ControllerConfig cc : controllerConfigs) {
+				cc.setDiffFilter(-1);
+			}
+			keyboardConfig.getMouseScratchConfig().setDiffFilter(-1);
+			midiconfig.setDiffFilter(null);
 		}
 	}
 
@@ -526,6 +549,13 @@ public class KeyConfiguration extends MainState {
 				controllerConfigs[i].setSelect(noAssign);
 			}
 			midiconfig.setSelect(null);
+		} else if (index == -3) { // 【追加】
+			keyboardConfig.setDiffFilter(noAssign);
+			keyboardConfig.getMouseScratchConfig().setDiffFilter(noAssign);
+			for (PlayModeConfig.ControllerConfig cc : controllerConfigs) {
+				cc.setDiffFilter(noAssign);
+			}
+			midiconfig.setDiffFilter(null);
 		}
 	}
 
@@ -537,6 +567,8 @@ public class KeyConfiguration extends MainState {
 			midiconfig.setStart(midiinput.getLastPressedKey());
 		} else if (index == -2) {
 			midiconfig.setSelect(midiinput.getLastPressedKey());
+		} else if (index == -3) { // 【追加】
+			midiconfig.setDiffFilter(midiinput.getLastPressedKey());
 		}
 	}
 

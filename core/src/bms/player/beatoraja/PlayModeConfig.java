@@ -188,6 +188,9 @@ public class PlayModeConfig {
 
         private int select;
 
+        // 【追加】 難易度フィルターキー
+        private int diffFilter = Keys.NUM_0;
+
         private int duration = 16;
 
         public KeyboardConfig() {
@@ -214,6 +217,10 @@ public class PlayModeConfig {
         public int getSelect() {
             return select;
         }
+
+        // 【追加】 Getter/Setter
+        public int getDiffFilter() { return diffFilter; }
+        public void setDiffFilter(int diffFilter) { this.diffFilter = diffFilter; }
 
         public void setKeyAssign(Mode mode, boolean enable) {
             switch (mode) {
@@ -257,6 +264,8 @@ public class PlayModeConfig {
             }
             start = Keys.Q;
             select = Keys.W;
+            // 【追加】 初期化
+            diffFilter = Keys.NUM_0;
         }
 
         public void setKeyAssign(int[] keys) {
@@ -299,6 +308,19 @@ public class PlayModeConfig {
         private int start = -1;
 
         private int select = -1;
+
+        // 【追加】
+        private int diffFilter = -1;
+
+        // 【追加】 Getter/Setter
+        public int getDiffFilter() { return diffFilter; }
+        public void setDiffFilter(int diffFilter) { this.diffFilter = diffFilter; }
+
+        // 【追加】 キー名称取得用ヘルパー
+        public String getDiffFilterString() {
+            if (diffFilter == -1) return null;
+            return MOUSESCRATCH_STRING[diffFilter];
+        }
 
         /**
          * マウス皿を利用すてる
@@ -355,6 +377,8 @@ public class PlayModeConfig {
             Arrays.fill(keys, -1);
             start = -1;
             select = -1;
+            // 【追加】
+            diffFilter = -1;
         }
 
         public int[] getKeyAssign() {
@@ -447,6 +471,13 @@ public class PlayModeConfig {
         private int start;
 
         private int select;
+
+        // 【追加】
+        private int diffFilter = -1;
+
+        // 【追加】 Getter/Setter
+        public int getDiffFilter() { return diffFilter; }
+        public void setDiffFilter(int diffFilter) { this.diffFilter = diffFilter; }
 
         private int duration = 16;
         /**
@@ -568,6 +599,8 @@ public class PlayModeConfig {
             }
             start = con.start;
             select = con.select;
+            // 【追加】
+            diffFilter = -1;
         }
 
         public void setKeyAssign(int[] keys) {
@@ -668,6 +701,13 @@ public class PlayModeConfig {
         private Input[] keys;
         private Input start;
         private Input select;
+
+        // 【追加】
+        private Input diffFilter;
+
+        // 【追加】 Getter/Setter
+        public Input getDiffFilter() { return diffFilter; }
+        public void setDiffFilter(Input input) { diffFilter = input; }
 
         public Input[] getKeys() {
             return keys;
