@@ -425,8 +425,9 @@ public class LaneRenderer {
 				boolean b = true;
 				for (int lane = 0; lane < lanes.length; lane++) {
 					final Note note = tl.getNote(lane);
+					// config.isShowpastnote() の条件を削除し、未処理(State 0)なら常に pos を維持するように変更
 					if (note != null && ((note instanceof LongNote ln && (ln.isEnd() ? ln : ln.getPair()).getMicroTime() >= microtime)
-							|| (config.isShowpastnote() && note instanceof NormalNote && note.getState() == 0))) {
+							|| (note instanceof NormalNote && note.getState() == 0))) {
 						b = false;
 						break;
 					}
@@ -519,7 +520,8 @@ public class LaneRenderer {
 								? lanes[lane].processedImage : lanes[lane].noteImage;
 								sprite.draw(s, dstx, dsty, dstw, dsth);
 							}
-						} else if (tl.getMicroTime() >= microtime || (config.isShowpastnote() && note.getState() == 0)) {
+						// config.isShowpastnote() の条件を削除
+						} else if (tl.getMicroTime() >= microtime || note.getState() == 0) {
 							final TextureRegion s = config.isMarkprocessednote() && note.getState() != 0
 									? lanes[lane].processedImage : lanes[lane].noteImage;
 							sprite.draw(s, dstx, dsty, dstw, dsth);
