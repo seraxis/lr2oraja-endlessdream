@@ -136,11 +136,26 @@ public final class ControlInputProcessor {
 			if (enableCursor) {
 				if (input.getControlKeyState(ControlKeys.UP)) {
 					if (!cursorpressed) {
-						setCoverValue(-0.01f);
+						// 上キー: ハイスピードを上げる
+						lanerender.changeHispeed(true);
 						cursorpressed = true;
 					}
 				} else if (input.getControlKeyState(ControlKeys.DOWN)) {
 					if (!cursorpressed) {
+						// 下キー: ハイスピードを下げる
+						lanerender.changeHispeed(false);
+						cursorpressed = true;
+					}
+					// 【追加】 左右キーでレーンカバー操作
+				} else if (input.getControlKeyState(ControlKeys.LEFT)) {
+					if (!cursorpressed) {
+						// 左キー: レーンカバーを減らす（上げる＝見える範囲を広げる）
+						setCoverValue(-0.01f);
+						cursorpressed = true;
+					}
+				} else if (input.getControlKeyState(ControlKeys.RIGHT)) {
+					if (!cursorpressed) {
+						// 右キー: レーンカバーを増やす（下げる＝隠す範囲を広げる）
 						setCoverValue(0.01f);
 						cursorpressed = true;
 					}
