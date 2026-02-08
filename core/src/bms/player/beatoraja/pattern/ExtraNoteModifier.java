@@ -33,6 +33,8 @@ public class ExtraNoteModifier extends PatternModifier {
         this.scratch = scratch;
     }
 
+    private static final int MIN_NOTE_INTERVAL_MS = 120; // 120ms (BPM125 16th note equivalent)
+
     @Override
     public void modify(BMSModel model) {
         AssistLevel assist = AssistLevel.NONE;
@@ -45,6 +47,7 @@ public class ExtraNoteModifier extends PatternModifier {
 
         for (int i = 0;i < tls.length;i++) {
             final TimeLine tl = tls[i];
+            long currentTime = tl.getMilliTime();
 
             for(int key = 0;key < model.getMode().key;key++) {
                 final Note note = tl.getNote(key);
@@ -68,6 +71,39 @@ public class ExtraNoteModifier extends PatternModifier {
 
                     for(int j = 0, key = (offset % model.getMode().key);j < model.getMode().key;j++, key = (key + 1) % model.getMode().key) {
                         if(blank[key]) {
+                            // Jack suppression check
+                            boolean tooClose = false;
+                            // Check backward
+                            for (int back = i - 1; back >= 0; back--) {
+                                TimeLine prevTl = tls[back];
+                                long prevTime = prevTl.getMilliTime();
+                                if (currentTime - prevTime >= MIN_NOTE_INTERVAL_MS) {
+                                    break;
+                                }
+                                if (prevTl.existNote(key)) {
+                                    tooClose = true;
+                                    break;
+                                }
+                            }
+                            if (!tooClose) {
+                                // Check forward
+                                for (int forward = i + 1; forward < tls.length; forward++) {
+                                    TimeLine nextTl = tls[forward];
+                                    long nextTime = nextTl.getMilliTime();
+                                    if (nextTime - currentTime >= MIN_NOTE_INTERVAL_MS) {
+                                        break;
+                                    }
+                                    if (nextTl.existNote(key)) {
+                                        tooClose = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (tooClose) {
+                                continue;
+                            }
+
                             lastnote[key] = note;
                             tl.setNote(key, note);
                             tl.removeBackGroundNote(note);
