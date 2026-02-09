@@ -497,6 +497,10 @@ public final class PlayDataAccessor {
 		scoredb.deleteScoreData(model.getSHA256(), model.containsUndefinedLongNote() ? lnmode : 0);
 	}
 
+	public void deleteScoreData(String sha256, boolean ln, int lnmode) {
+		scoredb.deleteScoreData(sha256, ln ? lnmode : 0);
+	}
+
 	public boolean existsReplayData(BMSModel model, int lnmode, int index) {
 		boolean ln = model.containsUndefinedLongNote();
 		return Files.exists(Paths.get(this.getReplayDataFilePath(model.getSHA256(), ln, lnmode, index) + ".brd"));

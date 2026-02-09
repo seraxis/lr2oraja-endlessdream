@@ -258,6 +258,8 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 
 	}
 
+
+
 	/**
 	 * プレイヤーデータを取得する
 	 * 

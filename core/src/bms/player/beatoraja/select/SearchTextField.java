@@ -3,7 +3,10 @@ package bms.player.beatoraja.select;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.SpriteBatchHelper;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.select.bar.Bar;
 import bms.player.beatoraja.select.bar.SearchWordBar;
+import bms.player.beatoraja.select.bar.SongBar;
+import bms.player.beatoraja.song.SongData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,20 +90,41 @@ public class SearchTextField extends Stage {
 				public void keyTyped(TextField textField, char key) {
 					if (key == '\n' || key == 13) {
 						if (textField.getText().length() > 0) {
-							SearchWordBar swb = new SearchWordBar(selector, textField.getText());
-							int count = swb.getChildren().length;
-							if (count > 0) {
-								selector.getBarManager().addSearch(swb);
-								selector.getBarManager().updateBar(null);
-								selector.getBarManager().setSelected(swb);
-								textField.setText("");
-								textField.setMessageText(count + " song(s) found");
-								textFieldStyle.messageFontColor = Color.valueOf("00c0c0");
+							if (textField.getText().equalsIgnoreCase("/deletescore")) {
+								Bar current = selector.getBarManager().getSelected();
+								if (current instanceof SongBar && ((SongBar) current).existsSong()) {
+									SongData song = ((SongBar) current).getSongData();
+									int lnmode = selector.main.getPlayerResource().getPlayerConfig().getLnmode();
+									selector.main.getPlayDataAccessor().deleteScoreData(song.getSha256(), song.hasUndefinedLongNote(), lnmode);
+									selector.getScoreDataCache().update(song, lnmode);
+									((SongBar) current).setScore(selector.getScoreDataCache().readScoreData(song, lnmode));
+									textField.setText("");
+									textField.setMessageText("Score Deleted (Mode " + (song.hasUndefinedLongNote() ? lnmode : 0) + ")");
+									textFieldStyle.messageFontColor = Color.RED;
+									selector.selectedBarMoved();
+									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
+								} else {
+									textField.setText("");
+									textField.setMessageText("Song not selected");
+									textFieldStyle.messageFontColor = Color.GRAY;
+									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
+								}
 							} else {
-								textField.setText("");
-								textField.setMessageText("no song found");
-								textFieldStyle.messageFontColor = Color.DARK_GRAY;
-								selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
+								SearchWordBar swb = new SearchWordBar(selector, textField.getText());
+								int count = swb.getChildren().length;
+								if (count > 0) {
+									selector.getBarManager().addSearch(swb);
+									selector.getBarManager().updateBar(null);
+									selector.getBarManager().setSelected(swb);
+									textField.setText("");
+									textField.setMessageText(count + " song(s) found");
+									textFieldStyle.messageFontColor = Color.valueOf("00c0c0");
+								} else {
+									textField.setText("");
+									textField.setMessageText("no song found");
+									textFieldStyle.messageFontColor = Color.DARK_GRAY;
+									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
+								}
 							}
 						}
 						
