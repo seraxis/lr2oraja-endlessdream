@@ -48,6 +48,9 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 	public SkinHeader loadSkin(Path f, MainState state, SkinConfig.Property property) throws IOException {
 		// TODO header読み込みに失敗したらnullを返す
 		header = new SkinHeader();
+		if (state != null) {
+			header.setResolution(state.main.getConfig().getResolution());
+		}
 		files.clear();
 		options.clear();
 		offsets.clear();
@@ -105,7 +108,7 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		}
 	}),
 	RESOLUTION ((loader, str) -> {
-		final Resolution res[] = {SD, HD, FULLHD, ULTRAHD};
+		final Resolution[] res = {SD, HD, FULLHD, ULTRAHD};
 		loader.header.setResolution(res[Integer.parseInt(str[1])]);
 	}),
 	CUSTOMOPTION ((loader, str) -> {
