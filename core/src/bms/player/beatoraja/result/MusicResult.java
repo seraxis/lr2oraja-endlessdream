@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
 import bms.model.*;
+import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.MainController.IRSendStatus;
@@ -38,6 +39,8 @@ public class MusicResult extends AbstractResult {
 
 	// 【追加】 元のモードを保存する変数
 	private Mode originalMode;
+	// 【追加】 モード復元済みフラグ
+	private boolean isModeRestored = false;
 
 	public MusicResult(MainController main) {
 		super(main);
@@ -99,6 +102,8 @@ public class MusicResult extends AbstractResult {
 		gaugeType = resource.getGrooveGauge().getType();
 
 		loadSkin(SkinType.RESULT);
+		
+		isModeRestored = false;
 	}
 	
 	public void prepare() {
@@ -188,10 +193,7 @@ public class MusicResult extends AbstractResult {
 
 	public void shutdown() {
 		// 【追加】 モードを復元する
-		if (this.originalMode != null) {
-			resource.getPlayerConfig().setMode(this.originalMode);
-			main.getInputProcessor().setPlayConfig(resource.getPlayerConfig().getPlayConfig(this.originalMode));
-		}
+		restoreMode();
 
 		// 【追加】 キー入力状態を全リセットする (ボタン押しっぱなし判定の引き継ぎ防止)
 		main.getInputProcessor().resetAllKeyState();
@@ -239,6 +241,7 @@ public class MusicResult extends AbstractResult {
 							main.changeState(MainStateType.COURSERESULT);
 						} else {
 							// コーススコアがない場合は選曲画面へ
+							restoreMode();
 							main.changeState(MainStateType.MUSICSELECT);
 						}
 					} else if (resource.nextCourse()) {
@@ -286,6 +289,7 @@ public class MusicResult extends AbstractResult {
 						resource.reloadBMSFile();
 						main.changeState(MainStateType.PLAY);
 					} else {
+						restoreMode();
 						main.changeState(MainStateType.MUSICSELECT);
 					}
 				}
@@ -532,5 +536,16 @@ public class MusicResult extends AbstractResult {
 
 	public ScoreData getNewScore() {
 		return resource.getScoreData();
+	}
+
+	// 【追加】 モード復元処理
+	private void restoreMode() {
+		if (!isModeRestored && this.originalMode != null) {
+			resource.getPlayerConfig().setMode(this.originalMode);
+			// ここで入力プロセッサの設定を復元しても、MusicSelector.create()で再設定されるが、
+			// 状態の不整合を防ぐために念のため設定しておく
+			main.getInputProcessor().setPlayConfig(resource.getPlayerConfig().getPlayConfig(this.originalMode));
+			isModeRestored = true;
+		}
 	}
 }

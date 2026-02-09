@@ -183,9 +183,7 @@ public final class MusicSelector extends MainState {
 		final BMSPlayerInputProcessor input = main.getInputProcessor();
 		PlayModeConfig pc = (config.getMusicselectinput() == 0 ? config.getMode7()
 				: (config.getMusicselectinput() == 1 ? config.getMode9() : config.getMode14()));
-		input.setKeyboardConfig(pc.getKeyboardConfig());
-		input.setControllerConfig(pc.getController());
-		input.setMidiConfig(pc.getMidiConfig());
+		input.setPlayConfig(pc);
 		manager.updateBar();
 
         loadSkin(SkinType.MUSIC_SELECT);
