@@ -155,9 +155,9 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					// + gr);
 				} else {
 					int[] values = parseInt(str);
-					if (values[2] < imagelist.size && imagelist.get(values[2]) != null
-							&& imagelist.get(values[2]) instanceof SkinSourceMovie) {
-						part = new SkinImage((SkinSourceMovie) imagelist.get(values[2]));
+					if (gr < imagelist.size && imagelist.get(gr) != null
+							&& imagelist.get(gr) instanceof SkinSourceMovie) {
+						part = new SkinImage((SkinSourceMovie) imagelist.get(gr));
 					} else {
 						TextureRegion[] images = getSourceImage(values);
 						if (images != null) {
@@ -169,6 +169,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 
 				}
 				if (part != null) {
+					part.setName(String.format("gr[%d]", gr));
 					skin.add(part);
 				}
 			}

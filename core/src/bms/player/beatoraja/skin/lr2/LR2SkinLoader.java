@@ -21,6 +21,12 @@ public abstract class LR2SkinLoader extends SkinLoader {
 
 	protected IntIntMap op = new IntIntMap();
 
+	public LR2SkinLoader() {
+		// Extra mode off
+		op.put(52, 1);
+		op.put(53, 0);
+	}
+
 	protected void addCommandWord(Command cm) {
 		commands.add(cm);
 	}

@@ -112,9 +112,9 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		loader.header.setResolution(res[Integer.parseInt(str[1])]);
 	}),
 	CUSTOMOPTION ((loader, str) -> {
-		List<String> contents = new ArrayList<String>();
+		List<String> contents = new ArrayList<>();
 		for(int i = 3;i < str.length;i++) {
-			if(str[i] != null && str[i].length() > 0) {
+			if(str[i] != null && !str[i].isEmpty()) {
 				contents.add(str[i]);
 			}
 		}
@@ -122,7 +122,7 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		for(int i = 0;i < op.length;i++) {
 			op[i] = Integer.parseInt(str[2]) + i;
 		}
-		loader.options.add(new CustomOption(str[1], op, contents.toArray(new String[contents.size()])));
+		loader.options.add(new CustomOption(str[1], op, contents.toArray(new String[0])));
 	}),
 	CUSTOMFILE ((loader, str) -> {
 		loader.files.add(new CustomFile(str[1], str[2].replace("LR2files\\Theme", loader.skinpath).replace("\\", "/"), str.length >= 4 ? str[3] : null));
@@ -159,7 +159,7 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 	private HeaderCommand(BiConsumer<LR2SkinHeaderLoader, String[]> function) {
 		this.function = function;
 	}
-	
+
 	public void execute(LR2SkinHeaderLoader loader, String[] str) {
 		function.accept(loader, str);
 	}

@@ -150,9 +150,16 @@ public class SkinHeader {
 	}
 	
 	public void setSkinConfigProperty(SkinConfig.Property property) {
+		// Some LR2 skins have multiple options that with same name, this is trying to prevent an option is used
+		//  multiple times.
+		Set<Integer> usedOptionIndex = new HashSet<>();
 		for (SkinHeader.CustomOption customOption : getCustomOptions()) {
 			int op = customOption.getDefaultOption();
-			for (SkinConfig.Option option : property.getOption()) {
+			for (int i = 0;i < property.getOption().length; ++i) {
+				if (usedOptionIndex.contains(i)) {
+					continue;
+				}
+				SkinConfig.Option option = property.getOption()[i];
 				if (option.name.equals(customOption.name)) {
 					if (option.value != OPTION_RANDOM_VALUE) {
 						op = option.value;
@@ -161,6 +168,7 @@ public class SkinHeader {
 							op = customOption.option[(int) (Math.random() * customOption.option.length)];
 						}
 					}
+					usedOptionIndex.add(i);
 					break;
 				}
 			}
