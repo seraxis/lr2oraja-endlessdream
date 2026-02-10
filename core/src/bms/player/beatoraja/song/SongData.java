@@ -147,7 +147,9 @@ public class SongData implements Validatable, IpfsInformation {
 		banner = model.getBanner();
 
 		setStagefile(model.getStagefile());
-		setBackbmp(model.getBackbmp());
+		if(backbmp == null || backbmp.length() == 0) {
+			setBackbmp(model.getBackbmp());
+		}
         if(preview == null || preview.length() == 0) {
             setPreview(model.getPreview());
         }

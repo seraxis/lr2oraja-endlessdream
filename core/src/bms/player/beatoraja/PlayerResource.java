@@ -178,6 +178,12 @@ public final class PlayerResource {
 			return false;
 		}
 
+		if (this.songdata != null && (model.getBackbmp() == null || model.getBackbmp().length() == 0)) {
+			if (this.songdata.getBackbmp() != null && this.songdata.getBackbmp().length() > 0) {
+				model.setBackbmp(this.songdata.getBackbmp());
+			}
+		}
+
 		orgmode = model.getMode();
 		bmsresource.setBMSFile(model, f, config, mode);
 		if(songdata != null) {
