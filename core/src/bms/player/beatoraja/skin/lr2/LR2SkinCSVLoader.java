@@ -5,6 +5,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
+
+import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.skin.property.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -480,9 +483,24 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					}
 					button = new SkinImage(tr, values[10], values[9], values[11]);
 					if (values[12] == 1) {
-						button.setClickevent(values[11]);
+						if (values[11] >= 1 && values[11] <= 9) {
+							button.setClickevent((state, arg1, arg2) -> {
+								if (state instanceof MusicSelector selector) {
+									if (selector.isNoResetPanel()) {
+										selector.setPanelState(0);
+										selector.setNoResetPanel(false);
+									} else {
+										selector.setPanelState(values[11]);
+										selector.setNoResetPanel(true);
+									}
+								}
+							});
+						} else {
+							button.setClickevent(values[11]);
+						}
 						button.setClickeventType(values[14] > 0 ? 0 : values[14] < 0 ? 1 : 2);
 					}
+					button.setName(String.format("Button[%d](%d, %d)", gr, x, y));
 					skin.add(button);
 					// System.out.println("Object Added - " +
 					// (part.getTiming()));
