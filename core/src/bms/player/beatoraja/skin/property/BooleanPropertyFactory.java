@@ -364,7 +364,7 @@ public class BooleanPropertyFactory {
 		state_practice(OPTION_STATE_PRACTICE, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRACTICE : false))),
 		now_loading(OPTION_NOW_LOADING, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
-				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRELOAD : false))),
+				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRELOAD : true))),
 		loaded(OPTION_LOADED, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() != BMSPlayer.STATE_PRELOAD : false))),
 
