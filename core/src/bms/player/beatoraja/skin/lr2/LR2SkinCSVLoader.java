@@ -153,6 +153,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					part = new SkinImage(gr);
 					// System.out.println("add reference image : "
 					// + gr);
+					part.setName(String.format("CustomSkinImage[%d]", gr));
 				} else {
 					int[] values = parseInt(str);
 					if (gr < imagelist.size && imagelist.get(gr) != null
@@ -166,10 +167,9 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 							// (part.getTiming()));
 						}
 					}
-
+					part.setName(String.format("CutSkinImage[%d](%d, %d)", gr, values[3], values[4]));
 				}
 				if (part != null) {
-					part.setName(String.format("gr[%d]", gr));
 					skin.add(part);
 				}
 			}

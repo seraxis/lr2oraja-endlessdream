@@ -2,6 +2,7 @@ package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
@@ -28,6 +29,7 @@ public class SkinWidgetManager {
     private static final double eps = 1e-5;
     private static final Object LOCK = new Object();
     private static final EventHistory eventHistory = new EventHistory();
+    private static final List<Pair<Integer, Integer>> skinOptions = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
@@ -56,6 +58,7 @@ public class SkinWidgetManager {
         synchronized (LOCK) {
             widgets.clear();
             eventHistory.clear();
+            skinOptions.clear();
             if (skin == null) {
                 return ;
             }
@@ -77,6 +80,8 @@ public class SkinWidgetManager {
                 String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
                 widgets.add(new SkinWidget(widgetName, skinObject, destinations));
             }
+            skin.getOption().forEach(entry -> skinOptions.add(Pair.of(entry.key, entry.value)));
+            skinOptions.sort(Pair.DEFAULT_COMPARATOR());
         }
     }
 
@@ -106,6 +111,10 @@ public class SkinWidgetManager {
                         }
                         if (ImGui.beginTabItem("History")) {
                             renderHistoryTable();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("Op")) {
+                            renderSkinOptions();
                             ImGui.endTabItem();
                         }
                         ImGui.endTabBar();
@@ -323,6 +332,33 @@ public class SkinWidgetManager {
 
                     ImGui.tableSetColumnIndex(0);
                     ImGui.text(event.getDescription());
+
+                    ImGui.popID();
+                }
+            });
+            ImGui.endTable();
+        }
+    }
+
+    private static void renderSkinOptions() {
+        if (ImGui.beginTable("Options", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("Op");
+            ImGui.tableSetupColumn("Value");
+            ImGui.tableHeadersRow();
+            ImGuiListClipper.forEach(skinOptions.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    ImGui.pushID(row);
+
+                    Pair<Integer, Integer> p = skinOptions.get(row);
+                    ImGui.tableNextRow();
+
+                    ImGui.tableSetColumnIndex(0);
+                    ImGui.text(p.getFirst().toString());
+
+                    ImGui.tableSetColumnIndex(1);
+                    ImGui.text(p.getSecond().toString());
 
                     ImGui.popID();
                 }
