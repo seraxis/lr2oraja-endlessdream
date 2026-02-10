@@ -25,6 +25,11 @@ public abstract class LR2SkinLoader extends SkinLoader {
 		// Extra mode off
 		op.put(52, 1);
 		op.put(53, 0);
+		// TODO: If we support battle mode in the future, remove this
+		op.put(10, 0); // Current mode is Double or Double Battle
+		op.put(11, 0); // Current mode is Battle
+		op.put(12, 0); // Current mode is Double or Battle or Double Battle
+		op.put(13, 0); // Current mode is Ghost Battle or Battle
 	}
 
 	protected void addCommandWord(Command cm) {
