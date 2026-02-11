@@ -39,7 +39,51 @@ public final class GrooveGauge {
 		this.iidxMode = iidxMode;
 		this.gauges = new Gauge[property.values.length];
 		for(int i = 0; i < property.values.length; i++) {
-			this.gauges[i] = new Gauge(model, property.values[i], ClearType.getClearTypeByGauge(i), iidxMode);
+			GaugeElementProperty rawElement = property.values[i];
+			if (iidxMode) {
+				switch (i) {
+				case 0: // ASSIST EASY
+					rawElement = GaugeElementProperty.ASSIST_EASY_IIDX;
+					break;
+				case 1: // EASY
+					rawElement = GaugeElementProperty.EASY_IIDX;
+					break;
+				case 2: // NORMAL
+					rawElement = GaugeElementProperty.NORMAL_IIDX;
+					break;
+				case 3: // HARD
+					rawElement = GaugeElementProperty.HARD_IIDX;
+					break;
+				case 4: // EXHARD
+					rawElement = GaugeElementProperty.EXHARD_IIDX;
+					break;
+				case 5: // HAZARD
+					rawElement = GaugeElementProperty.HAZARD_IIDX;
+					break;
+				case 6: // CLASS
+					rawElement = GaugeElementProperty.CLASS_IIDX;
+					break;
+				case 7: // EXCLASS
+					rawElement = GaugeElementProperty.EXCLASS_IIDX;
+					break;
+				case 8: // EXHARDCLASS
+					rawElement = GaugeElementProperty.EXHARDCLASS_IIDX;
+					break;
+				default:
+					break;
+				}
+			}
+			ClearType ct = ClearType.getClearTypeByGauge(i);
+			if (ct == null) {
+				ct = ClearType.Normal; // Fallback
+			}
+			try {
+				this.gauges[i] = new Gauge(model, rawElement, ct, iidxMode);
+			} catch (Exception e) {
+				e.printStackTrace();
+				// エラー時はデフォルト動作で復帰を試みる（ただしrawElementが原因なら同じエラーになる可能性あり）
+				this.gauges[i] = new Gauge(model, property.values[i], ct, false); 
+			}
 		}
 	}
 
@@ -204,98 +248,27 @@ public final class GrooveGauge {
 		private final boolean iidxMode;
 
 		public Gauge(BMSModel model, GaugeElementProperty element, ClearType cleartype, boolean iidxMode) {
-			this.element = element;
-            this.iidxMode = iidxMode;
-			this.value = element.init;
+			this.iidxMode = iidxMode;
 			this.cleartype = cleartype;
+			this.element = element;
+			
+			this.value = element.init;
 			this.gauge = element.value.clone();
 
 			double iidxTotalVal = 7.605 * model.getTotalNotes() / (0.01 * model.getTotalNotes() + 6.5);
 			iidxTotalVal = Math.max(260, iidxTotalVal);
 			final double iidxTotal = iidxTotalVal;
-
+			
 			if(element.modifier != null) {
 				for(int i = 0;i < gauge.length;i++) {
-					if (iidxMode) {
-						gauge[i] = applyIidxModifier(element.modifier, gauge[i], model, iidxTotal, i, cleartype);
+					// IIDX MODEかつModifierがIIDXの場合のみ、TOTALに基づいた回復量の再計算を行う
+					if(iidxMode && element.modifier == GaugeModifier.IIDX) {
+						gauge[i] = element.modifier.modify(gauge[i], model);
 					} else {
 						gauge[i] = element.modifier.modify(gauge[i], model);
 					}
 				}				
 			}
-		}
-		
-		private float applyIidxModifier(GaugeModifier modifier, float f, BMSModel model, double iidxTotal, int index, ClearType cleartype) {
-			if (modifier == GaugeModifier.TOTAL) {
-				// 減少量の定義 (NORMAL基準: POOR -6%, BAD/EmptyPOOR -2%)
-				if (f < 0) {
-					float damage = f;
-					if (index == 4) damage = -6.0f; // POOR
-					else if (index == 3 || index == 5) damage = -2.0f; // BAD, Empty POOR
-					else return f; // その他はデフォルト(PG/GR/GDのマイナス判定などがあれば)
-
-					if (cleartype == ClearType.Easy || cleartype == ClearType.LightAssistEasy || cleartype == ClearType.AssistEasy) {
-						damage *= 0.8f;
-					}
-					return damage;
-				}
-				// 回復量はTOTAL計算 (EASY/ASSISTもNORMALと同じ: 1.0倍)
-				// IIDX MODEではEASY等の1.2倍設定を無視し、NORMAL同等(PG/GR=1.0, GD=0.5)に強制する
-				float base = f;
-				if (index == 0 || index == 1) base = 1.0f;
-				else if (index == 2) base = 0.5f;
-				
-				return base > 0 ? (float) (base * iidxTotal / model.getTotalNotes()) : base;
-
-			} else if (modifier == GaugeModifier.LIMIT_INCREMENT) {
-				if (cleartype == ClearType.Hard || cleartype == ClearType.ExHard) {
-					if (f > 0) return 0.16f;
-				}
-				final float pg = (float) Math.max(Math.min(0.15f, (2 * iidxTotal - 320) / model.getTotalNotes()), 0);
-				if(f > 0) {
-					f *= pg / 0.15f;
-				}
-				return f;
-			} else if (modifier == GaugeModifier.MODIFY_DAMAGE) {
-				if (cleartype == ClearType.Hard) {
-					if (index == 3 || index == 5) return -4.5f; // BAD, Empty POOR
-					if (index == 4) return -9.0f; // POOR
-				} else if (cleartype == ClearType.ExHard) {
-					if (index == 3 || index == 5) return -9.0f; // BAD, Empty POOR
-					if (index == 4) return -18.0f; // POOR
-				}
-
-				if(f < 0) {
-					float fix1=1.0f;
-					float fix2=1.0f;
-
-					// トータル補正 (<240)
-					fix1 = (float)(10.0 / Math.min(10.0, Math.max(1.0, Math.floor(iidxTotal / 16.0) - 5.0)));
-
-					// ノート数補正 (<1000)
-					if(model.getTotalNotes()<=20) {
-						fix2 = 10.0f;
-					}else if(model.getTotalNotes()<30) {
-						fix2 = 8.0f + 0.2f*(30-model.getTotalNotes());
-					}else if(model.getTotalNotes()<60) {
-						fix2 = 5.0f + 0.2f*(60-model.getTotalNotes())/3.0f;
-					}else if(model.getTotalNotes()<125) {
-						fix2 = 4.0f + (125-model.getTotalNotes())/65.0f;
-					}else if(model.getTotalNotes()<250) {
-						fix2 = 3.0f + 0.008f*(250-model.getTotalNotes());
-					}else if(model.getTotalNotes()<500) {
-						fix2 = 2.0f + 0.004f*(500-model.getTotalNotes());
-					}else if(model.getTotalNotes()<1000) {
-						fix2 = 1.0f + 0.002f*(1000-model.getTotalNotes());
-					}else {
-						fix2 = 1.0f;
-					}
-
-					f *= Math.max(fix1, fix2);
-				}
-				return f;
-			}
-			return modifier.modify(f, model);
 		}
 		
 		public float getValue() {
@@ -319,17 +292,10 @@ public final class GrooveGauge {
 		public void update(int judge, float rate) {
 			float inc = gauge[judge] * rate;
 			if(inc < 0) {
-				if (iidxMode) {
-					// IIDX HARD Gauge 30% rule
-					if (cleartype == ClearType.Hard && value <= 30.0f) {
-						inc *= 0.5f;
-					}
-				} else {
-					for(float[] gut : element.guts) {
-						if(value < gut[0]) {
-							inc *= gut[1];
-							break;
-						}
+				for(float[] gut : element.guts) {
+					if(value < gut[0]) {
+						inc *= gut[1];
+						break;
 					}
 				}
 			}
@@ -398,6 +364,21 @@ public final class GrooveGauge {
 				}
 
 				f *= Math.max(fix1, fix2);
+			}
+			return f;
+		};
+
+		/**
+		 * IIDX MODE用 TOTAL計算
+		 */
+		public static final GaugeModifier IIDX = (f, model) -> {
+			if(f > 0) {
+				int totalNotes = model.getTotalNotes();
+				if (totalNotes == 0) return 0f; // ゼロ除算防止
+
+				double iidxTotalVal = 7.605 * totalNotes / (0.01 * totalNotes + 6.5);
+				iidxTotalVal = Math.max(260, iidxTotalVal);
+				return (float) (f * iidxTotalVal / totalNotes);
 			}
 			return f;
 		};
