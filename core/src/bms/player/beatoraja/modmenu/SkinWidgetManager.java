@@ -2,6 +2,7 @@ package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.player.beatoraja.skin.lr2.LR2DestinationOptions;
 import bms.player.beatoraja.skin.lr2.LR2TextDef;
 import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
@@ -353,8 +354,9 @@ public class SkinWidgetManager {
     }
 
     private static void renderSkinOptions() {
-        if (ImGui.beginTable("Options", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+        if (ImGui.beginTable("Options", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
             ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("Name");
             ImGui.tableSetupColumn("Op");
             ImGui.tableSetupColumn("Value");
             ImGui.tableHeadersRow();
@@ -367,9 +369,18 @@ public class SkinWidgetManager {
                     ImGui.tableNextRow();
 
                     ImGui.tableSetColumnIndex(0);
-                    ImGui.text(p.getFirst().toString());
+                    Integer op = p.getFirst();
+                    if (op >= 900 && op <= 999) {
+                        ImGui.text("-");
+                    } else {
+                        LR2DestinationOptions dstDef = LR2DestinationOptions.valueOf(op);
+                        ImGui.text(dstDef != null ? dstDef.getName() : "ERROR");
+                    }
 
                     ImGui.tableSetColumnIndex(1);
+                    ImGui.text(op.toString());
+
+                    ImGui.tableSetColumnIndex(2);
                     ImGui.text(p.getSecond().toString());
 
                     ImGui.popID();
