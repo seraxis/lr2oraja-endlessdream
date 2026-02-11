@@ -2,6 +2,7 @@ package bms.player.beatoraja.modmenu;
 
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.player.beatoraja.skin.lr2.LR2TextDef;
 import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
@@ -31,6 +32,7 @@ public class SkinWidgetManager {
     private static final EventHistory eventHistory = new EventHistory();
     private static final List<Pair<Integer, Integer>> skinOptions = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
+    private static final List<Integer> missingTextDefinitions = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
 
@@ -117,6 +119,10 @@ public class SkinWidgetManager {
                             renderSkinOptions();
                             ImGui.endTabItem();
                         }
+                        if (ImGui.beginTabItem("Missing No")) {
+                            renderMissingNo();
+                            ImGui.endTabItem();
+                        }
                         ImGui.endTabBar();
                     }
                     // Overlay cursor position
@@ -132,6 +138,12 @@ public class SkinWidgetManager {
                 }
             }
             ImGui.end();
+        }
+    }
+
+    public static void registerMissingTextDefinition(int value) {
+        if (!missingTextDefinitions.contains(value)) {
+            missingTextDefinitions.add(value);
         }
     }
 
@@ -364,6 +376,34 @@ public class SkinWidgetManager {
                 }
             });
             ImGui.endTable();
+        }
+    }
+
+    private static void renderMissingNo() {
+        if (ImGui.treeNodeEx("Text##MissingNo")) {
+            if (ImGui.beginTable("Text##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingTextDefinitions.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingTextDefinitions.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        ImGui.text(LR2TextDef.valueOf(value).name());
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
         }
     }
 

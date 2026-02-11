@@ -6,8 +6,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BiConsumer;
 
+import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.skin.property.Event;
+import bms.player.beatoraja.skin.property.StringProperty;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -294,11 +297,16 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (values[2] < fontlist.size && fontlist.get(values[2]) != null) {
 					text = new SkinTextImage(fontlist.get(values[2]), values[3]);
 				} else {
-					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2);
+					StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
+					if (property == null) {
+						SkinWidgetManager.registerMissingTextDefinition(values[3]);
+					}
+					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2, property);
 				}
 				text.setAlign(values[4]);
 				text.setEditable(values[5] != 0);
 				int panel = values[6];
+				text.setName(String.format("SRC_TEXT(%s[%d])", LR2TextDef.valueOf(values[3]), values[3]));
 				skin.add(text);
 				if(text.isEditable() && values[3] == SkinProperty.STRING_SEARCHWORD && skin instanceof MusicSelectSkin) {
 					((MusicSelectSkin) skin).searchText = text;
@@ -500,7 +508,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						}
 						button.setClickeventType(values[14] > 0 ? 0 : values[14] < 0 ? 1 : 2);
 					}
-					button.setName(String.format("Button[%d](%d, %d)", gr, x, y));
+					button.setName(String.format("Button[%d](%d, %d) on panel [%d]", gr, x, y, values[13]));
 					skin.add(button);
 					// System.out.println("Object Added - " +
 					// (part.getTiming()));

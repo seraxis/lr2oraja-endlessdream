@@ -8,6 +8,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.constants.LaneOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
@@ -323,8 +325,7 @@ public class PlayConfigurationView implements Initializable {
 		lr2configurationassist.setVgap(4);
 
 
-		String[] scoreOptions = new String[] { "OFF", "MIRROR", "RANDOM", "R-RANDOM", "S-RANDOM", "SPIRAL", "H-RANDOM",
-				"ALL-SCR", "RANDOM-EX", "S-RANDOM-EX" };
+		String[] scoreOptions = LaneOptions.names();
 		initComboBox(scoreop, scoreOptions);
 		initComboBox(scoreop2, scoreOptions);
 		initComboBox(doubleop, new String[] { "OFF", "FLIP", "BATTLE", "BATTLE AS" });
