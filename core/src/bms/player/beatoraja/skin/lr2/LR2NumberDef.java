@@ -6,8 +6,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static bms.player.beatoraja.skin.SkinProperty.NUMBER_IR_RANK;
-import static bms.player.beatoraja.skin.SkinProperty.NUMBER_IR_TOTALPLAYER;
+import static bms.player.beatoraja.skin.SkinProperty.*;
 
 /**
  * LR2 number definition
@@ -363,6 +362,10 @@ public enum LR2NumberDef {
 			return NUMBER_IR_RANK;
 		} else if (v == LR2NumberDef.IRPlayers.value) {
 			return NUMBER_IR_TOTALPLAYER;
+		} else if (v == IRClearRate.value) {
+			return NUMBER_IR_PLAYER_TOTAL_CLEAR_RATE;
+		} else if (v == RatePercent.value) {
+			return NUMBER_SCORE_RATE;
 		}
 		return v;
 	}
