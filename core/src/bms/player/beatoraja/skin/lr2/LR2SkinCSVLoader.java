@@ -240,6 +240,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (divx * divy >= 10) {
 					TextureRegion[] images = getSourceImage(values);
 					if (images != null) {
+						values[11] = LR2NumberDef.convert(values[11]);
 						IntegerProperty property = IntegerPropertyFactory.getIntegerProperty(values[11]);
 						if (property == null) {
 							SkinWidgetManager.registerMissingNumberDefinition(values[11]);

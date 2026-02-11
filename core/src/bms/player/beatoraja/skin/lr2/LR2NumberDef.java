@@ -1,7 +1,13 @@
 package bms.player.beatoraja.skin.lr2;
 
+import bms.player.beatoraja.skin.property.IntegerPropertyFactory;
+
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Optional;
+
+import static bms.player.beatoraja.skin.SkinProperty.NUMBER_IR_RANK;
+import static bms.player.beatoraja.skin.SkinProperty.NUMBER_IR_TOTALPLAYER;
 
 /**
  * LR2 number definition
@@ -345,5 +351,19 @@ public enum LR2NumberDef {
 	@Nullable
 	public static LR2NumberDef valueOf(int v) {
 		return Arrays.stream(LR2NumberDef.values()).filter(def -> def.value == v).findAny().orElse(null);
+	}
+
+	/**
+	 * Some of the lr2 definitions cannot be mapped directly because their place has been taken or it's implemented
+	 *  elsewhere. This function helps converting them. The original value would be returned if it's no need to be
+	 *  converted or don't know how.
+	 */
+	public static int convert(int v) {
+		if (v == LR2NumberDef.IRRank.value) {
+			return NUMBER_IR_RANK;
+		} else if (v == LR2NumberDef.IRPlayers.value) {
+			return NUMBER_IR_TOTALPLAYER;
+		}
+		return v;
 	}
 }
