@@ -50,7 +50,7 @@ public enum LR2TextDef {
 	Option1P("Option 1P", 63),
 	Option2P("Option 2P", 64),
 	Gauge1P("Gauge 1P", 65),
-	TwoPGauge("Gauge 1P", 66),
+	Gauge2P("Gauge 1P", 66),
 	AutoScratch1P("Auto Scratch 1P", 67),
 	AutoScratch2P("Auto Scratch 2P", 68),
 	Battle("Battle", 69),

@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.function.*;
 
+import bms.player.beatoraja.constants.DPOptions;
 import bms.player.beatoraja.constants.LaneOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,7 @@ public final class PracticeConfiguration {
 	private static final String[] GAUGE = { "ASSIST EASY", "EASY", "NORMAL", "HARD", "EX-HARD", "HAZARD", "GRADE",
 			"EX GRADE", "EXHARD GRADE"};
 	private static final String[] RANDOM = LaneOptions.names();
-	private static final String[] DPRANDOM = { "NORMAL", "FLIP" };
+	private static final String[] DPRANDOM = DPOptions.names();
 
 	private PracticeProperty property = new PracticeProperty();
 

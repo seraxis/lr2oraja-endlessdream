@@ -5,6 +5,8 @@ import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
+import bms.player.beatoraja.constants.DPOptions;
+import bms.player.beatoraja.constants.HiSpeedFix;
 import bms.player.beatoraja.constants.LaneOptions;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.ir.IRScoreData;
@@ -156,6 +158,28 @@ public class StringPropertyFactory {
 				return GrooveGauge.getGaugeName(result.getGaugeType());
 			}
 			return GrooveGauge.getGaugeName(state.resource.getPlayerConfig().getGauge());
+		}),
+		// TODO: If we implemented the auto scratch in the future, please modify here
+		autoscratch_1p(67, state -> "OFF"),
+		autoscratch_2p(68, state -> "OFF"),
+		// TODO: If we implemented the battle in the future, please modify here
+		battle(69, state -> "OFF"),
+		dp_option(70, state -> DPOptions.getName(state.resource.getPlayerConfig().getDoubleoption())),
+		lane_cover(73, state -> {
+			PlayConfig pc = (state instanceof MusicSelector selector)
+					? selector.getSelectedBarPlayConfig()
+					: state.resource.getPlayerConfig().getPlayConfig(state.resource.getPlayerConfig().getMode()).getPlayconfig();
+			return pc != null
+					? (pc.isEnablelanecover() ? "ON" : "OFF")
+					: "ERROR";
+		}),
+		hispeed_fix(74, state -> {
+			PlayConfig pc = (state instanceof MusicSelector selector)
+					? selector.getSelectedBarPlayConfig()
+					: state.resource.getPlayerConfig().getPlayConfig(state.resource.getPlayerConfig().getMode()).getPlayconfig();
+			return pc != null
+					? HiSpeedFix.getName(pc.getFixhispeed())
+					: "ERROR";
 		}),
 
 		chartreplication(86, (state) -> state.resource.getPlayerConfig().getChartReplicationMode()),
