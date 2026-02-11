@@ -7,6 +7,7 @@ import bms.player.beatoraja.ir.IRScoreData;
 import com.badlogic.gdx.utils.Array;
 
 import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.PlayerInformation;
 import bms.player.beatoraja.RivalDataAccessor;
 import bms.player.beatoraja.ScoreData;
@@ -375,7 +376,12 @@ class InternetRankingTargetProperty extends TargetProperty {
     			final int index = getTargetRank(main, ranking);
     			final IRScoreData irScore = ranking.getScore(index);
     			final int targetscore = irScore.getExscore();
-    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : "YOU");
+    			String name = "YOU";
+    			IRStatus[] status = main.getIRStatus();
+    			if(status != null && status.length > 0 && status[0] != null && status[0].player != null) {
+    				name = status[0].player.name;
+    			}
+    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : name);
         		targetScore.setEpg(targetscore / 2);
         		targetScore.setEgr(targetscore % 2);
 				targetScore.setOption(irScore.option);
@@ -398,7 +404,12 @@ class InternetRankingTargetProperty extends TargetProperty {
 	    			final int index = getTargetRank(main, ranking);
 	    			final IRScoreData irScore = ranking.getScore(index);
 	    			final int targetscore = irScore.getExscore();
-	    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : "YOU");
+	    			String name = "YOU";
+    			IRStatus[] status = main.getIRStatus();
+    			if(status != null && status.length > 0 && status[0] != null && status[0].player != null) {
+    				name = status[0].player.name;
+    			}
+    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : name);
 	        		targetScore.setEpg(targetscore / 2);
 	        		targetScore.setEgr(targetscore % 2);
 	    			targetScore.setOption(irScore.option);

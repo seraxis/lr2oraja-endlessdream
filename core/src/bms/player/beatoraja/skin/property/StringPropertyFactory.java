@@ -348,7 +348,12 @@ public class StringPropertyFactory {
 					rankingOffset = result.getRankingOffset();
 				}
 				IRScoreData score = irc != null ? irc.getScore(index + rankingOffset) : null;
-				return score != null ? (score.player.length() > 0 ? score.player : "YOU") : "";
+				String name = "YOU";
+				IRStatus[] status = state.main.getIRStatus();
+				if(status != null && status.length > 0 && status[0] != null && status[0].player != null) {
+					name = status[0].player.name;
+				}
+				return score != null ? (score.player.length() > 0 ? score.player : name) : "";
 			};
 
 		}
