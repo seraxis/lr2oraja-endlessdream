@@ -120,7 +120,7 @@ public final class PracticeConfiguration {
 	}
 
 	public GrooveGauge getGauge(BMSModel model) {
-		GrooveGauge gauge = GrooveGauge.create(model, property.gaugetype, property.gaugecategory);
+		GrooveGauge gauge = GrooveGauge.create(model, property.gaugetype, property.gaugecategory, false);
 		gauge.setValue(property.startgauge);
 		return gauge;
 	}

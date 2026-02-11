@@ -123,6 +123,8 @@ public class PlayConfigurationView implements Initializable {
 	private Spinner<Integer> gvalue;
 	@FXML
 	private CheckBox enableConstant;
+    @FXML
+    private CheckBox iidxMode;
 	@FXML
 	private Spinner<Integer> constFadeinTime;
 	@FXML
@@ -672,6 +674,8 @@ public class PlayConfigurationView implements Initializable {
 		player.setLnmode(lntype.getValue());
 		player.setJudgetiming(getValue(notesdisplaytiming));
 		player.setNotesDisplayTimingAutoAdjust(notesdisplaytimingautoadjust.isSelected());
+		
+		player.setIidxMode(iidxMode.isSelected());
 
 		player.setBpmguide(bpmguide.isSelected());
 		player.setGaugeAutoShift(gaugeautoshift.getValue());
@@ -770,6 +774,7 @@ public class PlayConfigurationView implements Initializable {
 		hispeed.getValueFactory().setValue((double) conf.getHispeed());
 		gvalue.getValueFactory().setValue(conf.getDuration());
 		enableConstant.setSelected(conf.isEnableConstant());
+		iidxMode.setSelected(player.isIidxMode());
 		constFadeinTime.getValueFactory().setValue(conf.getConstantFadeinTime());
 		hispeedmargin.getValueFactory().setValue((double) conf.getHispeedMargin());
 		fixhispeed.setValue(conf.getFixhispeed());

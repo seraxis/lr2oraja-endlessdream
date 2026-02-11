@@ -253,6 +253,7 @@
                                                  <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="100" max="1000" min="-1000" />
                                              </valueFactory>
                                          </NumericSpinner>
+                                         <CheckBox fx:id="iidxMode" mnemonicParsing="false" text="IIDX MODE (Force IIDX Judge &amp; Gauge, Disable IR)" GridPane.columnIndex="0" GridPane.rowIndex="13" GridPane.columnSpan="4" />
                                      </GridPane>
                                      <GridPane fx:id="lr2configurationassist" hgap="10.0" prefHeight="48.0" prefWidth="632.0" vgap="10.0">
                                          <columnConstraints>

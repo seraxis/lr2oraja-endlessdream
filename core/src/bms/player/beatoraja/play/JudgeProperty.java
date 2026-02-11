@@ -62,6 +62,17 @@ public enum JudgeProperty {
             new boolean[]{true, true, true, true, true, false },
             JudgeWindowRule.LR2
             ),
+    IIDX(new long[][]{ {-16666, 16666}, {-33333, 33333}, {-116666, 116666}, {-200000, 200000}, {-200000, 1000000} },
+            new long[][]{ {-16666, 16666}, {-33333, 33333}, {-116666, 116666}, {-200000, 200000}, {-200000, 1000000} },
+            new long[][]{ {-116666, 116666}, {-116666, 116666}, {-116666, 116666}, {-200000, 200000}},
+            0,
+            new long[][]{ {-116666, 116666}, {-116666, 116666}, {-116666, 116666}, {-200000, 200000}}, 
+            0,
+            new boolean[]{true, true, true, false, false, true },
+            MissCondition.ALWAYS,
+            new boolean[]{true, true, true, true, true, false },
+            JudgeWindowRule.IIDX_RULE
+            ),
     ;
 
     /**
@@ -165,6 +176,7 @@ public enum JudgeProperty {
     
     public enum JudgeWindowRule {
         NORMAL (new int[]{25, 50, 75, 100, 125}, new boolean[]{false, false, false, false, true}),
+        IIDX_RULE (new int[]{100, 100, 100, 100, 100}, new boolean[]{true, true, true, true, true}),
         PMS (new int[]{33, 50, 70, 100, 133}, new boolean[]{true, false, false, true, true}),
         LR2 (new int[]{25, 50, 75, 100, 75}, new boolean[]{false, false, false, true, true}) {
             @Override

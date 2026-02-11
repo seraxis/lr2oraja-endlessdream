@@ -102,6 +102,7 @@ public class PlayConfig implements Cloneable {
 	 */
 	private String judgetype = JudgeAlgorithm.Combo.name();
 
+
 	public PlayConfig() {
 	}
 
@@ -246,6 +247,7 @@ public class PlayConfig implements Cloneable {
 	public void setJudgetype(String judgetype) {
 		this.judgetype = judgetype;
 	}
+
 
 	public void validate() {
 		hispeed = MathUtils.clamp(hispeed, HISPEED_MIN, HISPEED_MAX);
