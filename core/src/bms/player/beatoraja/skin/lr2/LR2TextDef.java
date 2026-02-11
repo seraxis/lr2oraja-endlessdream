@@ -1,7 +1,6 @@
 package bms.player.beatoraja.skin.lr2;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 /**
  * text st definitions
@@ -26,8 +25,8 @@ public enum LR2TextDef {
 	EditingCurrentSongGenre("Editing Current Song Genre", 23),
 	EditingCurrentSongArtist("Editing Current Song Artist", 24),
 	EditingCurrentSongSubartist("Editing Current Song Subartist", 25),
-	EditingCurrentSongSearchQuery("Editing Current song Search query", 26),
-	EditingCurrentSongPlayLevel("Editing Current song play level", 27),
+	EditingCurrentSongSearchQuery("Editing Current Song Search query", 26),
+	EditingCurrentSongPlayLevel("Editing Current Song play level", 27),
 	EditingCurrentSongDifficultyNumber("Editing Current Song Difficulty Number", 28),
 	EditingCurrentSongInsaneLevel("Editing Current Song Insane level", 29),
 	EditingSearchTitleCurrentFolder("Search Title/Current Folder", 30),

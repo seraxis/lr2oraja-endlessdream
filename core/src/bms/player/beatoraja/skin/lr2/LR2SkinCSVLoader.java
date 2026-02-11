@@ -302,6 +302,22 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (values[3] == 1) {
 					values[3] = 3;
 				}
+				// HACK: LR2 allows user edit the bms file's meta data directly in-game, which is a pretty useless
+				//  feature that nobody wants to modify the file unexpectedly. And these options are just an editable
+				//  variant of the other options. Therefore, we simply convert them into the uneditable version here
+				values[3] = switch (values[3]) {
+					case 20 -> 10;
+					case 21 -> 11;
+					case 22 -> 12;
+					case 23 -> 13;
+					case 24 -> 14;
+					case 25 -> 15;
+					case 26 -> 16;
+					case 27 -> 17;
+					case 28 -> 18;
+					// NOTE: 29, 30 doesn't have related definition
+					default -> values[3];
+				};
 				StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
 				if (property == null) {
 					SkinWidgetManager.registerMissingTextDefinition(values[3]);
