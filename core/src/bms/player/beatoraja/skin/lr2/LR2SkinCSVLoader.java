@@ -8,9 +8,7 @@ import java.util.function.BiConsumer;
 
 import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import bms.player.beatoraja.select.MusicSelector;
-import bms.player.beatoraja.skin.property.Event;
-import bms.player.beatoraja.skin.property.StringProperty;
-import bms.player.beatoraja.skin.property.StringPropertyFactory;
+import bms.player.beatoraja.skin.property.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -242,6 +240,10 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (divx * divy >= 10) {
 					TextureRegion[] images = getSourceImage(values);
 					if (images != null) {
+						IntegerProperty property = IntegerPropertyFactory.getIntegerProperty(values[11]);
+						if (property == null) {
+							SkinWidgetManager.registerMissingNumberDefinition(values[11]);
+						}
 						if (images.length % 24 == 0) {
 							TextureRegion[][] pn = new TextureRegion[images.length / 24][];
 							TextureRegion[][] mn = new TextureRegion[images.length / 24][];
@@ -256,7 +258,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 								}
 							}
 
-							num = new SkinNumber(pn, mn, values[10], values[9], values[13] + 1, 2, 0, values[11], values[12]);
+							num = new SkinNumber(pn, mn, values[10], values[9], values[13] + 1, 2, 0, property, values[12]);
 						} else {
 							int d = images.length % 10 == 0 ? 10 : 11;
 
@@ -267,7 +269,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 								}
 							}
 
-							num = new SkinNumber(nimages, values[10], values[9], values[13], d > 10 ? 2 : 0, 0, values[11], values[12]);
+							num = new SkinNumber(nimages, values[10], values[9], values[13], d > 10 ? 2 : 0, 0, property, values[12]);
 						}
 						LR2NumberDef numberDef = LR2NumberDef.valueOf(values[11]);
 						num.setName(String.format("SRC_NUMBER(%s[%d])", numberDef != null ? numberDef.getName() : "ERROR", values[11]));

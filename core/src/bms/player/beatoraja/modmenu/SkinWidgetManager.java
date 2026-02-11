@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
 import bms.player.beatoraja.skin.lr2.LR2DestinationOptions;
+import bms.player.beatoraja.skin.lr2.LR2NumberDef;
 import bms.player.beatoraja.skin.lr2.LR2TextDef;
 import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
@@ -34,6 +35,7 @@ public class SkinWidgetManager {
     private static final List<Pair<Integer, Integer>> skinOptions = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
     private static final List<Integer> missingTextDefinitions = new ArrayList<>();
+    private static final List<Integer> missingNumberDefinitions = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
 
@@ -145,6 +147,12 @@ public class SkinWidgetManager {
     public static void registerMissingTextDefinition(int value) {
         if (!missingTextDefinitions.contains(value)) {
             missingTextDefinitions.add(value);
+        }
+    }
+
+    public static void registerMissingNumberDefinition(int value) {
+        if (!missingNumberDefinitions.contains(value)) {
+            missingNumberDefinitions.add(value);
         }
     }
 
@@ -405,7 +413,34 @@ public class SkinWidgetManager {
 
                         Integer value = missingTextDefinitions.get(row);
                         ImGui.tableSetColumnIndex(0);
-                        ImGui.text(LR2TextDef.valueOf(value).name());
+                        LR2TextDef textDef = LR2TextDef.valueOf(value);
+                        ImGui.text(textDef != null ? textDef.name() : "ERROR");
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
+        }
+        if (ImGui.treeNodeEx("Number##MissingNo")) {
+            if (ImGui.beginTable("Number##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingNumberDefinitions.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingNumberDefinitions.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        LR2NumberDef numberDef = LR2NumberDef.valueOf(value);
+                        ImGui.text(numberDef != null ? numberDef.name() : "ERROR");
 
                         ImGui.tableSetColumnIndex(1);
                         ImGui.text(value.toString());
