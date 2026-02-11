@@ -294,13 +294,21 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			public void execute(String[] str) {
 				text = null;
 				int[] values = parseInt(str);
+				// HACK: st=1's definition is different between lr2 and beatoraja.
+				//  In lr2, it's target score or rival's name
+				//  In beatoraja, it's rival's name or empty string
+				// Beatoraja itself introduces another variant: st=3 which implements the similar behavior with lr2.
+				//  So we hijacked the value here to keep the compatibility
+				if (values[3] == 1) {
+					values[3] = 3;
+				}
+				StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
+				if (property == null) {
+					SkinWidgetManager.registerMissingTextDefinition(values[3]);
+				}
 				if (values[2] < fontlist.size && fontlist.get(values[2]) != null) {
-					text = new SkinTextImage(fontlist.get(values[2]), values[3]);
+					text = new SkinTextImage(fontlist.get(values[2]), property);
 				} else {
-					StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
-					if (property == null) {
-						SkinWidgetManager.registerMissingTextDefinition(values[3]);
-					}
 					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2, property);
 				}
 				text.setAlign(values[4]);
