@@ -1,5 +1,6 @@
 package bms.player.beatoraja.skin.lr2;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 /**
@@ -200,6 +201,7 @@ public enum LR2TextDef {
 		return value;
 	}
 
+	@Nullable
 	public static LR2TextDef valueOf(int v) {
 		return Arrays.stream(LR2TextDef.values()).filter(def -> def.value == v).findAny().orElse(null);
 	}

@@ -330,7 +330,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				text.setAlign(values[4]);
 				text.setEditable(values[5] != 0);
 				int panel = values[6];
-				text.setName(String.format("SRC_TEXT(%s[%d])", LR2TextDef.valueOf(values[3]), values[3]));
+				LR2TextDef textDef = LR2TextDef.valueOf(values[3]);
+				text.setName(String.format("SRC_TEXT(%s[%d])", textDef != null ? textDef.getName() : "ERROR", values[3]));
 				skin.add(text);
 				if(text.isEditable() && values[3] == SkinProperty.STRING_SEARCHWORD && skin instanceof MusicSelectSkin) {
 					((MusicSelectSkin) skin).searchText = text;
@@ -532,7 +533,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						}
 						button.setClickeventType(values[14] > 0 ? 0 : values[14] < 0 ? 1 : 2);
 					}
-					button.setName(String.format("Button[%d](%d, %d) on panel [%d]", gr, x, y, values[13]));
+					LR2ButtonDef buttonDef = LR2ButtonDef.valueOf(values[11]);
+					button.setName(String.format("Button(%s[%d]) on panel [%d]", buttonDef != null ? buttonDef.getName() : "ERROR", values[11], values[13]));
 					skin.add(button);
 					// System.out.println("Object Added - " +
 					// (part.getTiming()));
