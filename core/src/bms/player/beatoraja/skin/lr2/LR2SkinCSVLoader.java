@@ -269,6 +269,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 
 							num = new SkinNumber(nimages, values[10], values[9], values[13], d > 10 ? 2 : 0, 0, values[11], values[12]);
 						}
+						LR2NumberDef numberDef = LR2NumberDef.valueOf(values[11]);
+						num.setName(String.format("SRC_NUMBER(%s[%d])", numberDef != null ? numberDef.getName() : "ERROR", values[11]));
 						skin.add(num);
 						// System.out.println("Number Added - " +
 						// (num.getId()));
