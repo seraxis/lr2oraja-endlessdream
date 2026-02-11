@@ -5,9 +5,7 @@ import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
-import bms.player.beatoraja.constants.DPOptions;
-import bms.player.beatoraja.constants.HiSpeedFix;
-import bms.player.beatoraja.constants.LaneOptions;
+import bms.player.beatoraja.constants.*;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.ir.IRScoreData;
 import bms.player.beatoraja.ir.RankingData;
@@ -181,6 +179,10 @@ public class StringPropertyFactory {
 					? HiSpeedFix.getName(pc.getFixhispeed())
 					: "ERROR";
 		}),
+		bga_size(75, state -> BGAExpandOptions.getName(state.resource.getConfig().getBgaExpand())),
+		bga_display(76, state -> BGAOptions.getName(state.resource.getConfig().getBga())),
+		screen_mode(79, state -> state.resource.getConfig().getDisplaymode().name()),
+		judge_auto_adjust(80, state -> state.resource.getPlayerConfig().isNotesDisplayTimingAutoAdjust() ? "ON" : "OFF"),
 
 		chartreplication(86, (state) -> state.resource.getPlayerConfig().getChartReplicationMode()),
 
