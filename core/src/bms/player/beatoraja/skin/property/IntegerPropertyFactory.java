@@ -321,6 +321,13 @@ public class IntegerPropertyFactory {
 				}
 				return Integer.MIN_VALUE;
 			};
+		case NUMBER_COMBO:
+			return state -> {
+				if (state instanceof BMSPlayer player) {
+					return player.getJudgeManager().getCombo();
+				}
+				return Integer.MIN_VALUE;
+			};
 		case NUMBER_MAXCOMBO:
 		case NUMBER_MAXCOMBO2:
 			return (state) -> {
