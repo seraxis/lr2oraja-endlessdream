@@ -150,16 +150,25 @@ public class SkinHeader {
 	}
 	
 	public void setSkinConfigProperty(SkinConfig.Property property) {
+		// HACK for LR2: we injected a custom property 'Resolution', we'll translate it back and set it to header
+		SkinConfig.Option[] propertyOptions = property.getOption();
+		for (SkinConfig.Option option : propertyOptions) {
+			if (option.name.equals("Resolution")) {
+				int want = (option.value + 1) * -1;
+				Optional<Resolution> any = Arrays.stream(Resolution.values()).filter(res -> res.ordinal() == want).findAny();
+				any.ifPresent(this::setResolution);
+			}
+		}
 		// Some LR2 skins have multiple options that with same name, this is trying to prevent an option is used
 		//  multiple times.
 		Set<Integer> usedOptionIndex = new HashSet<>();
 		for (SkinHeader.CustomOption customOption : getCustomOptions()) {
 			int op = customOption.getDefaultOption();
-			for (int i = 0;i < property.getOption().length; ++i) {
+			for (int i = 0; i < propertyOptions.length; ++i) {
 				if (usedOptionIndex.contains(i)) {
 					continue;
 				}
-				SkinConfig.Option option = property.getOption()[i];
+				SkinConfig.Option option = propertyOptions[i];
 				if (option.name.equals(customOption.name)) {
 					if (option.value != OPTION_RANDOM_VALUE) {
 						op = option.value;

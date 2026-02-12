@@ -48,9 +48,6 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 	public SkinHeader loadSkin(Path f, MainState state, SkinConfig.Property property) throws IOException {
 		// TODO header読み込みに失敗したらnullを返す
 		header = new SkinHeader();
-		if (state != null) {
-			header.setResolution(state.main.getConfig().getResolution());
-		}
 		files.clear();
 		options.clear();
 		offsets.clear();
@@ -71,7 +68,7 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 		header.setCustomOffsets(offsets.toArray(CustomOffset.class));
 		
 		header.setSkinConfigProperty(property);
-		
+
 		for (CustomOption option : header.getCustomOptions()) {
 			for(int i = 0;i < option.option.length;i++) {
 				op.put(option.option[i], option.getSelectedOption() == option.option[i] ? 1 : 0);
@@ -88,6 +85,10 @@ enum HeaderCommand implements Command<LR2SkinHeaderLoader> {
 		loader.header.setSkinType(SkinType.getSkinTypeById(Integer.parseInt(str[1])));
 		loader.header.setName(str[2]);
 		loader.header.setAuthor(str[3]);
+		loader.options.add(new CustomOption("Resolution",
+				Arrays.stream(Resolution.values()).mapToInt(res -> res.ordinal() * -1 - 1).toArray(),
+				Arrays.stream(Resolution.values()).map(Enum::name).toArray(String[]::new))
+		);
 		switch (loader.header.getSkinType()) {
 			case PLAY_5KEYS:
 			case PLAY_7KEYS:
