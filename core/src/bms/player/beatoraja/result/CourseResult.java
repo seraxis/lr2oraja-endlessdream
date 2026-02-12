@@ -82,7 +82,7 @@ public class CourseResult extends AbstractResult {
 		ranking = resource.getRankingData() != null && resource.getCourseBMSModels() != null ? resource.getRankingData() : new RankingData();
 		rankingOffset = 0;
 		final IRStatus[] ir = main.getIRStatus();
-		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
+		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.getPlayerConfig().isIidxMode()) {
 			state = STATE_IR_PROCESSING;
 			
 			boolean uln = false;
