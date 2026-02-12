@@ -164,14 +164,15 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 							&& imagelist.get(gr) instanceof SkinSourceMovie) {
 						part = new SkinImage((SkinSourceMovie) imagelist.get(gr));
 					} else {
+						// Please note that getSourceImage can return a null value
 						TextureRegion[] images = getSourceImage(values);
 						if (images != null) {
 							part = new SkinImage(images, values[10], values[9]);
 							// System.out.println("Object Added - " +
 							// (part.getTiming()));
+							part.setName(String.format("CutSkinImage[%d](%d, %d)", gr, values[3], values[4]));
 						}
 					}
-					part.setName(String.format("CutSkinImage[%d](%d, %d)", gr, values[3], values[4]));
 				}
 				if (part != null) {
 					skin.add(part);

@@ -157,14 +157,16 @@ public abstract class LR2SkinLoader extends SkinLoader {
 		// If the file doesn't exist, we'll try to see if it's inside a dxa file
 		if (!file.exists()) {
 			File parentFile = file.getParentFile();
-			File parentDXA = new File(parentFile.getPath() + ".dxa");
-			if (!parentFile.exists() && parentDXA.exists()) {
-				// We support the dxa file by uncompressing it to disk eagerly
-				logger.info("file at {} cannot be found, but a dxa file is being found: {}", file, parentDXA);
-				try {
-					DXADecoder.extractToSameDirectory(parentDXA.getAbsolutePath(), null);
-				} catch (Exception e) {
-					logger.error("Failed to extract dxa file correctly", e);
+			if (parentFile != null && !parentFile.exists()) {
+				File parentDXA = new File(parentFile.getPath() + ".dxa");
+				if (parentDXA.exists()) {
+					// We support the dxa file by uncompressing it to disk eagerly
+					logger.info("file at {} cannot be found, but a dxa file is being found: {}", file, parentDXA);
+					try {
+						DXADecoder.extractToSameDirectory(parentDXA.getAbsolutePath(), null);
+					} catch (Exception e) {
+						logger.error("Failed to extract dxa file correctly", e);
+					}
 				}
 			}
 		}
