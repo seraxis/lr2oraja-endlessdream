@@ -9,6 +9,8 @@ import com.badlogic.gdx.utils.ObjectMap;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.skin.SkinLoader;
 import bms.player.beatoraja.skin.property.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * LR2スキンローダー
@@ -16,6 +18,7 @@ import bms.player.beatoraja.skin.property.*;
  * @author exch
  */
 public abstract class LR2SkinLoader extends SkinLoader {
+	private static Logger logger = LoggerFactory.getLogger(LR2SkinLoader.class);
 
 	private Array<Command> commands = new Array<Command>();
 
@@ -150,7 +153,22 @@ public abstract class LR2SkinLoader extends SkinLoader {
 	}
 	
 	protected static File getPath(String skinpath, String imagepath, ObjectMap<String, String> filemap) {
-		return SkinLoader.getPath(imagepath.replace("LR2files\\Theme", skinpath).replace("\\", "/"), filemap);
+		File file = SkinLoader.getPath(imagepath.replace("LR2files\\Theme", skinpath).replace("\\", "/"), filemap);
+		// If the file doesn't exist, we'll try to see if it's inside a dxa file
+		if (!file.exists()) {
+			File parentFile = file.getParentFile();
+			File parentDXA = new File(parentFile.getPath() + ".dxa");
+			if (!parentFile.exists() && parentDXA.exists()) {
+				// We support the dxa file by uncompressing it to disk eagerly
+				logger.info("file at {} cannot be found, but a dxa file is being found: {}", file, parentDXA);
+				try {
+					DXADecoder.extractToSameDirectory(parentDXA.getAbsolutePath(), null);
+				} catch (Exception e) {
+					logger.error("Failed to extract dxa file correctly", e);
+				}
+			}
+		}
+		return file;
 	}
 
 	public abstract class CommandWord implements Command<LR2SkinLoader> {
