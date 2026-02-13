@@ -501,6 +501,59 @@ public final class PlayDataAccessor {
 		scoredb.deleteScoreData(sha256, ln ? lnmode : 0);
 	}
 
+	public void deleteScoreData(SongData[] songs, int lnmode, CourseData.CourseDataConstraint[] constraint) {
+		String[] hash = new String[songs.length];
+		boolean ln = false;
+		for (int i = 0; i < songs.length; i++) {
+			hash[i] = songs[i].getSha256();
+			ln |= songs[i].hasUndefinedLongNote();
+		}
+		
+		int hispeed = 0;
+		int judge = 0;
+		int gauge = 0;
+		for (CourseData.CourseDataConstraint c : constraint) {
+			switch(c) {
+			case NO_SPEED:
+				hispeed = 1;
+				break;
+			case NO_GOOD:
+				judge = 1;
+				break;
+			case NO_GREAT:
+				judge = 2;
+				break;
+			case GAUGE_LR2:
+				gauge = 1;
+				break;
+			case GAUGE_5KEYS:
+				gauge = 2;
+				break;
+			case GAUGE_7KEYS:
+				gauge = 3;
+				break;
+			case GAUGE_9KEYS:
+				gauge = 4;
+				break;
+			case GAUGE_24KEYS:
+				gauge = 5;
+				break;
+			default:
+				break;
+			}
+		}
+
+		String sha256 = "";
+		for (String s : hash) {
+			sha256 += s;
+		}
+		
+		// 0: 正規, 1: MIRROR, 2: RANDOM
+		for(int option = 0; option < 3; option++) {
+			scoredb.deleteScoreData(sha256, (ln ? lnmode : 0) + option * 10 + hispeed * 100 + judge * 1000 + gauge * 10000);			
+		}
+	}
+
 	public boolean existsReplayData(BMSModel model, int lnmode, int index) {
 		boolean ln = model.containsUndefinedLongNote();
 		return Files.exists(Paths.get(this.getReplayDataFilePath(model.getSHA256(), ln, lnmode, index) + ".brd"));

@@ -6,6 +6,8 @@ import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.Bar;
 import bms.player.beatoraja.select.bar.SearchWordBar;
 import bms.player.beatoraja.select.bar.SongBar;
+import bms.player.beatoraja.select.bar.GradeBar;
+import bms.player.beatoraja.CourseData;
 import bms.player.beatoraja.song.SongData;
 
 import org.slf4j.Logger;
@@ -103,9 +105,25 @@ public class SearchTextField extends Stage {
 									textFieldStyle.messageFontColor = Color.RED;
 									selector.selectedBarMoved();
 									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
+								} else if (current instanceof GradeBar && ((GradeBar) current).existsAllSongs()) {
+									GradeBar grade = (GradeBar) current;
+									CourseData course = grade.getCourseData();
+									int lnmode = selector.main.getPlayerResource().getPlayerConfig().getLnmode();
+									selector.main.getPlayDataAccessor().deleteScoreData(grade.getSongDatas(), lnmode, course.getConstraint());
+									grade.setScore(null);
+									grade.setMirrorScore(null);
+									grade.setRandomScore(null);
+									for(int i = 0;i < MusicSelector.REPLAY;i++) {
+										grade.setExistsReplay(i, false);
+									}
+									textField.setText("");
+									textField.setMessageText("Course Score Deleted");
+									textFieldStyle.messageFontColor = Color.RED;
+									selector.selectedBarMoved();
+									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
 								} else {
 									textField.setText("");
-									textField.setMessageText("Song not selected");
+									textField.setMessageText("Song/Course not selected");
 									textFieldStyle.messageFontColor = Color.GRAY;
 									selector.main.getInputProcessor().isControlKeyPressed(ControlKeys.ENTER);
 								}
