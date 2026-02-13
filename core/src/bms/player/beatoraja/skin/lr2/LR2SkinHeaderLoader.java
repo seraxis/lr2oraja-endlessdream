@@ -1,9 +1,12 @@
 package bms.player.beatoraja.skin.lr2;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.rmi.UnexpectedException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -19,6 +22,8 @@ import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.lr2.LR2SkinLoader.Command;
 import bms.player.beatoraja.skin.SkinHeader.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static bms.player.beatoraja.Resolution.*;
 
@@ -28,6 +33,7 @@ import static bms.player.beatoraja.Resolution.*;
  * @author exch
  */
 public class LR2SkinHeaderLoader extends LR2SkinLoader {
+	private static final Logger logger = LoggerFactory.getLogger(LR2SkinHeaderLoader.class);
 	
 	SkinHeader header = new SkinHeader();
 	Array<CustomFile> files = new Array<CustomFile>();
@@ -57,12 +63,29 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
 			lines.forEach(line -> {
 				try {
-					processLine(line, state);				
+					processLine(line, state);
 				} catch(Throwable e) {
-					e.printStackTrace();
+					logger.error("Failed to load LR2 skin", e);
 				}
 			});
-		};
+		} catch (UncheckedIOException e) {
+			logger.error("Failed loading LR2 skin with charset MS932", e);
+			logger.info("Trying to reload LR2 skin at {} without charset", f);
+			header = new SkinHeader();
+			files.clear();
+			options.clear();
+			offsets.clear();
+			header.setPath(f);
+			try (Stream<String> lines = Files.lines(f)) {
+				lines.forEach(line -> {
+					try {
+						processLine(line, state);
+					} catch (Throwable ex) {
+						logger.error("Failed to load LR2 skin", ex);
+					}
+				});
+			}
+		}
 		header.setCustomOptions(options.toArray(CustomOption.class));
 		header.setCustomFiles(files.toArray(CustomFile.class));
 		header.setCustomOffsets(offsets.toArray(CustomOffset.class));
