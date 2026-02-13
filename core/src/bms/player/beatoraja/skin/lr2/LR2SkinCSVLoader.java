@@ -115,7 +115,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						imagelist.add(getTexture(imagefile.getPath(), usecim));
 					}
 				} else {
-					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
+					logger.warn("IMAGE {} : cannot be found : {}", imagelist.size, imagefile.getPath());
 					imagelist.add(null);
 				}
 				// System.out
@@ -127,11 +127,11 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 		addCommandWord(new CommandWord("LR2FONT") {
 			@Override
 			public void execute(String[] str) {
-				final File imagefile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
-				if (imagefile.exists()) {
+				final File fontFile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
+				if (fontFile.exists()) {
 					LR2FontLoader font = new LR2FontLoader(usecim);
 					try {
-						SkinTextImage.SkinTextImageSource source = font.loadFont(imagefile.toPath());
+						SkinTextImage.SkinTextImageSource source = font.loadFont(fontFile.toPath());
 						fontlist.add(source);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -139,12 +139,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					}
 
 				} else {
-					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
+					logger.warn("LR2Font: {} : cannot be found : {}", imagelist.size, fontFile.getPath());
 					fontlist.add(null);
 				}
 				// System.out
 				// .println("Image Loaded - " + (imagelist.size() -
-				// 1) + " : " + imagefile.getPath());
+				// 1) + " : " + fontFile.getPath());
 			}
 		});
 

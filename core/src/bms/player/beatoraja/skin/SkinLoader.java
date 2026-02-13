@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.file.*;
 
 /**
@@ -69,6 +70,18 @@ public abstract class SkinLoader {
                 header.setSourceResolution(dloader.src);
                 header.setDestinationResolution(dloader.dst);
                 Skin skin = dloader.loadSkin(state, header, loader.getOption());
+                // HACK: If an object only has one dst and its time is non-zero, force it to be zero to avoid the issue
+                //  that it's never be drawn. See comments in bms.player.beatoraja.skin.SkinObject.prepareRegion
+                Field starttime = SkinObject.class.getDeclaredField("starttime");
+                Field endtime = SkinObject.class.getDeclaredField("endtime");
+                starttime.setAccessible(true);
+                endtime.setAccessible(true);
+                for (SkinObject obj : skin.getAllSkinObjects()) {
+                    if (obj.getAllDestination().length == 1 && obj.getAllDestination()[0].time > 0) {
+                        starttime.set(obj, 0);
+                        endtime.set(obj, 0);
+                    }
+                }
                 SkinLoader.resource.disposeOld();
                 return skin;
             }

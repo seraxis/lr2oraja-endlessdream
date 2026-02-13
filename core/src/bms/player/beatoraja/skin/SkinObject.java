@@ -323,6 +323,16 @@ public abstract class SkinObject extends DisposableObject {
 				time = (time - dstloop) % (lasttime - dstloop) + dstloop;
 			}
 		}
+		// Some LR2 skins used a combination of single dst with non-zero time parameter, which causes
+		//  starttime is equals to endtime and the object will never being rendered.
+		// The reason why could be calculated by a simple math:
+		//  1) dstloop 0 and lasttime = endtime, which is a non-zero value, so apparently they won't be equaled
+		//  2) based on (1) time is calculated by time = time % lasttime, where lasttime = endtime
+		//  3) therefore, time is a value modded by endtime, which is always strictly less than endtime
+		//  4) and starttime is equals to endtime, so starttime is always strictly larger than time
+		//  5) apparently, this object will never be drawn on screen
+		// If we found such a wrong definition, we'll try to manipulated its starttime & endtime as they were 0 to
+		//  force this object being drawn. It's equalized to modify its time to 0 in skin files.
 		if (starttime > time) {
 			draw = false;
 			return;
