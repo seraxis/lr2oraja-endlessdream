@@ -138,9 +138,6 @@ public enum GaugeProperty {
         // HARD: 回復量は0.16%固定(LIMIT_INCREMENTで処理)。減少量は BAD/空POOR -4.5%, POOR -9.0%
         // 30%以下補正はGrooveGauge側のロジックで適用されます。
         // GOOD回復量は0% (index 2)
-        // HARD: 回復量は0.16%固定。減少量は BAD/空POOR -4.5%, POOR -9.0%
-        // 30%以下補正はGrooveGauge側のロジックで適用されます。
-        // GOOD回復量は0% (index 2)
         HARD_IIDX       (null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0f, -4.5f, -9.0f, -4.5f}, new float[][]{{30, 0.5f}}),
         // EXHARD: 回復量は0.16%固定。減少量は BAD/空POOR -9.0%, POOR -18.0%
         // GOOD回復量は0%
@@ -151,10 +148,10 @@ public enum GaugeProperty {
         // CLASS (段位認定): 回復量はHARDと同等(0.16%)。GOODはGREATの0.25倍(0.04%)。
         // 減少量: BAD/空POOR -1.5%, 見逃しPOOR -2.5%
         CLASS_IIDX      (null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0.04f, -1.5f, -2.5f, -1.5f}, new float[][]{{30, 0.5f}}),
-        // EXCLASS: 減少量がCLASSの1.5倍。BAD/空POOR -2.25%, 見逃しPOOR -3.75%
-        EXCLASS_IIDX    (null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0.04f, -2.25f, -3.75f, -2.25f}, new float[][]{{30, 0.5f}}),
-        // EXHARDCLASS: 減少量がCLASSの2.0倍。BAD/空POOR -3.0%, 見逃しPOOR -5.0%
-        EXHARDCLASS_IIDX(null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0.04f, -3.0f, -5.0f, -3.0f}, new float[][]{}),
+        // EXCLASS: 減少量がCLASSの2倍。BAD/空POOR -3.0%, 見逃しPOOR -5.0%
+        EXCLASS_IIDX    (null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0.04f, -3.0f, -5.0f, -3.0f}, new float[][]{}),
+        // EXHARDCLASS: 減少量がCLASSの4倍。BAD/空POOR -6.0%, 見逃しPOOR -10.0%
+        EXHARDCLASS_IIDX(null, 0, 100, 100, 0, 0, new float[]{0.16f, 0.16f, 0.04f, -6.0f, -10.0f, -6.0f}, new float[][]{}),
 
         ;
 
