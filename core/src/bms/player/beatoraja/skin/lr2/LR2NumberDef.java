@@ -374,6 +374,12 @@ public enum LR2NumberDef {
 			return NUMBER_AVERAGE_TIMING;
 		} else if (v == HitMeanDecimal.value) {
 			return NUMBER_AVERAGE_TIMING_AFTERDOT;
+		} else if (v == Total.value) {
+			return NUMBER_SONGGAUGE_TOTAL;
+		} else if (v == GreenNumber.value) {
+			return NUMBER_DURATION_GREEN;
+		} else if (v == WhiteNumber.value) {
+			return NUMBER_DURATION;
 		}
 		return v;
 	}
