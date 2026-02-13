@@ -433,7 +433,9 @@ public class IntegerPropertyFactory {
 							: Integer.MIN_VALUE;
 				}
 				return Integer.MIN_VALUE;
-			};			
+			};	
+		case NUMBER_DIFFICULTY_FILTER:
+			return (state) -> (state.main.getPlayerResource().getPlayerConfig().getDifficultyFilter());
 		}
 		
 		return null;
@@ -999,6 +1001,8 @@ public class IntegerPropertyFactory {
 		bpmguide(306, (state) -> (state.resource.getPlayerConfig().isBpmguide() ? 1 : 0)),
 
 		customjudge(301, (state) -> (state.resource.getPlayerConfig().isCustomJudge() ? 1 : 0)),
+		difficultyfilter(309, (state) -> (state.resource.getPlayerConfig().getDifficultyFilter())),
+		difficultyfilter_num(221, (state) -> (state.resource.getPlayerConfig().getDifficultyFilter())),
 		lnmode(308, (state) -> {
 			if (state instanceof BMSPlayer || state instanceof MusicResult) {
 				SongData model = state.resource.getSongdata();

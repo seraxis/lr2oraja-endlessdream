@@ -99,6 +99,11 @@ public final class PlayerConfig {
 	private int misslayerDuration = 500;
 
 	/**
+	 * 難易度フィルター (0:ALL, 1:BEG, 2:NOR, 3:HYP, 4:ANO, 5:INS)
+	 */
+	private int difficultyFilter = 0;
+
+	/**
 	 * LNモード
 	 */
 	private int lnmode = 0;
@@ -529,6 +534,14 @@ public final class PlayerConfig {
 
 	public void setSortid(String sortid) {
 		this.sortid = sortid;
+	}
+
+	public int getDifficultyFilter() {
+		return difficultyFilter;
+	}
+
+	public void setDifficultyFilter(int difficultyFilter) {
+		this.difficultyFilter = difficultyFilter;
 	}
 
 

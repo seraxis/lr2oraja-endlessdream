@@ -42,10 +42,6 @@ import bms.player.beatoraja.song.SongInformationAccessor;
 public class BarManager {
 	private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
 	
-	// 【追加】 難易度フィルター (0:ALL, 1:BEG, 2:NOR, 3:HYP, 4:ANO, 5:INS)
-	private int difficultyFilter = 0;
-
-
 	private final MusicSelector select;
 	/**
 	 * 難易度表バー一覧
@@ -380,7 +376,7 @@ public class BarManager {
 				// -------------------------------------------------------------
 				// 2. 難易度フィルタリング (親フォルダ基準)
 				// -------------------------------------------------------------
-				if (this.difficultyFilter != 0 && l.size > 0) {
+				if (config.getDifficultyFilter() != 0 && l.size > 0) {
 					remove.clear();
 					java.util.HashMap<String, java.util.ArrayList<SongBar>> songGroups = new java.util.HashMap<>();
 
@@ -418,7 +414,7 @@ public class BarManager {
 							int d = sb.getSongData().getDifficulty();
 
 							// フィルタ設定と一致するものをリストアップ
-							if (d == this.difficultyFilter) {
+							if (d == config.getDifficultyFilter()) {
 								matches.add(sb);
 							}
 
@@ -1031,15 +1027,16 @@ public class BarManager {
 	 * 現在の難易度フィルター設定を取得します
 	 */
 	public int getDifficultyFilter() {
-		return this.difficultyFilter;
+		return select.resource.getPlayerConfig().getDifficultyFilter();
 	}
 
 	/**
 	 * 難易度フィルターを順次切り替えます (ALL -> BEG -> ... -> INS -> ALL)
-	 * 切り替え時にフォルダクローズ音を鳴らします。
+	 * 切り替え時にオプション変更音を鳴らします。
 	 */
 	public void toggleDifficultyFilter() {
-		this.difficultyFilter = (this.difficultyFilter + 1) % 6;
+		PlayerConfig config = select.resource.getPlayerConfig();
+		config.setDifficultyFilter((config.getDifficultyFilter() + 1) % 6);
 		this.updateBar();
 		select.play(OPTION_CHANGE);
 	}
@@ -1049,7 +1046,8 @@ public class BarManager {
 	 * @param difficulty 0:ALL, 1:BEG, 2:NOR, 3:HYP, 4:ANO, 5:INS
 	 */
 	public void setDifficultyFilter(int difficulty) {
-		this.difficultyFilter = (difficulty < 0 || difficulty > 5) ? 0 : difficulty;
+		int d = (difficulty < 0 || difficulty > 5) ? 0 : difficulty;
+		select.resource.getPlayerConfig().setDifficultyFilter(d);
 		this.updateBar();
 		select.play(OPTION_CHANGE);
 	}
