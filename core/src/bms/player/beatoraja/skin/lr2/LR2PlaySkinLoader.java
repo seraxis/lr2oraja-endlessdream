@@ -765,6 +765,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 
 			judge[index].setJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1], new SkinNumber(images, values[10], values[9], values[13],
 					images.length > 10 ? 2 : 0, values[15], values[11], values[12] == 1 ?  2 : values[12]));
+			judge[index].setName(String.format("Combo_%dP", index + 1));
 			// System.out.println("Number Added - " +
 			// (num.getId()));
 		}

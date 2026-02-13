@@ -366,6 +366,14 @@ public enum LR2NumberDef {
 			return NUMBER_IR_PLAYER_TOTAL_CLEAR_RATE;
 		} else if (v == RatePercent.value) {
 			return NUMBER_SCORE_RATE;
+		} else if (v == StandardDeviation.value) {
+			return NUMBER_STDDEV_TIMING;
+		} else if (v == StandardDeviationDecimal.value) {
+			return NUMBER_STDDEV_TIMING_AFTERDOT;
+		} else if (v == HitMean.value) {
+			return NUMBER_AVERAGE_TIMING;
+		} else if (v == HitMeanDecimal.value) {
+			return NUMBER_AVERAGE_TIMING_AFTERDOT;
 		}
 		return v;
 	}
