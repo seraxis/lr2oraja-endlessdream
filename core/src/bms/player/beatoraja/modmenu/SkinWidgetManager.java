@@ -85,6 +85,7 @@ public class SkinWidgetManager {
                 String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
                 widgets.add(new SkinWidget(widgetName, skinObject, destinations));
             }
+            widgets.sort(Comparator.comparing(widget -> widget.name));
             skin.getOption().forEach(entry -> skinOptions.add(Pair.of(entry.key, entry.value)));
             skinOptions.sort(Pair.DEFAULT_COMPARATOR());
         }
