@@ -168,9 +168,6 @@ public class MusicResult extends AbstractResult {
 		timer.switchTimer(TIMER_RESULTGRAPH_BEGIN, true);
 		timer.switchTimer(TIMER_RESULTGRAPH_END, true);
 
-		if (((MusicResultSkin) getSkin()).getRankTime() == 0) {
-			timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-		}
 		if (time > getSkin().getInput()) {
 			timer.switchTimer(TIMER_STARTINPUT, true);
 		}
@@ -290,10 +287,7 @@ public class MusicResult extends AbstractResult {
 				}
 
 				if (resource.getScoreData() == null || ok) {
-					if (((MusicResultSkin) getSkin()).getRankTime() != 0
-							&& !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
-						timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-					} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  1000) {
+					if (state == STATE_OFFLINE || state == STATE_IR_FINISHED ||  time - timer.getTimer(TIMER_IR_CONNECT_BEGIN) >=  1000) {
 						timer.switchTimer(TIMER_FADEOUT, true);
 						if (getSound(RESULT_CLOSE) != null) {
 							stop(RESULT_CLEAR);
@@ -311,6 +305,12 @@ public class MusicResult extends AbstractResult {
 					saveReplayData(2);				
 				} else if(inputProcessor.isControlKeyPressed(ControlKeys.NUM4)) {
 					saveReplayData(3);				
+				} else if (inputProcessor.isControlKeyPressed(ControlKeys.NUM5)) {
+					if (timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
+						timer.setTimerOff(TIMER_RESULT_UPDATESCORE);
+					} else {
+						timer.setTimerOn(TIMER_RESULT_UPDATESCORE);
+					}
 				}
 
 				if(inputProcessor.isActivated(KeyCommand.OPEN_IR)) {

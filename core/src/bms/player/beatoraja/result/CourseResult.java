@@ -173,7 +173,6 @@ public class CourseResult extends AbstractResult {
 		long time = timer.getNowTime();
 		timer.switchTimer(TIMER_RESULTGRAPH_BEGIN, true);
 		timer.switchTimer(TIMER_RESULTGRAPH_END, true);
-		timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
 
 		if(time > getSkin().getInput()){
 			timer.switchTimer(TIMER_STARTINPUT, true);
@@ -214,9 +213,7 @@ public class CourseResult extends AbstractResult {
 			} 
 
 			if (resource.getScoreData() == null || ok) {
-				if (((CourseResultSkin) getSkin()).getRankTime() != 0 && !timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
-					timer.switchTimer(TIMER_RESULT_UPDATESCORE, true);
-				} else if (state == STATE_OFFLINE || state == STATE_IR_FINISHED){
+				if (state == STATE_OFFLINE || state == STATE_IR_FINISHED){
 					timer.switchTimer(TIMER_FADEOUT, true);
 					if(getSound(COURSE_CLOSE) != null || getSound(RESULT_CLOSE) != null) {
 						stop(getSound(COURSE_CLEAR) != null ? COURSE_CLEAR : RESULT_CLEAR);
@@ -234,6 +231,12 @@ public class CourseResult extends AbstractResult {
 				saveReplayData(2);				
 			} else if(inputProcessor.isControlKeyPressed(ControlKeys.NUM4)) {
 				saveReplayData(3);				
+			} else if (inputProcessor.isControlKeyPressed(ControlKeys.NUM5)) {
+				if (timer.isTimerOn(TIMER_RESULT_UPDATESCORE)) {
+					timer.setTimerOff(TIMER_RESULT_UPDATESCORE);
+				} else {
+					timer.setTimerOn(TIMER_RESULT_UPDATESCORE);
+				}
 			}
 
 			if(inputProcessor.isActivated(KeyCommand.OPEN_IR)) {
