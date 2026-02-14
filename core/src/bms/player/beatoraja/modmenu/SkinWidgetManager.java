@@ -1,5 +1,6 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.play.SkinJudge;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
 import bms.player.beatoraja.skin.lr2.LR2DestinationOptions;
@@ -71,25 +72,21 @@ public class SkinWidgetManager {
             // NOTE: We're using skin object's name as id, we need to keep name is unique
             Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
             for (SkinObject skinObject : allSkinObjects) {
-                String skinObjectName = skinObject.getName();
-                SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
-                List<SkinWidgetDestination> destinations = new ArrayList<>();
-                for (int i = 0; i < dsts.length; ++i) {
-                    String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
-                    String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
-                    destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+                if (skinObject instanceof SkinJudge skinJudge) {
+                    // Support 2P? Currently don't have to
+                    registerSkinObject(skinJudge.getJudge(0), duplicatedSkinObjectNameCount);
+                    registerSkinObject(skinJudge.getJudgeCount(0), duplicatedSkinObjectNameCount);
+                } else {
+                    registerSkinObject(skinObject, duplicatedSkinObjectNameCount);
                 }
-                String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
-                Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
-                duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
-                String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
-                widgets.add(new SkinWidget(widgetName, skinObject, destinations));
             }
             widgets.sort(Comparator.comparing(widget -> widget.name));
             skin.getOption().forEach(entry -> skinOptions.add(Pair.of(entry.key, entry.value)));
             skinOptions.sort(Pair.DEFAULT_COMPARATOR());
         }
     }
+
+
 
     public static void show(ImBoolean showSkinWidgetManagerMenu) {
         synchronized (LOCK) {
@@ -518,6 +515,22 @@ public class SkinWidgetManager {
     private static String normalizeFloat(float value) {
         DecimalFormat df = new DecimalFormat("#.####");
         return df.format(value);
+    }
+
+    private static void registerSkinObject(SkinObject skinObject, Map<String, Integer> duplicatedSkinObjectNameCount) {
+        String skinObjectName = skinObject.getName();
+        SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
+        List<SkinWidgetDestination> destinations = new ArrayList<>();
+        for (int i = 0; i < dsts.length; ++i) {
+            String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
+            String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
+            destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+        }
+        String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
+        Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
+        duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
+        String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
+        widgets.add(new SkinWidget(widgetName, skinObject, destinations));
     }
 
     /**
