@@ -95,7 +95,7 @@ public final class SkinJudge extends SkinObject {
 				SkinObjectDestination[] dsts = skinNumber.getAllDestination();
 				for (SkinObjectDestination dst : dsts) {
 					if (dst.region.y != 0) {
-						dst.region.y += judgeHeight;
+						dst.region.y += judgeHeight - dst.region.height;
 					}
 				}
 			}
