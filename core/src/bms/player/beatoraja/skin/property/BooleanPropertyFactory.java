@@ -124,6 +124,7 @@ public class BooleanPropertyFactory {
 						}
 						return false;
 					});
+		case OPTION_MODE_GRADE:
 		case OPTION_MODE_COURSE:
 			return new DrawProperty(DrawProperty.TYPE_STATIC_WITHOUT_MUSICSELECT,
 					(state) -> (state.main.getPlayerResource().getCourseData() != null));
