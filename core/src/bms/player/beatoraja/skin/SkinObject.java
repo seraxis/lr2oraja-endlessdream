@@ -3,8 +3,10 @@ package bms.player.beatoraja.skin;
 import bms.player.beatoraja.DisposableObject;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
+import bms.player.beatoraja.skin.lr2.commands.StandardDestination;
 import bms.player.beatoraja.skin.property.*;
 
+import bms.tool.util.Pair;
 import com.badlogic.gdx.graphics.Color;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -233,6 +235,14 @@ public abstract class SkinObject extends DisposableObject {
 		dst = l.toArray(SkinObjectDestination.class);
 		starttime = dst[0].time;
 		endtime = dst[dst.length - 1].time;
+	}
+
+	public void setDestination(StandardDestination dst, float srcw, float srch, float dstw, float dsth) {
+		setDestination(dst.time, dst.x() * dstw / srcw, dsth - (dst.y() + dst.h()) * dsth / srch,
+				dst.w() * dstw / srcw, dst.h() * dsth / srch, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(),
+				dst.blend, dst.filter, dst.angle, dst.center, dst.loop,
+				dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 	}
 
 	public BooleanProperty[] getDrawCondition() {

@@ -602,4 +602,15 @@ public enum LR2DestinationOptions {
 	public static LR2DestinationOptions valueOf(int v) {
 		return Arrays.stream(LR2DestinationOptions.values()).filter(def -> def.value == v).findAny().orElse(null);
 	}
+
+	/**
+	 * Some of the lr2 definitions cannot be mapped directly because their place has been taken or it's implemented
+	 *  elsewhere. This function helps converting them. The original value would be returned if it's no need to be
+	 *  converted or don't know how.
+	 */
+	public static int convert(int v) {
+		return switch (v) {
+			default -> v;
+		};
+	}
 }

@@ -3,6 +3,10 @@ package bms.player.beatoraja.skin.lr2;
 import java.io.*;
 import java.util.function.BiConsumer;
 
+import bms.player.beatoraja.skin.lr2.commands.DestinationBpmChart;
+import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart;
+import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart;
+import bms.player.beatoraja.skin.lr2.commands.DestinationTimingChart;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
@@ -49,12 +53,11 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.gaugeobj);
 	}),
 	DST_GAUGECHART_1P ((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.gaugeobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, values[7],
-				values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-				values[15], values[16], values[17], values[18], values[19], values[20], loader.readOffset(str, 21));
+		DestinationGaugeChart dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_NOTECHART_1P ((loader, str) -> {
 		//#SRC_NOTECHART_1P,(index),(gr),(x),(y),(w),(h),(div_x),(div_y),(cycle),(timer),field_w,field_h,(start),(end),delay,backTexOff,orderReverse,noGap
@@ -64,12 +67,12 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.noteobj);
 	}),
 	DST_NOTECHART_1P ((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.noteobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, values[7],
-				values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-				values[15], values[16], values[17], values[18], values[19], values[20], loader.readOffset(str, 21));
+		DestinationNoteChart dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.gauge.y = loader.src.height - dst.y();
+		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_BPMCHART ((loader, str) -> {
 		//#SRC_BPMCHART, field_w, field_h, delay, lineWidth, mainBPMColor, minBPMColor, maxBPMColor, otherBPMColor, stopLineColor, transitionLineColor
@@ -79,12 +82,12 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.bpmgraphobj);
 	}),
 	DST_BPMCHART ((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.bpmgraphobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, values[7],
-				values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-				values[15], values[16], values[17], values[18], values[19], values[20], loader.readOffset(str, 21));
+		DestinationBpmChart dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.gauge.y = loader.src.height - dst.y();
+		loader.skin.setDestination(loader.bpmgraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_TIMINGCHART_1P ((loader, str) -> {
 		//#SRC_TIMINGCHART_1P,(index),(gr),(x),width,height,lineWidth,graphColor,averageColor,devColor,PGColor,GRColor,GDColor,BDColor,PRColor,drawAverage,drawDev
@@ -94,12 +97,12 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.timinggraphobj);
 	}),
 	DST_TIMINGCHART_1P ((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.timinggraphobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, values[7],
-				values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-				values[15], values[16], values[17], values[18], values[19], values[20], loader.readOffset(str, 21));
+		DestinationTimingChart dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.gauge.y = loader.src.height - dst.y();
+		loader.skin.setDestination(loader.timinggraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	});
 
 	public final BiConsumer<LR2ResultSkinLoader, String[]> function;

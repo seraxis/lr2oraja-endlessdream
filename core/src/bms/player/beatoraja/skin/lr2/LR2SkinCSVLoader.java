@@ -4,11 +4,14 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import bms.player.beatoraja.modmenu.SkinWidgetManager;
 import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.skin.lr2.commands.*;
 import bms.player.beatoraja.skin.property.*;
+import bms.tool.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -71,7 +74,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 		final float srch = src.height;
 		final float dstw = dst.width;
 		final float dsth = dst.height;
-		
+
 		addCommandWord(CSVCommand.values());
 
 		addCommandWord(new CommandWord("INCLUDE") {
@@ -210,20 +213,9 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (part != null) {
-					int[] values = parseInt(str);
-					if (values[5] < 0) {
-						values[3] += values[5];
-						values[5] = -values[5];
-					}
-					if (values[6] < 0) {
-						values[4] += values[6];
-						values[6] = -values[6];
-					}
-					part.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationImage dstImage = LR2CommandParser.getInstance().parse(str);
+					dstImage.region.flipNegativeLength();
+					part.setDestination(dstImage, srcw, srch, dstw, dsth);
 					part.setStretch(stretch);
 				}
 			}
@@ -286,11 +278,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (num != null) {
-					int[] values = parseInt(str);
-					num.setDestination(values[2], values[3] * dstw / srcw, dsth - (values[4] + values[6]) * dsth / srch,
-							values[5] * dstw / srcw, values[6] * dsth / srch, values[7], values[8], values[9],
-							values[10], values[11], values[12], values[13], values[14], values[15], values[16],
-							values[17], values[18], values[19], values[20], readOffset(str, 21));
+					DestinationNumber dst = LR2CommandParser.getInstance().parse(str);
+					num.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -351,16 +340,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (text != null) {
-					int[] values = parseInt(str);
-					text.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationText dst = LR2CommandParser.getInstance().parse(str);
+					text.setDestination(dst, srcw, srch, dstw, dsth);
 					if(skin instanceof MusicSelectSkin && ((MusicSelectSkin) skin).searchText == text) {
-						Rectangle r = new Rectangle(values[3] * dstw / srcw,
-								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-								values[6] * dsth / srch);
+						Rectangle r = new Rectangle(dst.x() * dstw / srcw,
+								dsth - (dst.y() + dst.h()) * dsth / srch, dst.w() * dstw / srcw,
+								dst.h() * dsth / srch);
 						((MusicSelectSkin) skin).setSearchTextRegion(r);
 					}
 				}
@@ -411,12 +396,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (slider != null) {
-					int[] values = parseInt(str);
-					slider.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationSlider dst = LR2CommandParser.getInstance().parse(str);
+					slider.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -469,15 +450,13 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (bar != null) {
+					DestinationBarGraph dst = LR2CommandParser.getInstance().parse(str);
 					int[] values = parseInt(str);
 					if (bar.direction == 1) {
-						values[4] += values[6];
-						values[6] = -values[6];
+						dst.region.y += dst.h();
+						dst.region.h *= -1;
 					}
-					bar.setDestination(values[2], values[3] * dstw / srcw, dsth - (values[4] + values[6]) * dsth / srch,
-							values[5] * dstw / srcw, values[6] * dsth / srch, values[7], values[8], values[9],
-							values[10], values[11], values[12], values[13], values[14], values[15], values[16],
-							values[17], values[18], values[19], values[20], readOffset(str, 21));
+					bar.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -551,12 +530,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (button != null) {
-					int[] values = parseInt(str);
-					button.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationButton dst = LR2CommandParser.getInstance().parse(str);
+					button.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -580,12 +555,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (onmouse != null) {
-					int[] values = parseInt(str);
-					onmouse.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationMouse dst = LR2CommandParser.getInstance().parse(str);
+					onmouse.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -751,16 +722,19 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (gauger != null) {
-					float width = (Math.abs(groovex) >= 1) ? (groovex * 50 * dstw / srcw)
-							: (Integer.parseInt(str[5]) * dstw / srcw);
-					float height = (Math.abs(groovey) >= 1) ? (groovey * 50 * dsth / srch)
-							: (Integer.parseInt(str[6]) * dsth / srch);
-					float x = Integer.parseInt(str[3]) * dstw / srcw - (groovex < 0 ? groovex * dstw / srcw : 0);
-					float y = dsth - Integer.parseInt(str[4]) * dsth / srch - height;
+					DestinationGrooveGauge dst = LR2CommandParser.getInstance().parse(str);
+					float width = Math.abs(groovex) >= 1
+							? groovex * 50 * dstw / srcw
+							: dst.w() * dstw / srcw;
+					float height = Math.abs(groovey) >= 1
+							? groovey * 50 * dsth / srch
+							: dst.h() * dsth / srch;
+					float x = dst.x() * dstw / srcw - (groovex < 0 ? groovex * dstw / srcw : 0);
+					float y = dsth - dst.y() * dsth / srch - height;
 					int[] values = parseInt(str);
-					gauger.setDestination(values[2], x, y, width, height, values[7],
-							values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-							values[15], values[16], values[17], values[18], values[19], values[20], readOffset(str, 21));
+					gauger.setDestination(dst.time, x, y, width, height, dst.acc,
+							dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+							dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 				}
 			}
 		});
