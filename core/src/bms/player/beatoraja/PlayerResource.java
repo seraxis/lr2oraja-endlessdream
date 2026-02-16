@@ -140,6 +140,8 @@ public final class PlayerResource {
 	private final BMSLoudnessAnalyzer loudnessAnalyzer;
 	private Future<BMSLoudnessAnalyzer.AnalysisResult> analysisTask;
 
+	private double failMeasure = Double.NaN;
+
 	public PlayerResource(AudioDriver audio, Config config, PlayerConfig pconfig, BMSLoudnessAnalyzer loudnessAnalyzer) {
 		this.config = config;
 		this.pconfig = pconfig;
@@ -163,6 +165,7 @@ public final class PlayerResource {
 		bmsPaths = null;
 		setTablename("");
 		setTablelevel("");
+		failMeasure = Double.NaN;
 	}
 
 	public boolean setBMSFile(final Path f, BMSPlayerMode mode) {
@@ -677,5 +680,13 @@ public final class PlayerResource {
 
 	public Future<BMSLoudnessAnalyzer.AnalysisResult> getAnalysisTask() {
 		return analysisTask;
+	}
+
+	public double getFailMeasure() {
+		return failMeasure;
+	}
+
+	public void setFailMeasure(double failMeasure) {
+		this.failMeasure = failMeasure;
 	}
 }

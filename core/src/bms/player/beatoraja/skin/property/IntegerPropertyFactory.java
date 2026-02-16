@@ -436,6 +436,11 @@ public class IntegerPropertyFactory {
 			};	
 		case NUMBER_DIFFICULTY_FILTER:
 			return (state) -> (state.main.getPlayerResource().getPlayerConfig().getDifficultyFilter());
+		case NUMBER_FAIL_MEASURE:
+			return (state) -> {
+				double measure = state.main.getPlayerResource().getFailMeasure();
+				return Double.isNaN(measure) ? -1 : (int) measure;
+			};
 		}
 		
 		return null;
@@ -773,6 +778,9 @@ public class IntegerPropertyFactory {
 			}
 			return Integer.MIN_VALUE;
 		}),
+		score_date(378, (state) -> (state.getScoreDataProperty().getScoreData() != null
+				? (int) state.getScoreDataProperty().getScoreData().getDate()
+				: 0)),
 
 		ranking_exscore1(380, createRankingexscore(0)),
 		ranking_exscore2(381, createRankingexscore(1)),

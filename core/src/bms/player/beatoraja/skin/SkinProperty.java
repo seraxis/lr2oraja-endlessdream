@@ -314,6 +314,8 @@ public class SkinProperty {
 	public static final int NUMBER_AVERAGE_TIMING_AFTERDOT = 375;
 	public static final int NUMBER_STDDEV_TIMING = 376;
 	public static final int NUMBER_STDDEV_TIMING_AFTERDOT = 377;
+	public static final int NUMBER_SCORE_DATE = 378;
+	public static final int NUMBER_FAIL_MEASURE = 379;
 	public static final int NUMBER_SCORE = 71;
 	public static final int NUMBER_MAXSCORE = 72;
 	public static final int NUMBER_TOTALNOTES = 74;

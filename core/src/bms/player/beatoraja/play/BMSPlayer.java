@@ -107,6 +107,8 @@ public class BMSPlayer extends MainState {
 		BMSPlayerMode autoplay = resource.getPlayMode();
 		PlayerConfig config = resource.getPlayerConfig();
 
+		resource.setFailMeasure(Double.NaN);
+
 		playinfo.randomoption = config.getRandom();
 		playinfo.randomoption2 = config.getRandom2();
 		playinfo.doubleoption = config.getDoubleoption();
@@ -791,7 +793,17 @@ public class BMSPlayer extends MainState {
 						}
 					}
 					gauge.setType(type);
-				} else if (g == 0) {
+				} else if (g == 0 && Double.isNaN(resource.getFailMeasure())) {
+					// ゲージ0になった時点で小節数を記録
+					double failMeasure = 0;
+					for (TimeLine tl : model.getAllTimeLines()) {
+						if (tl.getMilliTime() > ptime) {
+							break;
+						}
+						failMeasure = tl.getSection();
+					}
+					resource.setFailMeasure(failMeasure);
+
 					switch(config.getGaugeAutoShift()) {
 					case PlayerConfig.GAUGEAUTOSHIFT_NONE:
 						// FAILED移行
