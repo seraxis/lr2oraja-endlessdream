@@ -5,6 +5,8 @@ import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.utils.*;
 
+import javax.annotation.Nullable;
+
 /**
  * スコアデータのキャッシュ
  *
@@ -32,6 +34,7 @@ public abstract class ScoreDataCache {
      * @param lnmode LN MODE
      * @return スコアデータ。存在しない場合はnull
      */
+    @Nullable
     public ScoreData readScoreData(SongData song, int lnmode) {
         final int cacheindex = song.hasUndefinedLongNote() ? lnmode : 3;
         if (scorecache[cacheindex].containsKey(song.getSha256())) {
