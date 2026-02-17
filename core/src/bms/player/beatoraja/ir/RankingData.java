@@ -1,12 +1,14 @@
 package bms.player.beatoraja.ir;
 
-import java.util.Arrays;
+import bms.player.beatoraja.CourseData;
+import bms.player.beatoraja.MainController.IRStatus;
+import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.ScoreData;
+import bms.player.beatoraja.song.SongData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bms.player.beatoraja.*;
-import bms.player.beatoraja.MainController.IRStatus;
-import bms.player.beatoraja.song.SongData;
+import java.util.Arrays;
 
 /**
  * IRのランキングデータ
@@ -61,16 +63,20 @@ public class RankingData {
 	public void load(MainState mainstate, Object song) {
 		if(!(song instanceof SongData || song instanceof CourseData)) {
 			return;
-		}		
+		}
 		state = ACCESS;
 		Thread irprocess = new Thread(() -> {
 			final IRStatus[] ir = mainstate.main.getIRStatus();
 	        IRResponse<IRScoreData[]> response = null;
-	        if(song instanceof SongData) {
-	        	 response = ir[0].connection.getPlayData(null, new IRChartData((SongData) song));
-	        } else if(song instanceof CourseData) {
-		        response = ir[0].connection.getCoursePlayData(null, new IRCourseData((CourseData) song, mainstate.main.getPlayerConfig().getLnmode()));
-	        }
+            if (song instanceof SongData songData) {
+                response = ir[0].connection.getPlayData(null, new IRChartData(songData));
+                if (response.isSucceeded()) {
+                    var lnMode = mainstate.main.getPlayerResource().getPlayerConfig().getLnmode();
+                    mainstate.main.getRivalDataAccessor().updateAllRivalsScores(response.getData(), songData, lnMode);
+                }
+            } else if (song instanceof CourseData) {
+                response = ir[0].connection.getCoursePlayData(null, new IRCourseData((CourseData) song, mainstate.main.getPlayerConfig().getLnmode()));
+            }
 	        if(response.isSucceeded()) {
 	        	updateScore(response.getData(), mainstate.getScoreDataProperty().getScoreData());
 				logger.trace("IRからのスコア取得成功 : {}", response.getMessage());
@@ -82,7 +88,6 @@ public class RankingData {
 	        lastUpdateTime = System.currentTimeMillis();
 		});
 		irprocess.start();
-
 	}
 	
 	public void updateScore(IRScoreData[] scores, ScoreData localscore) {

@@ -442,16 +442,9 @@ public class EventFactory {
 		 */
 		rival(79, (state, arg1) -> {
 			if(state instanceof MusicSelector selector) {
-				final RivalDataAccessor rivals = state.main.getRivalDataAccessor();
-	            int index = -1;
-	            for(int i = 0;i < rivals.getRivalCount();i++) {
-	            	if(selector.getRival() == rivals.getRivalInformation(i)) {
-	            		index = i;
-	            		break;
-	            	}
-	            }
-	            index = (index + (arg1 >= 0 ? 2 : rivals.getRivalCount() + 1)) % (rivals.getRivalCount() + 1) - 1;
-	            selector.setRival(index != -1 ? rivals.getRivalInformation(index) : null);
+				var rivalDataAccessor = state.main.getRivalDataAccessor();
+                var rival = rivalDataAccessor.nextRival();
+                selector.setRival(rival);
 	            selector.play(OPTION_CHANGE);
 			}
 		}),

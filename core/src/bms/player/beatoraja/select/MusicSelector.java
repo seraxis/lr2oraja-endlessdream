@@ -88,8 +88,7 @@ public final class MusicSelector extends MainState {
 	private boolean showNoteGraph = false;
 
 	private ScoreDataCache scorecache;
-	private ScoreDataCache rivalcache;
-	
+
 	private RankingData currentir;
 	/**
 	 * ランキング表示位置
@@ -138,12 +137,9 @@ public final class MusicSelector extends MainState {
 			main.updateSong(null);
 		}
 	}
-	
+
 	public void setRival(PlayerInformation rival) {
-		final RivalDataAccessor rivals = main.getRivalDataAccessor();
-		final int index = IntStream.range(0, rivals.getRivalCount()).filter(i -> rival == rivals.getRivalInformation(i)).findFirst().orElse(-1);
-		this.rival = index != -1 ? rivals.getRivalInformation(index) : null;
-		rivalcache = index != -1 ? rivals.getRivalScoreDataCache(index) : null;
+        this.rival = rival;
 		manager.updateBar();
 		logger.info("Rival変更:{}", rival != null ? rival.getName() : "なし");
 	}
@@ -154,10 +150,6 @@ public final class MusicSelector extends MainState {
 
 	public ScoreDataCache getScoreDataCache() {
 		return scorecache;
-	}
-
-	public ScoreDataCache getRivalScoreDataCache() {
-		return rivalcache;
 	}
 
 	public void create() {

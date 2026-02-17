@@ -8,10 +8,8 @@ import com.badlogic.gdx.utils.Array;
 
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.PlayerInformation;
-import bms.player.beatoraja.RivalDataAccessor;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.ir.RankingData;
-import bms.player.beatoraja.select.ScoreDataCache;
 
 /**
  * スコアターゲット
@@ -186,16 +184,18 @@ class RivalTargetProperty extends TargetProperty {
 
     @Override
     public ScoreData getTarget(MainController main) {
-    	final PlayerInformation info = main.getRivalDataAccessor().getRivalInformation(index);
-    	final ScoreDataCache cache = main.getRivalDataAccessor().getRivalScoreDataCache(index);
-    	
+        var rivalDataAccessor = main.getRivalDataAccessor();
+        var info = rivalDataAccessor.getRivalInformation(index);
+
     	String name = null;
     	ScoreData score = null;
     	ScoreData[] scores = null;
     	switch(target) {
     	case INDEX:
     		name = info != null ? info.getName() : name;
-    		score = cache != null ? cache.readScoreData(main.getPlayerResource().getSongdata(), main.getPlayerConfig().getLnmode()) : score;
+            var songData = main.getPlayerResource().getSongdata();
+            var lnMode = main.getPlayerConfig().getLnmode();
+    		score = rivalDataAccessor.getRivalScore(index, songData, lnMode);
         	break;
     	case RANK:
     		scores = createScoreArray(main);
@@ -241,26 +241,24 @@ class RivalTargetProperty extends TargetProperty {
     	
         return targetScore;
     }
-    
+
     private ScoreData[] createScoreArray(MainController main) {
-    	final RivalDataAccessor rivals = main.getRivalDataAccessor();
-		Array<ScoreData> scorearray = new Array<ScoreData>();
-		for(int i = 0;i < rivals.getRivalCount();i++) {
-			ScoreData sd = rivals.getRivalScoreDataCache(i).readScoreData(main.getPlayerResource().getSongdata(), main.getPlayerConfig().getLnmode());
-			if(sd != null) {
-				sd.setPlayer(rivals.getRivalInformation(i).getName());
-				scorearray.add(sd);
-			}
-		}
-		
-		ScoreData myscore = main.getPlayDataAccessor().readScoreData(main.getPlayerResource().getSongdata().getBMSModel(), main.getPlayerConfig().getLnmode());
-		if(myscore != null) {
-			myscore.setPlayer("");
-			scorearray.add(myscore);
-		}
-		return scorearray.toArray(ScoreData.class);
+        var rivalDataAccessor = main.getRivalDataAccessor();
+        Array<ScoreData> scoreArray = new Array<>();
+
+        var songData = main.getPlayerResource().getSongdata();
+        var lnMode = main.getPlayerConfig().getLnmode();
+        var rivalsScores = rivalDataAccessor.getAllRivalsScores(songData, lnMode);
+        rivalsScores.forEach(scoreArray::add);
+
+        ScoreData myScore = main.getPlayDataAccessor().readScoreData(songData.getBMSModel(), lnMode);
+        if (myScore != null) {
+            myScore.setPlayer("");
+            scoreArray.add(myScore);
+        }
+        return scoreArray.toArray(ScoreData.class);
     }
-    
+
     public static TargetProperty getTargetProperty(String id) {
     	if(id.startsWith("RIVAL_NEXT_")) {
     		try {

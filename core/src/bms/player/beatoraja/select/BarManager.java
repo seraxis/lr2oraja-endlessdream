@@ -758,28 +758,24 @@ public class BarManager {
 		public void run() {
 			final MainController main = select.main;
 			final PlayerConfig config = select.resource.getPlayerConfig();
-			final ScoreDataCache rival = select.getRivalScoreDataCache();
-			final String rivalName = rival != null ? select.getRival().getName() : null;
+            var rivalDataAccessor = main.getRivalDataAccessor();
 
 			final SongData[] songs = Stream.of(bars).filter(bar -> bar instanceof SongBar && ((SongBar) bar).existsSong())
 					.map(bar -> ((SongBar) bar).getSongData()).toArray(SongData[]::new);
 			// loading score
 			// TODO collectorを使用してスコアをまとめて取得
 			for (Bar bar : bars) {
-				if (bar instanceof SongBar && ((SongBar) bar).existsSong()) {
-					SongData sd = ((SongBar) bar).getSongData();
-					if (bar.getScore() == null) {
-						bar.setScore(select.getScoreDataCache().readScoreData(sd, config.getLnmode()));
+                if (bar instanceof SongBar songBar && songBar.existsSong()) {
+                    var songData = songBar.getSongData();
+                    if (songBar.getScore() == null) {
+                        songBar.setScore(select.getScoreDataCache().readScoreData(songData, config.getLnmode()));
 					}
-					if (rival != null && bar.getRivalScore() == null) {
-						final ScoreData rivalScore = rival.readScoreData(sd, config.getLnmode());
-						if(rivalScore != null) {
-							rivalScore.setPlayer(rivalName);							
-						}
-						bar.setRivalScore(rivalScore);
+					if (rivalDataAccessor.isRivalSelected() && bar.getRivalScore() == null) {
+                        var rivalScore = rivalDataAccessor.getCurrentRivalScore(songData, config.getLnmode());
+                        songBar.setRivalScore(rivalScore);
 					}
 					for(int i = 0;i < MusicSelector.REPLAY;i++) {
-						((SongBar) bar).setExistsReplay(i, main.getPlayDataAccessor().existsReplayData(sd.getSha256(), sd.hasUndefinedLongNote(),config.getLnmode(), i));						
+                        songBar.setExistsReplay(i, main.getPlayDataAccessor().existsReplayData(songData.getSha256(), songData.hasUndefinedLongNote(),config.getLnmode(), i));
 					}
 				} else if (bar instanceof GradeBar && ((GradeBar)bar).existsAllSongs()) {
 					final GradeBar gb = (GradeBar) bar;
@@ -794,7 +790,7 @@ public class BarManager {
 					gb.setMirrorScore(main.getPlayDataAccessor().readScoreData(hash, ln, config.getLnmode(), 1, constraint));
 					gb.setRandomScore(main.getPlayDataAccessor().readScoreData(hash, ln, config.getLnmode(), 2, constraint));
 					for(int i = 0;i < MusicSelector.REPLAY;i++) {
-						gb.setExistsReplay(i, main.getPlayDataAccessor().existsReplayData(hash, ln ,config.getLnmode(), i, constraint));						
+						gb.setExistsReplay(i, main.getPlayDataAccessor().existsReplayData(hash, ln ,config.getLnmode(), i, constraint));
 					}
 				}
 

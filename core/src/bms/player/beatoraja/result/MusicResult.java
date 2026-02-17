@@ -134,8 +134,11 @@ public class MusicResult extends AbstractResult {
 				if(irsend > 0) {
 					timer.switchTimer(succeed ? TIMER_IR_CONNECT_SUCCESS : TIMER_IR_CONNECT_FAIL, true);
 					try {
-						IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(resource.getSongdata()));
-						if(response.isSucceeded()) {
+                        var songData = resource.getSongdata();
+                        IRResponse<bms.player.beatoraja.ir.IRScoreData[]> response = ir[0].connection.getPlayData(null, new IRChartData(songData));
+                        if (response.isSucceeded()) {
+                            var lnMode = main.getPlayerResource().getPlayerConfig().getLnmode();
+                            main.getRivalDataAccessor().updateAllRivalsScores(response.getData(), songData, lnMode);
 							ranking.updateScore(response.getData(), newscore.getExscore() > oldscore.getExscore() ? newscore : oldscore);
 							rankingOffset = ranking.getRank() > 10 ? ranking.getRank() - 5 : 0;
 							logger.info("IRからのスコア取得成功 : {}", response.getMessage());

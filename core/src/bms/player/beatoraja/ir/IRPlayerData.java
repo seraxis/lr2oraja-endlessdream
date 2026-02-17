@@ -1,5 +1,7 @@
 package bms.player.beatoraja.ir;
 
+import bms.player.beatoraja.PlayerInformation;
+
 /**
  * IR用プレイヤーデータ
  *
@@ -24,5 +26,13 @@ public class IRPlayerData {
         this.id = id;
         this.name = name;
         this.rank = rank;
+    }
+
+    public PlayerInformation toPlayerInformation() {
+        var playerInformation = new PlayerInformation();
+        playerInformation.setId(this.id);
+        playerInformation.setName(this.name);
+        playerInformation.setRank(this.rank);
+        return playerInformation;
     }
 }
