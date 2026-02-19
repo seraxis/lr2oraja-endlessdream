@@ -102,6 +102,9 @@ public class LR2CommandParser {
 						continue;
 					}
 					Object converted = convertValue(field.getType(), rawValue);
+					if (anno.option()) {
+						converted = LR2DestinationOptions.convert(((int) converted));
+					}
 					field.set(instance, converted);
 				} else if (anno.start() != -1) {
 					int start = anno.start() + offset;
@@ -110,6 +113,7 @@ public class LR2CommandParser {
 					int end = Math.min(start + objectLength, data.length);
 					String[] subData = Arrays.copyOfRange(data, start, end);
 					Object nested = parseObject(fieldType, subData, false);
+
 					field.set(instance, nested);
 					offset += end - start - 1;
 				} else {
@@ -132,6 +136,9 @@ public class LR2CommandParser {
 					continue;
 				}
 				Object converted = convertValue(field.getType(), rawValue);
+				if (anno.option()) {
+					converted = LR2DestinationOptions.convert(((int) converted));
+				}
 				field.set(instance, converted);
 			}
 		}

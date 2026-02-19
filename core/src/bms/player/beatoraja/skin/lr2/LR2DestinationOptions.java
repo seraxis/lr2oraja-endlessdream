@@ -3,6 +3,8 @@ package bms.player.beatoraja.skin.lr2;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
+import static bms.player.beatoraja.skin.SkinProperty.*;
+
 /**
  * LR2 destination options
  */
@@ -610,6 +612,10 @@ public enum LR2DestinationOptions {
 	 */
 	public static int convert(int v) {
 		return switch (v) {
+			case 106 -> OPTION_SELECT_BAR_EXHARD_CLEARED;
+			case 107 -> OPTION_SELECT_BAR_PERFECT_CLEARED;
+			case 108 -> OPTION_SELECT_BAR_MAX_CLEARED;
+			case 109 -> OPTION_SELECT_BAR_ASSIST_EASY_CLEARED;
 			default -> v;
 		};
 	}
