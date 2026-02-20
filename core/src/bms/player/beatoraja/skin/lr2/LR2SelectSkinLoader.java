@@ -379,7 +379,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_NOTECHART") {
 			@Override
 			public void execute(String[] str) {
-				DestinationNoteChart dstNoteChart = LR2CommandParser.getInstance().parse(str);
+				DestinationNoteChart1P dstNoteChart = LR2CommandParser.getInstance().parse(str);
 				gauge.x = dstNoteChart.x();
 				gauge.y = src.height - dstNoteChart.y();
 				skin.setDestination(noteobj, dstNoteChart.time, gauge.x, gauge.y, gauge.width, gauge.height,

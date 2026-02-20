@@ -4,9 +4,9 @@ import java.io.*;
 import java.util.function.BiConsumer;
 
 import bms.player.beatoraja.skin.lr2.commands.DestinationBpmChart;
-import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart;
-import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart;
-import bms.player.beatoraja.skin.lr2.commands.DestinationTimingChart;
+import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart1P;
+import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart1P;
+import bms.player.beatoraja.skin.lr2.commands.DestinationTimingChart1P;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
@@ -53,8 +53,9 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.gaugeobj);
 	}),
 	DST_GAUGECHART_1P ((loader, str) -> {
-		DestinationGaugeChart dst = LR2CommandParser.getInstance().parse(str);
+		DestinationGaugeChart1P dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
+		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
 				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
@@ -67,7 +68,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.noteobj);
 	}),
 	DST_NOTECHART_1P ((loader, str) -> {
-		DestinationNoteChart dst = LR2CommandParser.getInstance().parse(str);
+		DestinationNoteChart1P dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
@@ -97,7 +98,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.timinggraphobj);
 	}),
 	DST_TIMINGCHART_1P ((loader, str) -> {
-		DestinationTimingChart dst = LR2CommandParser.getInstance().parse(str);
+		DestinationTimingChart1P dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.timinggraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
