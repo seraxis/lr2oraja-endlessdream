@@ -2,10 +2,6 @@ package bms.player.beatoraja.skin.lr2.commands;
 
 /**
  * Standard destination command.
- *
- * @implNote Most LR2 dst_xx commands are sharing the same body. But personally I think it's better to distuiguish
- *  their own name rather than using one class for all dst commands, which is apparently better for future extensions.
- *  So you'll see many empty subclasses of StandardDestination like DestinationText.
  */
 public class StandardDestination {
 	@CSVField(0)

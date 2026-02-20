@@ -162,12 +162,25 @@ public class LR2CommandParser {
 	}
 
 	private Object convertValue(Class<?> targetType, String rawValue) {
+		rawValue = rawValue.replace("!", "-").replace(" ", "");
 		if (targetType == int.class || targetType == Integer.class) {
-			return Integer.parseInt(rawValue.trim());
+			try {
+				return Integer.parseInt(rawValue.trim());
+			} catch (NumberFormatException e) {
+				return 0;
+			}
 		} else if (targetType == long.class || targetType == Long.class) {
-			return Long.parseLong(rawValue.trim());
+			try {
+				return Long.parseLong(rawValue.trim());
+			} catch (NumberFormatException e) {
+				return 0;
+			}
 		} else if (targetType == double.class || targetType == Double.class) {
-			return Double.parseDouble(rawValue.trim());
+			try {
+				return Double.parseDouble(rawValue.trim());
+			} catch (NumberFormatException e) {
+				return 0.0;
+			}
 		} else if (targetType == boolean.class || targetType == Boolean.class) {
 			return Boolean.parseBoolean(rawValue.trim());
 		} else if (targetType == String.class) {

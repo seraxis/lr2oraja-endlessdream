@@ -238,7 +238,15 @@ public abstract class SkinObject extends DisposableObject {
 	}
 
 	public void setDestination(StandardDestination dst, float srcw, float srch, float dstw, float dsth) {
-		setDestination(dst.time, dst.x() * dstw / srcw, dsth - (dst.y() + dst.h()) * dsth / srch,
+		setDestination(dst, srcw, srch, dstw, dsth, true);
+	}
+
+	public void setDestination(StandardDestination dst, float srcw, float srch, float dstw, float dsth, boolean revertYAxis) {
+		float y = -(dst.y() + dst.h()) * dsth / srch;
+		if (revertYAxis) {
+			y += dsth;
+		}
+		setDestination(dst.time, dst.x() * dstw / srcw, y,
 				dst.w() * dstw / srcw, dst.h() * dsth / srch, dst.acc,
 				dst.a(), dst.r(), dst.g(), dst.b(),
 				dst.blend, dst.filter, dst.angle, dst.center, dst.loop,

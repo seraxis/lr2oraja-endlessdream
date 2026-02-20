@@ -58,7 +58,6 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 					if (images != null) {
 						barimage[values[1]] = images;
 						barcycle = values[9];
-
 					}
 				}
 			}
@@ -88,10 +87,10 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				DestinationBarBodyOn dstBarBodyOn = LR2CommandParser.getInstance().parse(str);
 				dstBarBodyOn.region.flipNegativeLength();
 
-				if(barimageoff[dstBarBodyOn.index] == null) {
-	                barimageoff[dstBarBodyOn.index] = new SkinImage(barimage, 0, barcycle, null);
+				if(barimageon[dstBarBodyOn.index] == null) {
+	                barimageon[dstBarBodyOn.index] = new SkinImage(barimage, 0, barcycle, null);
 				}
-				barimageoff[dstBarBodyOn.index].setDestination(dstBarBodyOn, srcw, srch, dstw, dsth);
+				barimageon[dstBarBodyOn.index].setDestination(dstBarBodyOn, srcw, srch, dstw, dsth);
 			}
 		});
 		addCommandWord(new CommandWord("BAR_CENTER") {
@@ -181,7 +180,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 			public void execute(String[] str) {
 				DestinationBarLevel dstBarLevel = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getBarlevel(dstBarLevel.index) != null) {
-					skinbar.getBarlevel(dstBarLevel.index).setDestination(dstBarLevel, srcw, srch, dstw, dsth);
+					skinbar.getBarlevel(dstBarLevel.index).setDestination(dstBarLevel, srcw, srch, dstw, dsth, false);
 				}
 			}
 		});
@@ -210,7 +209,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getLamp(lamps[i]) != null) {
 						dstBarLamp.region.flipNegativeLength();
-						skinbar.getLamp(lamps[i]).setDestination(dstBarLamp, srcw, srch, dstw, dsth);
+						skinbar.getLamp(lamps[i]).setDestination(dstBarLamp, srcw, srch, dstw, dsth, false);
 					} else {
 						skinbar.setLamp(lamps[i], skinbar.getLamp(lamps[0]));
 					}
@@ -241,7 +240,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getPlayerLamp(lamps[i]) != null) {
 						dstBarMyLamp.region.flipNegativeLength();
-						skinbar.getPlayerLamp(lamps[i]).setDestination(dstBarMyLamp, srcw, srch, dstw, dsth);
+						skinbar.getPlayerLamp(lamps[i]).setDestination(dstBarMyLamp, srcw, srch, dstw, dsth, false);
 					} else {
 						skinbar.setPlayerLamp(lamps[i], skinbar.getPlayerLamp(lamps[0]));
 					}
@@ -272,7 +271,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getRivalLamp(lamps[i]) != null) {
 						dstBarRivalLamp.region.flipNegativeLength();
-						skinbar.getRivalLamp(lamps[i]).setDestination(dstBarRivalLamp, srcw, srch, dstw, dsth);
+						skinbar.getRivalLamp(lamps[i]).setDestination(dstBarRivalLamp, srcw, srch, dstw, dsth, false);
 					} else {
 						skinbar.setRivalLamp(lamps[i], skinbar.getRivalLamp(lamps[0]));
 					}
@@ -302,7 +301,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				DestinationBarTrophy dstBarTrophy = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getTrophy(dstBarTrophy.index) != null) {
 					dstBarTrophy.region.flipNegativeLength();
-					skinbar.getTrophy(dstBarTrophy.index).setDestination(dstBarTrophy, srcw, srch, dstw, dsth);
+					skinbar.getTrophy(dstBarTrophy.index).setDestination(dstBarTrophy, srcw, srch, dstw, dsth, false);
 				}
 			}
 		});
@@ -330,7 +329,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				DestinationBarLabel dstBarLabel = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getLabel(dstBarLabel.index) != null) {
 					dstBarLabel.region.flipNegativeLength();
-					skinbar.getLabel(dstBarLabel.index).setDestination(dstBarLabel, srcw, srch, dstw, dsth);
+					skinbar.getLabel(dstBarLabel.index).setDestination(dstBarLabel, srcw, srch, dstw, dsth, false);
 				}
 			}
 		});
@@ -362,7 +361,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				DestinationBarGraph dstBarGraph = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getGraph() != null) {
 					dstBarGraph.region.flipNegativeLength();
-					skinbar.getGraph().setDestination(dstBarGraph, srcw, srch, dstw, dsth);
+					skinbar.getGraph().setDestination(dstBarGraph, srcw, srch, dstw, dsth, false);
 				}
 			}
 		});
@@ -403,7 +402,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BPMCHART") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarChart dstBpmChart = LR2CommandParser.getInstance().parse(str);
+				DestinationBpmChart dstBpmChart = LR2CommandParser.getInstance().parse(str);
 				gauge.x = dstBpmChart.x();
 				gauge.y = src.height - dstBpmChart.y();
 				skin.setDestination(bpmgraphobj, dstBpmChart.time, gauge.x, gauge.y, gauge.width, gauge.height,
@@ -439,11 +438,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 			@Override
 			public void execute(String[] str) {
 				DestinationBarTitle dstBarTitle = LR2CommandParser.getInstance().parse(str);
-				skinbar.getText(dstBarTitle.index).setDestination(dstBarTitle.time, dstBarTitle.x() * dstw / srcw,
-						- (dstBarTitle.y() + dstBarTitle.h()) * dsth / srch, dstBarTitle.w() * dstw / srcw, dstBarTitle.h() * dsth / srch,
-						dstBarTitle.acc, dstBarTitle.a(), dstBarTitle.r(), dstBarTitle.g(), dstBarTitle.b(),
-						dstBarTitle.blend, dstBarTitle.filter, dstBarTitle.angle, dstBarTitle.center,
-						dstBarTitle.loop, dstBarTitle.timer, dstBarTitle.op1(), dstBarTitle.op2(), dstBarTitle.op3(), new int[]{dstBarTitle.op4()});
+				skinbar.getText(dstBarTitle.index).setDestination(dstBarTitle, srcw, srch, dstw, dsth, false);
 			}
 		});
 		addCommandWord(new CommandWord("SRC_BAR_RANK") {
