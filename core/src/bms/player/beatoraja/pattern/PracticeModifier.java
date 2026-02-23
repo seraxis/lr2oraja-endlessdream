@@ -28,8 +28,8 @@ public class PracticeModifier extends PatternModifier {
 	@Override
 	public void modify(BMSModel model) {
 		int totalnotes = model.getTotalNotes();
-		final TimeLine[] tls = model.getAllTimeLines();
-		for (TimeLine tl : tls) {
+		final Timeline[] tls = model.getAllTimelines();
+		for (Timeline tl : tls) {
 			for (int i = 0; i < model.getMode().key; i++) {
 				if(tl.getTime() < start || tl.getTime() >= end) {
 					moveToBackground(tls, tl, i);

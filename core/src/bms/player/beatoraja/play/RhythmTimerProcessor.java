@@ -3,10 +3,10 @@ package bms.player.beatoraja.play;
 import static bms.player.beatoraja.skin.SkinProperty.TIMER_PLAY;
 import static bms.player.beatoraja.skin.SkinProperty.TIMER_RHYTHM;
 
+import bms.model.Timeline;
 import com.badlogic.gdx.utils.LongArray;
 
 import bms.model.BMSModel;
-import bms.model.TimeLine;
 
 public class RhythmTimerProcessor {
 
@@ -22,9 +22,9 @@ public class RhythmTimerProcessor {
 
 		LongArray sectiontimes = new LongArray();
 		LongArray quarterNoteTimes = new LongArray();
-		TimeLine[] timelines = model.getAllTimeLines();
+		Timeline[] timelines = model.getAllTimelines();
 		for (int i = 0; i < timelines.length; i++) {
-			if(timelines[i].getSectionLine()) {
+			if(timelines[i].getHasSectionLine()) {
 				sectiontimes.add(timelines[i].getMicroTime());
 
 				if(useQuarterNoteTime) {
@@ -33,7 +33,7 @@ public class RhythmTimerProcessor {
 					double nextSectionLineSection = timelines[i].getSection() - sectionLineSection;
 					boolean last = false;
 					for(int j = i + 1; j < timelines.length; j++) {
-						if(timelines[j].getSectionLine()) {
+						if(timelines[j].getHasSectionLine()) {
 							nextSectionLineSection = timelines[j].getSection() - sectionLineSection;
 							break;
 						} else if(j == timelines.length - 1) {
@@ -46,7 +46,7 @@ public class RhythmTimerProcessor {
 							int prevIndex;
 							for(prevIndex = i; timelines[prevIndex].getSection() - sectionLineSection < j; prevIndex++) {}
 							prevIndex--;
-							quarterNoteTimes.add((long) (timelines[prevIndex].getMicroTime() + timelines[prevIndex].getMicroStop() + (j+sectionLineSection-timelines[prevIndex].getSection()) * 240000000 / timelines[prevIndex].getBPM()));
+							quarterNoteTimes.add((long) (timelines[prevIndex].getMicroTime() + timelines[prevIndex].getMicroStop() + (j+sectionLineSection-timelines[prevIndex].getSection()) * 240000000 / timelines[prevIndex].getBpm()));
 						}
 					}					
 				}

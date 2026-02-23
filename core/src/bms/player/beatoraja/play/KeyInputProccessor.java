@@ -2,6 +2,7 @@ package bms.player.beatoraja.play;
 
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
+import bms.model.Timeline;
 import bms.player.beatoraja.modmenu.RandomTrainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import com.badlogic.gdx.math.MathUtils;
 
 import bms.model.BMSModel;
-import bms.model.TimeLine;
 import bms.player.beatoraja.BMSPlayerMode;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
@@ -50,7 +50,7 @@ class KeyInputProccessor {
 	}
 
 	public void startJudge(BMSModel model, KeyInputLog[] keylog, long milliMarginTime) {
-		judge = new JudgeThread(model.getAllTimeLines(), keylog, milliMarginTime);
+		judge = new JudgeThread(model.getAllTimelines(), keylog, milliMarginTime);
 		judge.start();
 		isJudgeStarted = true;
 	}
@@ -170,7 +170,7 @@ class KeyInputProccessor {
 
 		// TODO 判定処理スレッドはJudgeManagerに渡した方がいいかも
 
-		private final TimeLine[] timelines;
+		private final Timeline[] timelines;
 		private boolean stop = false;
 		/**
 		 * 自動入力するキー入力ログ
@@ -178,7 +178,7 @@ class KeyInputProccessor {
 		private final KeyInputLog[] keylog;
 		private final long microMarginTime;
 
-		public JudgeThread(TimeLine[] timelines, KeyInputLog[] keylog, long milliMarginTime) {
+		public JudgeThread(Timeline[] timelines, KeyInputLog[] keylog, long milliMarginTime) {
 			this.timelines = timelines;
 			this.keylog = keylog;
 			this.microMarginTime = milliMarginTime * 1000;

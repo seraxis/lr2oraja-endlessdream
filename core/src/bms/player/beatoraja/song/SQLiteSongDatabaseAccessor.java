@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.github.catizard.kbms.parser.ChartParser;
+import io.github.catizard.kbms.parser.ChartParserConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
@@ -569,9 +572,6 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		 */
 		private Pair<Integer, Integer> processBMSFolder(List<SongData> records, SongDatabaseUpdaterProperty property) {
 			int skipCount = 0, newCount = 0;
-			BMSDecoder bmsdecoder = null;
-			BMSONDecoder bmsondecoder = null;
-			OSUDecoder osudecoder = null;
 			final int len = records.size();
 			for (Path path : bmsfiles) {
 				long lastModifiedTime = -1;
@@ -597,33 +597,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					continue;
 				}
 				BMSModel model = null;
-				if (pathname.toLowerCase().endsWith(".bmson")) {
-					if (bmsondecoder == null) {
-						bmsondecoder = new BMSONDecoder(BMSModel.LNTYPE_LONGNOTE);
-					}
-					try {
-						model = bmsondecoder.decode(path);
-					} catch (Exception e) {
-						logger.error("Error while decoding bmson at path: {}{}", pathname, e.getMessage());
-					}
-				} else if (pathname.toLowerCase().endsWith(".osu")) {
-					if (osudecoder == null) {
-						osudecoder = new OSUDecoder(BMSModel.LNTYPE_LONGNOTE);
-					}
-					try {
-						model = osudecoder.decode(path);
-					} catch (Exception e) {
-						logger.error("Error while decoding osu at path: {}{}", pathname, e.getMessage());
-					}
-				} else {
-					if (bmsdecoder == null) {
-						bmsdecoder = new BMSDecoder(BMSModel.LNTYPE_LONGNOTE);
-					}
-					try {
-						model = bmsdecoder.decode(path);
-					} catch (Exception e) {
-						logger.error("Error while decoding bms at path: {}{}", pathname, e.getMessage());
-					}
+				ChartParser parser = ChartParser.Companion.create(path, new ChartParserConfig(true, LongNoteDef.LONG_NOTE));
+				try {
+					model = parser.parse(path, null);
+				} catch (Exception e) {
+					logger.error("Error while parsing file at path:{}, exception: {}", path, e.getMessage());
+					logger.error("Stack trace: ", e);
 				}
 
 				if (model == null) {

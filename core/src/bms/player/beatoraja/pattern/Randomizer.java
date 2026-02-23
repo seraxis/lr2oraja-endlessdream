@@ -49,7 +49,7 @@ public abstract class Randomizer {
 	 * [1->3]なら3バスになるということ。
 	 * Listは変更してもよい。TimeLineは変更してはならない。
 	 */
-	abstract Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane);
+	abstract Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane);
 	/**
 	 * 譜面変更のアシストレベル
 	 */
@@ -58,7 +58,7 @@ public abstract class Randomizer {
 	/**
 	 * TimeLineのノーツをrandomizeで定義された方法で入れ替える
 	 */
-	public int[] permutate(TimeLine tl) {
+	public int[] permutate(Timeline tl) {
 		Map<Integer, Integer> permutationMap = randomize(tl, new ArrayList<>(changeableLane),
 				new ArrayList<>(assignableLane));
 
@@ -195,7 +195,7 @@ abstract class TimeBasedRandomizer extends Randomizer {
 	/**
 	 * threshold[ms]以下の連打ができるだけ発生しないようにレーンを入れ替える
 	 */
-	protected Map<Integer, Integer> timeBasedShuffle(TimeLine tl, List<Integer> changeableLane,
+	protected Map<Integer, Integer> timeBasedShuffle(Timeline tl, List<Integer> changeableLane,
 			List<Integer> assignableLane) {
 		Map<Integer, Integer> randomMap = new HashMap<>();
 		List<Integer> noteLane, emptyLane, primaryLane, inferiorLane;
@@ -248,7 +248,7 @@ abstract class TimeBasedRandomizer extends Randomizer {
 		return randomMap;
 	}
 
-	protected void updateNoteTime(TimeLine tl, Map<Integer, Integer> randomMap) {
+	protected void updateNoteTime(Timeline tl, Map<Integer, Integer> randomMap) {
 		for (Map.Entry<Integer, Integer> el : randomMap.entrySet()) {
 			if (tl.getNote(el.getKey()) != null && !(tl.getNote(el.getKey()) instanceof MineNote)) {
 				lastNoteTime.put(el.getValue(), tl.getTime());
@@ -277,7 +277,7 @@ class SRandomizer extends TimeBasedRandomizer {
 	}
 
 	@Override
-	Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane) {
+	Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane) {
 		Map<Integer, Integer> randomMap = timeBasedShuffle(tl, changeableLane, assignableLane);
 
 		updateNoteTime(tl, randomMap);
@@ -316,7 +316,7 @@ class SpiralRandomizer extends Randomizer {
 	// modifiLaneから直接Mapを生成する
 	// LNアクティブの時はheadを変化させない
 	@Override
-	Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane) {
+	Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane) {
 		Map<Integer, Integer> rotateMap = new HashMap<>();
 		if (changeableLane.size() == cycle) {
 			head = (head + increment) % cycle;
@@ -375,7 +375,7 @@ class AllScratchRandomizer extends TimeBasedRandomizer {
 	}
 
 	@Override
-	Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane) {
+	Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane) {
 		Map<Integer, Integer> randomMap = new HashMap<>();
 
 		// スクラッチレーンにアサインできれば先にアサインする
@@ -468,7 +468,7 @@ class NoMurioshiRandomizer extends TimeBasedRandomizer {
 	}
 
 	@Override
-	Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane) {
+	Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane) {
 		int noteCount = noteCount(tl);
 		Map<Integer, Integer> randomMap;
 		// タイムラインのノーツ(LNアクティブを含む)が2個以下or7個以上のとき無理押しを考慮しない
@@ -539,12 +539,12 @@ class NoMurioshiRandomizer extends TimeBasedRandomizer {
 	}
 
 	// LNアクティブも含めたタイムラインのノート数
-	private int noteCount(TimeLine tl) {
+	private int noteCount(Timeline tl) {
 		return getNoteExistLane(tl).size() + getLNLane().size();
 	}
 
 	// タイムラインにノーツが存在するレーンのリスト
-	private List<Integer> getNoteExistLane(TimeLine tl) {
+	private List<Integer> getNoteExistLane(Timeline tl) {
 		List<Integer> l = new ArrayList<>();
 		for (int i = 0; i < modifyLanes.length; i++) {
 			// nullでない、地雷ノートでない
@@ -583,7 +583,7 @@ class ConvergeRandomizer extends TimeBasedRandomizer {
 	}
 
 	@Override
-	Map<Integer, Integer> randomize(TimeLine tl, List<Integer> changeableLane, List<Integer> assignableLane) {
+	Map<Integer, Integer> randomize(Timeline tl, List<Integer> changeableLane, List<Integer> assignableLane) {
 		// 連打とならないレーンは連打カウントをリセットする
 		rendaCount.entrySet().stream().forEach(e -> {
 			if (tl.getTime() - lastNoteTime.get(e.getKey()) > threshold2) {

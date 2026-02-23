@@ -167,7 +167,7 @@ public class BMSPlayer extends MainState {
 				} else {
 					// 2曲目以降の処理
 					for (int i = 0; i < resource.getCourseBMSModels().length; i++) {
-						if (resource.getCourseBMSModels()[i].getMD5().equals(resource.getBMSModel().getMD5())) {
+						if (resource.getCourseBMSModels()[i].getMd5().equals(resource.getBMSModel().getMd5())) {
 							replay = resource.getCourseReplay()[i];
 						}
 					}
@@ -218,7 +218,7 @@ public class BMSPlayer extends MainState {
 		boolean forceNoIRSend = false;
 
 		// Allow osu score submission
-		if (model.isFromOSU()) {
+		if (model.getFromOSU()) {
 			forceNoIRSend = false;
 		}
 
@@ -284,14 +284,14 @@ public class BMSPlayer extends MainState {
 				// This could work since beatoraja would firstly convert the judge rank that is not defined as
 				// the window rate to it and directly mark the model as BMSON type (see BMSPlayerRule::validate)
 				int overridingJudgeWindowRate = JudgeTrainer.getJudgeWindowRate(model.getMode());
-				int originalJudgeWindowRate = model.getJudgerank();
+				int originalJudgeWindowRate = model.getJudgeRank();
 				logger.info("Overriding original judge window from {} to {}", originalJudgeWindowRate, overridingJudgeWindowRate);
 				if (originalJudgeWindowRate < overridingJudgeWindowRate) {
 					// Like expand judge treatment above if the original judge window is stricter than customized one
 					assist = Math.max(assist, 2);
 					score = false;
 				}
-				model.setJudgerank(overridingJudgeWindowRate);
+				model.setJudgeRank(overridingJudgeWindowRate);
 			}
 
 			// Constant considered as assist in Endless Dream
@@ -709,7 +709,7 @@ public class BMSPlayer extends MainState {
                     pm.modify(model);
 
 					gauge = practice.getGauge(model);
-					model.setJudgerank(property.judgerank);
+					model.setJudgeRank(property.judgerank);
 					lanerender.init(model);
 					judge.init(model, resource);
 					skin.pomyu.init();
@@ -1031,7 +1031,7 @@ public class BMSPlayer extends MainState {
 		// リプレイデータ保存。スコア保存されない場合はリプレイ保存しない
 		final ReplayData replay = resource.getReplayData();
 		replay.player = main.getPlayerConfig().getName();
-		replay.sha256 = model.getSHA256();
+		replay.sha256 = model.getSha256();
 		replay.mode = config.getLnmode();
 		replay.date = Calendar.getInstance().getTimeInMillis() / 1000;
 		replay.keylog = main.getInputProcessor().getKeyInputLog();
@@ -1055,12 +1055,12 @@ public class BMSPlayer extends MainState {
 		long stddev = 0;
 		ArrayList<Long> playTimes = new ArrayList<Long>();
 		final int lanes = model.getMode().key;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			for (int i = 0; i < lanes; i++) {
 				Note n = tl.getNote(i);
 				if (n != null && (n instanceof NormalNote || (n instanceof LongNote ln &&
-						!(((model.getLntype() == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-								|| ln.getType() == LongNote.TYPE_LONGNOTE)
+						!(((model.getLnType() == LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+								|| ln.getType() == LongNoteDef.LONG_NOTE)
 								&& ((LongNote) n).isEnd())))) {
 					int state = n.getState();
 					long time = n.getMicroPlayTime();

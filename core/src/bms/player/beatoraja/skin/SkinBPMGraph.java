@@ -131,18 +131,18 @@ public class SkinBPMGraph extends SkinObject {
 			Map<Double, Integer> bpmNoteCountMap = new HashMap<Double, Integer>();
 			double nowSpeed = model.getBpm();
 			speedList.add(new double[] {nowSpeed, 0.0});
-			final TimeLine[] tls = model.getAllTimeLines();
-			for (TimeLine tl : tls) {
-				int notecount = bpmNoteCountMap.containsKey(tl.getBPM()) ? bpmNoteCountMap.get(tl.getBPM()) : 0;
-				bpmNoteCountMap.put(tl.getBPM(), notecount + tl.getTotalNotes());
+			final Timeline[] tls = model.getAllTimelines();
+			for (Timeline tl : tls) {
+				int notecount = bpmNoteCountMap.containsKey(tl.getBpm()) ? bpmNoteCountMap.get(tl.getBpm()) : 0;
+				bpmNoteCountMap.put(tl.getBpm(), notecount + tl.getTotalNotes());
 
 				if(tl.getStop() > 0) {
 					if(nowSpeed != 0) {
 						nowSpeed = 0;					
 						speedList.add(new double[] {nowSpeed, tl.getTime()});
 					}
-				} else if(nowSpeed != tl.getBPM() * tl.getScroll()) {
-					nowSpeed = tl.getBPM() * tl.getScroll();
+				} else if(nowSpeed != tl.getBpm() * tl.getScroll()) {
+					nowSpeed = tl.getBpm() * tl.getScroll();
 					speedList.add(new double[] {nowSpeed, tl.getTime()});
 				}
 			}

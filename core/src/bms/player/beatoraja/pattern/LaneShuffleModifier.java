@@ -64,9 +64,9 @@ public abstract class LaneShuffleModifier extends PatternModifier {
 		final Note[] notes = new Note[lanes];
 		final Note[] hnotes = new Note[lanes];
 		final boolean[] clone = new boolean[lanes];
-		TimeLine[] timelines = model.getAllTimeLines();
+		Timeline[] timelines = model.getAllTimelines();
 		for (int index = 0; index < timelines.length; index++) {
-			final TimeLine tl = timelines[index];
+			final Timeline tl = timelines[index];
 			if (tl.existNote() || tl.existHiddenNote()) {
 				for (int i = 0; i < lanes; i++) {
 					notes[i] = tl.getNote(i);
@@ -263,7 +263,7 @@ public abstract class LaneShuffleModifier extends PatternModifier {
 			Arrays.fill(endLnNoteTime, -1);
 
 			//3個押し以上の同時押しパターンのリストを作る
-			for (TimeLine tl : model.getAllTimeLines()) {
+			for (Timeline tl : model.getAllTimelines()) {
 				if (tl.existNote()) {
 					//LN
 					for (int i = 0; i < lanes; i++) {

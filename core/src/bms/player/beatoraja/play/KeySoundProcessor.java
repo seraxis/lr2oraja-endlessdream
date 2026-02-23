@@ -1,14 +1,12 @@
 package bms.player.beatoraja.play;
 
-import static bms.model.DecodeLog.State.WARNING;
 import static bms.player.beatoraja.skin.SkinProperty.TIMER_PLAY;
 
-import bms.model.DecodeLog;
 import com.badlogic.gdx.utils.Array;
 
 import bms.model.BMSModel;
 import bms.model.Note;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.audio.AudioDriver;
 
@@ -56,17 +54,17 @@ public class KeySoundProcessor {
 		private boolean stop = false;
 
 		private final long starttime;
-		final TimeLine[] timelines;
+		final Timeline[] timelines;
 
 		public AutoplayThread(BMSModel model, long starttime) {
 			this.starttime = starttime;
-			Array<TimeLine> tls = new Array<TimeLine>();
-			for(TimeLine tl : model.getAllTimeLines()) {
-				if(tl.getBackGroundNotes().length > 0) {
+			Array<Timeline> tls = new Array<Timeline>();
+			for(Timeline tl : model.getAllTimelines()) {
+				if(!tl.getBgNotes().isEmpty()) {
 					tls.add(tl);
 				}
 			}
-			timelines = tls.toArray(TimeLine.class);
+			timelines = tls.toArray(Timeline.class);
 		}
 
 		@Override
@@ -86,7 +84,7 @@ public class KeySoundProcessor {
 				}
 				// BGレーン再生
 				while (p < timelines.length && timelines[p].getMicroTime() <= time) {
-					for (Note n : timelines[p].getBackGroundNotes()) {
+					for (Note n : timelines[p].getBgNotes()) {
 						audio.play(n, volume, 0);
 					}
 					p++;

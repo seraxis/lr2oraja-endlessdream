@@ -113,7 +113,7 @@ public class BMSLoudnessAnalyzer {
 	private AnalysisResult analyze(BMSModel model) {
 		try {
 			// Check cache first
-			String hash = model.getSHA256();
+			String hash = model.getSha256();
 			if (hash != null && !hash.isEmpty()) {
 				Double value = readFromCache(hash);
 				if (value != null) {

@@ -5,7 +5,7 @@ import java.util.List;
 
 import bms.model.BMSModel;
 import bms.model.Mode;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import bms.player.beatoraja.PlayerConfig;
 
 /**
@@ -32,7 +32,7 @@ public class NoteShuffleModifier extends PatternModifier {
 	public void modify(BMSModel model) {
 		randomizer.setRandomSeed(getSeed());
 		randomizer.setModifyLanes(getKeys(model.getMode(), player, isScratchLaneModify));
-		for(TimeLine tl : model.getAllTimeLines()) {
+		for(Timeline tl : model.getAllTimelines()) {
 			if (tl.existNote() || tl.existHiddenNote()) {
 				randomizer.permutate(tl);
 			}

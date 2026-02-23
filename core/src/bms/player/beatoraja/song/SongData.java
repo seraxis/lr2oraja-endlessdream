@@ -12,6 +12,8 @@ import bms.player.beatoraja.Validatable;
 import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.tool.mdprocessor.IpfsInformation;
 
+import static io.github.catizard.kbms.parser.RadixHelperKt.convertHexString;
+
 /**
  * 楽曲データ
  * 
@@ -115,7 +117,7 @@ public class SongData implements Validatable, IpfsInformation {
 	private String parent = "";
 
 	private BMSModel model;
-	private TimeLine[] timelines;
+	private Timeline[] timelines;
 	private SongInformation info;
 
 	private String charthash;
@@ -142,17 +144,17 @@ public class SongData implements Validatable, IpfsInformation {
 		setArtist(model.getArtist());
 		setSubartist(model.getSubArtist());
 		path.add(model.getPath());
-		md5 = model.getMD5();
-		sha256 = model.getSHA256();
+		md5 = model.getMd5();
+		sha256 = model.getSha256();
 		banner = model.getBanner();
 
-		setStagefile(model.getStagefile());
-		setBackbmp(model.getBackbmp());
+		setStagefile(model.getStageFile());
+		setBackbmp(model.getBackBMP());
         if(preview == null || preview.length() == 0) {
             setPreview(model.getPreview());
         }
 		try {
-			level = Integer.parseInt(model.getPlaylevel());
+			level = Integer.parseInt(model.getPlayLevel());
 		} catch(NumberFormatException e) {
 
 		}
@@ -160,12 +162,12 @@ public class SongData implements Validatable, IpfsInformation {
 		if(difficulty == 0) {
 			difficulty = model.getDifficulty();			
 		}
-		judge = model.getJudgerank();
+		judge = model.getJudgeRank();
 		minbpm = (int) model.getMinBPM();
 		maxbpm = (int) model.getMaxBPM();
 		feature = 0;
 		final int keys = model.getMode().key;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			if(tl.getStop() > 0) {
 				feature |= FEATURE_STOPSEQUENCE;
 			}
@@ -176,16 +178,16 @@ public class SongData implements Validatable, IpfsInformation {
 			for(int i = 0;i < keys;i++) {
 				if(tl.getNote(i) instanceof LongNote) {
 					switch(((LongNote) tl.getNote(i)).getType()) {
-						case LongNote.TYPE_UNDEFINED:
+						case UNDEFINED:
 							feature |= FEATURE_UNDEFINEDLN;
 							break;
-						case LongNote.TYPE_LONGNOTE:
+						case LONG_NOTE:
 							feature |= FEATURE_LONGNOTE;
 							break;
-						case LongNote.TYPE_CHARGENOTE:
+						case CHARGE_NOTE:
 							feature |= FEATURE_CHARGENOTE;
 							break;
-						case LongNote.TYPE_HELLCHARGENOTE:
+						case HELL_CHARGE_NOTE:
 							feature |= FEATURE_HELLCHARGENOTE;
 							break;
 					}
@@ -198,7 +200,7 @@ public class SongData implements Validatable, IpfsInformation {
 		length = model.getLastTime();
 		notes = model.getTotalNotes();
 
-		timelines = model.getAllTimeLines();
+		timelines = model.getAllTimelines();
 
 		feature |= model.getRandom() != null && model.getRandom().length > 0 ? FEATURE_RANDOM : 0;
 		content |= model.getBgaList().length > 0 ? CONTENT_BGA : 0;
@@ -207,7 +209,7 @@ public class SongData implements Validatable, IpfsInformation {
 		info = new SongInformation(model);
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
-			charthash = BMSDecoder.convertHexString(md.digest(model.toChartString().getBytes()));
+			charthash = convertHexString(md.digest(model.toChartString().getBytes()));
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
@@ -457,7 +459,7 @@ public class SongData implements Validatable, IpfsInformation {
 		this.judge = judge;
 	}
 
-	public TimeLine[] getTimelines() {
+	public Timeline[] getTimelines() {
 		return timelines;
 	}
 

@@ -22,7 +22,7 @@ public class MineNoteModifier extends PatternModifier {
 	public void modify(BMSModel model) {
 		if(mode == Mode.REMOVE) {
 			AssistLevel assist = AssistLevel.NONE;
-			for (TimeLine tl : model.getAllTimeLines()) {
+			for (Timeline tl : model.getAllTimelines()) {
 				for(int lane = 0;lane < model.getMode().key;lane++) {
 					if(tl.getNote(lane) instanceof MineNote) {
 						assist = AssistLevel.LIGHT_ASSIST;
@@ -33,12 +33,12 @@ public class MineNoteModifier extends PatternModifier {
 			}
 			setAssistLevel(assist);
 		} else {
-			TimeLine[] tls = model.getAllTimeLines();
+			Timeline[] tls = model.getAllTimelines();
 			boolean[] ln = new boolean[model.getMode().key];
 			boolean[] blank = new boolean[model.getMode().key];
 
 			for (int i = 0;i < tls.length;i++) {
-				final TimeLine tl = tls[i];
+				final Timeline tl = tls[i];
 
 				for(int key = 0;key < model.getMode().key;key++) {
 					final Note note = tl.getNote(key);

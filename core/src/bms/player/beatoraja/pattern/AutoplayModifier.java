@@ -28,10 +28,10 @@ public class AutoplayModifier extends PatternModifier {
 	@Override
 	public void modify(BMSModel model) {
 		AssistLevel assist = AssistLevel.NONE;
-		TimeLine[] tls = model.getAllTimeLines();
+		Timeline[] tls = model.getAllTimelines();
 		boolean[] lns = new boolean[model.getMode().key];
 		for (int i = 0, pos = 0;i < tls.length;i++) {
-			final TimeLine tl = tls[i];
+			final Timeline tl = tls[i];
 			boolean remove = false;
 
 			if(margin > 0) {

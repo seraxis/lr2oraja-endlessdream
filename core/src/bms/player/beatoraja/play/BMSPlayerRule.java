@@ -1,7 +1,9 @@
 package bms.player.beatoraja.play;
 
 import bms.model.BMSModel;
+import bms.model.JudgeRankType;
 import bms.model.Mode;
+import bms.model.TotalType;
 
 /**
  * プレイヤールール
@@ -56,19 +58,19 @@ public enum BMSPlayerRule {
     
     public static void validate(BMSModel model) {
     	BMSPlayerRule rule = getBMSPlayerRule(model.getMode());
-    	final int judgerank = model.getJudgerank();
-    	switch(model.getJudgerankType()) {
+    	final int judgerank = model.getJudgeRank();
+    	switch(model.getJudgeRankType()) {
     	case BMS_RANK:
-			model.setJudgerank(judgerank >= 0 && model.getJudgerank() < 5 ? rule.judge.windowrule.judgerank[judgerank] : rule.judge.windowrule.judgerank[2]);
+			model.setJudgeRank(judgerank >= 0 && model.getJudgeRank() < 5 ? rule.judge.windowrule.judgerank[judgerank] : rule.judge.windowrule.judgerank[2]);
     		break;
     	case BMS_DEFEXRANK:
-			model.setJudgerank(judgerank > 0 ? judgerank * rule.judge.windowrule.judgerank[2] / 100 : rule.judge.windowrule.judgerank[2]);
+			model.setJudgeRank(judgerank > 0 ? judgerank * rule.judge.windowrule.judgerank[2] / 100 : rule.judge.windowrule.judgerank[2]);
     		break;
     	case BMSON_JUDGERANK:
-			model.setJudgerank(judgerank > 0 ? judgerank : 100);
+			model.setJudgeRank(judgerank > 0 ? judgerank : 100);
     		break;
     	}
-    	model.setJudgerankType(BMSModel.JudgeRankType.BMSON_JUDGERANK);
+    	model.setJudgeRankType(JudgeRankType.BMSON_JUDGERANK);
 		
     	switch(model.getTotalType()) {
     	case BMS:
@@ -82,7 +84,7 @@ public enum BMSPlayerRule {
 			model.setTotal(model.getTotal() > 0 ? model.getTotal() / 100.0 * total : total);
     		break;
     	}
-    	model.setTotalType(BMSModel.TotalType.BMS);
+    	model.setTotalType(TotalType.BMS);
     }
     
 	private static double calculateDefaultTotal(Mode mode, int totalnotes) {

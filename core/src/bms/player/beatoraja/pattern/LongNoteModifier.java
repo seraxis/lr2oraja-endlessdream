@@ -27,7 +27,7 @@ public class LongNoteModifier extends PatternModifier {
 
 		if(mode == Mode.REMOVE) {
 			AssistLevel assist = AssistLevel.NONE;
-			for (TimeLine tl : model.getAllTimeLines()) {
+			for (Timeline tl : model.getAllTimelines()) {
 				for(int lane = 0;lane < model.getMode().key;lane++) {
 					if(tl.getNote(lane) instanceof LongNote ln && Math.random() < rate) {
 						tl.setNote(lane, ln.isEnd() ? null : new NormalNote(ln.getWav()));
@@ -41,29 +41,29 @@ public class LongNoteModifier extends PatternModifier {
 
 			AssistLevel assist = AssistLevel.NONE;
 
-			TimeLine[] tls = model.getAllTimeLines();
+			Timeline[] tls = model.getAllTimelines();
 			for (int i = 0;i < tls.length - 1;i++) {
 				for(int lane = 0;lane < model.getMode().key;lane++) {
 					if(tls[i].getNote(lane) instanceof NormalNote && !tls[i + 1].existNote(lane) && Math.random() < rate) {
-						int lntype = switch(mode) {
-							case ADD_LN -> LongNote.TYPE_LONGNOTE;
-							case ADD_CN -> LongNote.TYPE_CHARGENOTE;
-							case ADD_HCN -> LongNote.TYPE_HELLCHARGENOTE;
-							case ADD_ALL -> (int) (Math.random() * 3 + 1);
-							default -> LongNote.TYPE_UNDEFINED;
+						LongNoteDef lnType = switch(mode) {
+							case ADD_LN -> LongNoteDef.LONG_NOTE;
+							case ADD_CN -> LongNoteDef.CHARGE_NOTE;
+							case ADD_HCN -> LongNoteDef.HELL_CHARGE_NOTE;
+//							case ADD_ALL -> (int) (Math.random() * 3 + 1); // TODO: Fix this
+							default -> LongNoteDef.UNDEFINED;
 						};
 
-						if(lntype != LongNote.TYPE_LONGNOTE) {
+						if(lnType != LongNoteDef.LONG_NOTE) {
 							assist = AssistLevel.ASSIST;
 						}
 
-						LongNote lnstart = new LongNote(tls[i].getNote(lane).getWav(),tls[i].getNote(lane).getMicroStarttime(),tls[i].getNote(lane).getMicroDuration());
-						lnstart.setType(lntype);
-						LongNote lnend = new LongNote(-2);
+						LongNote lnstart = new LongNote(tls[i].getNote(lane).getWav(),tls[i].getNote(lane).getMicroStart(),tls[i].getNote(lane).getDuration());
+						lnstart.setType(lnType);
+						LongNote lnend = new LongNote(-2, lnType);
 
 						tls[i].setNote(lane, lnstart);
 						tls[i + 1].setNote(lane, lnend);
-						lnstart.setPair(lnend);
+						lnstart.connectPair(lnend);
 					}
 				}
 			}

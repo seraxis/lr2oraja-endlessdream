@@ -84,7 +84,7 @@ public class SongInformation implements Validatable {
 	}
 	
 	public SongInformation(BMSModel model) {
-		sha256 = model.getSHA256();
+		sha256 = model.getSha256();
 		n = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_KEY);
 		ln = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_LONG_KEY);
 		s = BMSModelUtils.getTotalNotes(model, BMSModelUtils.TOTALNOTES_SCRATCH);
@@ -96,7 +96,7 @@ public class SongInformation implements Validatable {
 		int pos = 0;
 		int border = (int) (model.getTotalNotes() * (1.0 - 100.0 / model.getTotal()));
 		int borderpos = 0;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			if (tl.getTime() / 1000 != pos) {
 				pos = tl.getTime() / 1000;
 			}
@@ -109,7 +109,7 @@ public class SongInformation implements Validatable {
 						}
 					}
 
-					if(!((model.getLnmode() == 1 || (model.getLnmode() == 0 && model.getLntype() == BMSModel.LNTYPE_LONGNOTE))
+					if(!((model.getLnMode() == LongNoteDef.LONG_NOTE || (model.getLnMode() == LongNoteDef.UNDEFINED && model.getLnType() == LongNoteDef.LONG_NOTE))
 							&& n instanceof LongNote && ((LongNote) n).isEnd())){
 						if (n instanceof NormalNote) {
 							data[tl.getTime() / 1000][model.getMode().isScratchKey(i) ? 2 : 5]++;
@@ -163,18 +163,18 @@ public class SongInformation implements Validatable {
 		Map<Double, Integer> bpmNoteCountMap = new HashMap<Double, Integer>();
 		double nowSpeed = model.getBpm();
 		speedList.add(new double[] {nowSpeed, 0.0});
-		final TimeLine[] tls = model.getAllTimeLines();
-		for (TimeLine tl : tls) {
-			int notecount = bpmNoteCountMap.containsKey(tl.getBPM()) ? bpmNoteCountMap.get(tl.getBPM()) : 0;
-			bpmNoteCountMap.put(tl.getBPM(), notecount + tl.getTotalNotes());
+		final Timeline[] tls = model.getAllTimelines();
+		for (Timeline tl : tls) {
+			int notecount = bpmNoteCountMap.containsKey(tl.getBpm()) ? bpmNoteCountMap.get(tl.getBpm()) : 0;
+			bpmNoteCountMap.put(tl.getBpm(), notecount + tl.getTotalNotes());
 
 			if(tl.getStop() > 0) {
 				if(nowSpeed != 0) {
 					nowSpeed = 0;					
 					speedList.add(new double[] {nowSpeed, tl.getTime()});
 				}
-			} else if(nowSpeed != tl.getBPM() * tl.getScroll()) {
-				nowSpeed = tl.getBPM() * tl.getScroll();
+			} else if(nowSpeed != tl.getBpm() * tl.getScroll()) {
+				nowSpeed = tl.getBpm() * tl.getScroll();
 				speedList.add(new double[] {nowSpeed, tl.getTime()});
 			}
 		}

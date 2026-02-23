@@ -64,7 +64,6 @@ public class MainLoader extends Application {
 	private static VersionChecker version;
 
 	public static void main(String[] args) {
-
 		if(!ALLOWS_32BIT_JAVA && !System.getProperty( "os.arch" ).contains( "64")) {
 			JOptionPane.showMessageDialog(null, "This Application needs 64bit-Java.", "Error", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);

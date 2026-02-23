@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import bms.model.BMSModel;
+import bms.model.LongNoteDef;
 import bms.model.Mode;
 import bms.player.beatoraja.song.SongData;
 
@@ -64,8 +65,9 @@ public class IRChartData {
 	public final Mode mode;
 	/**
 	 * LN TYPE(-1: 未指定, 0: LN, 1: CN, 2: HCN)
+	 * TODO: This is very likely to break the IR system
 	 */
-	public final int lntype;
+	public final LongNoteDef lnType;
 	/**
 	 * 判定幅(bmsonのjudgerank表記)
 	 */
@@ -114,10 +116,10 @@ public class IRChartData {
 	public final Map<String, String> values = new HashMap<String, String>();
 	
 	public IRChartData(SongData song) {
-		this(song, song.getBMSModel() != null ? song.getBMSModel().getLntype() : 0);
+		this(song, song.getBMSModel() != null ? song.getBMSModel().getLnType() : LongNoteDef.LONG_NOTE);
 	}
 	
-	public IRChartData(SongData song, int lntype) {
+	public IRChartData(SongData song, LongNoteDef lnType) {
 		this.title = song.getTitle();
 		this.subtitle = song.getSubtitle();
 		this.genre = song.getGenre();
@@ -143,7 +145,7 @@ public class IRChartData {
 		this.hasMine = song.hasMineNote();
 		this.hasRandom = song.hasRandomSequence();
 		this.hasStop = song.isBpmstop();
-		this.lntype = lntype;
+		this.lnType = lnType;
 
 		if(model != null) {
 			values.putAll(model.getValues());			

@@ -357,10 +357,10 @@ public class MusicResult extends AbstractResult {
 		timingDistribution.init();
 		BMSModel model = resource.getBMSModel();
 		final int lanes = model.getMode().key;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			for (int i = 0; i < lanes; i++) {
 				Note n = tl.getNote(i);
-				if (n != null && !((model.getLnmode() == 1 || (model.getLnmode() == 0 && model.getLntype() == BMSModel.LNTYPE_LONGNOTE))
+				if (n != null && !((model.getLnMode() == LongNoteDef.LONG_NOTE || (model.getLnMode() == LongNoteDef.UNDEFINED && model.getLnType() == LongNoteDef.LONG_NOTE))
 						&& n instanceof LongNote && ((LongNote) n).isEnd())) {
 					int state = n.getState();
 					int time = n.getPlayTime();

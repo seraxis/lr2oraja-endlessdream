@@ -1,7 +1,7 @@
 package bms.player.beatoraja.pattern;
 
 import bms.model.BMSModel;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import bms.player.beatoraja.PlayerConfig;
 
 /**
@@ -37,24 +37,24 @@ public class ScrollSpeedModifier extends PatternModifier {
         if(mode == Mode.REMOVE) {
             // スクロールスピード変更、ストップシーケンス無効化
             AssistLevel assist = AssistLevel.NONE;
-            TimeLine starttl = model.getAllTimeLines()[0];
+            Timeline starttl = model.getAllTimelines()[0];
 
-            for (TimeLine tl : model.getAllTimeLines()) {
-                if(tl.getBPM() != starttl.getBPM() || tl.getScroll() != starttl.getScroll() || tl.getStop() != 0) {
+            for (Timeline tl : model.getAllTimelines()) {
+                if(tl.getBpm() != starttl.getBpm() || tl.getScroll() != starttl.getScroll() || tl.getStop() != 0) {
                     assist = AssistLevel.LIGHT_ASSIST;
                 }
-                tl.setSection(starttl.getBPM() * tl.getMicroTime() / 240000000);
-                tl.setStop(0);
-                tl.setBPM(starttl.getBPM());
+                tl.setSection(starttl.getBpm() * tl.getMicroTime() / 240000000);
+                tl.setMicroStop(0);
+                tl.setBpm(starttl.getBpm());
                 tl.setScroll(starttl.getScroll());
             }
             setAssistLevel(assist);
         } else {
-            final double base = model.getAllTimeLines()[0].getScroll();
+            final double base = model.getAllTimelines()[0].getScroll();
             double current = base;
             int sectioncount = 0;
-            for (TimeLine tl : model.getAllTimeLines()) {
-                if(tl.getSectionLine()) {
+            for (Timeline tl : model.getAllTimelines()) {
+                if(tl.getHasSectionLine()) {
                 	sectioncount++;
                 	if(section == sectioncount) {
                         current = base * (1.0 + Math.random() * rate * 2 - rate);

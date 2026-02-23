@@ -7,6 +7,9 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import io.github.catizard.kbms.parser.ChartParser;
+import io.github.catizard.kbms.parser.ChartParserConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +35,13 @@ public class BMSRenderer {
 	public RenderResult render(Path bmsPath, long maxDurationMs) {
 		logger.info("Starting BMS rendering: {}", bmsPath);
 
-		ChartDecoder decoder = ChartDecoder.getDecoder(bmsPath);
-		if (decoder == null) {
+		ChartParser parser = ChartParser.Companion.create(bmsPath, new ChartParserConfig(true, LongNoteDef.LONG_NOTE));
+		if (parser == null) {
 			logger.warn("Unsupported file format: {}", bmsPath);
 			return null;
 		}
 
-		BMSModel model = decoder.decode(bmsPath);
+		BMSModel model = parser.parse(bmsPath, null);
 		if (model == null) {
 			logger.warn("Failed to load BMS file: {}", bmsPath);
 			return null;
@@ -76,14 +79,14 @@ public class BMSRenderer {
 		float[] mixBuffer = new float[(int) totalSamples * channels];
 
 		// Process all timelines
-		TimeLine[] timelines = model.getAllTimeLines();
+		Timeline[] timelines = model.getAllTimelines();
 
-		for (TimeLine tl : timelines) {
+		for (Timeline tl : timelines) {
 			long time = tl.getMilliTime();
 			if (time >= endTime) {
 				break;
 			}
-			for (Note note : tl.getBackGroundNotes()) {
+			for (Note note : tl.getBgNotes()) {
 				renderNote(note, time, wavCache, mixBuffer);
 			}
 			int lanes = model.getMode().key;
@@ -132,8 +135,8 @@ public class BMSRenderer {
 		}
 
 		long startSample = noteTime * sampleRate / 1000;
-		long microStartTime = note.getMicroStarttime();
-		long microDuration = note.getMicroDuration();
+		long microStartTime = note.getMicroStart();
+		long microDuration = note.getDuration();
 
 		PCM renderPcm = pcm;
 		if (microStartTime > 0 || microDuration > 0) {

@@ -12,7 +12,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import bms.model.BMSModel;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import static bms.player.beatoraja.ClearType.*;
 import static bms.player.beatoraja.CourseData.CourseDataConstraint.*;
 
@@ -151,7 +151,7 @@ public final class PlayDataAccessor {
 	 * @return スコアデータ
 	 */
 	public ScoreData readScoreData(BMSModel model, int lnmode) {
-		String hash = model.getSHA256();
+		String hash = model.getSha256();
 		boolean ln = model.containsUndefinedLongNote();
 		return readScoreData(hash, ln, lnmode);
 	}
@@ -198,7 +198,7 @@ public final class PlayDataAccessor {
 	 *            プレイ回数のみ反映する場合はfalse
 	 */
 	public void writeScoreData(ScoreData newscore, BMSModel model, int lnmode, boolean updateScore) {
-		String hash = model.getSHA256();
+		String hash = model.getSha256();
 		if (newscore == null) {
 			return;
 		}
@@ -290,7 +290,7 @@ public final class PlayDataAccessor {
 
 		// 楽曲のプレイ時間算出(秒)
 		long time = 0;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			for (int i = 0; i < model.getMode().key; i++) {
 				if (tl.getNote(i) != null && tl.getNote(i).getState() != 0) {
 					time = tl.getMicroTime() / 1000000;
@@ -344,7 +344,7 @@ public final class PlayDataAccessor {
 		String[] hash = new String[models.length];
 		boolean ln = false;
 		for (int i = 0; i < models.length; i++) {
-			hash[i] = models[i].getSHA256();
+			hash[i] = models[i].getSha256();
 			ln |= models[i].containsUndefinedLongNote();
 		}
 		return readScoreData(hash, ln, lnmode, option, constraint);
@@ -368,7 +368,7 @@ public final class PlayDataAccessor {
 		int totalnotes = 0;
 		boolean ln = false;
 		for (BMSModel model : models) {
-			hash += model.getSHA256();
+			hash += model.getSha256();
 			totalnotes += model.getTotalNotes();
 			ln |= model.containsUndefinedLongNote();
 		}
@@ -494,12 +494,12 @@ public final class PlayDataAccessor {
 	}
 
 	public void deleteScoreData(BMSModel model, int lnmode) {
-		scoredb.deleteScoreData(model.getSHA256(), model.containsUndefinedLongNote() ? lnmode : 0);
+		scoredb.deleteScoreData(model.getSha256(), model.containsUndefinedLongNote() ? lnmode : 0);
 	}
 
 	public boolean existsReplayData(BMSModel model, int lnmode, int index) {
 		boolean ln = model.containsUndefinedLongNote();
-		return Files.exists(Paths.get(this.getReplayDataFilePath(model.getSHA256(), ln, lnmode, index) + ".brd"));
+		return Files.exists(Paths.get(this.getReplayDataFilePath(model.getSha256(), ln, lnmode, index) + ".brd"));
 	}
 
 	public boolean existsReplayData(String hash, boolean ln, int lnmode, int index) {
@@ -512,7 +512,7 @@ public final class PlayDataAccessor {
 		boolean ln = false;
 		for (int i = 0; i < models.length; i++) {
 			BMSModel model = models[i];
-			hash[i] = model.getSHA256();
+			hash[i] = model.getSha256();
 			ln |= model.containsUndefinedLongNote();
 		}
 		return Files.exists(Paths.get(this.getReplayDataFilePath(hash, ln, lnmode, index, constraint) + ".brd"));
@@ -589,7 +589,7 @@ public final class PlayDataAccessor {
 		String[] hashes = new String[models.length];
 		boolean ln = false;
 		for (int i = 0; i < models.length; i++) {
-			hashes[i] = models[i].getSHA256();
+			hashes[i] = models[i].getSha256();
 			ln |= models[i].containsUndefinedLongNote();
 		}
 		return this.readReplayData(hashes, ln, lnmode, index, constraint);
@@ -637,7 +637,7 @@ public final class PlayDataAccessor {
 		String[] hashes = new String[models.length];
 		boolean ln = false;
 		for (int i = 0; i < models.length; i++) {
-			hashes[i] = models[i].getSHA256();
+			hashes[i] = models[i].getSha256();
 			ln |= models[i].containsUndefinedLongNote();
 		}
 		this.wrireReplayData(rd, hashes, ln, lnmode, index, constraint);
@@ -683,7 +683,7 @@ public final class PlayDataAccessor {
 	}
 
 	private String getReplayDataFilePath(BMSModel model, int lnmode, int index) {
-		return getReplayDataFilePath(model.getSHA256(), model.containsUndefinedLongNote(), lnmode, index);
+		return getReplayDataFilePath(model.getSha256(), model.containsUndefinedLongNote(), lnmode, index);
 	}
 
 	private String getReplayDataFilePath(String hash, boolean ln, int lnmode, int index) {

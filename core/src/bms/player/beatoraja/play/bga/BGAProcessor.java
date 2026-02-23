@@ -2,10 +2,11 @@ package bms.player.beatoraja.play.bga;
 
 import java.nio.file.*;
 import java.util.Arrays;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bms.model.Layer.Sequence;
 import bms.model.*;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayerConfig;
@@ -64,7 +65,7 @@ public class BGAProcessor {
 
 	private Texture blanktex;
 
-	private TimeLine[] timelines = {};
+	private Timeline[] timelines = {};
 	private int pos;
 	private TextureRegion image;
 	private Rectangle tmpRect = new Rectangle();
@@ -106,11 +107,11 @@ public class BGAProcessor {
 
 		int id = 0;
 
-		Array<TimeLine> tls = new Array<TimeLine>();
+		Array<Timeline> tls = new Array<Timeline>();
 
 		if(model != null) {
-			for(TimeLine tl : model.getAllTimeLines()) {
-				if(tl.getBGA() != -1 || tl.getLayer() != -1 || tl.getEventlayer().length > 0) {
+			for(Timeline tl : model.getAllTimelines()) {
+				if(tl.getBgaID() != -1 || tl.getLayer() != -1 || !tl.getEventLayer().isEmpty()) {
 					tls.add(tl);
 				}
 			}
@@ -206,7 +207,7 @@ public class BGAProcessor {
 				id++;
 			}
 		}
-		timelines = tls.toArray(TimeLine.class);
+		timelines = tls.toArray(Timeline.class);
 
 		disposeOld();
 
@@ -266,13 +267,13 @@ public class BGAProcessor {
 			return;
 		}
 		for (int i = pos; i < timelines.length; i++) {
-			final TimeLine tl = timelines[i];
+			final Timeline tl = timelines[i];
 			if (tl.getTime() > time) {
 				break;
 			}
 
 			if (tl.getTime() > this.time) {
-				final int bga = tl.getBGA();
+				final int bga = tl.getBgaID();
 				if (bga == -2) {
 					playingbgaid = -1;
 					rbga = false;
@@ -290,10 +291,10 @@ public class BGAProcessor {
 					rlayer = false;
 				}
 
-				final Layer[] eventlayer = tl.getEventlayer();
-				
-				for(Layer poor : eventlayer) {
-					if (poor.event.type == Layer.EventType.MISS) {
+				List<Layer> eventLayer = tl.getEventLayer();
+
+				for(Layer poor : eventLayer) {
+					if (poor.getEvent().getType() == EventType.MISS) {
 						misslayer = poor;
 					}					
 				}
@@ -316,8 +317,8 @@ public class BGAProcessor {
 
 		if (misslayer != null && misslayertime != 0 && time >= misslayertime && time < misslayertime + getMisslayerduration) {
 			// draw miss layer
-			final Sequence[] seq = misslayer.sequence[0];
-			final int index = seq[(int) ((seq.length - 1) * (time - misslayertime) / getMisslayerduration)].id;
+			List<LayerSequence> seq = misslayer.getLayerSequence().get(0);
+			final int index = seq.get((int) ((seq.size() - 1) * (time - misslayertime) / getMisslayerduration)).getId();
 			if(index != Integer.MIN_VALUE) {
 				Texture miss = getBGAData(time, index, true);
 				if (miss != null) {

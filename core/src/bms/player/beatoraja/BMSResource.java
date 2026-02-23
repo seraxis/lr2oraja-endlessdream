@@ -71,7 +71,7 @@ public class BMSResource {
 			stagefile = null;
 		}
 		try {
-			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getStagefile()).toString());
+			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getStageFile()).toString());
 			if(pix != null) {
 				stagefile = new TextureRegion(new Texture(pix));
 				pix.dispose();
@@ -85,7 +85,7 @@ public class BMSResource {
 			backbmp = null;
 		}
 		try {
-			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getBackbmp()).toString());
+			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getBackBMP()).toString());
 			if(pix != null) {
 				backbmp = new TextureRegion(new Texture(pix));
 				pix.dispose();

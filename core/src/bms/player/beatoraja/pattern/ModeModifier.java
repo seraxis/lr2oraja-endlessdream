@@ -8,7 +8,7 @@ import bms.model.BMSModel;
 import bms.model.LongNote;
 import bms.model.Mode;
 import bms.model.Note;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import bms.player.beatoraja.PlayerConfig;
 /**
  * 譜面のレーン数を変更するクラス。
@@ -50,7 +50,7 @@ public class ModeModifier extends PatternModifier {
 		Arrays.fill(endLnNoteTime, -1);
 		if(config.getHranThresholdBPM() <= 0) hranThreshold = 0;
 		else hranThreshold = (int) (Math.ceil(15000.0f / config.getHranThresholdBPM()));
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			if (tl.existNote() || tl.existHiddenNote()) {
 				Note[] notes = new Note[lanes];
 				Note[] hnotes = new Note[lanes];

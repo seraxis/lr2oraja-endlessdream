@@ -66,7 +66,7 @@ public class MiscSettingMenu {
 
             // Below settings are depending on different play mode
             if (ImGui.combo("Play Mode", PLAY_MODE_VALUE, PLAY_MODE_OPTIONS)) {
-                changePlayMode(Mode.getMode(PLAY_MODE_OPTIONS[PLAY_MODE_VALUE.get()]));
+                changePlayMode(Mode.Companion.fromHint(PLAY_MODE_OPTIONS[PLAY_MODE_VALUE.get()]));
             }
 
             if (ImGui.checkbox("Enable Lift", ENABLE_LIFT)) {

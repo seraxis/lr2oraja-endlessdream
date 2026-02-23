@@ -123,7 +123,8 @@ public class LR2IRConnection {
                 scoreData = ranking.toBeatorajaScoreData(chart);
                 lr2IRRankingCache.put(requestURL, scoreData);
             }
-			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lntype : 0);
+			// TODO: ordinal is very likely to be broken here
+			ScoreData localScore = scoreDatabaseAccessor.getScoreData(chart.sha256, chart.hasUndefinedLN ? chart.lnType.ordinal() : 0);
 			if (localScore != null) {
 				// This is intentional behaivor, see IRScoreData's player definition
 				// and how we use this feature in LeaderBoardBar

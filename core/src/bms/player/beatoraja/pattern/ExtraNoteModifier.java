@@ -3,7 +3,7 @@ package bms.player.beatoraja.pattern;
 import bms.model.BMSModel;
 import bms.model.LongNote;
 import bms.model.Note;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 
 /**
  * BGレーンからノーツを追加する譜面オプション
@@ -36,7 +36,7 @@ public class ExtraNoteModifier extends PatternModifier {
     @Override
     public void modify(BMSModel model) {
         AssistLevel assist = AssistLevel.NONE;
-        TimeLine[] tls = model.getAllTimeLines();
+        Timeline[] tls = model.getAllTimelines();
         boolean[] lns = new boolean[model.getMode().key];
         boolean[] blank = new boolean[model.getMode().key];
         Note[] lastnote = new Note[model.getMode().key];
@@ -44,7 +44,7 @@ public class ExtraNoteModifier extends PatternModifier {
         int lastoffset = 0;
 
         for (int i = 0;i < tls.length;i++) {
-            final TimeLine tl = tls[i];
+            final Timeline tl = tls[i];
 
             for(int key = 0;key < model.getMode().key;key++) {
                 final Note note = tl.getNote(key);
@@ -55,8 +55,8 @@ public class ExtraNoteModifier extends PatternModifier {
             }
 
             for(int d = 0; d < depth;d++) {
-                if(tl.getBackGroundNotes().length > 0) {
-                    final Note note = tl.getBackGroundNotes()[0];
+                if(!tl.getBgNotes().isEmpty()) {
+                    final Note note = tl.getBgNotes().get(0);
 
                     int offset = lastoffset;
                     for(int j = 1;j < model.getMode().key;j++, offset = (offset + 1) % model.getMode().key) {
@@ -70,7 +70,7 @@ public class ExtraNoteModifier extends PatternModifier {
                         if(blank[key]) {
                             lastnote[key] = note;
                             tl.setNote(key, note);
-                            tl.removeBackGroundNote(note);
+                            tl.removeBackgroundNote(note);
                             assist = AssistLevel.ASSIST;
                             break;
                         }

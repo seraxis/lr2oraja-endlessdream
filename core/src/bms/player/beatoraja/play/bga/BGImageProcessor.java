@@ -2,10 +2,11 @@ package bms.player.beatoraja.play.bga;
 
 import java.nio.file.Path;
 import java.util.*;
+
+import bms.model.Timeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import bms.model.TimeLine;
 import bms.player.beatoraja.PixmapResourcePool;
 
 import com.badlogic.gdx.graphics.Pixmap;
@@ -74,7 +75,7 @@ public class BGImageProcessor {
 	/**
 	 * BGAの初期データをあらかじめキャッシュする
 	 */
-	public void prepare(TimeLine[] timelines) {
+	public void prepare(Timeline[] timelines) {
 		long l = System.currentTimeMillis();
 		Arrays.fill(bgacacheid, -1);
 		for (Texture bga : bgacache) {
@@ -85,8 +86,8 @@ public class BGImageProcessor {
 		Arrays.fill(bgacache, null);
 
 		int count = 0;
-		for (TimeLine tl : timelines) {
-			int bga = tl.getBGA();
+		for (Timeline tl : timelines) {
+			int bga = tl.getBgaID();
 			if (bga >= 0 && bgacache[bga % bgacache.length] == null && bga < bgamap.length && bgamap[bga] != null) {
 				getTexture(bga);
 				count++;

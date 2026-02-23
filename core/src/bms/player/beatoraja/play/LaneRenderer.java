@@ -37,7 +37,7 @@ public class LaneRenderer {
 	private float hispeedmargin = 0.25f;
 
 	private BMSModel model;
-	private TimeLine[] timelines;
+	private Timeline[] timelines;
 
 	private int pos;
 
@@ -101,32 +101,32 @@ public class LaneRenderer {
 	public void init(BMSModel model) {
 		pos = 0;
 		this.model = model;
-		List<TimeLine> tls = new ArrayList<TimeLine>();
+		List<Timeline> tls = new ArrayList<Timeline>();
 		double cbpm = model.getBpm();
 		double cscr = 1.0;
-		for (TimeLine tl : model.getAllTimeLines()) {
-			if (cbpm != tl.getBPM() || tl.getStop() > 0 || cscr != tl.getScroll() || tl.getSectionLine()) {
+		for (Timeline tl : model.getAllTimelines()) {
+			if (cbpm != tl.getBpm() || tl.getStop() > 0 || cscr != tl.getScroll() || tl.getHasSectionLine()) {
 				tls.add(tl);
 			} else if (tl.existNote() || tl.existHiddenNote()) {
 				tls.add(tl);
 			}
-			cbpm = tl.getBPM();
+			cbpm = tl.getBpm();
 			cscr = tl.getScroll();
 		}
-		this.timelines = tls.toArray(new TimeLine[tls.size()]);
-		// logger.info("省略したTimeLine数:" +
-		// (model.getAllTimeLines().length - timelines.length) + " / " +
-		// model.getAllTimeLines().length);
+		this.timelines = tls.toArray(new Timeline[tls.size()]);
+		// logger.info("省略したTimeline数:" +
+		// (model.getAlltimelines().length - timelines.length) + " / " +
+		// model.getAlltimelines().length);
 
 		minbpm = model.getMinBPM();
 		maxbpm = model.getMaxBPM();
 		Map<Double, Integer> m = new HashMap<Double, Integer>();
-		for (TimeLine tl : model.getAllTimeLines()) {
-			Integer count = m.get(tl.getBPM());
+		for (Timeline tl : model.getAllTimelines()) {
+			Integer count = m.get(tl.getBpm());
 			if (count == null) {
 				count = 0;
 			}
-			m.put(tl.getBPM(), count + tl.getTotalNotes());
+			m.put(tl.getBpm(), count + tl.getTotalNotes());
 		}
 		int maxcount = 0;
 		for (double bpm : m.keySet()) {
@@ -192,9 +192,9 @@ public class LaneRenderer {
 		return playconfig.getLanecover();
 	}
 
-	public void resetHispeed(double targetbpm) {
+	public void resetHispeed(double targetBpm) {
 		if (playconfig.getFixhispeed() != PlayConfig.FIX_HISPEED_OFF) {
-			playconfig.setHispeed((float) ((2400f / (targetbpm / 100) / playconfig.getDuration()) * (1 - (playconfig.isEnablelanecover() ? playconfig.getLanecover() : 0))));
+			playconfig.setHispeed((float) ((2400f / (targetBpm / 100) / playconfig.getDuration()) * (1 - (playconfig.isEnablelanecover() ? playconfig.getLanecover() : 0))));
 		}
 	}
 	
@@ -270,7 +270,7 @@ public class LaneRenderer {
 		double nbpm = bpm;
 		double nscroll = 1.0;
 		for (int i = (pos > 5 ? pos - 5 : 0); i < timelines.length && timelines[i].getMicroTime() <= microtime; i++) {
-			nbpm = timelines[i].getBPM();
+			nbpm = timelines[i].getBpm();
 			nscroll = timelines[i].getScroll();
 		}
 		nowbpm = nbpm;
@@ -308,7 +308,7 @@ public class LaneRenderer {
 			for (int lane = 0; lane < lanes.length; lane++) {
 				final long[][] judgetime = main.getJudgeManager().getJudgeTimeRegion(lane);
 				for (int i = pos; i < timelines.length; i++) {
-					final TimeLine tl = timelines[i];
+					final Timeline tl = timelines[i];
 					if (tl.getMicroTime() >= microtime) {
 						double rate = (tl.getSection() - (i > 0 ? timelines[i - 1].getSection() : 0)) * (i > 0 ? timelines[i - 1].getScroll() : 1.0) * rxhs
 								/ (tl.getMicroTime() - (i > 0
@@ -331,7 +331,7 @@ public class LaneRenderer {
 		final int baseduration = playconfig.getDuration();
 		final float alphaLimit =  playconfig.getConstantFadeinTime() * 1000;
 		for (int i = pos; i < timelines.length && y <= hu; i++) {
-			final TimeLine tl = timelines[i];
+			final Timeline tl = timelines[i];
 			if (tl.getMicroTime() >= microtime) {
 				if (enableConstant) {
 					final long targetTime = microtime + (baseduration * 1000);
@@ -364,7 +364,7 @@ public class LaneRenderer {
 				}
 
 				if (i > 0) {
-					final TimeLine prevtl = timelines[i - 1];
+					final Timeline prevtl = timelines[i - 1];
 					if (prevtl.getMicroTime() + prevtl.getMicroStop() > microtime) {
 						y += (tl.getSection() - prevtl.getSection()) * prevtl.getScroll() * rxhs;
 					} else {
@@ -388,14 +388,14 @@ public class LaneRenderer {
 				}
 
 				if (config.isBpmguide() || showTimeline) {
-					if (tl.getBPM() != nbpm) {
+					if (tl.getBpm() != nbpm) {
 						for (SkinImage line : skin.getBPMLine()) {
 							line.draw(sprite, time, main, 0, (int) (y - hl));
 						}
 						for (Rectangle r : playerr) {
 							// TODO 数値もスキンベースへ移行
 							if(font != null) {
-								sprite.draw(font, "BPM" + ((int) tl.getBPM()), r.x + r.width / 2, (float) (y + 20), Color.valueOf("00c000"));
+								sprite.draw(font, "BPM" + ((int) tl.getBpm()), r.x + r.width / 2, (float) (y + 20), Color.valueOf("00c000"));
 							}
 							
 						}
@@ -415,12 +415,12 @@ public class LaneRenderer {
 
 				}
 				// 小節線描画
-				if (tl.getSectionLine()) {
+				if (tl.getHasSectionLine()) {
 					for (SkinImage line : skin.getLine()) {
 						line.draw(sprite, time, main, 0, (int) (y - hl));
 					}
 				}
-				nbpm = tl.getBPM();
+				nbpm = tl.getBpm();
 			} else if (pos == i - 1) {
 				boolean b = true;
 				for (int lane = 0; lane < lanes.length; lane++) {
@@ -444,7 +444,7 @@ public class LaneRenderer {
 		final long now = main.timer.getNowTime();
 		
 		for (int i = pos; i < timelines.length && y <= hu; i++) {
-			final TimeLine tl = timelines[i];
+			final Timeline tl = timelines[i];
 			if (enableConstant) {
 				final long targetTime = microtime + (baseduration * 1000);
 				final long timeDifference = tl.getMicroTime() - targetTime;
@@ -477,7 +477,7 @@ public class LaneRenderer {
 
 			if (tl.getMicroTime() >= microtime) {
 				if (i > 0) {
-					final TimeLine prevtl = timelines[i - 1];
+					final Timeline prevtl = timelines[i - 1];
 					if (prevtl.getMicroTime() + prevtl.getMicroStop() > microtime) {
 						y += (tl.getSection() - prevtl.getSection()) * prevtl.getScroll() * rxhs;
 					} else {
@@ -534,10 +534,10 @@ public class LaneRenderer {
 							// .getTime());
 							// } else {
 							double dy = 0;
-							TimeLine prevtl = tl;
+							Timeline prevtl = tl;
 							for (int j = i + 1; j < timelines.length
 									&& prevtl.getSection() != ln.getPair().getSection(); j++) {
-								final TimeLine nowtl = timelines[j];
+								final Timeline nowtl = timelines[j];
 								if (nowtl.getMicroTime() >= microtime) {
 									if (prevtl.getMicroTime() + prevtl.getMicroStop() > microtime) {
 										dy += (nowtl.getSection() - prevtl.getSection()) * prevtl.getScroll() * rxhs;
@@ -589,35 +589,35 @@ public class LaneRenderer {
 			final double rxhs2 = (hu - hl);
 			int nowPos = timelines.length - 1;
 			for (int i = pos; i < timelines.length; i++) {
-				final TimeLine tl = timelines[i];
+				final Timeline tl = timelines[i];
 				if (tl.getMicroTime() >= microtime) {
 					nowPos = i;
 					break;
 				}
 			}
 			for (int i = nowPos; i >= 0 && y >= orgy2; i--) {
-				final TimeLine tl = timelines[i];
+				final Timeline tl = timelines[i];
 				y = orgy;
 				if (i + 1 < timelines.length) {
 					int j;
 					for (j = i; j + 1 < timelines.length && timelines[j + 1].getMicroTime() < microtime; j++) {
 						if(timelines[j + 1].getMicroTime() > tl.getMicroTime() + tl.getMicroStop() + badTime) {
 							stopTime = Math.max(tl.getMicroTime() + tl.getMicroStop() + badTime - timelines[j].getMicroTime() - timelines[j].getMicroStop(), 0);
-							y -= (timelines[j + 1].getMicroTime() - timelines[j].getMicroTime() - timelines[j].getMicroStop() - stopTime) * rxhs2 * timelines[j].getBPM() / 240000000;
+							y -= (timelines[j + 1].getMicroTime() - timelines[j].getMicroTime() - timelines[j].getMicroStop() - stopTime) * rxhs2 * timelines[j].getBpm() / 240000000;
 							//4分の画面上での長さ rxhs2 / 4 [pixel] 4分の時間 60 / BPM [second] 落下速度 rxhs2 * BPM / 240 [pixel/second]
 						}
 					}
 					if(timelines[j].getMicroTime() + timelines[j].getMicroStop() < microtime) {
 						if(microtime > tl.getMicroTime() + tl.getMicroStop() + badTime) {
 							stopTime = Math.max(tl.getMicroTime() + tl.getMicroStop() + badTime - timelines[j].getMicroTime() - timelines[j].getMicroStop(), 0);
-							y -= (microtime - timelines[j].getMicroTime() - timelines[j].getMicroStop() - stopTime) * rxhs2 * timelines[j].getBPM() / 240000000;
+							y -= (microtime - timelines[j].getMicroTime() - timelines[j].getMicroStop() - stopTime) * rxhs2 * timelines[j].getBpm() / 240000000;
 						}
 					}
 				} else {
 					if(tl.getMicroTime() + tl.getMicroStop() < microtime) {
 						if(microtime > tl.getMicroTime() + tl.getMicroStop() + badTime) {
 							stopTime = Math.max(tl.getMicroTime() + tl.getMicroStop() + badTime - tl.getMicroTime() - tl.getMicroStop(), 0);
-							y -= (microtime - tl.getMicroTime() - tl.getMicroStop() - stopTime) * rxhs2 * tl.getBPM() / 240000000;
+							y -= (microtime - tl.getMicroTime() - tl.getMicroStop() - stopTime) * rxhs2 * tl.getBpm() / 240000000;
 						}
 					}
 				}
@@ -676,8 +676,8 @@ public class LaneRenderer {
 
 	final private void drawLongNote(SkinObjectRenderer sprite, TextureRegion[] longImage, float x, float y, float width, float height, float scale,
 			int lane, LongNote ln) {
-		if ((model.getLntype() == BMSModel.LNTYPE_HELLCHARGENOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-				|| ln.getType() == LongNote.TYPE_HELLCHARGENOTE) {
+		if ((model.getLnType() == LongNoteDef.HELL_CHARGE_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+				|| ln.getType() == LongNoteDef.HELL_CHARGE_NOTE) {
 			// HCN
 			final JudgeManager judge = main.getJudgeManager();
 			sprite.draw(
@@ -687,15 +687,15 @@ public class LaneRenderer {
 					x, y - height + scale, width, height - scale);
 			sprite.draw(longImage[4], x, y, width, scale);
 			sprite.draw(longImage[5], x, y - height, width, scale);
-		} else if ((model.getLntype() == BMSModel.LNTYPE_CHARGENOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-				|| ln.getType() == LongNote.TYPE_CHARGENOTE) {
+		} else if ((model.getLnType() == LongNoteDef.CHARGE_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+				|| ln.getType() == LongNoteDef.CHARGE_NOTE) {
 			// CN
 			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNote(lane) == ln.getPair() ? 2 : 3], x,
 					y - height + scale, width, height - scale);
 			sprite.draw(longImage[0], x, y, width, scale);
 			sprite.draw(longImage[1], x, y - height, width, scale);
-		} else if ((model.getLntype() == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-				|| ln.getType() == LongNote.TYPE_LONGNOTE) {
+		} else if ((model.getLnType() == LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+				|| ln.getType() == LongNoteDef.LONG_NOTE) {
 			// LN
 			sprite.draw(longImage[main.getJudgeManager().getProcessingLongNote(lane) == ln.getPair() ? 2 : 3], x,
 					y - height + scale, width, height - scale);

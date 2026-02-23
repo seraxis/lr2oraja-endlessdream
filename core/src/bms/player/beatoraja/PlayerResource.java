@@ -15,10 +15,11 @@ import com.badlogic.gdx.utils.FloatArray;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import io.github.catizard.kbms.parser.ChartParser;
+import io.github.catizard.kbms.parser.ChartParserConfig;
+import io.github.catizard.kbms.parser.osu.OSUParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.Future;
@@ -174,7 +175,7 @@ public final class PlayerResource {
 			logger.warn("楽曲が存在しないか、解析時にエラーが発生しました:{}", f.toString());
 			return false;
 		}
-		if (model.getAllTimeLines().length == 0) {
+		if (model.getAllTimelines().length == 0) {
 			return false;
 		}
 
@@ -198,27 +199,21 @@ public final class PlayerResource {
 	}
 
 	public BMSModel loadBMSModel(Path f, int lnmode) {
-		return loadBMSModel(new ChartInformation(f, lnmode, null));
+		return loadBMSModel(new ChartInformation(f, LongNoteDef.Companion.fromLNMode(lnmode), null));
 	}
 
 	public BMSModel loadBMSModel(int[] selectedRandom) {
 		if(model != null) {
-			ChartInformation info = model.getChartInformation();
-			return loadBMSModel(new ChartInformation(info.path, info.lntype, selectedRandom));			
+			ChartInformation info = model.getInfo();
+			return loadBMSModel(new ChartInformation(info.getPath(), info.getLnType(), Arrays.stream(selectedRandom).boxed().toList()));
 		}
 		return null;
 	}
 
 	public BMSModel loadBMSModel(ChartInformation info) {
-		ChartDecoder decoder = ChartDecoder.getDecoder(info.path);
-		if(decoder == null) {
-			return null;
-		}
-		BMSModel model = decoder.decode(info);
-		if (model == null) {
-			return null;
-		}
-		if (decoder instanceof OSUDecoder) {
+		ChartParser parser = ChartParser.Companion.create(info.getPath(), new ChartParserConfig(true, LongNoteDef.LONG_NOTE));
+		BMSModel model = parser.parse(info);
+		if (parser instanceof OSUParser) {
 			model.setFromOSU(true);
 		}
 
@@ -228,7 +223,7 @@ public final class PlayerResource {
 		// 地雷ノートに爆発音が定義されていない場合、デフォルト爆発音をセットする
 		final int lanes = model.getMode().key;
 		final int wavcount = model.getWavList().length;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			for (int i = 0; i < lanes; i++) {
 				final Note n = tl.getNote(i);
 				if (n != null) {

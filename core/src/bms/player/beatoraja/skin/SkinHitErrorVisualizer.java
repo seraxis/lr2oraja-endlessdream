@@ -189,7 +189,7 @@ public class SkinHitErrorVisualizer extends SkinObject {
 		BMSModel model = resource.getBMSModel();
 		JudgeProperty rule = BMSPlayerRule.getBMSPlayerRule(resource.getOriginalMode()).judge;
 
-		final int judgerank = model.getJudgerank();
+		final int judgerank = model.getJudgeRank();
 		final PlayerConfig config = resource.getPlayerConfig();
 		final int[] judgeWindowRate = config.isCustomJudge()
 				? new int[]{config.getKeyJudgeWindowRatePerfectGreat(), config.getKeyJudgeWindowRateGreat(), config.getKeyJudgeWindowRateGood()}

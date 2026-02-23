@@ -255,15 +255,15 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		// BMS格納ディレクトリ
 		Path dpath = Paths.get(model.getPath()).getParent();
 
-		if (model.getVolwav() > 0 && model.getVolwav() < 100) {
-			volume = model.getVolwav() / 100f;
+		if (model.getVolWAV() > 0 && model.getVolWAV() < 100) {
+			volume = model.getVolWAV() / 100f;
 		} else {
 			volume = 1.0f;
 		}
 
 		IntMap<List<Note>> notemap = new IntMap<List<Note>>();
 		final int lanes = model.getMode().key;
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			for (int i = 0; i < lanes; i++) {
 				final Note n = tl.getNote(i);
 				if (n != null) {
@@ -280,7 +280,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 					addNoteList(notemap, tl.getHiddenNote(i));
 				}
 			}
-			for (Note n : tl.getBackGroundNotes()) {
+			for (Note n : tl.getBgNotes()) {
 				addNoteList(notemap, n);
 			}
 		}
@@ -313,7 +313,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 				}
 				for (Note note : waventry.getValue()) {
 					// 音切りあり・なし両方のデータが必要になるケースがある
-					if (note.getMicroStarttime() == 0 && note.getMicroDuration() == 0) {
+					if (note.getMicroStart() == 0 && note.getDuration() == 0) {
 						// 音切りなしのケース
 						wavmap[wavid] = cache.get(new AudioKey(p.toString(), note));
 						if (wavmap[wavid] == null) {
@@ -326,7 +326,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 							slicesound[note.getWav()] = new Array<SliceWav<T>>();
 						}
 						for (SliceWav<T> slice : slicesound[note.getWav()]) {
-							if (slice.starttime == note.getMicroStarttime() && slice.duration == note.getMicroDuration()) {
+							if (slice.starttime == note.getMicroStart() && slice.duration == note.getDuration()) {
 								b = false;
 								break;
 							}
@@ -383,7 +383,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		}
 
 		for (Note note : notes) {
-			if (n.getMicroStarttime() == note.getMicroStarttime() && n.getMicroDuration() == note.getMicroDuration()) {
+			if (n.getMicroStart() == note.getMicroStart() && n.getDuration() == note.getDuration()) {
 				return;
 			}
 		}
@@ -427,8 +427,8 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 			}
 			final int channel = channel(id, pitchShift);
 			final float pitch = pitchShift != 0 ? (float)Math.pow(2.0, pitchShift / 12.0) : 1.0f;
-			final long starttime = n.getMicroStarttime();
-			final long duration = n.getMicroDuration();
+			final long starttime = n.getMicroStart();
+			final long duration = n.getDuration();
 			if (starttime == 0 && duration == 0) {
 				final T wav = (T) wavmap[id];
 				if (wav != null) {
@@ -481,8 +481,8 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		if (id < 0) {
 			return;
 		}
-		final long starttime = n.getMicroStarttime();
-		final long duration = n.getMicroDuration();
+		final long starttime = n.getMicroStart();
+		final long duration = n.getDuration();
 		if (starttime == 0 && duration == 0) {
 			final T sound = (T) wavmap[id];
 			if (sound != null) {
@@ -519,8 +519,8 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		if (id < 0) {
 			return;
 		}
-		final long starttime = n.getMicroStarttime();
-		final long duration = n.getMicroDuration();
+		final long starttime = n.getMicroStart();
+		final long duration = n.getDuration();
 		if (starttime == 0 && duration == 0) {
 			final T sound = (T) wavmap[id];
 			if (sound != null) {
@@ -578,8 +578,8 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		public long playid = -1;
 
 		public SliceWav(Note note, T wav) {
-			this.starttime = note.getMicroStarttime();
-			this.duration = note.getMicroDuration();
+			this.starttime = note.getMicroStart();
+			this.duration = note.getDuration();
 			this.wav = wav;
 		}
 	}
@@ -682,8 +682,8 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 
 		public AudioKey(String path, Note n) {
 			this.path = path;
-			this.start = n.getMicroStarttime();
-			this.duration = n.getMicroDuration();
+			this.start = n.getMicroStart();
+			this.duration = n.getDuration();
 		}
 
 		public boolean equals(Object o) {

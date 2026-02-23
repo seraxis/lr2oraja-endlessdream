@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import bms.model.BMSModel;
-import bms.model.LongNote;
-import bms.model.NormalNote;
-import bms.model.Note;
-import bms.model.TimeLine;
+import bms.model.*;
 import bms.player.beatoraja.Validatable;
 
 /**
@@ -74,7 +70,7 @@ public final class KeyInputLog implements Validatable {
 		int keys = model.getMode().key;
 		int[] sc = model.getMode().scratchKey;
 		Note[] ln = new Note[keys];
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			long i = tl.getTime();
 			for (int lane = 0; lane < keys; lane++) {
 				Note note = tl.getNote(lane);
@@ -82,7 +78,7 @@ public final class KeyInputLog implements Validatable {
 					if (note instanceof LongNote) {
 						if (((LongNote) note).isEnd()) {
 							keylog.add(new KeyInputLog(i, lane, false));
-							if (model.getLntype() != 0 && Arrays.asList(sc).contains(lane)) {
+							if (model.getLnType() != LongNoteDef.LONG_NOTE && Arrays.asList(sc).contains(lane)) {
 								// BSS処理
 								keylog.add(new KeyInputLog(i, lane + 1, true));
 							}

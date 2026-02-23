@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import bms.model.BMSModel;
 import bms.model.Mode;
-import bms.model.TimeLine;
+import bms.model.Timeline;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
@@ -66,9 +66,9 @@ public final class PracticeConfiguration {
 	public static final PracticeElement[] elements = PracticeElement.values();
 
 	public void create(BMSModel model, Config config) {
-		property.judgerank = model.getJudgerank();
+		property.judgerank = model.getJudgeRank();
 		property.endtime = model.getLastTime() + 1000;
-		Path p = Paths.get("practice/" + model.getSHA256() + ".json");
+		Path p = Paths.get("practice/" + model.getSha256() + ".json");
 		if (Files.exists(p)) {
 			Json json = new Json();
 			try {
@@ -106,7 +106,7 @@ public final class PracticeConfiguration {
 			Files.createDirectory(Paths.get("practice"));
 		} catch (IOException e1) {
 		}
-		try (FileWriter fw = new FileWriter("practice/" + model.getSHA256() + ".json")) {
+		try (FileWriter fw = new FileWriter("practice/" + model.getSha256() + ".json")) {
 			Json json = new Json();
 			fw.write(json.prettyPrint(property));
 			fw.flush();
@@ -189,7 +189,7 @@ public final class PracticeConfiguration {
 	enum PracticeElement {
 
 		STARTTIME((practice, inc) -> {
-			final TimeLine[] tl = practice.model.getAllTimeLines();
+			final Timeline[] tl = practice.model.getAllTimelines();
 			final PracticeProperty property = practice.property;
 			if(inc) {
 				if (property.starttime + 2000 <= tl[tl.length - 1].getTime()) {
@@ -206,7 +206,7 @@ public final class PracticeConfiguration {
 		}, property -> String.format("START TIME : %2d:%02d.%1d", property.starttime / 60000,
 				(property.starttime / 1000) % 60, (property.starttime / 100) % 10)),
 		ENDTIME((practice, inc) -> {
-			final TimeLine[] tl = practice.model.getAllTimeLines();
+			final Timeline[] tl = practice.model.getAllTimelines();
 			final PracticeProperty property = practice.property;
 			if(inc) {
 				if (property.endtime <= tl[tl.length - 1].getTime() + 1000) {

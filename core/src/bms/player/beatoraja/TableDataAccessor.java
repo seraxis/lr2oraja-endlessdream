@@ -10,12 +10,13 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import bms.model.BMSDecoder;
 import bms.model.Mode;
 import bms.player.beatoraja.CourseData.TrophyData;
 import bms.player.beatoraja.song.SongData;
 import bms.table.Course.Trophy;
 import bms.table.*;
+
+import static io.github.catizard.kbms.parser.RadixHelperKt.convertHexString;
 
 /**
  * 難易度表データアクセス用クラス
@@ -135,7 +136,7 @@ public class TableDataAccessor {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			digest.update(name.getBytes());
-			return BMSDecoder.convertHexString(digest.digest());
+			return convertHexString(digest.digest());
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return null;
@@ -181,7 +182,7 @@ public class TableDataAccessor {
 				td.setUrl(url);
 				td.setName(dt.getName());
 				td.setTag(dt.getTag());
-				Mode defaultMode = dt.getMode() != null ? Mode.getMode(dt.getMode()) : null;
+				Mode defaultMode = dt.getMode() != null ? Mode.valueOf(dt.getMode()) : null;
 				td.setFolder(Stream.of(dt.getLevelDescription()).map(lv -> {
 					TableData.TableFolder tde = new TableData.TableFolder();
 					tde.setName(td.getTag() + lv);
@@ -239,7 +240,7 @@ public class TableDataAccessor {
 		}
 		song.setTitle(te.getTitle());
 		song.setArtist(te.getArtist());
-		Mode mode = te.getMode() != null ? Mode.getMode(te.getMode()) : null;
+		Mode mode = te.getMode() != null ? Mode.valueOf(te.getMode()) : null;
 		song.setMode(mode != null ? mode.id : (defaultMode != null ? defaultMode.id : 0));
 		song.setUrl(te.getURL());
 		song.setIpfs(te.getIPFS());

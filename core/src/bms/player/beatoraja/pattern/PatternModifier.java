@@ -47,7 +47,7 @@ public abstract class PatternModifier {
 	 *            譜面変更ログ
 	 */
 	public static void modify(BMSModel model, List<PatternModifyLog> log) {
-		for (TimeLine tl : model.getAllTimeLines()) {
+		for (Timeline tl : model.getAllTimelines()) {
 			PatternModifyLog pm = null;
 			for (PatternModifyLog pms : log) {
 				if (pms.section == tl.getSection()) {
@@ -144,16 +144,16 @@ public abstract class PatternModifier {
 		return IntStream.range(startkey, startkey + mode.key / mode.player).filter(i -> containsScratch || !mode.isScratchKey(i)).toArray();
 	}
 
-	protected static void moveToBackground(TimeLine[] tls, TimeLine tl, int lane) {
+	protected static void moveToBackground(Timeline[] tls, Timeline tl, int lane) {
 		Note n = tl.getNote(lane);
 		if(n == null) {
 			return;
 		}
 		if(n instanceof LongNote) {
 			LongNote pln = ((LongNote) tl.getNote(lane)).getPair();
-			for(TimeLine tl2 : tls) {
+			for(Timeline tl2 : tls) {
 				if(tl2.getNote(lane) == pln) {
-					tl2.addBackGroundNote(pln);
+					tl2.addBackgroundNote(pln);
 					tl2.setNote(lane, null);
 					break;
 				}
@@ -161,7 +161,7 @@ public abstract class PatternModifier {
 		}
 
 		if(!(n instanceof MineNote)) {
-			tl.addBackGroundNote(tl.getNote(lane));
+			tl.addBackgroundNote(tl.getNote(lane));
 		}
 		tl.setNote(lane, null);
 

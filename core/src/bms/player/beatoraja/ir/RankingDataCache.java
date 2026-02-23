@@ -5,10 +5,11 @@ import java.security.NoSuchAlgorithmException;
 
 import com.badlogic.gdx.utils.ObjectMap;
 
-import bms.model.BMSDecoder;
 import bms.player.beatoraja.CourseData;
 import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.song.SongData;
+
+import static io.github.catizard.kbms.parser.RadixHelperKt.convertHexString;
 
 /**
  * IRアクセスデータのキャッシュ
@@ -96,7 +97,7 @@ public class RankingDataCache {
 		try {
 			MessageDigest md = MessageDigest.getInstance("sha-256");
 			md.update(sb.toString().getBytes());
-			return BMSDecoder.convertHexString(md.digest());
+			return convertHexString(md.digest());
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

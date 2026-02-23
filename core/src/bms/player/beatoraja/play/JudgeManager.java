@@ -29,7 +29,7 @@ public class JudgeManager {
     /**
      * LN type
      */
-    private int lntype;
+    private LongNoteDef lntype;
 
     /**
      * 現在の判定カウント内訳
@@ -145,13 +145,13 @@ public class JudgeManager {
         mjudgefast = new long[judgeregion];
         score = new ScoreData(orgmode);
         score.setNotes(model.getTotalNotes());
-        score.setSha256(model.getSHA256());
+        score.setSha256(model.getSha256());
         ghost = new int[model.getTotalNotes()];
         for (int i=0; i<ghost.length; i++) {
             ghost[i] = 4;
         }
 
-        this.lntype = model.getLntype();
+        this.lntype = model.getLnType();
         Lane[] lanes = model.getLanes();
 
         algorithm = JudgeAlgorithm.valueOf(resource.getPlayerConfig().getPlayConfig(orgmode).getPlayconfig().getJudgetype());
@@ -175,7 +175,7 @@ public class JudgeManager {
             auto_presstime[key] = Long.MIN_VALUE;
         }
 
-        final int judgerank = model.getJudgerank();
+        final int judgerank = model.getJudgeRank();
         final PlayerConfig config = resource.getPlayerConfig();
         final int[] keyJudgeWindowRate = config.isCustomJudge()
                 ? new int[]{config.getKeyJudgeWindowRatePerfectGreat(), config.getKeyJudgeWindowRateGreat(), config.getKeyJudgeWindowRateGood()}
@@ -254,8 +254,8 @@ public class JudgeManager {
                 if (note instanceof LongNote) {
                     // HCN判定
                     final LongNote lnote = (LongNote) note;
-                    if ((lnote.getType() == LongNote.TYPE_UNDEFINED && lntype == BMSModel.LNTYPE_HELLCHARGENOTE)
-                            || lnote.getType() == LongNote.TYPE_HELLCHARGENOTE) {
+                    if ((lnote.getType() == LongNoteDef.UNDEFINED && lntype == LongNoteDef.HELL_CHARGE_NOTE)
+                            || lnote.getType() == LongNoteDef.HELL_CHARGE_NOTE) {
                         if (lnote.isEnd()) {
                             state.passing = null;
                             state.mpassingcount = 0;
@@ -283,8 +283,8 @@ public class JudgeManager {
                         if (!ln.isEnd() && ln.getState() == 0 && state.processing == null) {
                             auto_presstime[state.laneassign[0]] = now;
                             keysound.play(note, getKeyVolume(), 0);
-                            if ((lntype == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                                    || ln.getType() == LongNote.TYPE_LONGNOTE) {
+                            if ((lntype == LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                                    || ln.getType() == LongNoteDef.LONG_NOTE) {
                                 state.mpassingcount = 0;
                                 //LN時のレーザー色変更処理
                                 this.judge[state.player][state.offset] = 8;
@@ -294,9 +294,9 @@ public class JudgeManager {
                             state.processing = ln.getPair();
                         }
                         if (ln.isEnd() && ln.getState() == 0) {
-                            if ((lntype != BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                                    || ln.getType() == LongNote.TYPE_CHARGENOTE
-                                    || ln.getType() == LongNote.TYPE_HELLCHARGENOTE) {
+                            if ((lntype != LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                                    || ln.getType() == LongNoteDef.CHARGE_NOTE
+                                    || ln.getType() == LongNoteDef.HELL_CHARGE_NOTE) {
                                 if (state.sckey >= 0 && state.laneassign.length >= 2) {
                                     auto_presstime[state.laneassign[0]] = Long.MIN_VALUE;
                                     auto_presstime[state.laneassign[1]] = now;
@@ -377,9 +377,9 @@ public class JudgeManager {
             if (input.getKeyState(key)) {
                 // キーが押されたときの処理
                 if (state.processing != null) {
-                    if (((lntype != BMSModel.LNTYPE_LONGNOTE && state.processing.getType() == LongNote.TYPE_UNDEFINED)
-                            || state.processing.getType() == LongNote.TYPE_CHARGENOTE
-                            || state.processing.getType() == LongNote.TYPE_HELLCHARGENOTE)) {
+                    if (((lntype != LongNoteDef.LONG_NOTE && state.processing.getType() == LongNoteDef.UNDEFINED)
+                            || state.processing.getType() == LongNoteDef.CHARGE_NOTE
+                            || state.processing.getType() == LongNoteDef.HELL_CHARGE_NOTE)) {
                         if(sc >= 0 && key != sckey[sc]) {
                             // BSS終端処理
                             final long[][] mjudge = scnendmjudge;
@@ -467,8 +467,8 @@ public class JudgeManager {
                             final LongNote ln = (LongNote) tnote;
                             final long dmtime = tnote.getMicroTime() - pmtime;
                             keysound.play(tnote, getKeyVolume(), 0);
-                            if ((lntype == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                                    || ln.getType() == LongNote.TYPE_LONGNOTE) {
+                            if ((lntype == LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                                    || ln.getType() == LongNoteDef.LONG_NOTE) {
                                 // LN処理
                                 if(judgeVanish[judge]) {
                                     state.lnstartJudge = judge;
@@ -541,10 +541,10 @@ public class JudgeManager {
                     for (; judge < mjudge.length && !(dmtime >= mjudge[judge][0] && dmtime <= mjudge[judge][1]); judge++)
                         ;
 
-                    if ((lntype != BMSModel.LNTYPE_LONGNOTE
-                            && state.processing.getType() == LongNote.TYPE_UNDEFINED)
-                            || state.processing.getType() == LongNote.TYPE_CHARGENOTE
-                            || state.processing.getType() == LongNote.TYPE_HELLCHARGENOTE) {
+                    if ((lntype != LongNoteDef.LONG_NOTE
+                            && state.processing.getType() == LongNoteDef.UNDEFINED)
+                            || state.processing.getType() == LongNoteDef.CHARGE_NOTE
+                            || state.processing.getType() == LongNoteDef.HELL_CHARGE_NOTE) {
                         // CN, HCN離し処理
                         boolean release = true;
                         if (sc >= 0) {
@@ -607,8 +607,8 @@ public class JudgeManager {
 
             // LN終端判定
             if (state.processing != null) {
-                if((lntype == BMSModel.LNTYPE_LONGNOTE && state.processing.getType() == LongNote.TYPE_UNDEFINED)
-                    || state.processing.getType() == LongNote.TYPE_LONGNOTE) {
+                if((lntype == LongNoteDef.LONG_NOTE && state.processing.getType() == LongNoteDef.UNDEFINED)
+                    || state.processing.getType() == LongNoteDef.LONG_NOTE) {
                     if(state.releasetime != Long.MIN_VALUE && state.releasetime + releasemargin <= mtime) {
                         keysound.setVolume(state.processing.getPair(), 0.0f);
                         this.updateMicro(state, state.processing.getPair(), mtime, state.lnendJudge, state.processing.getMicroTime() - state.releasetime, true);
@@ -646,22 +646,22 @@ public class JudgeManager {
                 } else if (note instanceof LongNote) {
                     final LongNote ln = (LongNote) note;
                     if (!ln.isEnd() && ln.getState() == 0) {
-                        if ((lntype != BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                                || ln.getType() == LongNote.TYPE_CHARGENOTE
-                                || ln.getType() == LongNote.TYPE_HELLCHARGENOTE) {
+                        if ((lntype != LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                                || ln.getType() == LongNoteDef.CHARGE_NOTE
+                                || ln.getType() == LongNoteDef.HELL_CHARGE_NOTE) {
                             // System.out.println("CN start poor");
                             this.updateMicro(state, note, mtime, 4, mjud, true);
                             this.updateMicro(state, ((LongNote) note).getPair(), mtime, 4, mjud, true);
                         }
-                        if (((lntype == BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                                || ln.getType() == LongNote.TYPE_LONGNOTE) && state.processing != ln.getPair()) {
+                        if (((lntype == LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                                || ln.getType() == LongNoteDef.LONG_NOTE) && state.processing != ln.getPair()) {
                             // System.out.println("LN start poor");
                             this.updateMicro(state, note, mtime, 4, mjud, true);
                         }
 
                     }
-                    if (((lntype != BMSModel.LNTYPE_LONGNOTE && ln.getType() == LongNote.TYPE_UNDEFINED)
-                            || ln.getType() == LongNote.TYPE_CHARGENOTE || ln.getType() == LongNote.TYPE_HELLCHARGENOTE)
+                    if (((lntype != LongNoteDef.LONG_NOTE && ln.getType() == LongNoteDef.UNDEFINED)
+                            || ln.getType() == LongNoteDef.CHARGE_NOTE || ln.getType() == LongNoteDef.HELL_CHARGE_NOTE)
                             && ((LongNote) note).isEnd() && ((LongNote) note).getState() == 0) {
                         // System.out.println("CN end poor");
                         this.updateMicro(state, ((LongNote) note), mtime, 4, mjud, true);
