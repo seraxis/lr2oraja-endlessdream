@@ -24,7 +24,6 @@ import bms.player.beatoraja.ir.*;
 import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
-import bms.player.beatoraja.song.SongData;
 
 /**
  * リザルト

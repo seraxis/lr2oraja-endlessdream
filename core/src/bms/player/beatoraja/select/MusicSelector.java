@@ -4,13 +4,14 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
+
+import bms.player.beatoraja.arena.client.ArenaBar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
@@ -27,7 +28,6 @@ import bms.player.beatoraja.skin.SkinType;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
-import imgui.ImGui;
 
 /**
  * 選曲部分。 楽曲一覧とカーソルが指す楽曲のステータスを表示し、選択した楽曲を 曲決定部分に渡す。
@@ -362,7 +362,8 @@ public final class MusicSelector extends MainState {
 		if (resource.setBMSFile(Paths.get(song.getPath()), play)) {
 			// TODO 表名、フォルダ名をPlayerResource上でも重複実施している
 			final Queue<DirectoryBar> dir = manager.getDirectory();
-			if(dir.size > 0 && !(dir.last() instanceof SameFolderBar)) {
+			// HACK: Disable this logic for Arena feature
+			if (dir.size > 0 && !(dir.last() instanceof SameFolderBar || dir.last() instanceof ArenaBar)) {
 				Array<String> urls = new Array<String>(resource.getConfig().getTableURL());
 
 				boolean isdtable = false;
@@ -380,7 +381,7 @@ public final class MusicSelector extends MainState {
 					}
 				}
 			}
-			
+
 			if(main.getIRStatus().length > 0 && currentir == null) {
 				currentir = new RankingData();
 				main.getRankingDataCache().put(song, config.getLnmode(), currentir);
