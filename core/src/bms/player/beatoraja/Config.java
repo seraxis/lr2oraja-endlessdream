@@ -7,6 +7,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.ParseException;
+
+import bms.tool.util.Pair;
+import com.badlogic.gdx.Gdx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +82,11 @@ public class Config implements Validatable {
 	 * 最大FPS。垂直同期OFFの時のみ有効
 	 */
 	private int maxFramePerSecond = 240;
+
+	/**
+	 * Display fps in game or not
+	 */
+	private boolean displayFPS = false;
 
 	private int prepareFramePerSecond = 0;
 	/**
@@ -344,6 +352,11 @@ public class Config implements Validatable {
 		this.vsync = vsync;
 	}
 
+	public void setVsyncAtRuntime(boolean vsync) {
+		setVsync(vsync);
+		Gdx.graphics.setVSync(vsync);
+	}
+
 	public int getBga() {
 		return bga;
 	}
@@ -366,6 +379,14 @@ public class Config implements Validatable {
 
 	public void setMaxFramePerSecond(int maxFramePerSecond) {
 		this.maxFramePerSecond = maxFramePerSecond;
+	}
+
+	public boolean isDisplayFPS() {
+		return displayFPS;
+	}
+
+	public void setDisplayFPS(boolean displayFPS) {
+		this.displayFPS = displayFPS;
 	}
 
 	public int getPrepareFramePerSecond() {
@@ -414,6 +435,10 @@ public class Config implements Validatable {
 
 	public void setResolution(Resolution resolution) {
 		this.resolution = resolution;
+	}
+
+	public void setResolution(Pair<Integer, Integer> resolution) {
+		this.resolution = Resolution.valueOf(resolution);
 	}
 
 	public int getWindowWidth() {
