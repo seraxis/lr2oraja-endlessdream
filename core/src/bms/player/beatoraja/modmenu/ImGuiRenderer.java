@@ -3,6 +3,7 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.Version;
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
 
+import bms.player.beatoraja.modmenu.setting.SettingMenu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
@@ -30,6 +31,8 @@ public class ImGuiRenderer {
     public static int windowWidth;
     public static int windowHeight;
 
+    public static ImFont font24;
+
     private static ImGuiImplGlfw imGuiGlfw;
     private static ImGuiImplGl3 imGuiGl3;
 
@@ -37,11 +40,12 @@ public class ImGuiRenderer {
 
     private static InputProcessor tmpProcessor;
 
+    private static ImBoolean SHOW_SETTING_MENU = new ImBoolean(false);
+
     private static ImBoolean SHOW_MOD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_RANDOM_TRAINER = new ImBoolean(false);
     private static ImBoolean SHOW_FREQ_PLUS = new ImBoolean(false);
     private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
-    private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_WIDGET_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
@@ -86,6 +90,8 @@ public class ImGuiRenderer {
         io.getFonts().addFontFromMemoryTTF(loadFromResources("skin/default/VL-Gothic-Regular.ttf"), 14, fontConfig, glyphRanges); // japanese glyphs
         io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-regular-400.ttf"), 14, fontConfig, glyphRanges);
         io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-solid-900.ttf"), 14, fontConfig, glyphRanges);
+
+        font24 = io.getFonts().addFontFromMemoryTTF(loadFromResources("skin/default/VL-Gothic-Regular.ttf"), 24, new ImFontConfig(), glyphRanges);
         io.getFonts().build();
 
         fontConfig.destroy();
@@ -109,6 +115,13 @@ public class ImGuiRenderer {
         float relativeY = windowHeight * 0.02f;
         ImGui.setNextWindowPos(relativeX, relativeY, ImGuiCond.Once);
 
+        if (SHOW_SETTING_MENU.get()) {
+            SettingMenu.focus = true;
+            SettingMenu.render(SHOW_SETTING_MENU);
+        } else {
+            SettingMenu.focus = false;
+        }
+
         if (SHOW_MOD_MENU.get()) {
             ImGui.begin("Endless Dream", ImGuiWindowFlags.AlwaysAutoResize);
 
@@ -117,7 +130,6 @@ public class ImGuiRenderer {
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
             if (ImGui.checkbox("Show Skin Configuration Window", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
             ImGui.checkbox("Show Skin Widget Manager Window", SHOW_SKIN_WIDGET_MANAGER);
-            ImGui.checkbox("Show Song Manager Window", SHOW_SONG_MANAGER);
             ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
             if (ImGui.checkbox("Show Performance Monitor Window", SHOW_PERFORMANCE_MONITOR) &&
                 SHOW_PERFORMANCE_MONITOR.get()) {
@@ -133,9 +145,6 @@ public class ImGuiRenderer {
             }
             if (SHOW_JUDGE_TRAINER.get()) {
                 JudgeTrainerMenu.show(SHOW_JUDGE_TRAINER);
-            }
-            if (SHOW_SONG_MANAGER.get()) {
-                SongManagerMenu.show(SHOW_SONG_MANAGER);
             }
             // TODO: This menu should based on config. Should not be rendered if user doesn't flag the http download feature
             if (SHOW_DOWNLOAD_MENU.get()) {
@@ -160,9 +169,6 @@ public class ImGuiRenderer {
             if (ImGui.treeNode("Endless Dream Debug Information")) {
                 float axis;
 
-                ImGui.text("Commit hash: " + Version.getGitCommitHash());
-                ImGui.text("Build time: " + Version.getBuildDate());
-                ImGui.text("GLFW version: " + GLFW.glfwGetVersionString());
                 for (Controller con : manager.getControllers()) {
                     ImGui.text("Controller Name: " + con.getName());
                     ImGui.text("Axis: " + con.getAxis(0));
@@ -197,6 +203,14 @@ public class ImGuiRenderer {
 
     public static Boolean getShowModMenu() {
         return SHOW_MOD_MENU.get();
+    }
+
+    public static void toggleSetting() {
+        boolean current = SHOW_SETTING_MENU.get();
+        if (!current) {
+            SettingMenu.refresh();
+        }
+        SHOW_SETTING_MENU.set(!current);
     }
 
     public static void toggleMenu() {

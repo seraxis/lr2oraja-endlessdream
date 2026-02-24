@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import bms.model.Mode;
-import bms.player.beatoraja.modmenu.SongManagerMenu;
+import bms.player.beatoraja.modmenu.setting.window.SongSettingsWindow;
 import bms.player.beatoraja.pattern.Random;
 import bms.player.beatoraja.result.MusicResult;
 import com.badlogic.gdx.Gdx;
@@ -1033,7 +1033,7 @@ public class IntegerPropertyFactory {
 			return Integer.MIN_VALUE;
 		}),
 		sort(12, (state) ->
-             ((state instanceof MusicSelector && !SongManagerMenu.isLastPlayedSortEnabled())
+             ((state instanceof MusicSelector && !SongSettingsWindow.isLastPlayedSortEnabled())
               ? ((MusicSelector) state).getSort()
               : Integer.MIN_VALUE)),
 		gaugetype_1p(40, (state) -> {
