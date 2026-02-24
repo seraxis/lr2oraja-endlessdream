@@ -23,6 +23,7 @@ ebur128java = "1.2.6-2"
 jna = "5.13.0"
 websocket = "1.6.0"
 slf4j = "2.0.17"
+runtime-javadoc = "0.13.0"
 
 
 [libraries]
@@ -82,6 +83,9 @@ jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref 
 javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version.ref = "websocket" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-jul = { group = "org.slf4j", name = "slf4j-jdk14", version.ref = "slf4j" }
+
+runtime-javadoc-scribe = { group = "com.github.therapi", name = "therapi-runtime-javadoc-scribe", version.ref = "runtime-javadoc"}
+runtime-javadoc = { group = "com.github.therapi", name = "therapi-runtime-javadoc", version.ref = "runtime-javadoc"}
 
 [bundles]
 libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]

@@ -11,6 +11,7 @@ import bms.player.beatoraja.result.*;
 import bms.player.beatoraja.select.BarSorter;
 import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
+import bms.player.beatoraja.skin.SkinManualEntry;
 import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.SongData;
 import com.badlogic.gdx.graphics.Color;
@@ -779,7 +780,11 @@ public class EventFactory {
 			this.id = id;
 			this.event = createTwoArgEvent(action, id);
 		}
-		
+
+		public SkinManualEntry<EventType> intoManualEntry() {
+			return new SkinManualEntry<>(this, this.name(), this.id);
+		}
+
 	    private static BiConsumer<MainState, Integer> changeAutoSaveReplay(final int index) {
 	    	return (state, arg1) -> {
 	    		if(state instanceof MusicSelector selector) {
