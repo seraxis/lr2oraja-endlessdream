@@ -35,13 +35,13 @@ public class InputConfigurationView implements Initializable {
     @FXML
     private Spinner<Integer> inputduration;
     @FXML
-    private CheckBox jkoc_hack;
-    @FXML
     private TableView<ControllerConfigViewModel> controller_tableView;
     @FXML
     private TableColumn<ControllerConfigViewModel, String> playsideCol;
     @FXML
     private TableColumn<ControllerConfigViewModel, String> nameCol;
+    @FXML
+    private TableColumn<ControllerConfigViewModel, Boolean> isJkocCol;
     @FXML
     private TableColumn<ControllerConfigViewModel, Boolean> isAnalogCol;
     @FXML
@@ -60,7 +60,7 @@ public class InputConfigurationView implements Initializable {
     private PlayerConfig player;
 
     private PlayConfigurationView.PlayMode mode;
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         inputconfig.getItems().setAll(PlayConfigurationView.PlayMode.values());
@@ -89,7 +89,7 @@ public class InputConfigurationView implements Initializable {
 	PlayModeConfig conf = player.getPlayConfig(Mode.valueOf(mode.name()));
 	List<ControllerConfigViewModel> listControllerConfigViewModel = Arrays.asList(conf.getController()).stream()
 		.map(config -> new ControllerConfigViewModel(config)).collect(Collectors.toList());
-	
+
 	inputduration.getValueFactory().setValue(conf.getKeyboardConfig().getDuration());
     mouseScratch.setSelected(conf.getKeyboardConfig().getMouseScratchConfig().isMouseScratchEnabled());
     mouseScratchTimeThreshold.getValueFactory().setValue(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchTimeThreshold());
@@ -101,6 +101,7 @@ public class InputConfigurationView implements Initializable {
 	nameCol.setEditable(false);
 	playsideCol.setSortable(false);
 	nameCol.setSortable(false);
+    isJkocCol.setSortable(false);
 	isAnalogCol.setSortable(false);
 	analogThresholdCol.setSortable(false);
 	analogModeCol.setSortable(false);
@@ -110,17 +111,19 @@ public class InputConfigurationView implements Initializable {
 		? Integer.toString(listControllerConfigViewModel.indexOf(col.getValue()) + 1) + "P"
 		: ""));
 	nameCol.setCellValueFactory(col -> col.getValue().getNameProperty());
+    isJkocCol.setCellValueFactory(col -> col.getValue().isJkocPropertyProperty());
 	isAnalogCol.setCellValueFactory(col -> col.getValue().getIsAnalogScratchProperty());
 	analogThresholdCol.setCellValueFactory(col -> col.getValue().getAnalogScratchThresholdProperty());
 	analogModeCol.setCellValueFactory(col -> col.getValue().getAnalogScratchModeProperty());
 
 	nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+    isJkocCol.setCellFactory(CheckBoxTableCell.forTableColumn(isJkocCol));
 	isAnalogCol.setCellFactory(CheckBoxTableCell.forTableColumn(isAnalogCol));
 	analogThresholdCol.setCellFactory(col -> new SpinnerCell(1, 1000, 100, 1));
 	analogModeCol.setCellFactory(ComboBoxTableCell.forTableColumn(new IntegerStringConverter() {
 	    private String v2String = "Ver. 2 (Newest)";
 	    private String v1String = "Ver. 1 (~0.6.9)";
-	    
+
 	    @Override
 	    public Integer fromString(String arg0) {
 		if (Objects.equals(arg0, v2String)) {
@@ -147,11 +150,10 @@ public class InputConfigurationView implements Initializable {
 
 	for (PlayModeConfig.ControllerConfig controller : conf.getController()) {
 	    inputduration.getValueFactory().setValue(controller.getDuration());
-	    jkoc_hack.setSelected(controller.getJKOC());
 	}
 
     }
-    
+
     public void commitMode() {
         if (mode != null) {
             PlayModeConfig conf = player.getPlayConfig(Mode.valueOf(mode.name()));
@@ -160,11 +162,11 @@ public class InputConfigurationView implements Initializable {
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchTimeThreshold(mouseScratchTimeThreshold.getValue());
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchDistance(mouseScratchDistance.getValue());
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchMode(mouseScratchMode.getValue());
-            
-            for(ControllerConfigViewModel vm : this.controller_tableView.getItems()) {
-        	PlayModeConfig.ControllerConfig controller = vm.getConfig();
-        	controller.setDuration(inputduration.getValue());
-                controller.setJKOC(jkoc_hack.isSelected());
+
+            for (ControllerConfigViewModel vm : this.controller_tableView.getItems()) {
+                PlayModeConfig.ControllerConfig controller = vm.getConfig();
+                controller.setDuration(inputduration.getValue());
+                controller.setJKOC(vm.isIsJkocProperty());
                 controller.setAnalogScratch(vm.getIsAnalogScratchProperty().get());
                 controller.setAnalogScratchThreshold(vm.getAnalogScratchThreshold());
                 controller.setAnalogScratchMode(vm.getAnalogScratchMode());
