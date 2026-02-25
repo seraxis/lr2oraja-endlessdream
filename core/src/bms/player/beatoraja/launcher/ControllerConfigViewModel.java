@@ -13,22 +13,24 @@ import javafx.beans.property.StringProperty;
  */
 public class ControllerConfigViewModel {
     private StringProperty nameProperty = new SimpleStringProperty();
+    private BooleanProperty isJkocProperty = new SimpleBooleanProperty();
     private BooleanProperty isAnalogScratchProperty = new SimpleBooleanProperty();
     private ObjectProperty<Integer> analogScratchThresholdProperty = new SimpleIntegerProperty().asObject();
     private ObjectProperty<Integer> analogScratchModeProperty = new SimpleIntegerProperty().asObject();
-    
+
     private ControllerConfig config;
-    
+
     public ControllerConfigViewModel(ControllerConfig config) {
         this.config = config;
-        
+
         this.nameProperty.set(config.getName());
+        this.isJkocProperty.set(config.getJKOC());
         this.isAnalogScratchProperty.set(config.isAnalogScratch());
         this.analogScratchThresholdProperty.set(config.getAnalogScratchThreshold());
         this.analogScratchModeProperty.set(config.getAnalogScratchMode());
-        
+
     }
-    
+
     public String getName() {
         return this.nameProperty.get();
     }
@@ -42,6 +44,15 @@ public class ControllerConfigViewModel {
     public void setIsAnalogScratch(boolean isAnalogScratch) {
         this.isAnalogScratchProperty.set(isAnalogScratch);
     }
+
+    public boolean isIsJkocProperty() {
+        return isJkocProperty.get();
+    }
+
+    public BooleanProperty isJkocPropertyProperty() {
+        return isJkocProperty;
+    }
+
     public BooleanProperty getIsAnalogScratchProperty() {
         return isAnalogScratchProperty;
     }
@@ -55,7 +66,7 @@ public class ControllerConfigViewModel {
     public ObjectProperty<Integer> getAnalogScratchThresholdProperty() {
         return analogScratchThresholdProperty;
     }
-    
+
     public int getAnalogScratchMode() {
         return this.analogScratchModeProperty.get();
     }
@@ -65,7 +76,7 @@ public class ControllerConfigViewModel {
     public ObjectProperty<Integer> getAnalogScratchModeProperty() {
         return analogScratchModeProperty;
     }
-    
+
     public ControllerConfig getConfig() {
         return this.config;
     }
