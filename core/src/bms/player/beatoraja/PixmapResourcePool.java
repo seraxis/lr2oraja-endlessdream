@@ -78,7 +78,9 @@ public class PixmapResourcePool extends ResourcePool<String, Pixmap> {
 				tex = new Pixmap(bi.getWidth(), bi.getHeight(), Pixmap.Format.RGBA8888);
 				for(int x = 0;x < bi.getWidth();x++) {
 					for(int y = 0;y < bi.getHeight();y++) {
-						tex.drawPixel(x, y, (bi.getRGB(x, y) << 8 | 0x000000ff));
+						int argb = bi.getRGB(x, y);
+						int rgba = ((argb & 0x00FFFFFF) << 8) | ((argb >> 24) & 0xFF);
+						tex.drawPixel(x, y, rgba);
 					}
 				}
 			} catch (Throwable e) {
