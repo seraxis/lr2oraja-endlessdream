@@ -34,6 +34,7 @@ public class ControllerConfigViewModel {
     public String getName() {
         return this.nameProperty.get();
     }
+
     public StringProperty getNameProperty() {
         return nameProperty;
     }
@@ -41,6 +42,7 @@ public class ControllerConfigViewModel {
     public boolean getIsAnalogScratch() {
         return isAnalogScratchProperty.get();
     }
+
     public void setIsAnalogScratch(boolean isAnalogScratch) {
         this.isAnalogScratchProperty.set(isAnalogScratch);
     }
@@ -60,9 +62,11 @@ public class ControllerConfigViewModel {
     public int getAnalogScratchThreshold() {
         return analogScratchThresholdProperty.get();
     }
+
     public void setAnalogScratchThreshold(Integer analogScratchThreshold) {
         this.analogScratchThresholdProperty.set(analogScratchThreshold);
     }
+
     public ObjectProperty<Integer> getAnalogScratchThresholdProperty() {
         return analogScratchThresholdProperty;
     }
@@ -70,9 +74,11 @@ public class ControllerConfigViewModel {
     public int getAnalogScratchMode() {
         return this.analogScratchModeProperty.get();
     }
+
     public void setAnalogScratchMode(int analogScratchMode) {
         this.analogScratchModeProperty.set(analogScratchMode);
     }
+
     public ObjectProperty<Integer> getAnalogScratchModeProperty() {
         return analogScratchModeProperty;
     }
