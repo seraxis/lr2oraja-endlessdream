@@ -124,7 +124,7 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private CheckBox enableConstant;
     @FXML
-    private CheckBox iidxMode;
+    private CheckBox dxMode;
 	@FXML
 	private Spinner<Integer> constFadeinTime;
 	@FXML
@@ -580,6 +580,7 @@ public class PlayConfigurationView implements Initializable {
 		judgeregion.setSelected(player.isShowjudgearea());
 		markprocessednote.setSelected(player.isMarkprocessednote());
 		extranotedepth.getValueFactory().setValue(player.getExtranoteDepth());
+		dxMode.setSelected(player.isDxMode());
 
 		autosavereplay1.getSelectionModel().select(player.getAutoSaveReplay()[0]);
 		autosavereplay2.getSelectionModel().select(player.getAutoSaveReplay()[1]);
@@ -675,7 +676,7 @@ public class PlayConfigurationView implements Initializable {
 		player.setJudgetiming(getValue(notesdisplaytiming));
 		player.setNotesDisplayTimingAutoAdjust(notesdisplaytimingautoadjust.isSelected());
 		
-		player.setIidxMode(iidxMode.isSelected());
+		player.setDxMode(dxMode.isSelected());
 
 		player.setBpmguide(bpmguide.isSelected());
 		player.setGaugeAutoShift(gaugeautoshift.getValue());
@@ -774,7 +775,7 @@ public class PlayConfigurationView implements Initializable {
 		hispeed.getValueFactory().setValue((double) conf.getHispeed());
 		gvalue.getValueFactory().setValue(conf.getDuration());
 		enableConstant.setSelected(conf.isEnableConstant());
-		iidxMode.setSelected(player.isIidxMode());
+		dxMode.setSelected(player.isDxMode());
 		constFadeinTime.getValueFactory().setValue(conf.getConstantFadeinTime());
 		hispeedmargin.getValueFactory().setValue((double) conf.getHispeedMargin());
 		fixhispeed.setValue(conf.getFixhispeed());

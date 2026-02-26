@@ -124,12 +124,12 @@ public enum GaugeProperty {
         EXCLASS_LR2(null ,0 ,100 ,100, 0, 2, new float[]{0.10f, 0.10f, 0.05f, -6.0f, -10.0f, -2.0f}, new float[][]{{32, 0.6f}}),
         EXHARDCLASS_LR2(null ,0 ,100 ,100, 0, 2, new float[]{0.10f, 0.10f, 0.05f, -12.0f, -20.0f, -2.0f}, new float[][]{}),
         
-        // IIDX MODE 定義
+        // DX MODE 定義
         // IIDX modifier は回復量(TOTAL計算)を自動処理します。
         // 減少量(Penalty)はここで固定値を定義します。
         // 回復値(PG/GR/GD)は基礎倍率(1.0 または 0.5)を指定し、実際の回復量はTOTAL値に基づいて計算されます。
         
-        // ASSIST EASY (IIDX MODEではEASYと同じ)
+        // ASSIST EASY (DX MODEではEASYと同じ)
         ASSIST_EASY_IIDX(IIDX, 2, 100, 20, 60, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),
         // EASY: NORMALの80%減少。POOR -4.8%, BAD/空POOR -1.6%
         EASY_IIDX       (IIDX, 2, 100, 20, 80, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),

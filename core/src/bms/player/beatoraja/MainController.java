@@ -219,17 +219,9 @@ public class MainController {
 	private void initializeIRConfig() {
 		Array<IRStatus> irarray = new Array<IRStatus>();
 		for(IRConfig irconfig : player.getIrconfig()) {
-			System.out.println("[DEBUG IR] IRName=" + irconfig.getIrname() + ", isIidxMode=" + player.isIidxMode());
-			// rianIRの場合、DX MODEがオフならログイン自体をスキップする
-			if (irconfig.getIrname() != null && irconfig.getIrname().startsWith("rianIR") && !player.isIidxMode()) {
-				System.out.println("[DEBUG IR] Skipping rianIR because DX MODE is OFF.");
-				logger.info("rianIR: DX MODE is OFF. Skipping login.");
-				continue;
-			}
-			// DX MODEがオンの場合、rianIR以外のログインをスキップする
-			if (player.isIidxMode() && (irconfig.getIrname() == null || !irconfig.getIrname().startsWith("rianIR"))) {
-				System.out.println("[DEBUG IR] Skipping " + irconfig.getIrname() + " because DX MODE is ON.");
-				logger.info("{}: DX MODE is ON. Skipping login.", irconfig.getIrname());
+			// IR名の判定とDX MODEの状態に基づいて接続をスキップするか決定
+			if (IRUtil.shouldSkipIR(irconfig.getIrname(), player.isDxMode())) {
+				logger.info("{}: Skipping login based on DX MODE setting.", irconfig.getIrname());
 				continue;
 			}
 			final IRConnection ir = IRConnectionManager.getIRConnection(irconfig.getIrname());
