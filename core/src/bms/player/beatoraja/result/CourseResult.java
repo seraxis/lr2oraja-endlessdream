@@ -82,7 +82,7 @@ public class CourseResult extends AbstractResult {
 		ranking = resource.getRankingData() != null && resource.getCourseBMSModels() != null ? resource.getRankingData() : new RankingData();
 		rankingOffset = 0;
 		final IRStatus[] ir = main.getIRStatus();
-		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.getPlayerConfig().isIidxMode()) {
+		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY) {
 			state = STATE_IR_PROCESSING;
 			
 			boolean uln = false;
@@ -110,6 +110,10 @@ public class CourseResult extends AbstractResult {
     			}
     			
     			if(send) {
+    				if (IRUtil.shouldSkipIR(irc.config.getIrname(), resource.getPlayerConfig().isDxMode())) {
+    					continue;
+    				}
+
     				irSendStatus.add(new IRSendStatus(irc.connection, resource.getCourseData(), lnmode, newscore));
     			}
         	}

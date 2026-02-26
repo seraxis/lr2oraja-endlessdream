@@ -29,18 +29,18 @@ public final class GrooveGauge {
 
 	private final int typeorg;
 	private int type = -1;
-	// IIDX MODE flag
-	private final boolean iidxMode;
+	// DX MODE flag
+	private final boolean dxMode;
 	
 	private Gauge[] gauges;
 
-	public GrooveGauge(BMSModel model, int type, GaugeProperty property, boolean iidxMode) {
+	public GrooveGauge(BMSModel model, int type, GaugeProperty property, boolean dxMode) {
 		this.typeorg = this.type = type;
-		this.iidxMode = iidxMode;
+		this.dxMode = dxMode;
 		this.gauges = new Gauge[property.values.length];
 		for(int i = 0; i < property.values.length; i++) {
 			GaugeElementProperty rawElement = property.values[i];
-			if (iidxMode) {
+			if (dxMode) {
 				switch (i) {
 				case 0: // ASSIST EASY
 					rawElement = GaugeElementProperty.ASSIST_EASY_IIDX;
@@ -78,7 +78,7 @@ public final class GrooveGauge {
 				ct = ClearType.Normal; // Fallback
 			}
 			try {
-				this.gauges[i] = new Gauge(model, rawElement, ct, iidxMode);
+				this.gauges[i] = new Gauge(model, rawElement, ct, dxMode);
 			} catch (Exception e) {
 				e.printStackTrace();
 				// エラー時はデフォルト動作で復帰を試みる（ただしrawElementが原因なら同じエラーになる可能性あり）
@@ -194,7 +194,7 @@ public final class GrooveGauge {
 				}
 			}
 		}
-		GrooveGauge gauge = create(model, type, coursetype, gauges, resource.getPlayerConfig().isIidxMode());
+		GrooveGauge gauge = create(model, type, coursetype, gauges, resource.getPlayerConfig().isDxMode());
 		FloatArray[] f = resource.getGauge();
 		if (f != null) {
 			for(int i = 0; i < f.length; i++) {
@@ -204,7 +204,7 @@ public final class GrooveGauge {
 		return gauge;
 	}
 	
-	public static GrooveGauge create(BMSModel model, int type, int grade, GaugeProperty gauge, boolean iidxMode) {
+	public static GrooveGauge create(BMSModel model, int type, int grade, GaugeProperty gauge, boolean dxMode) {
 		int id = -1;
 		if (grade > 0) {
 			// 段位ゲージ
@@ -218,14 +218,14 @@ public final class GrooveGauge {
 				gauge = BMSPlayerRule.getBMSPlayerRule(mode).gauge;
 			}
 			if(gauge != null) {
-				return create(model, id, gauge, iidxMode);
+				return create(model, id, gauge, dxMode);
 			}
 		}
 		return null;
 	}
 
-	public static GrooveGauge create(BMSModel model, int id, GaugeProperty gauge, boolean iidxMode) {
-		return new GrooveGauge(model, id, gauge, iidxMode);
+	public static GrooveGauge create(BMSModel model, int id, GaugeProperty gauge, boolean dxMode) {
+		return new GrooveGauge(model, id, gauge, dxMode);
 	}
 
 	public static final class Gauge {
@@ -245,10 +245,10 @@ public final class GrooveGauge {
 		 * ゲージのクリアタイプ
 		 */
 		private final ClearType cleartype;
-		private final boolean iidxMode;
+		private final boolean dxMode;
 
-		public Gauge(BMSModel model, GaugeElementProperty element, ClearType cleartype, boolean iidxMode) {
-			this.iidxMode = iidxMode;
+		public Gauge(BMSModel model, GaugeElementProperty element, ClearType cleartype, boolean dxMode) {
+			this.dxMode = dxMode;
 			this.cleartype = cleartype;
 			this.element = element;
 			
@@ -261,8 +261,8 @@ public final class GrooveGauge {
 			
 			if(element.modifier != null) {
 				for(int i = 0;i < gauge.length;i++) {
-					// IIDX MODEかつModifierがIIDXの場合のみ、TOTALに基づいた回復量の再計算を行う
-					if(iidxMode && element.modifier == GaugeModifier.IIDX) {
+					// DX MODEかつModifierがIIDXの場合のみ、TOTALに基づいた回復量の再計算を行う
+					if(this.dxMode && element.modifier == GaugeModifier.IIDX) {
 						gauge[i] = element.modifier.modify(gauge[i], model);
 					} else {
 						gauge[i] = element.modifier.modify(gauge[i], model);
@@ -278,7 +278,7 @@ public final class GrooveGauge {
 		public void setValue(float value) {
 			if(this.value > 0f) {
 			this.value = MathUtils.clamp(value, element.min, element.max);				
-				if (this.value < (iidxMode ? 0 : element.death)) {
+				if (this.value < (this.dxMode ? 0 : element.death)) {
 					this.value = 0;
 				}
 			}
@@ -369,7 +369,7 @@ public final class GrooveGauge {
 		};
 
 		/**
-		 * IIDX MODE用 TOTAL計算
+		 * DX MODE用 TOTAL計算
 		 */
 		public static final GaugeModifier IIDX = (f, model) -> {
 			if(f > 0) {

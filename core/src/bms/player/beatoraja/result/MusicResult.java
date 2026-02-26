@@ -114,7 +114,7 @@ public class MusicResult extends AbstractResult {
 		rankingOffset = 0;
 		// TODO スコアハッシュがあり、有効期限が切れていないものを送信する？
 		final IRStatus[] ir = main.getIRStatus();
-		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.isFreqOn() && !resource.getPlayerConfig().isIidxMode()) {
+		if (ir.length > 0 && resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.isFreqOn()) {
 			state = STATE_IR_PROCESSING;
 			
         	for(IRStatus irc : ir) {
@@ -133,6 +133,10 @@ public class MusicResult extends AbstractResult {
     			}
     			
     			if(send) {
+                    if (IRUtil.shouldSkipIR(irc.config.getIrname(), resource.getPlayerConfig().isDxMode())) {
+                        continue;
+                    }
+                    
     				main.irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
     			}
         	}

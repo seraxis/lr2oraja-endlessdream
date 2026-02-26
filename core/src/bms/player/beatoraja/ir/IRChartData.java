@@ -83,6 +83,10 @@ public class IRChartData {
 	 */
 	public final int notes;
 	/**
+	 * 曲の長さ(ms)
+	 */
+	public final int length;
+	/**
 	 * LN TYPE未定義ロングノーツが存在するかどうか
 	 */
 	public final boolean hasUndefinedLN;
@@ -136,6 +140,7 @@ public class IRChartData {
 		this.minbpm = song.getMinbpm();
 		this.maxbpm = song.getMaxbpm();
 		this.notes = song.getNotes();
+		this.length = song.getLength();
 		this.hasUndefinedLN = song.hasUndefinedLongNote();
 		this.hasLN = song.hasLongNote();
 		this.hasCN = song.hasChargeNote();

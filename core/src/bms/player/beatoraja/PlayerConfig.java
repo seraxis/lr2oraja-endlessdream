@@ -148,9 +148,9 @@ public final class PlayerConfig {
 	private boolean markprocessednote = false;
 	
 	/**
-	 * IIDX MODE (Force IIDX Judge & Gauge, Disable IR)
+	 * DX MODE (Force DX Judge & Gauge, Disable IR)
 	 */
-	private boolean iidxMode = false;
+	private boolean dxMode = false;
 
 	/**
 	 * H-RANDOM連打しきい値BPM
@@ -394,12 +394,12 @@ public final class PlayerConfig {
 		this.markprocessednote = markprocessednote;
 	}
 
-	public boolean isIidxMode() {
-		return iidxMode;
+	public boolean isDxMode() {
+		return dxMode;
 	}
 
-	public void setIidxMode(boolean iidxMode) {
-		this.iidxMode = iidxMode;
+	public void setDxMode(boolean dxMode) {
+		this.dxMode = dxMode;
 	}
 
 	public PlayModeConfig getPlayConfig(Mode modeId) {

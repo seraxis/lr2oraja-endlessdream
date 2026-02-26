@@ -219,6 +219,11 @@ public class MainController {
 	private void initializeIRConfig() {
 		Array<IRStatus> irarray = new Array<IRStatus>();
 		for(IRConfig irconfig : player.getIrconfig()) {
+			// IR名の判定とDX MODEの状態に基づいて接続をスキップするか決定
+			if (IRUtil.shouldSkipIR(irconfig.getIrname(), player.isDxMode())) {
+				logger.info("{}: Skipping login based on DX MODE setting.", irconfig.getIrname());
+				continue;
+			}
 			final IRConnection ir = IRConnectionManager.getIRConnection(irconfig.getIrname());
 			if(ir != null) {
 				if(irconfig.getUserid().length() == 0 || irconfig.getPassword().length() == 0) {
