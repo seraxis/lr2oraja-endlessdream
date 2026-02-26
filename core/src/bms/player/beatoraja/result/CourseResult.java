@@ -114,9 +114,9 @@ public class CourseResult extends AbstractResult {
                     boolean isRianIR = irc.config.getIrname() != null && irc.config.getIrname().startsWith("rianIR");
                     
                     if (isRianIR && !isIidxMode) {
-                        continue; // rianIRはIIDX MODEオン時のみ送信
+                        continue; // rianIRはDX MODEオン時のみ送信
                     } else if (!isRianIR && isIidxMode) {
-                        continue; // rianIR以外の既存IRはIIDX MODEオフ時のみ送信
+                        continue; // rianIR以外の既存IRはDX MODEオフ時のみ送信
                     }
 
     				irSendStatus.add(new IRSendStatus(irc.connection, resource.getCourseData(), lnmode, newscore));

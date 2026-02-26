@@ -409,7 +409,7 @@
                             <ComboBox fx:id="screenshotFormat" prefWidth="100.0" />
                         </children>
                     </HBox>
-                    <CheckBox fx:id="iidxMode" mnemonicParsing="false" prefHeight="25.0" text="IIDX MODE (Force IIDX Judge &amp; Gauge, Disable IR)" />
+                    <CheckBox fx:id="iidxMode" mnemonicParsing="false" prefHeight="25.0" text="DX MODE" />
 
                     <Button mnemonicParsing="false" onAction="#importScoreDataFromLR2" text="%IMPORT_LR2_SCORE">
                         <VBox.margin>

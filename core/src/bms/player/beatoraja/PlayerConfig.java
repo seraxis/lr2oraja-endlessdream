@@ -148,7 +148,7 @@ public final class PlayerConfig {
 	private boolean markprocessednote = false;
 	
 	/**
-	 * IIDX MODE (Force IIDX Judge & Gauge, Disable IR)
+	 * DX MODE (Force DX Judge & Gauge, Disable IR)
 	 */
 	private boolean iidxMode = false;
 
