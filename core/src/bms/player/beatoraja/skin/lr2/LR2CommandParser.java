@@ -111,6 +111,11 @@ public class LR2CommandParser {
 					Class<?> fieldType = field.getType();
 					int objectLength = getNestedObjectLength(fieldType);
 					int end = Math.min(start + objectLength, data.length);
+					if (start >= end) {
+						// NOTE: This is *the expected behavior*, sometimes the csv line is not complete,
+						//  we need to tolerate this error
+						continue;
+					}
 					String[] subData = Arrays.copyOfRange(data, start, end);
 					Object nested = parseObject(fieldType, subData, false);
 

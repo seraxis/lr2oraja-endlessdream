@@ -38,7 +38,7 @@ public class StandardDestination {
 	public int timer;
 
 	@CSVField(start = 11)
-	public Options options;
+	public Options options = new Options();
 
 	// Shortcuts for nested objects, don't edit!
 
