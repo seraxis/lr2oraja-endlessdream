@@ -22,18 +22,22 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    flatDir{
+    flatDir {
         dirs("../lib")
     }
-    maven(url = "https://jitpack.io" )
+    maven(url = "https://jitpack.io")
 }
 
 version = libs.versions.beatoraja.get()
 
 sourceSets {
     main {
-        java.srcDirs(listOf("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser"))
-        resources.srcDirs(listOf("src/"))
+        java.srcDirs("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser")
+        resources.srcDirs("src/")
+    }
+    test {
+        java.srcDirs("test/")
+        resources.srcDirs("test/resources")
     }
 }
 
@@ -44,14 +48,14 @@ application {
 tasks {
     // fat/uber-jar task provided by https://github.com/GradleUp/shadow
     shadowJar {
-        dependsOn("generateBuildMetaInfo")
+        dependsOn("generateBuildMetaInfo", "test")
         val platformProp = System.getProperty("platform")
         val archProp = System.getProperty("arch")
-        val archVariant = when(archProp != null) {
+        val archVariant = when (archProp != null) {
             true -> archProp.plus("-")
             false -> ""
         }
-        val classifierPlatform = when(platformProp != null)  {
+        val classifierPlatform = when (platformProp != null) {
             true -> platformProp.plus("-").plus(archVariant).plus(libs.versions.endlessdream.get())
             false -> "".plus(libs.versions.endlessdream.get())
         }
@@ -59,14 +63,14 @@ tasks {
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
         archiveClassifier.set(classifierPlatform)
-	    mergeServiceFiles()
+        mergeServiceFiles()
     }
 
     // shadow task that extends java `application` plugin JavaExec to cover fatjars
     // used to test builds, does not contain portaudio natives.
     runShadow {
         val runDirProp = System.getProperty("runDir")
-        val runDir = when(runDirProp != null)  {
+        val runDir = when (runDirProp != null) {
             true -> FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
             false -> projectDir.resolve("../assets")
         }
@@ -76,6 +80,10 @@ tasks {
         }
         workingDir = runDir
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Generate current build's meta info: git commit hash, commit time, etc
@@ -111,8 +119,8 @@ tasks.register("generateBuildMetaInfo") {
 // versions and bundles defined in ../gradle/libs.versions.toml
 dependencies {
     implementation(libs.bundles.libgdx)
-    
-    implementation(libs.gdx.platform)  {
+
+    implementation(libs.gdx.platform) {
         artifact {
             classifier = "natives-desktop"
         }
@@ -162,4 +170,8 @@ dependencies {
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
     implementation(":luaj-jse:3.0.2-custom")
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }

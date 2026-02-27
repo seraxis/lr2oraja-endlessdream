@@ -23,7 +23,7 @@ ebur128java = "1.2.6-2"
 jna = "5.13.0"
 websocket = "1.6.0"
 slf4j = "2.0.17"
-
+junit-bom = "6.0.3"
 
 [libraries]
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -73,7 +73,7 @@ jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-datab
 jackson-annotations = { group = "com.fasterxml.jackson.core", name = "jackson-annotations", version.ref = "jackson" }
 jackson-xml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-xml", version.ref = "jackson" }
 
-twitter4j = { group = "org.twitter4j" , name = "twitter4j-core", version.ref = "twitter4j" }
+twitter4j = { group = "org.twitter4j", name = "twitter4j-core", version.ref = "twitter4j" }
 ebur128java = { group = "io.github.llm96", name = "ebur128java", version.ref = "ebur128java" }
 
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
@@ -83,8 +83,12 @@ javawebsocket = { group = "org.java-websocket", name = "Java-WebSocket", version
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-jul = { group = "org.slf4j", name = "slf4j-jdk14", version.ref = "slf4j" }
 
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit-bom" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+
 [bundles]
-libgdx = ["gdx-core", "gdx-backend", "gdx-freetype",  "gdx-controllers-core", "gdx-controllers-desktop"]
+libgdx = ["gdx-core", "gdx-backend", "gdx-freetype", "gdx-controllers-core", "gdx-controllers-desktop"]
 lwjgl3 = ["lwjgl", "lwjgl-jemalloc", "lwjgl-glfw", "lwjgl-openal", "lwjgl-opengl", "lwjgl-stb"]
 imgui = ["imgui", "imgui-lwjgl3", "imgui-linux", "imgui-windows", "imgui-macos"]
 ffmpeg = ["javacv", "javacpp", "ffmpeg"]
