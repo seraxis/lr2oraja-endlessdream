@@ -332,7 +332,7 @@ public abstract class SkinObject extends DisposableObject {
 		final long lasttime = endtime;
 		if( dstloop == -1) {
 			if(time > endtime) {
-				time = -1;
+				time = Integer.MIN_VALUE;
 			}
 		} else if (lasttime > 0 && time > dstloop) {
 			if (lasttime == dstloop) {
