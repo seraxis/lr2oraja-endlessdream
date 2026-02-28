@@ -54,7 +54,7 @@ enum CourseCommand implements LR2SkinLoader.Command<LR2CourseResultSkinLoader> {
 		DestinationGaugeChart1P dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_NOTECHART_1P((loader, str) -> {
@@ -69,7 +69,7 @@ enum CourseCommand implements LR2SkinLoader.Command<LR2CourseResultSkinLoader> {
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	});
 

@@ -384,7 +384,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				gauge.y = src.height - dstNoteChart.y();
 				skin.setDestination(noteobj, dstNoteChart.time, gauge.x, gauge.y, gauge.width, gauge.height,
 						dstNoteChart.acc, dstNoteChart.a(), dstNoteChart.r(), dstNoteChart.g(), dstNoteChart.b(),
-						dstNoteChart.blend, dstNoteChart.filter, dstNoteChart.angle, dstNoteChart.center,
+						dstNoteChart.blend, dstNoteChart.filter, dstNoteChart.angle(), dstNoteChart.center,
 						dstNoteChart.loop, dstNoteChart.timer, dstNoteChart.op1(), dstNoteChart.op2(), dstNoteChart.op3(), new int[]{dstNoteChart.op4()});
 			}
 		});
@@ -407,7 +407,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 				gauge.y = src.height - dstBpmChart.y();
 				skin.setDestination(bpmgraphobj, dstBpmChart.time, gauge.x, gauge.y, gauge.width, gauge.height,
 						dstBpmChart.acc, dstBpmChart.a(), dstBpmChart.r(), dstBpmChart.g(), dstBpmChart.b(),
-						dstBpmChart.blend, dstBpmChart.filter, dstBpmChart.angle, dstBpmChart.center,
+						dstBpmChart.blend, dstBpmChart.filter, dstBpmChart.angle(), dstBpmChart.center,
 						dstBpmChart.loop, dstBpmChart.timer, dstBpmChart.op1(), dstBpmChart.op2(), dstBpmChart.op3(), new int[]{dstBpmChart.op4()});
 			}
 		});

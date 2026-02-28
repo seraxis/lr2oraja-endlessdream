@@ -733,7 +733,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					float y = dsth - dst.y() * dsth / srch - height;
 					int[] values = parseInt(str);
 					gauger.setDestination(dst.time, x, y, width, height, dst.acc,
-							dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+							dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 							dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 				}
 			}

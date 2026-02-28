@@ -57,7 +57,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_NOTECHART_1P ((loader, str) -> {
@@ -72,7 +72,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_BPMCHART ((loader, str) -> {
@@ -87,7 +87,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.bpmgraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_TIMINGCHART_1P ((loader, str) -> {
@@ -102,7 +102,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.timinggraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
-				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	});
 

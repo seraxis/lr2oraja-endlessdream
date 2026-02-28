@@ -249,7 +249,7 @@ public abstract class SkinObject extends DisposableObject {
 		setDestination(dst.time, dst.x() * dstw / srcw, y,
 				dst.w() * dstw / srcw, dst.h() * dsth / srch, dst.acc,
 				dst.a(), dst.r(), dst.g(), dst.b(),
-				dst.blend, dst.filter, dst.angle, dst.center, dst.loop,
+				dst.blend, dst.filter, dst.angle(), dst.center, dst.loop,
 				dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 	}
 
