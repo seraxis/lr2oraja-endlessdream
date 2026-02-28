@@ -5,6 +5,10 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
+import bms.table.DifficultyTable;
+import bms.table.DifficultyTableElement;
+import bms.table.DifficultyTableParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
@@ -14,8 +18,6 @@ import bms.model.BMSDecoder;
 import bms.model.Mode;
 import bms.player.beatoraja.CourseData.TrophyData;
 import bms.player.beatoraja.song.SongData;
-import bms.table.Course.Trophy;
-import bms.table.*;
 
 /**
  * 難易度表データアクセス用クラス
@@ -168,44 +170,39 @@ public class TableDataAccessor {
 
 		@Override
 		public TableData read() {
-			DifficultyTableParser dtp = new DifficultyTableParser();
-			DifficultyTable dt = new DifficultyTable();
-			if (url.endsWith(".json")) {
-				dt.setHeadURL(url);
-			} else {
-				dt.setSourceURL(url);
-			}
+			DifficultyTableParser parser = new DifficultyTableParser();
 			try {
-				dtp.decode(true, dt);
+				DifficultyTable dt = parser.parse(url);
 				TableData td = new TableData();
 				td.setUrl(url);
 				td.setName(dt.getName());
-				td.setTag(dt.getTag());
-				Mode defaultMode = dt.getMode() != null ? Mode.getMode(dt.getMode()) : null;
+				// td.setTag(dt.getTag());
+//				Mode defaultMode = dt.getMode() != null ? Mode.getMode(dt.getMode()) : null;
+				Mode defaultMode = null;
 				td.setFolder(Stream.of(dt.getLevelDescription()).map(lv -> {
 					TableData.TableFolder tde = new TableData.TableFolder();
 					tde.setName(td.getTag() + lv);
-					tde.setSong(Stream.of(dt.getElements()).filter(dte -> lv.equals(dte.getLevel()))
+					tde.setSong(dt.getElements().stream().filter(dte -> lv.equals(dte.getLevel()))
 							.map(dte -> toSongData(dte, defaultMode)).toArray(SongData[]::new));
 					return tde;
 				}).toArray(TableData.TableFolder[]::new));
 
-				if (dt.getCourse() != null && dt.getCourse().length > 0) {
-					td.setCourse(Stream.of(dt.getCourse()).flatMap(courses -> Stream.of(courses)).map(g -> {
+				if (!dt.getCourse().isEmpty()) {
+					td.setCourse(dt.getCourse().stream().map(g -> {
 						CourseData cd = new CourseData();
 						cd.setName(g.getName());
-						cd.setSong(Stream.of(g.getCharts()).map(chart -> toSongData(chart, defaultMode))
+						cd.setSong(g.getCharts().stream().map(chart -> toSongData(chart, defaultMode))
 								.toArray(SongData[]::new));
 
-						cd.setConstraint(Stream.of(g.getConstraint()).map(c -> CourseData.CourseDataConstraint.getValue(c))
+						cd.setConstraint(g.getConstraint().stream().map(CourseData.CourseDataConstraint::getValue)
 								.filter(Objects::nonNull).toArray(CourseData.CourseDataConstraint[]::new));
 
-						if (g.getTrophy() != null) {
-							cd.setTrophy(Stream.of(g.getTrophy()).map(trophy -> {
+						if (!g.getTrophy().isEmpty()) {
+							cd.setTrophy(g.getTrophy().stream().map(trophy -> {
 								TrophyData t = new TrophyData();
 								t.setName(trophy.getName());
-								t.setMissrate((float) trophy.getMissrate());
-								t.setScorerate((float) trophy.getScorerate());
+								t.setMissrate((float) trophy.getMissRate());
+								t.setScorerate((float) trophy.getScoreRate());
 								return t;
 							}).toArray(TrophyData[]::new));
 						}
@@ -229,27 +226,24 @@ public class TableDataAccessor {
 		}
 	}
 	
-	private static SongData toSongData(BMSTableElement te, Mode defaultMode) {
+	private static SongData toSongData(DifficultyTableElement te, Mode defaultMode) {
 		SongData song = new SongData();
-		if(te.getMD5() != null) {
-			song.setMd5(te.getMD5().toLowerCase());
+		if(te.getMd5() != null) {
+			song.setMd5(te.getMd5().toLowerCase());
 		}
-		if(te.getSHA256() != null) {
-			song.setSha256(te.getSHA256().toLowerCase());
+		if(te.getSha256() != null) {
+			song.setSha256(te.getSha256().toLowerCase());
 		}
 		song.setTitle(te.getTitle());
 		song.setArtist(te.getArtist());
 		Mode mode = te.getMode() != null ? Mode.getMode(te.getMode()) : null;
 		song.setMode(mode != null ? mode.id : (defaultMode != null ? defaultMode.id : 0));
-		song.setUrl(te.getURL());
-		song.setIpfs(te.getIPFS());
-		song.setOrg_md5(te.getParentHash());
-		if(te instanceof DifficultyTableElement) {
-			DifficultyTableElement dte = (DifficultyTableElement) te;
-			song.setAppendurl(dte.getAppendURL());
-			song.setAppendIpfs(dte.getAppendIPFS());
-		}
-		
+		song.setUrl(te.getUrl());
+		song.setIpfs(te.getIpfs());
+//		song.setOrg_md5(te.getParentHash());
+		song.setAppendurl(te.getAppendURL());
+		song.setAppendIpfs(te.getAppendIPFS());
+
 		return song;
 	}
 }
