@@ -6,12 +6,13 @@ import java.io.BufferedInputStream;
 import java.lang.reflect.Method;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.modmenu.setting.window.SongSettingsWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.Queue;
@@ -382,10 +383,20 @@ public class BarManager {
 
 			if(isSortable) {
 				final BarSorter sorter = BarSorter.valueOf(select.main.getPlayerConfig().getSortid());
-			    Sort.instance().sort(newcurrentsongs, sorter != null ? sorter.sorter : BarSorter.TITLE.sorter);
-                if (SongManagerMenu.isLastPlayedSortEnabled()) {
-                    Sort.instance().sort(newcurrentsongs, BarSorter.LASTUPDATE.sorter);
-                }
+				Comparator<Bar> comp = sorter.sorter;
+				if (SongSettingsWindow.isLastPlayedSortEnabled()) {
+					comp = BarSorter.LASTUPDATE.sorter;
+				}
+				if (select.resource.getConfig().isForceMissingChartAtTail()) {
+					Comparator<Bar> preComp = (lhs, rhs) -> {
+						if (lhs instanceof SongBar lsb && rhs instanceof SongBar rsb) {
+							return (rsb.existsSong() ? 1 : 0) - (lsb.existsSong() ? 1 : 0);
+						}
+						return 0;
+					};
+					comp = preComp.thenComparing(comp);
+				}
+			    Sort.instance().sort(newcurrentsongs, comp);
 			}
 
 			Array<Bar> bars = new Array<Bar>();
@@ -479,7 +490,7 @@ public class BarManager {
 
 	public void close() {
 		if(dir.size == 0) {
-            SongManagerMenu.forceDisableLastPlayedSort();
+            SongSettingsWindow.forceDisableLastPlayedSort();
 			select.executeEvent(EventType.sort);
 			return;
 		}

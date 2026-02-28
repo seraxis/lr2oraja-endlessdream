@@ -7,6 +7,9 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.ParseException;
+
+import bms.tool.util.Pair;
+import com.badlogic.gdx.Gdx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +83,11 @@ public class Config implements Validatable {
 	 */
 	private int maxFramePerSecond = 240;
 
+	/**
+	 * Display fps in game or not
+	 */
+	private boolean displayFPS = false;
+
 	private int prepareFramePerSecond = 0;
 	/**
 	 * 検索バー同時表示上限数
@@ -93,6 +101,10 @@ public class Config implements Validatable {
 	 * 所持していない楽曲バーを表示するかどうか
 	 */
 	private boolean showNoSongExistingBar = true;
+	/**
+	 * Whether to place the non-existent charts at the end of the other charts or not
+	 */
+	private boolean forceMissingChartAtTail = false;
 	/**
 	 * 選曲バー移動速度の最初
 	 */
@@ -344,6 +356,11 @@ public class Config implements Validatable {
 		this.vsync = vsync;
 	}
 
+	public void setVsyncAtRuntime(boolean vsync) {
+		setVsync(vsync);
+		Gdx.graphics.setVSync(vsync);
+	}
+
 	public int getBga() {
 		return bga;
 	}
@@ -366,6 +383,14 @@ public class Config implements Validatable {
 
 	public void setMaxFramePerSecond(int maxFramePerSecond) {
 		this.maxFramePerSecond = maxFramePerSecond;
+	}
+
+	public boolean isDisplayFPS() {
+		return displayFPS;
+	}
+
+	public void setDisplayFPS(boolean displayFPS) {
+		this.displayFPS = displayFPS;
 	}
 
 	public int getPrepareFramePerSecond() {
@@ -414,6 +439,10 @@ public class Config implements Validatable {
 
 	public void setResolution(Resolution resolution) {
 		this.resolution = resolution;
+	}
+
+	public void setResolution(Pair<Integer, Integer> resolution) {
+		this.resolution = Resolution.valueOf(resolution);
 	}
 
 	public int getWindowWidth() {
@@ -478,6 +507,14 @@ public class Config implements Validatable {
 
 	public void setShowNoSongExistingBar(boolean showNoExistingSongBar) {
 		this.showNoSongExistingBar = showNoExistingSongBar;
+	}
+
+	public boolean isForceMissingChartAtTail() {
+		return forceMissingChartAtTail;
+	}
+
+	public void setForceMissingChartAtTail(boolean forceMissingChartAtTail) {
+		this.forceMissingChartAtTail = forceMissingChartAtTail;
 	}
 
 	public int getScrollDurationLow(){

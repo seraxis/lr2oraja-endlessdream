@@ -42,11 +42,11 @@ public final class PracticeConfiguration {
 
 	private BMSModel model;
 
-	private static final String[] GAUGE = { "ASSIST EASY", "EASY", "NORMAL", "HARD", "EX-HARD", "HAZARD", "GRADE",
+	public static final String[] GAUGE = { "ASSIST EASY", "EASY", "NORMAL", "HARD", "EX-HARD", "HAZARD", "GRADE",
 			"EX GRADE", "EXHARD GRADE"};
-	private static final String[] RANDOM = { "NORMAL", "MIRROR", "RANDOM", "R-RANDOM", "S-RANDOM", "SPIRAL", "H-RANDOM",
+	public static final String[] RANDOM = { "NORMAL", "MIRROR", "RANDOM", "R-RANDOM", "S-RANDOM", "SPIRAL", "H-RANDOM",
 			"ALL-SCR", "RANDOM-EX", "S-RANDOM-EX" };
-	private static final String[] DPRANDOM = { "NORMAL", "FLIP" };
+	public static final String[] DPRANDOM = { "NORMAL", "FLIP" };
 
 	private PracticeProperty property = new PracticeProperty();
 

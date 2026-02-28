@@ -61,6 +61,7 @@
 	<CheckBox fx:id="useSongInfo" mnemonicParsing="false" prefHeight="18.0" text="%USE_SONGINFO" />
 	<CheckBox fx:id="folderlamp" mnemonicParsing="false" prefHeight="25.0" text="%FOLDER_LAMP" />
     <CheckBox fx:id="shownoexistingbar" mnemonicParsing="false" prefHeight="25.0" text="%SHOW_NO_SONG_EXISTING_BAR" />
+	<CheckBox fx:id="forceMissingChartAtTail" mnemonicParsing="false" prefHeight="25.0" text="%FORCE_MISSING_CHART_AT_TAIL" />
     <HBox spacing="10" prefHeight="30.0">
         <Label text="%PLAY_PREVIEW" prefHeight="25.0"/>
         <ComboBox fx:id="songPreview" prefHeight="25.0"/>

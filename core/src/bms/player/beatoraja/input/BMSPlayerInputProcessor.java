@@ -397,7 +397,7 @@ public class BMSPlayerInputProcessor {
 		final int MASK_CTRL_SHIFT = KeyBoardInputProcesseor.MASK_CTRL|KeyBoardInputProcesseor.MASK_SHIFT;
 
 		switch(key) {
-		case SHOW_FPS:
+		case SHOW_SETTING:
 			return isControlKeyPressed(ControlKeys.F1);
 		case UPDATE_FOLDER:
 			return isControlKeyPressed(ControlKeys.F2);

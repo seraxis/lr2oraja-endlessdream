@@ -5,11 +5,11 @@ import bms.player.beatoraja.SystemSoundManager.SoundType;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
+import bms.player.beatoraja.modmenu.setting.window.SongSettingsWindow;
 import bms.player.beatoraja.select.MusicSelectKeyProperty.MusicSelectKey;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.property.EventFactory.EventType;
 
-import bms.player.beatoraja.modmenu.SongManagerMenu;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 
@@ -93,7 +93,7 @@ public final class MusicSelectInputProcessor {
         }
         // ソートの切り替え
         if (input.isControlKeyPressed(ControlKeys.NUM2)) {
-            SongManagerMenu.forceDisableLastPlayedSort();
+            SongSettingsWindow.forceDisableLastPlayedSort();
             select.executeEvent(EventType.sort);
         }
         // LNモードの切り替え

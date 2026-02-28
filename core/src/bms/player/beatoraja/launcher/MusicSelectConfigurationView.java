@@ -37,6 +37,8 @@ public class MusicSelectConfigurationView implements Initializable {
 	@FXML
 	private CheckBox shownoexistingbar;
 	@FXML
+	private CheckBox forceMissingChartAtTail;
+	@FXML
 	private ComboBox<SongPreview> songPreview;
 	@FXML
 	private CheckBox randomselect;
@@ -69,6 +71,7 @@ public class MusicSelectConfigurationView implements Initializable {
         useSongInfo.setSelected(config.isUseSongInfo());
 		folderlamp.setSelected(config.isFolderlamp());
 		shownoexistingbar.setSelected(config.isShowNoSongExistingBar());
+		forceMissingChartAtTail.setSelected(config.isForceMissingChartAtTail());
 		songPreview.setValue(config.getSongPreview());
 		
 		maxsearchbar.getValueFactory().setValue(config.getMaxSearchBarCount());
@@ -86,6 +89,7 @@ public class MusicSelectConfigurationView implements Initializable {
         config.setUseSongInfo(useSongInfo.isSelected());
         config.setFolderlamp(folderlamp.isSelected());
         config.setShowNoSongExistingBar(shownoexistingbar.isSelected());
+		config.setForceMissingChartAtTail(forceMissingChartAtTail.isSelected());
         config.setSongPreview(songPreview.getValue());
         
         config.setMaxSearchBarCount(maxsearchbar.getValue());

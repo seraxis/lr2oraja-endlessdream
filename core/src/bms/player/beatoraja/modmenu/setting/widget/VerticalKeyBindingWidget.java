@@ -1,0 +1,106 @@
+package bms.player.beatoraja.modmenu.setting.widget;
+
+import bms.player.beatoraja.modmenu.ImGuiKeyHelper;
+import bms.player.beatoraja.modmenu.setting.keybinding.KeyBinding;
+import com.badlogic.gdx.Input;
+import imgui.ImGui;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+/**
+ * VerticalKeyBindingWidget is a widget renders the key bindings vertically and helps configure bindings. Illustration:
+ *
+ * <pre>
+ * +----------------------------------------------+
+ * |    |  Keys  |   Bind    |     Operations     |
+ * | -> |   K1   |           |Edit|Remove|Clear   |
+ * |    |   K2   |           |Edit|Remove|Clear   |
+ * |    |   K3   |           |Edit|Remove|Clear   |
+ * |    | ...... | ......... | .................. |
+ * +----------------------------------------------+
+ * </pre>
+ * <p>
+ * This widget is in charge of:
+ * <ul>
+ *     <li>Renders the key bindings</li>
+ *     <li>Listens user's inputs and invoke hooks</li>
+ *     <li>TODO: Serial rebind mode: Allow user rebind keys from top to down</li>
+ * </ul>
+ *
+ * @implSpec VerticalKeyBindingWidget doesn't have the capability of modifying the value of keyBindings. In other words,
+ *  'keyBindings' is not a part of the internal states of VerticalKeyBindingWidget, it's a read-only reference.
+ *  The caller side must handles the reference of keyBindings correctly: if the caller side wants to abandon the pointer
+ *  to keyBindings, method setKeyBindings must be called.
+ */
+public class VerticalKeyBindingWidget implements Widget {
+	private final List<KeyBinding> keyBindings;
+	private boolean hasOperations = true;
+	private final Consumer<KeyBinding> newBindingHook;
+	private final Consumer<Boolean> editingHook;
+	private int editingLine;
+
+	/**
+	 * @param keyBindings    key bindings, read only reference
+	 * @param newBindingHook hook function, triggered when this widget wants to submit a new key binding
+	 * @param editingHook    hook function, triggered when this widget changed editing state
+	 */
+	public VerticalKeyBindingWidget(List<KeyBinding> keyBindings, Consumer<KeyBinding> newBindingHook, Consumer<Boolean> editingHook) {
+		this.keyBindings = keyBindings;
+		this.newBindingHook = newBindingHook;
+		this.editingHook = editingHook;
+	}
+
+	public VerticalKeyBindingWidget removeOperations() {
+		hasOperations = false;
+		return this;
+	}
+
+	@Override
+	public void render() {
+		int columns = hasOperations ? 3 : 2;
+		if (ImGui.beginTable("##VerticalKeyBindingWidgetTable", columns)) {
+			ImGui.tableSetupColumn("Keys");
+			ImGui.tableSetupColumn("Bind");
+			if (hasOperations) {
+				ImGui.tableSetupColumn("Operations");
+			}
+			ImGui.tableHeadersRow();
+			for (int i = 0; i < keyBindings.size(); i++) {
+				ImGui.pushID(i);
+				KeyBinding keyBinding = keyBindings.get(i);
+				ImGui.tableNextRow();
+				ImGui.tableSetColumnIndex(0);
+				ImGui.text(keyBinding.name());
+				ImGui.tableSetColumnIndex(1);
+				ImGui.text(keyBinding.keyName());
+				if (hasOperations) {
+					ImGui.tableSetColumnIndex(2);
+					if (ImGui.button("Edit##VerticalKeyBindingWidget")) {
+						editingLine = i;
+						editingHook.accept(true);
+						ImGui.openPopup("##VerticalKeyBindingWidget##ListenKeyPressed");
+					}
+					if (ImGui.beginPopup("##VerticalKeyBindingWidget##ListenKeyPressed")) {
+						ImGui.text("Listening...Please press any key you want to bind");
+						int lastPressedKey = ImGuiKeyHelper.getLastPressedKey();
+						if (lastPressedKey != -1) {
+							if (lastPressedKey != Input.Keys.ESCAPE) {
+								newBindingHook.accept(keyBindings.get(editingLine).newKeyCode(lastPressedKey));
+							}
+							editingHook.accept(false);
+							ImGui.closeCurrentPopup();
+						}
+						ImGui.endPopup();
+					}
+					ImGui.sameLine();
+					if (ImGui.button("Clear##VerticalKeyBindingWidget")) {
+						newBindingHook.accept(keyBinding.erase());
+					}
+				}
+				ImGui.popID();
+			}
+			ImGui.endTable();
+		}
+	}
+}
