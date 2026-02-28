@@ -17,6 +17,7 @@ import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.SongData;
+import org.slf4j.LoggerFactory;
 
 public class BooleanPropertyFactory {
 
@@ -369,14 +370,14 @@ public class BooleanPropertyFactory {
 		loaded(OPTION_LOADED, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() != BMSPlayer.STATE_PRELOAD : false))),
 
-		song_no_text(OPTION_NO_TEXT, new SongDataBooleanProperty(model -> !model.hasDocument())),
 		song_text(OPTION_TEXT, new SongDataBooleanProperty(model -> model.hasDocument())),
-		chart_no_ln(OPTION_NO_LN, new SongDataBooleanProperty(model -> !model.hasAnyLongNote())),
+		song_no_text(OPTION_NO_TEXT, song_text.property.reverse()),
 		chart_ln(OPTION_LN, new SongDataBooleanProperty(model -> model.hasAnyLongNote())),
-		song_no_bga(OPTION_NO_BGA, new SongDataBooleanProperty(model -> !model.hasBGA())),
+		chart_no_ln(OPTION_NO_LN, chart_ln.property.reverse()),
 		song_bga(OPTION_BGA, new SongDataBooleanProperty(model -> model.hasBGA())),
-		chart_no_randomsequence(OPTION_NO_RANDOMSEQUENCE, new SongDataBooleanProperty(model -> !model.hasRandomSequence())),
+		song_no_bga(OPTION_NO_BGA, song_bga.property.reverse()),
 		chart_randomsequence(OPTION_RANDOMSEQUENCE, new SongDataBooleanProperty(model -> model.hasRandomSequence())),
+		chart_no_randomsequence(OPTION_NO_RANDOMSEQUENCE, chart_randomsequence.property.reverse()),
 		chart_no_bpmchange(OPTION_NO_BPMCHANGE, new SongDataBooleanProperty(model -> model.getMinbpm() == model.getMaxbpm())),
 		chart_bpmchange(OPTION_BPMCHANGE, new SongDataBooleanProperty(model -> model.getMinbpm() < model.getMaxbpm())),
 		chart_bpmstop(OPTION_BPMSTOP, new SongDataBooleanProperty(model -> model.isBpmstop())),
@@ -678,7 +679,7 @@ public class BooleanPropertyFactory {
 		 */
 		private final BooleanProperty property;
 		
-		private BooleanType(int id, BooleanProperty property) {
+		BooleanType(int id, BooleanProperty property) {
 			this.id = id;
 			this.property = property;
 		}
