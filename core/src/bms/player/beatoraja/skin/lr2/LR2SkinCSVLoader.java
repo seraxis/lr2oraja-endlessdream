@@ -310,9 +310,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					case 26 -> 16;
 					case 27 -> 17;
 					case 28 -> 18;
-					// NOTE: 29, 30 doesn't have related definition
+					// NOTE: 29 doesn't have related definition, 30 is a little bit different, see below
 					default -> values[3];
 				};
+				if (values[3] == STRING_SEARCHWORD && !(skin instanceof MusicSelectSkin)) {
+					values[3] = STRING_TABLE_FULL;
+				}
 				StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
 				if (property == null) {
 					SkinWidgetManager.registerMissingTextDefinition(values[3]);

@@ -183,7 +183,10 @@ public enum LR2TextDef {
 	Arena5PModifiersShort("ARENA 5P modifiers short", 285),
 	Arena6PModifiersShort("ARENA 6P modifiers short", 286),
 	Arena7PModifiersShort("ARENA 7P modifiers short", 287),
-	Arena8PModifiersShort("ARENA 8P modifiers short", 288);
+	Arena8PModifiersShort("ARENA 8P modifiers short", 288),
+
+	// Not present in LR2 or any variants, only for compatibility
+	TableFullName("Table full name", 1003);
 
 	private final String name;
 	private final int value;
