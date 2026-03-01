@@ -81,6 +81,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				final File imagefile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
+				logger.info("#INCLUDE command invoked. Trying to load the skin file at {}", imagefile.toPath());
 				if (imagefile.exists()) {
 					try (BufferedReader br = new BufferedReader(
 							new InputStreamReader(new FileInputStream(imagefile), "MS932"));) {
@@ -739,6 +740,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 							dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
 							dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 				}
+			}
+		});
+		addCommandWord(new CommandWord("PRINT") {
+			@Override
+			public void execute(String[] values) {
+				logger.info("[LR2 Skin]: {}", values[1]);
 			}
 		});
 	}
