@@ -42,7 +42,7 @@ public class StandardDestination {
 
 	// The definition of rotation angle in LR2 and libgdx is exactly opposite
 	public int angle() {
-		return angle != 0 ? 360 - angle : 0;
+		return -angle;
 	}
 
 	// Shortcuts for nested objects, don't edit!
