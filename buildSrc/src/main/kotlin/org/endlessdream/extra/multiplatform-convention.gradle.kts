@@ -7,19 +7,13 @@ plugins {
 // use `-Dplatform=[platform]` or change this value to set the target platform for the jar
 // Available platforms:
 //    "windows", "linux", "macos"
-var platform = when(System.getProperty("platform") != null)  {
-    true -> System.getProperty("platform")
-    false -> "windows"
-}!!
+val platform = System.getProperty("platform") ?: "windows"
 
 // use `-Darch=[arch]` or change this value to set the target arch for the jar
 // Available arch:
 //    "x86-64", "aarch64"
 // Defauls to x86-64
-var arch = when(System.getProperty("arch") != null) {
-    true -> System.getProperty("arch")
-    false -> "x86-64"
-}
+val arch = System.getProperty("arch") ?: "x86-64"
 
 tasks {
     register<Copy>("resolveRuntimeClasspath") {
