@@ -61,9 +61,10 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 		header.setPath(f);
 
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
+			Context ctx = new Context(op);
 			lines.forEach(line -> {
 				try {
-					processLine(line, state);
+					processLine(ctx, line, state);
 				} catch(Throwable e) {
 					logger.error("Failed to load LR2 skin", e);
 				}
@@ -76,10 +77,11 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 			options.clear();
 			offsets.clear();
 			header.setPath(f);
+			Context ctx = new Context(op);
 			try (Stream<String> lines = Files.lines(f)) {
 				lines.forEach(line -> {
 					try {
-						processLine(line, state);
+						processLine(ctx, line, state);
 					} catch (Throwable ex) {
 						logger.error("Failed to load LR2 skin", ex);
 					}

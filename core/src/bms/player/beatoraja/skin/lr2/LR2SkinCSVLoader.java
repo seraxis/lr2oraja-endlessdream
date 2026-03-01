@@ -83,10 +83,11 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				final File imagefile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
 				logger.info("#INCLUDE command invoked. Trying to load the skin file at {}", imagefile.toPath());
 				if (imagefile.exists()) {
+					Context ctx = new Context(op);
 					try (BufferedReader br = new BufferedReader(
 							new InputStreamReader(new FileInputStream(imagefile), "MS932"));) {
 						while ((line = br.readLine()) != null) {
-							processLine(line, state);
+							processLine(ctx, line, state);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -810,9 +811,10 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 	protected void loadSkin0(Skin skin, Path f, MainState state, IntIntMap option) throws IOException {
 
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
+			Context ctx = new Context(op);
 			lines.forEach(line -> {
 				try {
-					processLine(line, state);
+					processLine(ctx, line, state);
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}

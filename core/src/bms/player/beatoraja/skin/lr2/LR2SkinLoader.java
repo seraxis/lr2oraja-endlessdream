@@ -43,17 +43,14 @@ public abstract class LR2SkinLoader extends SkinLoader {
 		commands.addAll(cm);
 	}
 
-	boolean skip = false;
-	boolean ifs = false;
-
-	protected void processLine(String line, MainState state) {
+	protected void processLine(Context ctx, String line, MainState state) {
 		if (!line.startsWith("#") ) {
 			return;
 		}
 		String[] str = line.split(",", -1);
 		if (str.length > 0) {
 			if (str[0].equalsIgnoreCase("#IF")) {
-				ifs = true;
+				ctx.insideIf = true;
 				for (int i = 1; i < str.length; i++) {
 					boolean b = false;
 					if (str[i].length() == 0) {
@@ -77,7 +74,7 @@ public abstract class LR2SkinLoader extends SkinLoader {
 							}
 						}
 						if (!b) {
-							ifs = false;
+							ctx.insideIf = false;
 							break;
 						}
 					} catch (NumberFormatException e) {
@@ -86,12 +83,12 @@ public abstract class LR2SkinLoader extends SkinLoader {
 					}
 				}
 
-				skip = !ifs;
+				ctx.skip = !ctx.insideIf;
 			} else if (str[0].equalsIgnoreCase("#ELSEIF")) {
-				if (ifs) {
-					skip = true;
+				if (ctx.insideIf) {
+					ctx.skip = true;
 				} else {
-					ifs = true;
+					ctx.insideIf = true;
 					for (int i = 1; i < str.length; i++) {
 						boolean b = false;
 						try {
@@ -112,7 +109,7 @@ public abstract class LR2SkinLoader extends SkinLoader {
 								}
 							}
 							if (!b) {
-								ifs = false;
+								ctx.insideIf = false;
 								break;
 							}
 						} catch (NumberFormatException e) {
@@ -120,15 +117,15 @@ public abstract class LR2SkinLoader extends SkinLoader {
 						}
 					}
 
-					skip = !ifs;
+					ctx.skip = !ctx.insideIf;
 				}
 			} else if (str[0].equalsIgnoreCase("#ELSE")) {
-				skip = ifs;
+				ctx.skip = ctx.insideIf;
 			} else if (str[0].equalsIgnoreCase("#ENDIF")) {
-				skip = false;
-				ifs = false;
+				ctx.skip = false;
+				ctx.insideIf = false;
 			}
-			if (!skip) {
+			if (!ctx.skip) {
 				if (str[0].equalsIgnoreCase("#SETOPTION")) {
 					int index = Integer.parseInt(str[1]);
 					op.put(index, Integer.parseInt(str[2]) >= 1 ? 1 : 0);
@@ -141,8 +138,8 @@ public abstract class LR2SkinLoader extends SkinLoader {
 						break;
 					}
 				}
-				if(command != null) {
-					command.execute(this, str);					
+				if (command != null) {
+					command.execute(this, str);
 				}
 			}
 		}
@@ -197,5 +194,29 @@ public abstract class LR2SkinLoader extends SkinLoader {
 		
 		public abstract String name();
 		public abstract void execute(T loader, String[] values);		
+	}
+
+	/**
+	 * Context of loading a lr2 skin
+	 */
+	protected static class Context {
+		/**
+		 * Whether do we need to skip the next lines
+		 */
+		public boolean skip = false;
+
+		/**
+		 * Whether are we inside an if statement
+		 */
+		public boolean insideIf = false;
+
+		/**
+		 * Skin config options
+		 */
+		public IntIntMap op;
+
+		public Context(IntIntMap op) {
+			this.op = op;
+		}
 	}
 }
