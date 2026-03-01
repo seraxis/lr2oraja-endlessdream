@@ -609,6 +609,10 @@ public class SkinProperty {
 	public static final int OPTION_FOLDERBAR = 1;
 	public static final int OPTION_SONGBAR = 2;
 	public static final int OPTION_GRADEBAR = 3;
+	public static final int OPTION_DOUBLE_OR_DOUBLE_BATTLE = 10;
+	public static final int OPTION_BATTLE = 11;
+	public static final int OPTION_DOUBLE_OR_BATTLE_OR_DOUBLE_BATTLE = 12;
+	public static final int OPTION_GHOST_BATTLE_OR_BATTLE = 13;
 	public static final int OPTION_GRADEBAR_CLASS = 1002;
 	public static final int OPTION_GRADEBAR_MIRROR = 1003;
 	public static final int OPTION_GRADEBAR_RANDOM = 1004;

@@ -3,9 +3,11 @@ package bms.player.beatoraja.skin.property;
 import static bms.player.beatoraja.ClearType.*;
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
+import bms.model.BMSModel;
 import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.ScoreData.SongTrophy;
+import bms.player.beatoraja.constants.DPOptions;
 import bms.player.beatoraja.ir.RankingData;
 import bms.player.beatoraja.play.BMSPlayer;
 import bms.player.beatoraja.play.JudgeManager;
@@ -18,6 +20,8 @@ import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.SongData;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Predicate;
 
 public class BooleanPropertyFactory {
 
@@ -445,6 +449,34 @@ public class BooleanPropertyFactory {
 				(state) -> ((state instanceof MusicSelector) ? ((MusicSelector) state).getSelectedBar() instanceof DirectoryBar : false))),
 		select_coursebar(OPTION_GRADEBAR, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof MusicSelector) ? ((MusicSelector) state).getSelectedBar() instanceof GradeBar : false))),
+		double_or_double_battle(OPTION_DOUBLE_OR_DOUBLE_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> {
+					DPOptions dpOption = DPOptions.valueOf(state.resource.getPlayerConfig().getDoubleoption());
+					if (dpOption == DPOptions.BATTLE || dpOption == DPOptions.BATTLEAS) {
+						return true;
+					}
+					Predicate<Mode> isDoubleBattleMode = mode -> {
+						return mode == Mode.BEAT_10K
+								|| mode == Mode.BEAT_14K
+								|| mode == Mode.KEYBOARD_24K_DOUBLE;
+					};
+					BMSModel model = state.resource.getBMSModel();
+					if (model != null && isDoubleBattleMode.test(model.getMode())) {
+						return true;
+					}
+					if (state instanceof MusicSelector selector) {
+						return isDoubleBattleMode.test(selector.resource.getPlayerConfig().getMode());
+					}
+					return false;
+				})),
+		battle(OPTION_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> false)),
+		double_or_battle_or_double_battle(OPTION_DOUBLE_OR_BATTLE_OR_DOUBLE_BATTLE, double_or_double_battle.property),
+		ghost_battle_or_battle(OPTION_GHOST_BATTLE_OR_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> {
+					// TODO: We actually have ghost battle in ED, but I haven't firgured out how to support it
+					return false;
+				})),
 
 		course_class(OPTION_GRADEBAR_CLASS,createCourseDataConstraintProperty(CourseData.CourseDataConstraint.CLASS)),
 		course_mirror(OPTION_GRADEBAR_MIRROR,createCourseDataConstraintProperty(CourseData.CourseDataConstraint.MIRROR)),
