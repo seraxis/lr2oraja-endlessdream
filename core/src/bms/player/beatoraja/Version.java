@@ -1,16 +1,13 @@
 package bms.player.beatoraja;
 
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Properties;
+
 public class Version {
-    private static Logger logger = LoggerFactory.getLogger(Version.class);
+    private static final Logger logger = LoggerFactory.getLogger(Version.class);
     public static final int VERSION_MAJOR = 0;
     public static final int VERSION_MINOR = 5;
     public static final int VERSION_PATCH = 0;
@@ -23,7 +20,7 @@ public class Version {
     public static String getVersion() { return version; }
     public static String getLongVersion() { return versionLong; }
 
-    private static Properties buildMetaInfo = new Properties();
+    private static final Properties buildMetaInfo = new Properties();
 
     static {
         BUILD_TYPE = BuildType.PRERELEASE;
@@ -88,22 +85,6 @@ public class Version {
         return buildMetaInfo.getProperty("git_commit");
     }
 
-    /**
-     * Get the build time of the current build
-     * @return a date represents when it's being built, or null if anything went wrong
-     */
-    public static Date getBuildDate() {
-        try {
-            String buildDate = buildMetaInfo.getProperty("build_time");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-            return sdf.parse(buildDate);
-        } catch (Exception e) {
-			logger.error("Failed to parse build time: {}", e.getMessage());
-            return null;
-        }
-    }
-
     public enum BuildType {
         PRERELEASE("pre"),
         STABLE("");
@@ -116,7 +97,7 @@ public class Version {
     }
 
     /**
-     * Try loading the build meta data, no exceptions would be thrown
+     * Try loading the build metadata, no exceptions would be thrown
      */
     private static void tryLoadingBuildMetaInfo() {
         try {
