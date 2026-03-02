@@ -515,6 +515,10 @@ public abstract class SkinObject extends DisposableObject {
 		this.rate = 0;
 		this.index = 0;
 	}
+
+	public int[] getDstop() {
+		return dstop;
+	}
 	
 	public boolean validate() {
 		return getAllDestination().length > 0;

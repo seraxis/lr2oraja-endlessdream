@@ -35,6 +35,7 @@ public class SkinWidgetManager {
     private static final EventHistory eventHistory = new EventHistory();
     private static final List<Pair<Integer, Integer>> skinOptions = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
+    private static final List<Integer> missingOps = new ArrayList<>();
     private static final List<Integer> missingTextDefinitions = new ArrayList<>();
     private static final List<Integer> missingNumberDefinitions = new ArrayList<>();
 
@@ -80,13 +81,14 @@ public class SkinWidgetManager {
                     registerSkinObject(skinObject, duplicatedSkinObjectNameCount);
                 }
             }
+            missingOps.sort(Integer::compareTo);
+            missingNumberDefinitions.sort(Integer::compareTo);
+            missingTextDefinitions.sort(Integer::compareTo);
             widgets.sort(Comparator.comparing(widget -> widget.name));
             skin.getOption().forEach(entry -> skinOptions.add(Pair.of(entry.key, entry.value)));
             skinOptions.sort(Pair.DEFAULT_COMPARATOR());
         }
     }
-
-
 
     public static void show(ImBoolean showSkinWidgetManagerMenu) {
         synchronized (LOCK) {
@@ -139,6 +141,12 @@ public class SkinWidgetManager {
                 }
             }
             ImGui.end();
+        }
+    }
+
+    public static void registerMissingOp(int value) {
+        if (!missingOps.contains(value)) {
+            missingOps.add(value);
         }
     }
 
@@ -397,6 +405,32 @@ public class SkinWidgetManager {
     }
 
     private static void renderMissingNo() {
+        if (ImGui.treeNodeEx("DstOp##MissingNo")) {
+            if (ImGui.beginTable("DstOp##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingOps.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingOps.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        LR2DestinationOptions opDef = LR2DestinationOptions.valueOf(value);
+                        ImGui.text(opDef != null ? opDef.name() : "ERROR");
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
+        }
         if (ImGui.treeNodeEx("Text##MissingNo")) {
             if (ImGui.beginTable("Text##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
                 ImGui.tableSetupScrollFreeze(0, 1);
@@ -518,7 +552,17 @@ public class SkinWidgetManager {
     }
 
     private static void registerSkinObject(SkinObject skinObject, Map<String, Integer> duplicatedSkinObjectNameCount) {
+        int[] dstOp = skinObject.getDstop();
+        for (int op : dstOp) {
+            op = Math.abs(op);
+            if (op >= 900 && op <= 999) {
+                continue;
+            }
+            registerMissingOp(op);
+        }
+
         String skinObjectName = skinObject.getName();
+
         SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
         List<SkinWidgetDestination> destinations = new ArrayList<>();
         for (int i = 0; i < dsts.length; ++i) {
@@ -526,6 +570,7 @@ public class SkinWidgetManager {
             String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
             destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
         }
+
         String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
         Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
         duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
