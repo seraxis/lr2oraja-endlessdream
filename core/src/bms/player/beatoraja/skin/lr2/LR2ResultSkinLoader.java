@@ -7,12 +7,14 @@ import bms.player.beatoraja.skin.lr2.commands.DestinationBpmChart;
 import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart1P;
 import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart1P;
 import bms.player.beatoraja.skin.lr2.commands.DestinationTimingChart1P;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
 
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.result.*;
 import bms.player.beatoraja.skin.*;
+import org.slf4j.LoggerFactory;
 
 /**
  * LR2リザルトスキン読み込み用クラス
@@ -46,11 +48,30 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 	}),
 	SRC_GAUGECHART_1P ((loader, str) -> {
 		int[] values = loader.parseInt(str);
-		loader.gaugeobj = new SkinGaugeGraphObject();
-		loader.gaugeobj.setLineWidth(values[6]);
-		loader.gaugeobj.setDelay(values[14] - values[13]);
-		loader.gauge = new Rectangle(0, 0, values[11], values[12]);
-		loader.skin.add(loader.gaugeobj);
+		if (loader.gaugeobj == null) {
+			loader.gaugeobj = new SkinGaugeGraphObject();
+			loader.gaugeobj.setName("GaugeChart");
+			loader.gaugeobj.setLineWidth(values[6]);
+			loader.gaugeobj.setDelay(values[14] - values[13]);
+			loader.gaugeobj.clearBackgroundColor();
+			loader.gauge = new Rectangle(0, 0, values[11], values[12]);
+			loader.skin.add(loader.gaugeobj);
+		}
+
+		if (values[1] == 0 || values[1] == 1) {
+			boolean isFail = values[1] == 0;
+			TextureRegion[] images = loader.getSourceImage(values);
+			if (images != null && images.length > 0) {
+				int rgba = images[0].getTexture().getTextureData().consumePixmap().getPixel(images[0].getRegionX(), images[0].getRegionY());
+				if (isFail) {
+					loader.gaugeobj.setLR2GraphLineFailColor(rgba);
+				} else {
+					loader.gaugeobj.setLR2GraphLineClearColor(rgba);
+				}
+			}
+		} else {
+			LoggerFactory.getLogger(ResultCommand.class).error("Unexpected #SRC_GAUGECHART_1P index definition: {}", values[1]);
+		}
 	}),
 	DST_GAUGECHART_1P ((loader, str) -> {
 		DestinationGaugeChart1P dst = LR2CommandParser.getInstance().parse(str);

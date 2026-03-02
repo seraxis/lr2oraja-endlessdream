@@ -1,5 +1,6 @@
 package bms.player.beatoraja.result;
 
+import bms.tool.util.ColorUtils;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.*;
@@ -107,6 +108,25 @@ public class SkinGaugeGraphObject extends SkinObject {
 		for(int i = 3;i < 6;i++) {
 			graphline[i] = borderline[i];
 			graphcolor[i] = bordercolor[i];
+		}
+	}
+
+	public void setLR2GraphLineFailColor(int rgba) {
+		for (int i = 0; i < 6; ++i) {
+			graphline[i] = Color.valueOf(ColorUtils.rgba2hex(rgba));
+		}
+	}
+
+	public void setLR2GraphLineClearColor(int rgba) {
+		for (int i = 0; i < 6; ++i) {
+			borderline[i] = Color.valueOf(ColorUtils.rgba2hex(rgba));
+		}
+	}
+
+	public void clearBackgroundColor() {
+		for (int i = 0; i < 6; ++i) {
+			graphcolor[i] = Color.valueOf("000000000");
+			bordercolor[i] = Color.valueOf("00000000");
 		}
 	}
 
