@@ -616,6 +616,14 @@ public enum LR2DestinationOptions {
 			case 107 -> OPTION_SELECT_BAR_PERFECT_CLEARED;
 			case 108 -> OPTION_SELECT_BAR_MAX_CLEARED;
 			case 109 -> OPTION_SELECT_BAR_ASSIST_EASY_CLEARED;
+			case 110 -> OPTION_1P_AAA;
+			case 111 -> OPTION_1P_AA;
+			case 112 -> OPTION_1P_A;
+			case 113 -> OPTION_1P_B;
+			case 114 -> OPTION_1P_C;
+			case 115 -> OPTION_1P_D;
+			case 116 -> OPTION_1P_E;
+			case 117 -> OPTION_1P_F;
 			default -> v;
 		};
 	}

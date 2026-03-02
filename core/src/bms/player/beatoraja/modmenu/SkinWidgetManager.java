@@ -110,7 +110,6 @@ public class SkinWidgetManager {
                                 exportChanges();
                             }
 
-
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
