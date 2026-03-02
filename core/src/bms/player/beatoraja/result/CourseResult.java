@@ -114,7 +114,7 @@ public class CourseResult extends AbstractResult {
     					continue;
     				}
 
-    				irSendStatus.add(new IRSendStatus(irc.connection, resource.getCourseData(), lnmode, newscore));
+    				irSendStatus.add(new IRSendStatus(irc.connection, resource.getCourseData(), lnmode, newscore, resource.getCourseReplay()));
     			}
         	}
 
@@ -334,18 +334,22 @@ public class CourseResult extends AbstractResult {
 		public final CourseData course;
 		public final int lnmode;
 		public final ScoreData score;
+		public final ReplayData[] replays;
 		public int retry = 0;
 		
-		public IRSendStatus(IRConnection ir, CourseData course, int lnmode, ScoreData score) {
+		public IRSendStatus(IRConnection ir, CourseData course, int lnmode, ScoreData score, ReplayData[] replays) {
 			this.ir = ir;
 			this.course = course;
 			this.lnmode = lnmode;
 			this.score = score;
+			this.replays = replays;
 		}
 		
 		public boolean send() {
 			logger.info("IRへスコア送信中 : {}", course.getName());
-            IRResponse<Object> send1 = ir.sendCoursePlayData(new IRCourseData(course, lnmode), new bms.player.beatoraja.ir.IRScoreData(score));
+			bms.player.beatoraja.ir.IRScoreData irscore = new bms.player.beatoraja.ir.IRScoreData(score);
+			irscore.replays = replays;
+            IRResponse<Object> send1 = ir.sendCoursePlayData(new IRCourseData(course, lnmode), irscore);
             if(send1.isSucceeded()) {
 				logger.info("IRスコア送信完了 : {}", course.getName());
                 retry = -255;

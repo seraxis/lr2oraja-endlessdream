@@ -1,6 +1,7 @@
 package bms.player.beatoraja.ir;
 
 import bms.player.beatoraja.ClearType;
+import bms.player.beatoraja.ReplayData;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.input.BMSPlayerInputDevice;
 import bms.player.beatoraja.play.BMSPlayerRule;
@@ -109,6 +110,15 @@ public class IRScoreData {
 	public final BMSPlayerRule rule;
 	
 	public final String skin;
+	
+	/**
+	 * リプレイデータ（打鍵ログを含む）
+	 */
+	public ReplayData replayData;
+	/**
+	 * コース用リプレイデータ
+	 */
+	public ReplayData[] replays;
 	
 	public IRScoreData(ScoreData score) {
 		this.sha256 = score.getSha256();
