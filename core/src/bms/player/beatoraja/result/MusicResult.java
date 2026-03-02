@@ -137,7 +137,7 @@ public class MusicResult extends AbstractResult {
                         continue;
                     }
                     
-    				main.irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore));
+    				main.irSendStatus.add(new IRSendStatus(irc.connection, resource.getSongdata(), newscore, resource.getReplayData()));
     			}
         	}
 			

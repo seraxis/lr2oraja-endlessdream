@@ -1162,19 +1162,23 @@ public class MainController {
 		public final IRConnection ir;
 		public final SongData song;
 		public final ScoreData score;
+		public final ReplayData replay;
 		public int retry = 0;
 		public long lastTry = 0;
 		public boolean isSent = false;
-		public IRSendStatus(IRConnection ir, SongData song, ScoreData score) {
+		public IRSendStatus(IRConnection ir, SongData song, ScoreData score, ReplayData replay) {
 			this.ir = ir;
 			this.song = song;
 			this.score = score;
+			this.replay = replay;
 		}
 
 		public boolean send() {
 			logger.info("IRへスコア送信中 : {}", song.getTitle());
 			lastTry = System.currentTimeMillis();
-			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), new bms.player.beatoraja.ir.IRScoreData(score));
+			bms.player.beatoraja.ir.IRScoreData irScore = new bms.player.beatoraja.ir.IRScoreData(score);
+			irScore.replayData = replay;
+			IRResponse<Object> send1 = ir.sendPlayData(new IRChartData(song), irScore);
 			retry++;
 			if(send1.isSucceeded()) {
 				logger.info("IRスコア送信完了 : {}", song.getTitle());
