@@ -660,6 +660,8 @@ public class SkinProperty {
 
 	public static final int OPTION_OFFLINE = 50;
 	public static final int OPTION_ONLINE = 51;
+	public static final int OPTION_EXTRA_MODE_OFF = 52;
+	public static final int OPTION_EXTRA_MODE_ON = 53;
 
 	public static final int OPTION_DISABLE_SAVE_SCORE = 60;
 	public static final int OPTION_ENABLE_SAVE_SCORE = 61;

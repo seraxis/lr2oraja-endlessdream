@@ -631,6 +631,18 @@ public class BooleanPropertyFactory {
 
 		ir_offline(OPTION_OFFLINE, new DrawProperty(DrawProperty.TYPE_STATIC_ALL, (state) -> (state.main.getIRStatus().length == 0))),
 		ir_online(OPTION_ONLINE, new DrawProperty(DrawProperty.TYPE_STATIC_ALL, (state) -> (state.main.getIRStatus().length > 0))),
+		extra_mode_off(OPTION_EXTRA_MODE_OFF, new BooleanProperty() {
+			@Override
+			public boolean isStatic(MainState state) {
+				return true;
+			}
+
+			@Override
+			public boolean get(MainState state) {
+				return true;
+			}
+		}),
+		extra_mode_on(OPTION_EXTRA_MODE_ON, extra_mode_off.property.reverse()),
 		ir_no_player(OPTION_IR_NOPLAYER, new DrawProperty(DrawProperty.TYPE_NO_STATIC, (state) -> {
 			if(state instanceof MusicSelector) {
 				final RankingData irc = ((MusicSelector)state).getCurrentRankingData();
