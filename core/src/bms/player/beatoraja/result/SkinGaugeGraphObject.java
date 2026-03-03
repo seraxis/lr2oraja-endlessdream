@@ -125,7 +125,7 @@ public class SkinGaugeGraphObject extends SkinObject {
 
 	public void clearBackgroundColor() {
 		for (int i = 0; i < 6; ++i) {
-			graphcolor[i] = Color.valueOf("000000000");
+			graphcolor[i] = Color.valueOf("00000000");
 			bordercolor[i] = Color.valueOf("00000000");
 		}
 	}
