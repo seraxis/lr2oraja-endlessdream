@@ -723,6 +723,8 @@ public class MainController {
 			}
             if (!getShowModMenu() && current instanceof BMSPlayer) {
                 Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
+            } else {
+            	Gdx.input.setCursorCatched(false);
             }
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
