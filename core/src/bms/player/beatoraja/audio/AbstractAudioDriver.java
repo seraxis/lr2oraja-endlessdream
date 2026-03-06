@@ -3,6 +3,7 @@ package bms.player.beatoraja.audio;
 import bms.model.*;
 import bms.player.beatoraja.ResourcePool;
 
+import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,6 +66,7 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 	public AbstractAudioDriver(int maxgen) {
 		cache = new AudioCache(Math.max(maxgen, 1));
 	}
+
 	/**
 	 * パスで指定された効果音ファイルの音源データを取得する
 	 * 
@@ -73,6 +75,14 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 	 * @return 音源データ
 	 */
 	protected abstract T getKeySound(Path p);
+
+	/**
+	 * Load a specified sound file from a 7z archive file
+	 *
+	 * @param ctx 7z file context
+	 * @param fileName sound file name (can have arbitrary extension name)
+	 */
+	protected abstract T getKeySound(SevenZArchiveContext ctx, String fileName);
 
 	/**
 	 * PCMオブジェクトで指定されたキー音の音源データを取得する
@@ -254,6 +264,17 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 		noteMapSize = 0;
 		// BMS格納ディレクトリ
 		Path dpath = Paths.get(model.getPath()).getParent();
+		// NOTE: Load all files from 'resource.7z' file. The file name is forced to be hard-coded, apparently we don't
+		//  want to load any archive files from disk :)
+		Path resourcePath = dpath.resolve("resource.7z");
+		try {
+			SevenZArchiveContext ctx = SevenZArchiveContext.create(resourcePath);
+			if (ctx != null) {
+				cache.setCtx(ctx);
+			}
+		} catch (Exception e) {
+			logger.error("Failed to load resource package: ", e);
+		}
 
 		if (model.getVolwav() > 0 && model.getVolwav() < 100) {
 			volume = model.getVolwav() / 100f;
@@ -585,57 +606,64 @@ public abstract class AbstractAudioDriver<T> implements AudioDriver {
 	}
 
 	class AudioCache extends ResourcePool<AudioKey, T> {
+		private SevenZArchiveContext ctx;
 
 		public AudioCache(int maxgen) {
 			super(maxgen);
 		}
 
+		public void setCtx(SevenZArchiveContext ctx) {
+			this.ctx = ctx;
+		}
+
 		private ObjectMap<String, PCM> pcmMap = new ObjectMap<String, PCM>();
 
 		private T loadSlice(AudioKey key) {
-            PCM wav = null;
-            synchronized(pcmMap) {
-                wav = pcmMap.get(key.path);
-                if (wav == null) {
-                    wav = PCM.load(key.path, AbstractAudioDriver.this);
-                    if(wav != null) {
-                        pcmMap.put(key.path, wav);
-                    }
-                }
-            }
+			PCM wav = null;
+			synchronized(pcmMap) {
+				wav = pcmMap.get(key.path);
+				if (wav == null) {
+					wav = PCM.load(key.path, AbstractAudioDriver.this);
+					if(wav != null) {
+						pcmMap.put(key.path, wav);
+					}
+				}
+			}
 
-            if (wav != null) {
-                try {
-                    final PCM slicewav = wav.slice(key.start, key.duration);
-                    return slicewav != null ? getKeySound(slicewav) : null;
-                    // System.out.println("WAV slicing - Name:"
-                    // + name + " ID:" + note.getWav() +
-                    // " start:" + note.getStarttime() +
-                    // " duration:" + note.getDuration());
-                } catch (Throwable e) {
+			if (wav != null) {
+				try {
+					final PCM slicewav = wav.slice(key.start, key.duration);
+					return slicewav != null ? getKeySound(slicewav) : null;
+					// System.out.println("WAV slicing - Name:"
+					// + name + " ID:" + note.getWav() +
+					// " start:" + note.getStarttime() +
+					// " duration:" + note.getDuration());
+				} catch (Throwable e) {
 					logger.warn("音源(wav)ファイルスライシング失敗。{}", e.getMessage());
-                    e.printStackTrace();
-                }
-            }
+					e.printStackTrace();
+				}
+			}
 
-            return null;
-        }
+			return null;
+		}
 
 		@Override
 		protected T load(AudioKey key) {
 			logger.trace("音源ファイルを読み込む中：{}", key.path);
 
-		    T sound = key.start == 0 && key.duration == 0
-                    ? getKeySound(Paths.get(key.path)) // 音切りなしのケース
-                    : loadSlice(key);
+			String fileName = new File(key.path).getName();
+			boolean loadFromArchive = ctx != null && ctx.hasEntry(fileName);
 
-		    if (sound == null) {
+			T sound = key.start == 0 && key.duration == 0
+					? (loadFromArchive ? getKeySound(ctx, fileName) : getKeySound(Paths.get(key.path))) // 音切りなしのケース
+					: loadSlice(key);
+
+			if (sound == null) {
 				logger.warn("音源ファイル読み込み失敗：{}", key.path);
-            }
+			}
 			return sound;
 		}
 
-		
 		@Override
 		public synchronized void disposeOld() {
 			pcmMap.clear();
