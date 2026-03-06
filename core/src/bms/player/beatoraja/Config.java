@@ -214,6 +214,8 @@ public class Config implements Validatable {
 	private HashMap<String, String> obsScenes = new HashMap<>();
 	private HashMap<String, String> obsActions = new HashMap<>();
 
+	private boolean keepSilentWhenRenderFailed = false;
+
 	/**
 	 * Bank of available tables
 	 *
@@ -826,7 +828,15 @@ public class Config implements Validatable {
 		}
 	}
 
-    public boolean validate() {
+	public boolean isKeepSilentWhenRenderFailed() {
+		return keepSilentWhenRenderFailed;
+	}
+
+	public void setKeepSilentWhenRenderFailed(boolean keepSilentWhenRenderFailed) {
+		this.keepSilentWhenRenderFailed = keepSilentWhenRenderFailed;
+	}
+
+	public boolean validate() {
 		displaymode = (displaymode != null) ? displaymode : DisplayMode.WINDOW;
 		resolution = (resolution != null) ? resolution : Resolution.HD;
 

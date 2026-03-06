@@ -5,6 +5,7 @@ import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.ShaderManager;
 import bms.player.beatoraja.SkinConfig.Offset;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.BooleanProperty;
 import bms.player.beatoraja.play.BMSPlayer;
@@ -309,8 +310,18 @@ public class Skin {
 			}
 
 			for (SkinObject obj : objectarray) {
-				if (obj.draw && obj.visible) {
-					obj.draw(renderer);
+				if (obj.draw && obj.visible && obj.error == null) {
+					try {
+						obj.draw(renderer);
+					} catch (Exception e) {
+						logger.error("Error while rendering object", e);
+						if (state.main.getConfig().isKeepSilentWhenRenderFailed()) {
+							obj.error = e;
+							ImGuiNotify.error(String.format("Suppressing fatal error while rendering object: %s: %s", obj.getName(), e.getMessage()));
+						} else {
+							throw e;
+						}
+					}
 				}
 			}
 		}
