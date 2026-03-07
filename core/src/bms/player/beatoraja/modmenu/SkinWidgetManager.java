@@ -1,7 +1,12 @@
 package bms.player.beatoraja.modmenu;
 
+import bms.player.beatoraja.play.SkinJudge;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.player.beatoraja.skin.lr2.LR2DestinationOptions;
+import bms.player.beatoraja.skin.lr2.LR2NumberDef;
+import bms.player.beatoraja.skin.lr2.LR2TextDef;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
@@ -28,7 +33,11 @@ public class SkinWidgetManager {
     private static final double eps = 1e-5;
     private static final Object LOCK = new Object();
     private static final EventHistory eventHistory = new EventHistory();
+    private static final List<Pair<Integer, Integer>> skinOptions = new ArrayList<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
+    private static final List<Integer> missingOps = new ArrayList<>();
+    private static final List<Integer> missingTextDefinitions = new ArrayList<>();
+    private static final List<Integer> missingNumberDefinitions = new ArrayList<>();
 
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
 
@@ -56,6 +65,7 @@ public class SkinWidgetManager {
         synchronized (LOCK) {
             widgets.clear();
             eventHistory.clear();
+            skinOptions.clear();
             if (skin == null) {
                 return ;
             }
@@ -63,20 +73,20 @@ public class SkinWidgetManager {
             // NOTE: We're using skin object's name as id, we need to keep name is unique
             Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
             for (SkinObject skinObject : allSkinObjects) {
-                String skinObjectName = skinObject.getName();
-                SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
-                List<SkinWidgetDestination> destinations = new ArrayList<>();
-                for (int i = 0; i < dsts.length; ++i) {
-                    String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
-                    String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
-                    destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+                if (skinObject instanceof SkinJudge skinJudge) {
+                    // Support 2P? Currently don't have to
+                    registerSkinObject(skinJudge.getJudge(0), duplicatedSkinObjectNameCount);
+                    registerSkinObject(skinJudge.getJudgeCount(0), duplicatedSkinObjectNameCount);
+                } else {
+                    registerSkinObject(skinObject, duplicatedSkinObjectNameCount);
                 }
-                String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
-                Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
-                duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
-                String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
-                widgets.add(new SkinWidget(widgetName, skinObject, destinations));
             }
+            missingOps.sort(Integer::compareTo);
+            missingNumberDefinitions.sort(Integer::compareTo);
+            missingTextDefinitions.sort(Integer::compareTo);
+            widgets.sort(Comparator.comparing(widget -> widget.name));
+            skin.getOption().forEach(entry -> skinOptions.add(Pair.of(entry.key, entry.value)));
+            skinOptions.sort(Pair.DEFAULT_COMPARATOR());
         }
     }
 
@@ -100,12 +110,19 @@ public class SkinWidgetManager {
                                 exportChanges();
                             }
 
-
                             renderSkinWidgetsTable();
                             ImGui.endTabItem();
                         }
                         if (ImGui.beginTabItem("History")) {
                             renderHistoryTable();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("Op")) {
+                            renderSkinOptions();
+                            ImGui.endTabItem();
+                        }
+                        if (ImGui.beginTabItem("Missing No")) {
+                            renderMissingNo();
                             ImGui.endTabItem();
                         }
                         ImGui.endTabBar();
@@ -123,6 +140,24 @@ public class SkinWidgetManager {
                 }
             }
             ImGui.end();
+        }
+    }
+
+    public static void registerMissingOp(int value) {
+        if (!missingOps.contains(value)) {
+            missingOps.add(value);
+        }
+    }
+
+    public static void registerMissingTextDefinition(int value) {
+        if (!missingTextDefinitions.contains(value)) {
+            missingTextDefinitions.add(value);
+        }
+    }
+
+    public static void registerMissingNumberDefinition(int value) {
+        if (!missingNumberDefinitions.contains(value)) {
+            missingNumberDefinitions.add(value);
         }
     }
 
@@ -331,6 +366,124 @@ public class SkinWidgetManager {
         }
     }
 
+    private static void renderSkinOptions() {
+        if (ImGui.beginTable("Options", 3, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("Name");
+            ImGui.tableSetupColumn("Op");
+            ImGui.tableSetupColumn("Value");
+            ImGui.tableHeadersRow();
+            ImGuiListClipper.forEach(skinOptions.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    ImGui.pushID(row);
+
+                    Pair<Integer, Integer> p = skinOptions.get(row);
+                    ImGui.tableNextRow();
+
+                    ImGui.tableSetColumnIndex(0);
+                    Integer op = p.getFirst();
+                    if (op >= 900 && op <= 999) {
+                        ImGui.text("-");
+                    } else {
+                        LR2DestinationOptions dstDef = LR2DestinationOptions.valueOf(op);
+                        ImGui.text(dstDef != null ? dstDef.getName() : "ERROR");
+                    }
+
+                    ImGui.tableSetColumnIndex(1);
+                    ImGui.text(op.toString());
+
+                    ImGui.tableSetColumnIndex(2);
+                    ImGui.text(p.getSecond().toString());
+
+                    ImGui.popID();
+                }
+            });
+            ImGui.endTable();
+        }
+    }
+
+    private static void renderMissingNo() {
+        if (ImGui.treeNodeEx("DstOp##MissingNo")) {
+            if (ImGui.beginTable("DstOp##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingOps.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingOps.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        LR2DestinationOptions opDef = LR2DestinationOptions.valueOf(value);
+                        ImGui.text(opDef != null ? opDef.name() : "ERROR");
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
+        }
+        if (ImGui.treeNodeEx("Text##MissingNo")) {
+            if (ImGui.beginTable("Text##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingTextDefinitions.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingTextDefinitions.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        LR2TextDef textDef = LR2TextDef.valueOf(value);
+                        ImGui.text(textDef != null ? textDef.name() : "ERROR");
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
+        }
+        if (ImGui.treeNodeEx("Number##MissingNo")) {
+            if (ImGui.beginTable("Number##MissingNo##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+                ImGui.tableSetupScrollFreeze(0, 1);
+                ImGui.tableSetupColumn("Name");
+                ImGui.tableSetupColumn("Value");
+                ImGui.tableHeadersRow();
+                ImGuiListClipper.forEach(missingNumberDefinitions.size(), new ImListClipperCallback() {
+                    @Override
+                    public void accept(int row) {
+                        ImGui.pushID(row);
+                        ImGui.tableNextRow();
+
+                        Integer value = missingNumberDefinitions.get(row);
+                        ImGui.tableSetColumnIndex(0);
+                        LR2NumberDef numberDef = LR2NumberDef.valueOf(value);
+                        ImGui.text(numberDef != null ? numberDef.name() : "ERROR");
+
+                        ImGui.tableSetColumnIndex(1);
+                        ImGui.text(value.toString());
+                        ImGui.popID();
+                    }
+                });
+                ImGui.endTable();
+            }
+            ImGui.treePop();
+        }
+    }
+
     /**
      * This is a small helper function to draw columns in table, draw red text if the cell value has been modified
      *
@@ -395,6 +548,33 @@ public class SkinWidgetManager {
     private static String normalizeFloat(float value) {
         DecimalFormat df = new DecimalFormat("#.####");
         return df.format(value);
+    }
+
+    private static void registerSkinObject(SkinObject skinObject, Map<String, Integer> duplicatedSkinObjectNameCount) {
+        int[] dstOp = skinObject.getDstop();
+        for (int op : dstOp) {
+            op = Math.abs(op);
+            if (op >= 900 && op <= 999) {
+                continue;
+            }
+            registerMissingOp(op);
+        }
+
+        String skinObjectName = skinObject.getName();
+
+        SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
+        List<SkinWidgetDestination> destinations = new ArrayList<>();
+        for (int i = 0; i < dsts.length; ++i) {
+            String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
+            String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
+            destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+        }
+
+        String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
+        Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
+        duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
+        String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
+        widgets.add(new SkinWidget(widgetName, skinObject, destinations));
     }
 
     /**

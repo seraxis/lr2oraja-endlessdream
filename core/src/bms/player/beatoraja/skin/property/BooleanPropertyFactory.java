@@ -3,9 +3,11 @@ package bms.player.beatoraja.skin.property;
 import static bms.player.beatoraja.ClearType.*;
 import static bms.player.beatoraja.skin.SkinProperty.*;
 
+import bms.model.BMSModel;
 import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.ScoreData.SongTrophy;
+import bms.player.beatoraja.constants.DPOptions;
 import bms.player.beatoraja.ir.RankingData;
 import bms.player.beatoraja.play.BMSPlayer;
 import bms.player.beatoraja.play.JudgeManager;
@@ -17,6 +19,9 @@ import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.*;
 import bms.player.beatoraja.skin.SkinProperty;
 import bms.player.beatoraja.song.SongData;
+import org.slf4j.LoggerFactory;
+
+import java.util.function.Predicate;
 
 public class BooleanPropertyFactory {
 
@@ -124,6 +129,7 @@ public class BooleanPropertyFactory {
 						}
 						return false;
 					});
+		case OPTION_MODE_GRADE:
 		case OPTION_MODE_COURSE:
 			return new DrawProperty(DrawProperty.TYPE_STATIC_WITHOUT_MUSICSELECT,
 					(state) -> (state.main.getPlayerResource().getCourseData() != null));
@@ -364,18 +370,18 @@ public class BooleanPropertyFactory {
 		state_practice(OPTION_STATE_PRACTICE, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRACTICE : false))),
 		now_loading(OPTION_NOW_LOADING, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
-				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRELOAD : false))),
+				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() == BMSPlayer.STATE_PRELOAD : true))),
 		loaded(OPTION_LOADED, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof BMSPlayer) ? ((BMSPlayer) state).getState() != BMSPlayer.STATE_PRELOAD : false))),
 
-		song_no_text(OPTION_NO_TEXT, new SongDataBooleanProperty(model -> !model.hasDocument())),
 		song_text(OPTION_TEXT, new SongDataBooleanProperty(model -> model.hasDocument())),
-		chart_no_ln(OPTION_NO_LN, new SongDataBooleanProperty(model -> !model.hasAnyLongNote())),
+		song_no_text(OPTION_NO_TEXT, song_text.property.reverse()),
 		chart_ln(OPTION_LN, new SongDataBooleanProperty(model -> model.hasAnyLongNote())),
-		song_no_bga(OPTION_NO_BGA, new SongDataBooleanProperty(model -> !model.hasBGA())),
+		chart_no_ln(OPTION_NO_LN, chart_ln.property.reverse()),
 		song_bga(OPTION_BGA, new SongDataBooleanProperty(model -> model.hasBGA())),
-		chart_no_randomsequence(OPTION_NO_RANDOMSEQUENCE, new SongDataBooleanProperty(model -> !model.hasRandomSequence())),
+		song_no_bga(OPTION_NO_BGA, song_bga.property.reverse()),
 		chart_randomsequence(OPTION_RANDOMSEQUENCE, new SongDataBooleanProperty(model -> model.hasRandomSequence())),
+		chart_no_randomsequence(OPTION_NO_RANDOMSEQUENCE, chart_randomsequence.property.reverse()),
 		chart_no_bpmchange(OPTION_NO_BPMCHANGE, new SongDataBooleanProperty(model -> model.getMinbpm() == model.getMaxbpm())),
 		chart_bpmchange(OPTION_BPMCHANGE, new SongDataBooleanProperty(model -> model.getMinbpm() < model.getMaxbpm())),
 		chart_bpmstop(OPTION_BPMSTOP, new SongDataBooleanProperty(model -> model.isBpmstop())),
@@ -412,10 +418,10 @@ public class BooleanPropertyFactory {
 		replaydata_exist_2(OPTION_REPLAYDATA2, createReplayProperty(1, 0)),
 		replaydata_exist_3(OPTION_REPLAYDATA3, createReplayProperty(2, 0)),
 		replaydata_exist_4(OPTION_REPLAYDATA4, createReplayProperty(3, 0)),
-		replaydata_no_1(OPTION_NO_REPLAYDATA, createReplayProperty(0, 1)),
-		replaydata_no_2(OPTION_NO_REPLAYDATA2, createReplayProperty(1, 1)),
-		replaydata_no_3(OPTION_NO_REPLAYDATA3, createReplayProperty(2, 1)),
-		replaydata_no_4(OPTION_NO_REPLAYDATA4, createReplayProperty(3, 1)),
+		replaydata_no_1(OPTION_NO_REPLAYDATA, replaydata_exist_1.property.reverse()),
+		replaydata_no_2(OPTION_NO_REPLAYDATA2, replaydata_exist_2.property.reverse()),
+		replaydata_no_3(OPTION_NO_REPLAYDATA3, replaydata_exist_3.property.reverse()),
+		replaydata_no_4(OPTION_NO_REPLAYDATA4, replaydata_exist_4.property.reverse()),
 		replaydata_saved_1(OPTION_REPLAYDATA_SAVED, createReplayProperty(0, 2)),
 		replaydata_saved_2(OPTION_REPLAYDATA2_SAVED, createReplayProperty(1, 2)),
 		replaydata_saved_3(OPTION_REPLAYDATA3_SAVED, createReplayProperty(2, 2)),
@@ -443,6 +449,34 @@ public class BooleanPropertyFactory {
 				(state) -> ((state instanceof MusicSelector) ? ((MusicSelector) state).getSelectedBar() instanceof DirectoryBar : false))),
 		select_coursebar(OPTION_GRADEBAR, new DrawProperty(DrawProperty.TYPE_NO_STATIC,
 				(state) -> ((state instanceof MusicSelector) ? ((MusicSelector) state).getSelectedBar() instanceof GradeBar : false))),
+		double_or_double_battle(OPTION_DOUBLE_OR_DOUBLE_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> {
+					DPOptions dpOption = DPOptions.valueOf(state.resource.getPlayerConfig().getDoubleoption());
+					if (dpOption == DPOptions.BATTLE || dpOption == DPOptions.BATTLEAS) {
+						return true;
+					}
+					Predicate<Mode> isDoubleBattleMode = mode -> {
+						return mode == Mode.BEAT_10K
+								|| mode == Mode.BEAT_14K
+								|| mode == Mode.KEYBOARD_24K_DOUBLE;
+					};
+					BMSModel model = state.resource.getBMSModel();
+					if (model != null && isDoubleBattleMode.test(model.getMode())) {
+						return true;
+					}
+					if (state instanceof MusicSelector selector) {
+						return isDoubleBattleMode.test(selector.resource.getPlayerConfig().getMode());
+					}
+					return false;
+				})),
+		battle(OPTION_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> false)),
+		double_or_battle_or_double_battle(OPTION_DOUBLE_OR_BATTLE_OR_DOUBLE_BATTLE, double_or_double_battle.property),
+		ghost_battle_or_battle(OPTION_GHOST_BATTLE_OR_BATTLE, new DrawProperty(DrawProperty.TYPE_STATIC_ON_RESULT,
+				state -> {
+					// TODO: We actually have ghost battle in ED, but I haven't firgured out how to support it
+					return false;
+				})),
 
 		course_class(OPTION_GRADEBAR_CLASS,createCourseDataConstraintProperty(CourseData.CourseDataConstraint.CLASS)),
 		course_mirror(OPTION_GRADEBAR_MIRROR,createCourseDataConstraintProperty(CourseData.CourseDataConstraint.MIRROR)),
@@ -597,6 +631,18 @@ public class BooleanPropertyFactory {
 
 		ir_offline(OPTION_OFFLINE, new DrawProperty(DrawProperty.TYPE_STATIC_ALL, (state) -> (state.main.getIRStatus().length == 0))),
 		ir_online(OPTION_ONLINE, new DrawProperty(DrawProperty.TYPE_STATIC_ALL, (state) -> (state.main.getIRStatus().length > 0))),
+		extra_mode_off(OPTION_EXTRA_MODE_OFF, new BooleanProperty() {
+			@Override
+			public boolean isStatic(MainState state) {
+				return true;
+			}
+
+			@Override
+			public boolean get(MainState state) {
+				return true;
+			}
+		}),
+		extra_mode_on(OPTION_EXTRA_MODE_ON, extra_mode_off.property.reverse()),
 		ir_no_player(OPTION_IR_NOPLAYER, new DrawProperty(DrawProperty.TYPE_NO_STATIC, (state) -> {
 			if(state instanceof MusicSelector) {
 				final RankingData irc = ((MusicSelector)state).getCurrentRankingData();
@@ -677,7 +723,7 @@ public class BooleanPropertyFactory {
 		 */
 		private final BooleanProperty property;
 		
-		private BooleanType(int id, BooleanProperty property) {
+		BooleanType(int id, BooleanProperty property) {
 			this.id = id;
 			this.property = property;
 		}

@@ -5,6 +5,8 @@ import java.util.function.BiConsumer;
 
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.result.CourseResultSkin;
+import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart1P;
+import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart1P;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.IntIntMap;
 
@@ -49,13 +51,11 @@ enum CourseCommand implements LR2SkinLoader.Command<LR2CourseResultSkinLoader> {
 		loader.skin.add(loader.gaugeobj);
 	}),
 	DST_GAUGECHART_1P((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.gaugeobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width,
-				loader.gauge.height, values[7], values[8], values[9], values[10], values[11], values[12], values[13],
-				values[14], values[15], values[16], values[17], values[18], values[19], values[20],
-				loader.readOffset(str, 21));
+		DestinationGaugeChart1P dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	}),
 	SRC_NOTECHART_1P((loader, str) -> {
 		// #SRC_NOTECHART_1P,(index),(gr),(x),(y),(w),(h),(div_x),(div_y),(cycle),(timer),field_w,field_h,(start),(end),delay,backTexOff,orderReverse,noGap
@@ -65,13 +65,12 @@ enum CourseCommand implements LR2SkinLoader.Command<LR2CourseResultSkinLoader> {
 		loader.skin.add(loader.noteobj);
 	}),
 	DST_NOTECHART_1P((loader, str) -> {
-		int[] values = loader.parseInt(str);
-		loader.gauge.x = values[3];
-		loader.gauge.y = loader.src.height - values[4];
-		loader.skin.setDestination(loader.noteobj, values[2], loader.gauge.x, loader.gauge.y, loader.gauge.width,
-				loader.gauge.height, values[7], values[8], values[9], values[10], values[11], values[12], values[13],
-				values[14], values[15], values[16], values[17], values[18], values[19], values[20],
-				loader.readOffset(str, 21));
+		DestinationNoteChart1P dst = LR2CommandParser.getInstance().parse(str);
+		loader.gauge.x = dst.x();
+		loader.gauge.y = loader.src.height - dst.y();
+		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
+				dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), new int[]{dst.op4()});
 	});
 
 	public final BiConsumer<LR2CourseResultSkinLoader, String[]> function;

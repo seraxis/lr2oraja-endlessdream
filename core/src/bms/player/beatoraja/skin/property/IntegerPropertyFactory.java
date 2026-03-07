@@ -321,6 +321,13 @@ public class IntegerPropertyFactory {
 				}
 				return Integer.MIN_VALUE;
 			};
+		case NUMBER_COMBO:
+			return state -> {
+				if (state instanceof BMSPlayer player) {
+					return player.getJudgeManager().getCombo();
+				}
+				return Integer.MIN_VALUE;
+			};
 		case NUMBER_MAXCOMBO:
 		case NUMBER_MAXCOMBO2:
 			return (state) -> {
@@ -527,6 +534,10 @@ public class IntegerPropertyFactory {
 				return (int) (Math.max((((BMSPlayer) state).getPlaytime()
 						- (int) (state.timer.isTimerOn(TIMER_PLAY) ? state.timer.getNowTime(TIMER_PLAY) : 0) + 1000),
 						0) / 60000);
+			} else if (state instanceof MusicSelector){
+				return (state.resource.getSongdata() != null
+						? (state.resource.getSongdata().getLength() / 60000) % 60
+						: Integer.MIN_VALUE);
 			}
 			return Integer.MIN_VALUE;
 		}),
@@ -535,6 +546,10 @@ public class IntegerPropertyFactory {
 				return (Math.max((((BMSPlayer) state).getPlaytime()
 						- (int) (state.timer.isTimerOn(TIMER_PLAY) ? state.timer.getNowTime(TIMER_PLAY) : 0) + 1000),
 						0) / 1000) % 60;
+			} else if (state instanceof MusicSelector) {
+				return (state.resource.getSongdata() != null
+						? (state.resource.getSongdata().getLength() / 1000) % 60
+						: Integer.MIN_VALUE);
 			}
 			return Integer.MIN_VALUE;
 		}),

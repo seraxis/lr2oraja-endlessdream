@@ -18,6 +18,7 @@ public final class SkinJudge extends SkinObject {
 	 * 文字イメージ
 	 */
     private final SkinImage[] judge = new SkinImage[7];
+	private int judgeHeight = 0;
     /**
      * 数字イメージ
      */
@@ -27,6 +28,7 @@ public final class SkinJudge extends SkinObject {
     
     private SkinImage nowJudge;
     private SkinNumber nowCount;
+	private boolean reverseYFlag = false;
 
     public SkinJudge(int index, boolean shift) {
         this(null, null, index, shift);
@@ -59,6 +61,7 @@ public final class SkinJudge extends SkinObject {
 
     public void setJudge(int index, SkinImage judge) {
     	if(index >= 0 && index < this.judge.length) {
+			judge.setName(String.format("Judge_%dP", index + 1));
     		this.judge[index] = judge;
     	}
     }
@@ -69,16 +72,35 @@ public final class SkinJudge extends SkinObject {
     
     public void setJudgeCount(int index, SkinNumber count) {
     	if(index >= 0 && index < this.count.length) {
+			count.setName(String.format("Combo_%dP", index + 1));
     		this.count[index] = count;
     	}
     }
 
-    public boolean isShift() {
+	public void setJudgeHeight(int judgeHeight) {
+		this.judgeHeight = judgeHeight;
+	}
+
+	public boolean isShift() {
     	return shift;
     }
 
 	@Override
 	public void prepare(long time, MainState state) {
+		if (!reverseYFlag) {
+			for (SkinNumber skinNumber : this.count) {
+				if (skinNumber == null) {
+					continue;
+				}
+				SkinObjectDestination[] dsts = skinNumber.getAllDestination();
+				for (SkinObjectDestination dst : dsts) {
+					if (dst.region.y != 0) {
+						dst.region.y += judgeHeight - dst.region.height;
+					}
+				}
+			}
+			reverseYFlag = true;
+		}
         final int judgenow = ((BMSPlayer)state).getJudgeManager().getNowJudge(player) - 1;
         if(judgenow < 0) {
         	draw = false;
@@ -116,10 +138,12 @@ public final class SkinJudge extends SkinObject {
 
     @Override
     public void draw(SkinObjectRenderer sprite) {
-        if (nowCount != null && nowCount.draw) {
+        if (nowCount != null && nowCount.draw && nowCount.visible) {
         	nowCount.draw(sprite);
         }
-        nowJudge.draw(sprite);
+		if (nowJudge != null && nowJudge.draw && nowJudge.visible) {
+			nowJudge.draw(sprite);
+		}
     }
 
     @Override

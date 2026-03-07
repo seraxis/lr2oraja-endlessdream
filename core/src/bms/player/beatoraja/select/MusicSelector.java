@@ -109,6 +109,8 @@ public final class MusicSelector extends MainState {
 
 	private PixmapResourcePool stagefiles;
 
+	private boolean noResetPanel = false;
+
 	public MusicSelector(MainController main, boolean songUpdated) {
 		super(main);
 		this.config = main.getPlayerResource().getPlayerConfig();
@@ -579,18 +581,18 @@ public final class MusicSelector extends MainState {
 		return panelstate;
 	}
 
-	public void setPanelState(int panelstate) {
-		if (this.panelstate != panelstate) {
-			if (this.panelstate != 0) {
-				timer.setTimerOn(TIMER_PANEL1_OFF + this.panelstate - 1);
-				timer.setTimerOff(TIMER_PANEL1_ON + this.panelstate - 1);
-			}
+	public void setPanelState(int newState) {
+		if (panelstate != newState) {
 			if (panelstate != 0) {
-				timer.setTimerOn(TIMER_PANEL1_ON + panelstate - 1);
-				timer.setTimerOff(TIMER_PANEL1_OFF + panelstate - 1);
+				timer.setTimerOn(TIMER_PANEL1_OFF + panelstate - 1);
+				timer.setTimerOff(TIMER_PANEL1_ON + panelstate - 1);
+			}
+			if (newState != 0) {
+				timer.setTimerOn(TIMER_PANEL1_ON + newState - 1);
+				timer.setTimerOff(TIMER_PANEL1_OFF + newState - 1);
 			}
 		}
-		this.panelstate = panelstate;
+		panelstate = newState;
 	}
 
 	public SongDatabaseAccessor getSongDatabase() {
@@ -722,6 +724,14 @@ public final class MusicSelector extends MainState {
 			final int rankingMax = currentir != null ? Math.max(1, currentir.getTotalPlayer()) : 1;
 			rankingOffset = (int) (rankingMax * value);
 		}
+	}
+
+	public boolean isNoResetPanel() {
+		return noResetPanel;
+	}
+
+	public void setNoResetPanel(boolean noResetPanel) {
+		this.noResetPanel = noResetPanel;
 	}
 
 	public enum ChartReplicationMode {

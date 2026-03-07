@@ -4,7 +4,14 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.BiConsumer;
+
+import bms.player.beatoraja.modmenu.SkinWidgetManager;
+import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.skin.lr2.commands.*;
+import bms.player.beatoraja.skin.property.*;
+import bms.tool.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
@@ -67,18 +74,20 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 		final float srch = src.height;
 		final float dstw = dst.width;
 		final float dsth = dst.height;
-		
+
 		addCommandWord(CSVCommand.values());
 
 		addCommandWord(new CommandWord("INCLUDE") {
 			@Override
 			public void execute(String[] str) {
 				final File imagefile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
+				logger.info("#INCLUDE command invoked. Trying to load the skin file at {}", imagefile.toPath());
 				if (imagefile.exists()) {
+					Context ctx = new Context(op);
 					try (BufferedReader br = new BufferedReader(
 							new InputStreamReader(new FileInputStream(imagefile), "MS932"));) {
 						while ((line = br.readLine()) != null) {
-							processLine(line, state);
+							processLine(ctx, line, state);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -111,7 +120,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						imagelist.add(getTexture(imagefile.getPath(), usecim));
 					}
 				} else {
-					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
+					logger.warn("IMAGE {} : cannot be found : {}", imagelist.size, imagefile.getPath());
 					imagelist.add(null);
 				}
 				// System.out
@@ -123,11 +132,11 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 		addCommandWord(new CommandWord("LR2FONT") {
 			@Override
 			public void execute(String[] str) {
-				final File imagefile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
-				if (imagefile.exists()) {
+				final File fontFile = LR2SkinLoader.getPath(skinpath, str[1], filemap);
+				if (fontFile.exists()) {
 					LR2FontLoader font = new LR2FontLoader(usecim);
 					try {
-						SkinTextImage.SkinTextImageSource source = font.loadFont(imagefile.toPath());
+						SkinTextImage.SkinTextImageSource source = font.loadFont(fontFile.toPath());
 						fontlist.add(source);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -135,12 +144,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					}
 
 				} else {
-					logger.warn("IMAGE {} : ファイルが見つかりません : {}", imagelist.size, imagefile.getPath());
+					logger.warn("LR2Font: {} : cannot be found : {}", imagelist.size, fontFile.getPath());
 					fontlist.add(null);
 				}
 				// System.out
 				// .println("Image Loaded - " + (imagelist.size() -
-				// 1) + " : " + imagefile.getPath());
+				// 1) + " : " + fontFile.getPath());
 			}
 		});
 
@@ -153,20 +162,22 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					part = new SkinImage(gr);
 					// System.out.println("add reference image : "
 					// + gr);
+					part.setName(String.format("CustomSkinImage[%d]", gr));
 				} else {
 					int[] values = parseInt(str);
-					if (values[2] < imagelist.size && imagelist.get(values[2]) != null
-							&& imagelist.get(values[2]) instanceof SkinSourceMovie) {
-						part = new SkinImage((SkinSourceMovie) imagelist.get(values[2]));
+					if (gr < imagelist.size && imagelist.get(gr) != null
+							&& imagelist.get(gr) instanceof SkinSourceMovie) {
+						part = new SkinImage((SkinSourceMovie) imagelist.get(gr));
 					} else {
+						// Please note that getSourceImage can return a null value
 						TextureRegion[] images = getSourceImage(values);
 						if (images != null) {
 							part = new SkinImage(images, values[10], values[9]);
 							// System.out.println("Object Added - " +
 							// (part.getTiming()));
+							part.setName(String.format("CutSkinImage[%d](%d, %d)", gr, values[3], values[4]));
 						}
 					}
-
 				}
 				if (part != null) {
 					skin.add(part);
@@ -204,27 +215,16 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (part != null) {
-					int[] values = parseInt(str);
-					if (values[5] < 0) {
-						values[3] += values[5];
-						values[5] = -values[5];
-					}
-					if (values[6] < 0) {
-						values[4] += values[6];
-						values[6] = -values[6];
-					}
-					part.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationImage dstImage = LR2CommandParser.getInstance().parse(str);
+					dstImage.region.flipNegativeLength();
+					part.setDestination(dstImage, srcw, srch, dstw, dsth);
 					part.setStretch(stretch);
 				}
 			}
 		});
 
 		addCommandWord(new CommandWord("SRC_NUMBER") {
-			//#SRC_NUMBER,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,num,align,keta,zeropadding
+			//#SRC_NUMBER,(NULL),gr,x,y,w,h,div_x,div_y,cycle,timer,num,align,keta
 			@Override
 			public void execute(String[] str) {
 				num = null;
@@ -235,6 +235,11 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				if (divx * divy >= 10) {
 					TextureRegion[] images = getSourceImage(values);
 					if (images != null) {
+						values[11] = LR2NumberDef.convert(values[11]);
+						IntegerProperty property = IntegerPropertyFactory.getIntegerProperty(values[11]);
+						if (property == null) {
+							SkinWidgetManager.registerMissingNumberDefinition(values[11]);
+						}
 						if (images.length % 24 == 0) {
 							TextureRegion[][] pn = new TextureRegion[images.length / 24][];
 							TextureRegion[][] mn = new TextureRegion[images.length / 24][];
@@ -249,7 +254,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 								}
 							}
 
-							num = new SkinNumber(pn, mn, values[10], values[9], values[13] + 1, str[14].length() > 0 ? values[14] : 2, values[15], values[11], values[12]);
+							num = new SkinNumber(pn, mn, values[10], values[9], values[13] + 1, 2, 0, property, values[12]);
 						} else {
 							int d = images.length % 10 == 0 ? 10 : 11;
 
@@ -260,8 +265,10 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 								}
 							}
 
-							num = new SkinNumber(nimages, values[10], values[9], values[13], d > 10 ? 2 : 0, values[15], values[11], values[12]);
+							num = new SkinNumber(nimages, values[10], values[9], values[13], d > 10 ? 2 : 0, 0, property, values[12]);
 						}
+						LR2NumberDef numberDef = LR2NumberDef.valueOf(values[11]);
+						num.setName(String.format("SRC_NUMBER(%s[%d])", numberDef != null ? numberDef.getName() : "ERROR", values[11]));
 						skin.add(num);
 						// System.out.println("Number Added - " +
 						// (num.getId()));
@@ -273,11 +280,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (num != null) {
-					int[] values = parseInt(str);
-					num.setDestination(values[2], values[3] * dstw / srcw, dsth - (values[4] + values[6]) * dsth / srch,
-							values[5] * dstw / srcw, values[6] * dsth / srch, values[7], values[8], values[9],
-							values[10], values[11], values[12], values[13], values[14], values[15], values[16],
-							values[17], values[18], values[19], values[20], readOffset(str, 21));
+					DestinationNumber dst = LR2CommandParser.getInstance().parse(str);
+					num.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -287,14 +291,47 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			public void execute(String[] str) {
 				text = null;
 				int[] values = parseInt(str);
+				// HACK: st=1's definition is different between lr2 and beatoraja.
+				//  In lr2, it's target score or rival's name
+				//  In beatoraja, it's rival's name or empty string
+				// Beatoraja itself introduces another variant: st=3 which implements the similar behavior with lr2.
+				//  So we hijacked the value here to keep the compatibility
+				if (values[3] == 1) {
+					values[3] = 3;
+				}
+				// HACK: LR2 allows user edit the bms file's meta data directly in-game, which is a pretty useless
+				//  feature that nobody wants to modify the file unexpectedly. And these options are just an editable
+				//  variant of the other options. Therefore, we simply convert them into the uneditable version here
+				values[3] = switch (values[3]) {
+					case 20 -> 10;
+					case 21 -> 11;
+					case 22 -> 12;
+					case 23 -> 13;
+					case 24 -> 14;
+					case 25 -> 15;
+					case 26 -> 16;
+					case 27 -> 17;
+					case 28 -> 18;
+					// NOTE: 29 doesn't have related definition, 30 is a little bit different, see below
+					default -> values[3];
+				};
+				if (values[3] == STRING_SEARCHWORD && !(skin instanceof MusicSelectSkin)) {
+					values[3] = STRING_TABLE_FULL;
+				}
+				StringProperty property = StringPropertyFactory.getStringProperty(values[3]);
+				if (property == null) {
+					SkinWidgetManager.registerMissingTextDefinition(values[3]);
+				}
 				if (values[2] < fontlist.size && fontlist.get(values[2]) != null) {
-					text = new SkinTextImage(fontlist.get(values[2]), values[3]);
+					text = new SkinTextImage(fontlist.get(values[2]), property);
 				} else {
-					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2);
+					text = new SkinTextFont("skin/default/VL-Gothic-Regular.ttf", 0, 48, 2, property);
 				}
 				text.setAlign(values[4]);
 				text.setEditable(values[5] != 0);
 				int panel = values[6];
+				LR2TextDef textDef = LR2TextDef.valueOf(values[3]);
+				text.setName(String.format("SRC_TEXT(%s[%d])", textDef != null ? textDef.getName() : "ERROR", values[3]));
 				skin.add(text);
 				if(text.isEditable() && values[3] == SkinProperty.STRING_SEARCHWORD && skin instanceof MusicSelectSkin) {
 					((MusicSelectSkin) skin).searchText = text;
@@ -308,16 +345,12 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (text != null) {
-					int[] values = parseInt(str);
-					text.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationText dst = LR2CommandParser.getInstance().parse(str);
+					text.setDestination(dst, srcw, srch, dstw, dsth);
 					if(skin instanceof MusicSelectSkin && ((MusicSelectSkin) skin).searchText == text) {
-						Rectangle r = new Rectangle(values[3] * dstw / srcw,
-								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-								values[6] * dsth / srch);
+						Rectangle r = new Rectangle(dst.x() * dstw / srcw,
+								dsth - (dst.y() + dst.h()) * dsth / srch, dst.w() * dstw / srcw,
+								dst.h() * dsth / srch);
 						((MusicSelectSkin) skin).setSearchTextRegion(r);
 					}
 				}
@@ -368,12 +401,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (slider != null) {
-					int[] values = parseInt(str);
-					slider.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationSlider dst = LR2CommandParser.getInstance().parse(str);
+					slider.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -426,15 +455,13 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (bar != null) {
+					DestinationBarGraph dst = LR2CommandParser.getInstance().parse(str);
 					int[] values = parseInt(str);
 					if (bar.direction == 1) {
-						values[4] += values[6];
-						values[6] = -values[6];
+						dst.region.y += dst.h();
+						dst.region.h *= -1;
 					}
-					bar.setDestination(values[2], values[3] * dstw / srcw, dsth - (values[4] + values[6]) * dsth / srch,
-							values[5] * dstw / srcw, values[6] * dsth / srch, values[7], values[8], values[9],
-							values[10], values[11], values[12], values[13], values[14], values[15], values[16],
-							values[17], values[18], values[19], values[20], readOffset(str, 21));
+					bar.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -479,9 +506,25 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 					}
 					button = new SkinImage(tr, values[10], values[9], values[11]);
 					if (values[12] == 1) {
-						button.setClickevent(values[11]);
+						if (values[11] >= 1 && values[11] <= 9) {
+							button.setClickevent((state, arg1, arg2) -> {
+								if (state instanceof MusicSelector selector) {
+									if (selector.isNoResetPanel()) {
+										selector.setPanelState(0);
+										selector.setNoResetPanel(false);
+									} else {
+										selector.setPanelState(values[11]);
+										selector.setNoResetPanel(true);
+									}
+								}
+							});
+						} else {
+							button.setClickevent(values[11]);
+						}
 						button.setClickeventType(values[14] > 0 ? 0 : values[14] < 0 ? 1 : 2);
 					}
+					LR2ButtonDef buttonDef = LR2ButtonDef.valueOf(values[11]);
+					button.setName(String.format("Button(%s[%d]) on panel [%d]", buttonDef != null ? buttonDef.getName() : "ERROR", values[11], values[13]));
 					skin.add(button);
 					// System.out.println("Object Added - " +
 					// (part.getTiming()));
@@ -492,12 +535,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (button != null) {
-					int[] values = parseInt(str);
-					button.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationButton dst = LR2CommandParser.getInstance().parse(str);
+					button.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -521,12 +560,8 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (onmouse != null) {
-					int[] values = parseInt(str);
-					onmouse.setDestination(values[2], values[3] * dstw / srcw,
-							dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
-							values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
-							values[12], values[13], values[14], values[15], values[16], values[17], values[18],
-							values[19], values[20], readOffset(str, 21));
+					DestinationMouse dst = LR2CommandParser.getInstance().parse(str);
+					onmouse.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
 		});
@@ -692,17 +727,26 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (gauger != null) {
-					float width = (Math.abs(groovex) >= 1) ? (groovex * 50 * dstw / srcw)
-							: (Integer.parseInt(str[5]) * dstw / srcw);
-					float height = (Math.abs(groovey) >= 1) ? (groovey * 50 * dsth / srch)
-							: (Integer.parseInt(str[6]) * dsth / srch);
-					float x = Integer.parseInt(str[3]) * dstw / srcw - (groovex < 0 ? groovex * dstw / srcw : 0);
-					float y = dsth - Integer.parseInt(str[4]) * dsth / srch - height;
+					DestinationGrooveGauge dst = LR2CommandParser.getInstance().parse(str);
+					float width = Math.abs(groovex) >= 1
+							? groovex * 50 * dstw / srcw
+							: dst.w() * dstw / srcw;
+					float height = Math.abs(groovey) >= 1
+							? groovey * 50 * dsth / srch
+							: dst.h() * dsth / srch;
+					float x = dst.x() * dstw / srcw - (groovex < 0 ? groovex * dstw / srcw : 0);
+					float y = dsth - dst.y() * dsth / srch - height;
 					int[] values = parseInt(str);
-					gauger.setDestination(values[2], x, y, width, height, values[7],
-							values[8], values[9], values[10], values[11], values[12], values[13], values[14],
-							values[15], values[16], values[17], values[18], values[19], values[20], readOffset(str, 21));
+					gauger.setDestination(dst.time, x, y, width, height, dst.acc,
+							dst.a(), dst.r(), dst.g(), dst.b(), dst.blend, dst.filter, dst.angle(),
+							dst.center, dst.loop, dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
 				}
+			}
+		});
+		addCommandWord(new CommandWord("PRINT") {
+			@Override
+			public void execute(String[] values) {
+				logger.info("[LR2 Skin]: {}", values[1]);
 			}
 		});
 	}
@@ -767,9 +811,10 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 	protected void loadSkin0(Skin skin, Path f, MainState state, IntIntMap option) throws IOException {
 
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
+			Context ctx = new Context(op);
 			lines.forEach(line -> {
 				try {
-					processLine(line, state);
+					processLine(ctx, line, state);
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}

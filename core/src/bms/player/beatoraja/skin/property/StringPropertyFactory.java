@@ -1,14 +1,17 @@
 package bms.player.beatoraja.skin.property;
 
+import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.config.KeyConfiguration;
 import bms.player.beatoraja.config.SkinConfiguration;
+import bms.player.beatoraja.constants.*;
 import bms.player.beatoraja.decide.MusicDecide;
 import bms.player.beatoraja.ir.IRScoreData;
 import bms.player.beatoraja.ir.RankingData;
 import bms.player.beatoraja.modmenu.FreqTrainerMenu;
 import bms.player.beatoraja.play.BMSPlayer;
+import bms.player.beatoraja.play.GrooveGauge;
 import bms.player.beatoraja.play.TargetProperty;
 import bms.player.beatoraja.result.AbstractResult;
 import bms.player.beatoraja.result.CourseResult;
@@ -133,7 +136,53 @@ public class StringPropertyFactory {
 		key8(47, createKeyname(7)),
 		key9(48, createKeyname(8)),
 		key10(49, createKeyname(9)),
+		keymode(60, state -> {
+			Mode mode = state.resource.getPlayerConfig().getMode();
+			return mode == null ? "ALL" : mode.hint;
+		}),
 		sort(61, (state) -> state.resource.getPlayerConfig().getSortid()),
+		option_1p(63, state -> {
+			if (state instanceof BMSPlayer bmsPlayer) {
+				return LaneOptions.getName(bmsPlayer.getOptionInformation().randomoption);
+			} else if (state instanceof AbstractResult result) {
+				return LaneOptions.getName(result.resource.getReplayData().randomoption);
+			}
+			return LaneOptions.getName(state.resource.getPlayerConfig().getRandom());
+		}),
+		gauge_1p(65, state -> {
+			if (state instanceof BMSPlayer bmsPlayer) {
+				return bmsPlayer.getGauge().getName();
+			} else if (state instanceof AbstractResult result) {
+				return GrooveGauge.getGaugeName(result.getGaugeType());
+			}
+			return GrooveGauge.getGaugeName(state.resource.getPlayerConfig().getGauge());
+		}),
+		// TODO: If we implemented the auto scratch in the future, please modify here
+		autoscratch_1p(67, state -> "OFF"),
+		autoscratch_2p(68, state -> "OFF"),
+		// TODO: If we implemented the battle in the future, please modify here
+		battle(69, state -> "OFF"),
+		dp_option(70, state -> DPOptions.getName(state.resource.getPlayerConfig().getDoubleoption())),
+		lane_cover(73, state -> {
+			PlayConfig pc = (state instanceof MusicSelector selector)
+					? selector.getSelectedBarPlayConfig()
+					: state.resource.getPlayerConfig().getPlayConfig(state.resource.getPlayerConfig().getMode()).getPlayconfig();
+			return pc != null
+					? (pc.isEnablelanecover() ? "ON" : "OFF")
+					: "ERROR";
+		}),
+		hispeed_fix(74, state -> {
+			PlayConfig pc = (state instanceof MusicSelector selector)
+					? selector.getSelectedBarPlayConfig()
+					: state.resource.getPlayerConfig().getPlayConfig(state.resource.getPlayerConfig().getMode()).getPlayconfig();
+			return pc != null
+					? HiSpeedFix.getName(pc.getFixhispeed())
+					: "ERROR";
+		}),
+		bga_size(75, state -> BGAExpandOptions.getName(state.resource.getConfig().getBgaExpand())),
+		bga_display(76, state -> BGAOptions.getName(state.resource.getConfig().getBga())),
+		screen_mode(79, state -> state.resource.getConfig().getDisplaymode().name()),
+		judge_auto_adjust(80, state -> state.resource.getPlayerConfig().isNotesDisplayTimingAutoAdjust() ? "ON" : "OFF"),
 
 		chartreplication(86, (state) -> state.resource.getPlayerConfig().getChartReplicationMode()),
 
