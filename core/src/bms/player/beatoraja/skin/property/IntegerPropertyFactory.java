@@ -401,18 +401,24 @@ public class IntegerPropertyFactory {
 			return (state) -> {
 				if (state instanceof AbstractResult) {
 					final ScoreData score = ((AbstractResult) state).getOldScore();
-					return score.getCombo() > 0 ? score.getCombo() : Integer.MIN_VALUE;
+					return Math.max(score.getCombo(), 0);
 				}
-				return Integer.MIN_VALUE;
+				return 0;
+			};
+		case NUMBER_MAXCOMBO3:
+			return state -> {
+				if (state instanceof AbstractResult result) {
+					return result.getNewScore().getCombo();
+				}
+				return 0;
 			};
 		case NUMBER_DIFF_MAXCOMBO:
 			return (state) -> {
-				if (state instanceof AbstractResult) {
-					final ScoreData score = ((AbstractResult) state).getOldScore();
-					return score.getCombo() > 0 ? ((AbstractResult) state).getNewScore().getCombo() - score.getCombo()
-							: Integer.MIN_VALUE;
+				if (state instanceof AbstractResult result) {
+					int old = Math.max(result.getOldScore().getCombo(), 0);
+					return result.getNewScore().getCombo() - old;
 				}
-				return Integer.MIN_VALUE;
+				return 0;
 			};
 		case NUMBER_MISSCOUNT:
 		case NUMBER_MISSCOUNT2:
