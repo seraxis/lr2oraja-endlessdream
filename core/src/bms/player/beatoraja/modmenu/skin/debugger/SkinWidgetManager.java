@@ -1,7 +1,11 @@
-package bms.player.beatoraja.modmenu;
+package bms.player.beatoraja.modmenu.skin.debugger;
 
+import bms.player.beatoraja.modmenu.FontAwesomeIcons;
+import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.play.SkinJudge;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
@@ -11,26 +15,29 @@ import imgui.ImGuiListClipper;
 import imgui.ImVec2;
 import imgui.callback.ImListClipperCallback;
 import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiTableFlags;
 import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
+import imgui.type.ImString;
 
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
+import static bms.player.beatoraja.modmenu.ImGuiRenderer.helpMarker;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 
+/**
+ * Debug menu for controlling the widgets in current skin
+ */
 public class SkinWidgetManager {
     private static final double eps = 1e-5;
-    private static final Object LOCK = new Object();
     private static final EventHistory eventHistory = new EventHistory();
     private static final List<SkinWidget> widgets = new ArrayList<>();
-
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
+    private static final List<Pair<String, String>> removedObjects = new ArrayList<>();
 
     static {
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("ID", new ImBoolean(true), true, null, null));
@@ -40,6 +47,9 @@ public class SkinWidgetManager {
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("h", new ImBoolean(true), false, SkinWidgetDestination::getDstH, Event.EventType.CHANGE_H));
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("Operation", new ImBoolean(true), true, null, null));
     }
+
+    private static boolean enableFilteringWidgets = false;
+    private static final ImString searchWidgetName = new ImString(128);
 
     private static final ImFloat editingWidgetX = new ImFloat(0);
     private static final ImFloat editingWidgetY = new ImFloat(0);
@@ -52,86 +62,85 @@ public class SkinWidgetManager {
 
     public static boolean focus = false;
 
-    public static void changeSkin(Skin skin) {
-        synchronized (LOCK) {
-            widgets.clear();
-            eventHistory.clear();
-            if (skin == null) {
-                return ;
+    static void changeSkin(Skin skin) {
+        widgets.clear();
+        eventHistory.clear();
+        if (skin == null) {
+            return;
+        }
+        SkinObject[] allSkinObjects = skin.getAllSkinObjects();
+        // NOTE: We're using skin object's name as id, we need to keep name is unique
+        Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
+        for (SkinObject skinObject : allSkinObjects) {
+            if (skinObject instanceof SkinJudge skinJudge) {
+                // Support 2P? Currently don't have to
+                registerSkinObject(skinJudge.getJudge(0), duplicatedSkinObjectNameCount);
+                registerSkinObject(skinJudge.getJudgeCount(0), duplicatedSkinObjectNameCount);
+            } else {
+                registerSkinObject(skinObject, duplicatedSkinObjectNameCount);
             }
-            SkinObject[] allSkinObjects = skin.getAllSkinObjects();
-            // NOTE: We're using skin object's name as id, we need to keep name is unique
-            Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
-            for (SkinObject skinObject : allSkinObjects) {
-                String skinObjectName = skinObject.getName();
-                SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
-                List<SkinWidgetDestination> destinations = new ArrayList<>();
-                for (int i = 0; i < dsts.length; ++i) {
-                    String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
-                    String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
-                    destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
-                }
-                String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
-                Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
-                duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
-                String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
-                widgets.add(new SkinWidget(widgetName, skinObject, destinations));
-            }
+        }
+        widgets.sort(Comparator.comparing(widget -> widget.name));
+    }
+
+    public static void registerRemovedObject(String name, String reason) {
+        String safeName = name == null ? "No name" : name;
+        if (!removedObjects.stream().anyMatch(p -> p.getFirst().equals(name))) {
+            removedObjects.add(Pair.of(safeName, reason));
         }
     }
 
-    public static void show(ImBoolean showSkinWidgetManagerMenu) {
-        synchronized (LOCK) {
-            if (ImGui.begin("Skin Widgets", showSkinWidgetManagerMenu, ImGuiWindowFlags.AlwaysAutoResize)) {
-                if (widgets.isEmpty()) {
-                    ImGui.text("No skin is loaded");
-                } else {
-                    if (ImGui.beginTabBar("SkinWidgetsTabBar")) {
-                        if (ImGui.beginTabItem("SkinWidgets")) {
-                            if (ImGui.button("undo")) {
-                                eventHistory.undo();
-                            }
-                            ImGui.sameLine();
-                            renderPreferColumnSetting();
-                            ImGui.sameLine();
-                            ImGui.checkbox("Show Position", SHOW_CURSOR_POSITION);
-                            ImGui.sameLine();
-                            if (ImGui.button("export")) {
-                                exportChanges();
-                            }
-
-
-                            renderSkinWidgetsTable();
-                            ImGui.endTabItem();
-                        }
-                        if (ImGui.beginTabItem("History")) {
-                            renderHistoryTable();
-                            ImGui.endTabItem();
-                        }
-                        ImGui.endTabBar();
-                    }
-                    // Overlay cursor position
-                    if (SHOW_CURSOR_POSITION.get()) {
-                        ImGui.beginTooltip();
-                        ImGui.text(
-                                String.format("(%s, %s)",
-                                normalizeFloat(Gdx.input.getX()),
-                                normalizeFloat(windowHeight - Gdx.input.getY()))
-                        );
-                        ImGui.endTooltip();
-                    }
+    public static void render() {
+        SkinWidgetManager.focus = true;
+        if (widgets.isEmpty()) {
+            ImGui.text("No skin is loaded");
+            return;
+        }
+        if (ImGui.beginTabBar("SkinWidgetsTabBar")) {
+            if (ImGui.beginTabItem("Instances##SkinWidgetManager")) {
+                if (ImGui.button("undo")) {
+                    eventHistory.undo();
                 }
+                ImGui.sameLine();
+                renderFilterOptions();
+
+                renderSkinWidgetsTable();
+                ImGui.endTabItem();
             }
-            ImGui.end();
+            if (ImGui.beginTabItem("History##SkinWidgetManager")) {
+                renderHistoryTable();
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("Removed Objects##SkinWidgetManager")) {
+                renderRemovedObjects();
+                ImGui.endTabItem();
+            }
+            if (ImGui.beginTabItem("Settings##SkinWidgetManager")) {
+                renderSettings();
+                ImGui.endTabItem();
+            }
+
+            ImGui.endTabBar();
+        }
+
+        // Overlay cursor position
+        if (SHOW_CURSOR_POSITION.get()) {
+            ImGui.beginTooltip();
+            ImGui.text(
+                    String.format("(%s, %s)",
+                            normalizeFloat(Gdx.input.getX()),
+                            normalizeFloat(windowHeight - Gdx.input.getY()))
+            );
+            ImGui.endTooltip();
         }
     }
 
-    private static void renderPreferColumnSetting() {
-        if (ImGui.button("Columns")) {
-            ImGui.openPopup("PreferColumnSetting");
+    private static void renderSettings() {
+        ImGui.checkbox("Show cursor position", SHOW_CURSOR_POSITION);
+        if (ImGui.button("Configure Columns##SkinWidgetManager")) {
+            ImGui.openPopup("PreferColumnSettings##SkinWidgetManager");
         }
-
-        if (ImGui.beginPopup("PreferColumnSetting")) {
+        if (ImGui.beginPopup("PreferColumnSettings##SkinWidgetManager")) {
             for (WidgetTableColumn column : WIDGET_TABLE_COLUMNS) {
                 if (column.persistent) {
                     continue;
@@ -139,6 +148,56 @@ public class SkinWidgetManager {
                 ImGui.checkbox(column.name, column.show);
             }
             ImGui.endPopup();
+        }
+        if (ImGui.button("Export##SkinWidgetManager")) {
+            exportChanges();
+        }
+    }
+
+    private static void registerSkinObject(SkinObject skinObject, Map<String, Integer> duplicatedSkinObjectNameCount) {
+        String skinObjectName = skinObject.getName();
+
+        SkinObject.SkinObjectDestination[] dsts = skinObject.getAllDestination();
+        List<SkinWidgetDestination> destinations = new ArrayList<>();
+        for (int i = 0; i < dsts.length; ++i) {
+            String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
+            String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
+            destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+        }
+
+        String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
+        Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
+        duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
+        String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
+        widgets.add(new SkinWidget(widgetName, skinObject, destinations));
+    }
+
+    private static void renderFilterOptions() {
+        if (ImGui.button("Filter Options##SkinWidgetManager")) {
+            ImGui.openPopup("Filter Options Popup##SkinWidgetManager");
+        }
+
+        if (ImGui.beginPopup("Filter Options Popup##SkinWidgetManager")) {
+            if (ImGui.checkbox("Enable Filtering##SkinWidgetManager", enableFilteringWidgets)) {
+                enableFilteringWidgets = !enableFilteringWidgets;
+            }
+            if (ImGui.inputText("Widget Name##FilterOptions", searchWidgetName, ImGuiInputTextFlags.EnterReturnsTrue)) {
+                if (!enableFilteringWidgets) {
+                    enableFilteringWidgets = true;
+                }
+                ImGui.closeCurrentPopup();
+            }
+            helpMarker("Press enter in input box to submit your search string");
+            ImGui.endPopup();
+        }
+
+        if (enableFilteringWidgets) {
+            ImGui.sameLine();
+            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb("#FFFF66"));
+            ImGui.text(FontAwesomeIcons.Search);
+            ImGui.sameLine();
+            ImGui.text("Filtering");
+            ImGui.popStyleColor();
         }
     }
 
@@ -153,7 +212,10 @@ public class SkinWidgetManager {
             ImGui.tableSetupScrollFreeze(0, 1);
             showingColumns.forEach(column -> ImGui.tableSetupColumn(column.name));
             ImGui.tableHeadersRow();
-            for (SkinWidget widget : widgets) {
+            List<SkinWidget> showingWidgets = !enableFilteringWidgets
+                    ? widgets
+                    : widgets.stream().filter(widget -> widget.name.contains(searchWidgetName.get())).toList();
+            for (SkinWidget widget : showingWidgets) {
                 ImGui.tableNextRow();
                 ImGui.pushID(widget.name);
 
@@ -177,6 +239,18 @@ public class SkinWidgetManager {
                     widget.toggleVisible();
                 }
 
+                if (!isWidgetDrawingOnScreen) {
+                    ImGui.sameLine();
+                    if (ImGui.button("Reason")) {
+                        ImGui.openPopup("Reason##SkinWidgetManager");
+                    }
+                    if (ImGui.beginPopup("Reason##SkinWidgetManager")) {
+                        ImGui.text(removedObjects.stream().filter(obj -> obj.getFirst().equals(widget.name)).findAny().map(Pair::getSecond).orElse("ERROR"));
+                        ImGui.endPopup();
+                    }
+                }
+
+
                 if (isOpen) {
                     for (SkinWidgetDestination dst : widget.destinations) {
                         ImGui.pushID(dst.name);
@@ -195,13 +269,13 @@ public class SkinWidgetManager {
                         // If you want to implement a dynamic system, you can combine the event type & getter
                         // in a pair type: Pair<EventType, Function<SkinWidget, Float>
                         // The remaining things are trivial
-                        for (int i = 1; i <= colSize - 2;++i) {
+                        for (int i = 1; i <= colSize - 2; ++i) {
                             WidgetTableColumn column = showingColumns.get(i);
                             drawFloatValueColumn(i, eventHistory.hasEvent(dst.name, column.changeEventType), column.getter.apply(dst));
                         }
 
                         ImGui.tableSetColumnIndex(colSize - 1);
-                        if (ImGui.button("Edit")) {
+                        if (ImGui.button("Edit##SkinWidgetManager")) {
                             editingWidgetX.set(dst.getDstX());
                             editingWidgetY.set(dst.getDstY());
                             editingWidgetW.set(dst.getDstW());
@@ -214,7 +288,7 @@ public class SkinWidgetManager {
                             ImGui.inputFloat("y", editingWidgetY);
                             ImGui.inputFloat("w", editingWidgetW);
                             ImGui.inputFloat("h", editingWidgetH);
-                            if (ImGui.button("Submit")) {
+                            if (ImGui.button("Submit##SkinWidgetManager")) {
                                 dst.setDstX(editingWidgetX.get());
                                 dst.setDstY(editingWidgetY.get());
                                 dst.setDstW(editingWidgetW.get());
@@ -223,8 +297,8 @@ public class SkinWidgetManager {
                             }
 
                             if ((ImGui.checkbox("Move", move_overlay_enabled)
-                                 && move_overlay_enabled.get())
-                                || reset_move_overlay) {
+                                    && move_overlay_enabled.get())
+                                    || reset_move_overlay) {
                                 float w = dst.getDstW();
                                 float h = dst.getDstH();
                                 float x = dst.getDstX();
@@ -245,8 +319,8 @@ public class SkinWidgetManager {
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGrip, 1.f, .3f, .3f, 1.f);
                                 ImGui.pushStyleColor(ImGuiCol.ResizeGripHovered, 1.f, 0.7f, .7f, 1.f);
                                 if (ImGui.begin("widget-overlay-popup",
-                                                move_overlay_enabled,
-                                                ImGuiWindowFlags.NoNav |
+                                        move_overlay_enabled,
+                                        ImGuiWindowFlags.NoNav |
                                                 ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoFocusOnAppearing |
                                                 ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse |
                                                 ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar)) {
@@ -331,12 +405,37 @@ public class SkinWidgetManager {
         }
     }
 
+    private static void renderRemovedObjects() {
+        if (ImGui.beginTable("RemovedObjects##Table", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.ScrollY, 0, ImGui.getTextLineHeight() * 20)) {
+            ImGui.tableSetupScrollFreeze(0, 1);
+            ImGui.tableSetupColumn("Name");
+            ImGui.tableSetupColumn("Reason");
+            ImGui.tableHeadersRow();
+            ImGuiListClipper.forEach(removedObjects.size(), new ImListClipperCallback() {
+                @Override
+                public void accept(int row) {
+                    ImGui.pushID(row);
+                    ImGui.tableNextRow();
+
+                    Pair<String, String> p = removedObjects.get(row);
+                    ImGui.tableSetColumnIndex(0);
+                    ImGui.text(p.getFirst());
+
+                    ImGui.tableSetColumnIndex(1);
+                    ImGui.text(p.getSecond());
+                    ImGui.popID();
+                }
+            });
+            ImGui.endTable();
+        }
+    }
+
     /**
      * This is a small helper function to draw columns in table, draw red text if the cell value has been modified
      *
-     * @param index column index
+     * @param index    column index
      * @param modified whether current cell's value has been modified
-     * @param value cell value
+     * @param value    cell value
      */
     private static void drawFloatValueColumn(int index, boolean modified, float value) {
         ImGui.tableSetColumnIndex(index);
@@ -364,7 +463,7 @@ public class SkinWidgetManager {
                     }
                 }
                 if (!(hasChangedX || hasChangedY || hasChangedW || hasChangedH)) {
-                    return ;
+                    return;
                 }
                 StringBuilder sb = new StringBuilder("{dst=").append(dst.name);
                 if (hasChangedX) {
@@ -400,7 +499,8 @@ public class SkinWidgetManager {
     /**
      * Represents one widget table's column
      */
-    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent, Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
+    private record WidgetTableColumn(String name, ImBoolean show, boolean persistent,
+                                     Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
     }
 
     /**
@@ -531,7 +631,7 @@ public class SkinWidgetManager {
         public void submitMovement() {
             if (beforeMove == null) {
                 ImGuiNotify.error("Cannot submit the move result because there's no original position");
-                return ;
+                return;
             }
             float nextX = getDstX();
             float nextY = getDstY();

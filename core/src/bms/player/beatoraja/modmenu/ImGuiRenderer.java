@@ -3,6 +3,8 @@ package bms.player.beatoraja.modmenu;
 import bms.player.beatoraja.Version;
 import bms.player.beatoraja.controller.Lwjgl3ControllerManager;
 
+import bms.player.beatoraja.modmenu.skin.debugger.SkinDebugger;
+import bms.player.beatoraja.modmenu.skin.debugger.SkinWidgetManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Graphics;
@@ -16,11 +18,9 @@ import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImBoolean;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 
 public class ImGuiRenderer {
@@ -43,9 +43,10 @@ public class ImGuiRenderer {
     private static ImBoolean SHOW_JUDGE_TRAINER = new ImBoolean(false);
     private static ImBoolean SHOW_SONG_MANAGER = new ImBoolean(false);
     private static ImBoolean SHOW_DOWNLOAD_MENU = new ImBoolean(false);
-    private static ImBoolean SHOW_SKIN_WIDGET_MANAGER = new ImBoolean(false);
+    private static ImBoolean SHOW_SKIN_DEBUG_MENU = new ImBoolean(false);
     private static ImBoolean SHOW_PERFORMANCE_MONITOR = new ImBoolean(false);
     private static ImBoolean SHOW_SKIN_MENU = new ImBoolean(false);
+    private static ImBoolean SHOW_SKIN_PROPERTY_MANUAL = new ImBoolean(false);
     private static ImBoolean SHOW_MISC_SETTING = new ImBoolean(false);
 
 
@@ -116,13 +117,14 @@ public class ImGuiRenderer {
             ImGui.checkbox("Show Random Trainer Window", SHOW_RANDOM_TRAINER);
             ImGui.checkbox("Show Judge Trainer Window", SHOW_JUDGE_TRAINER);
             if (ImGui.checkbox("Show Skin Configuration Window", SHOW_SKIN_MENU)) { SkinMenu.invalidate(); }
-            ImGui.checkbox("Show Skin Widget Manager Window", SHOW_SKIN_WIDGET_MANAGER);
+            ImGui.checkbox("Show Skin Debugger Window", SHOW_SKIN_DEBUG_MENU);
             ImGui.checkbox("Show Song Manager Window", SHOW_SONG_MANAGER);
             ImGui.checkbox("Show Download Tasks Window", SHOW_DOWNLOAD_MENU);
             if (ImGui.checkbox("Show Performance Monitor Window", SHOW_PERFORMANCE_MONITOR) &&
                 SHOW_PERFORMANCE_MONITOR.get()) {
                 PerformanceMonitor.reloadEventTree();
             }
+            ImGui.checkbox("Show Skin Property Manual", SHOW_SKIN_PROPERTY_MANUAL);
             ImGui.checkbox("Show Misc Setting Window", SHOW_MISC_SETTING);
 
             if (SHOW_FREQ_PLUS.get()) {
@@ -141,9 +143,8 @@ public class ImGuiRenderer {
             if (SHOW_DOWNLOAD_MENU.get()) {
                 DownloadTaskMenu.show(SHOW_DOWNLOAD_MENU);
             }
-            if (SHOW_SKIN_WIDGET_MANAGER.get()) {
-                SkinWidgetManager.focus = true;
-                SkinWidgetManager.show(SHOW_SKIN_WIDGET_MANAGER);
+            if (SHOW_SKIN_DEBUG_MENU.get()) {
+                SkinDebugger.show(SHOW_SKIN_DEBUG_MENU);
             } else {
                 SkinWidgetManager.focus = false;
             }
@@ -152,6 +153,9 @@ public class ImGuiRenderer {
             }
             if (SHOW_SKIN_MENU.get()) {
                 SkinMenu.show(SHOW_SKIN_MENU);
+            }
+            if (SHOW_SKIN_PROPERTY_MANUAL.get()) {
+                SkinPropertyManual.show(SHOW_SKIN_PROPERTY_MANUAL);
             }
             if (SHOW_MISC_SETTING.get()) {
                 MiscSettingMenu.show(SHOW_MISC_SETTING);
