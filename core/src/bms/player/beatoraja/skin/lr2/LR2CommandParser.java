@@ -98,7 +98,7 @@ public class LR2CommandParser {
 				if (anno.value() != -1) {
 					int idx = anno.value() + offset;
 					String rawValue = (idx < data.length) ? data[idx] : "";
-					if (shouldSkip(rawValue, anno.optional())) {
+					if (shouldSkip(rawValue)) {
 						continue;
 					}
 					Object converted = convertValue(field.getType(), rawValue);
@@ -137,7 +137,7 @@ public class LR2CommandParser {
 					}
 				}
 				String rawValue = data[idx];
-				if (shouldSkip(rawValue, anno.optional())) {
+				if (shouldSkip(rawValue)) {
 					continue;
 				}
 				Object converted = convertValue(field.getType(), rawValue);
@@ -150,8 +150,8 @@ public class LR2CommandParser {
 		return instance;
 	}
 
-	private boolean shouldSkip(String rawValue, boolean optional) {
-		return rawValue == null || rawValue.isEmpty() || optional;
+	private boolean shouldSkip(String rawValue) {
+		return rawValue == null || rawValue.isEmpty();
 	}
 
 	private int getNestedObjectLength(Class<?> clazz) {
