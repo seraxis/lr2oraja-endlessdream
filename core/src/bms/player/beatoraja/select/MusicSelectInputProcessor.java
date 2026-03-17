@@ -122,6 +122,7 @@ public final class MusicSelectInputProcessor {
             bar.resetInput();
             // show play option
             select.setPanelState(1);
+            select.setNoResetPanel(false);
             if(isOptionKeyReleased) {
                 isOptionKeyPressed = true;
                 isOptionKeyReleased = false;
@@ -214,6 +215,7 @@ public final class MusicSelectInputProcessor {
             bar.resetInput();
             // show assist option
             select.setPanelState(2);
+            select.setNoResetPanel(false);
             if(isOptionKeyReleased) {
                 isOptionKeyPressed = true;
                 isOptionKeyReleased = false;
@@ -251,6 +253,7 @@ public final class MusicSelectInputProcessor {
             bar.resetInput();
             // show detail option
             select.setPanelState(3);
+            select.setNoResetPanel(false);
             if(isOptionKeyReleased) {
                 isOptionKeyPressed = true;
                 isOptionKeyReleased = false;
@@ -297,7 +300,9 @@ public final class MusicSelectInputProcessor {
             }
         } else {
             bar.input();
-            select.setPanelState(0);
+            if (!select.isNoResetPanel()) {
+                select.setPanelState(0);
+            }
 
             if (current instanceof FunctionBar &&
                 (property.isPressed(input, PRACTICE, true) ||

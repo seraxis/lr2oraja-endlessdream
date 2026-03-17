@@ -45,7 +45,7 @@ public class SkinNote extends SkinObject {
 		if(renderer == null) {
 			final BMSPlayer player = (BMSPlayer) state;
 			if (player.getLanerender() == null) {
-				draw = false;
+				undraw("Lanerender is null");
 				return;
 			}
 			renderer = player.getLanerender();

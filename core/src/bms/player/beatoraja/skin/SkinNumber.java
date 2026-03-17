@@ -132,13 +132,13 @@ public final class SkinNumber extends SkinObject {
 	public void prepare(long time, MainState state, int value, float offsetX, float offsetY) {
 		if (value == Integer.MIN_VALUE || value == Integer.MAX_VALUE) {
 			length = 0;
-			draw = false;
+			undraw("Value is -INF or +INF");
 			return;
 		}
 		final SkinSourceSet images = (value >= 0 || mimage == null) ? this.image : mimage;
 		if (images == null) {
 			length = 0;
-			draw = false;
+			undraw("No image");
 			return;
 		}
 		super.prepare(time, state, offsetX, offsetY);
@@ -149,7 +149,7 @@ public final class SkinNumber extends SkinObject {
 		TextureRegion[] image = images.getImages(time, state);
 		if(image == null) {
 			length = 0;
-			draw = false;
+			undraw("No image");
 			return;
 		}
 
