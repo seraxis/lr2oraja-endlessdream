@@ -701,14 +701,14 @@ public class BMSPlayer extends MainState {
 						}
 						PatternModifier.create(property.random2, 1, model.getMode(), config).modify(model);
 					}
-					PatternModifier player1PatternModifier = PatternModifier.create(property.random, 0, model.getMode(), config);
+					// We need to create a random pattern modifier for the below process because the PM doesn't have the ability to randomize patterns.
+					PatternModifier randomModifier = PatternModifier.create(property.random, 0, model.getMode(), config);
                     if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
                         HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
                         logger.info("RandomTrainer: Enabled, modifying random seed");
-						player1PatternModifier.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+						randomModifier.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
                     }
-					player1PatternModifier.modify(model);
-                    pm.modify(model);
+					randomModifier.modify(model);
 
 					gauge = practice.getGauge(model);
 					model.setJudgerank(property.judgerank);
