@@ -216,7 +216,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (part != null) {
-					DestinationImage dstImage = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dstImage = LR2CommandParser.getInstance().parse(str);
 					dstImage.region.flipNegativeLength();
 					part.setDestination(dstImage, srcw, srch, dstw, dsth);
 					part.setStretch(stretch);
@@ -281,7 +281,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (num != null) {
-					DestinationNumber dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					num.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
@@ -346,7 +346,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (text != null) {
-					DestinationText dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					text.setDestination(dst, srcw, srch, dstw, dsth);
 					if(skin instanceof MusicSelectSkin && ((MusicSelectSkin) skin).searchText == text) {
 						Rectangle r = new Rectangle(dst.x() * dstw / srcw,
@@ -402,7 +402,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (slider != null) {
-					DestinationSlider dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					slider.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
@@ -456,7 +456,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (bar != null) {
-					DestinationBarGraph dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					int[] values = parseInt(str);
 					if (bar.direction == 1) {
 						dst.region.y += dst.h();
@@ -536,7 +536,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (button != null) {
-					DestinationButton dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					button.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
@@ -561,7 +561,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (onmouse != null) {
-					DestinationMouse dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					onmouse.setDestination(dst, srcw, srch, dstw, dsth);
 				}
 			}
@@ -728,7 +728,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			@Override
 			public void execute(String[] str) {
 				if (gauger != null) {
-					DestinationGrooveGauge dst = LR2CommandParser.getInstance().parse(str);
+					StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 					float width = Math.abs(groovex) >= 1
 							? groovex * 50 * dstw / srcw
 							: dst.w() * dstw / srcw;

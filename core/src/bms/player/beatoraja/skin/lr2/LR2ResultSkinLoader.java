@@ -3,10 +3,7 @@ package bms.player.beatoraja.skin.lr2;
 import java.io.*;
 import java.util.function.BiConsumer;
 
-import bms.player.beatoraja.skin.lr2.commands.DestinationBpmChart;
-import bms.player.beatoraja.skin.lr2.commands.DestinationGaugeChart1P;
-import bms.player.beatoraja.skin.lr2.commands.DestinationNoteChart1P;
-import bms.player.beatoraja.skin.lr2.commands.DestinationTimingChart1P;
+import bms.player.beatoraja.skin.lr2.commands.StandardDestination;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.*;
@@ -74,7 +71,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		}
 	}),
 	DST_GAUGECHART_1P ((loader, str) -> {
-		DestinationGaugeChart1P dst = LR2CommandParser.getInstance().parse(str);
+		StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.gaugeobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
@@ -89,7 +86,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.noteobj);
 	}),
 	DST_NOTECHART_1P ((loader, str) -> {
-		DestinationNoteChart1P dst = LR2CommandParser.getInstance().parse(str);
+		StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.noteobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
@@ -104,7 +101,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.bpmgraphobj);
 	}),
 	DST_BPMCHART ((loader, str) -> {
-		DestinationBpmChart dst = LR2CommandParser.getInstance().parse(str);
+		StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.bpmgraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
@@ -119,7 +116,7 @@ enum ResultCommand implements LR2SkinLoader.Command<LR2ResultSkinLoader> {
 		loader.skin.add(loader.timinggraphobj);
 	}),
 	DST_TIMINGCHART_1P ((loader, str) -> {
-		DestinationTimingChart1P dst = LR2CommandParser.getInstance().parse(str);
+		StandardDestination dst = LR2CommandParser.getInstance().parse(str);
 		loader.gauge.x = dst.x();
 		loader.gauge.y = loader.src.height - dst.y();
 		loader.skin.setDestination(loader.timinggraphobj, dst.time, loader.gauge.x, loader.gauge.y, loader.gauge.width, loader.gauge.height, dst.acc,
