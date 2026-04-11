@@ -72,7 +72,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 					skin.add(skinbar);
 					added = true;
 				}
-				DestinationBarBodyOff dstBarBodyOff = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarBodyOff = LR2CommandParser.getInstance().parse(str);
 				dstBarBodyOff.region.flipNegativeLength();
 
 				if(barimageoff[dstBarBodyOff.index] == null) {
@@ -84,7 +84,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_BODY_ON") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarBodyOn dstBarBodyOn = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarBodyOn = LR2CommandParser.getInstance().parse(str);
 				dstBarBodyOn.region.flipNegativeLength();
 
 				if(barimageon[dstBarBodyOn.index] == null) {
@@ -178,7 +178,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_LEVEL") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarLevel dstBarLevel = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarLevel = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getBarlevel(dstBarLevel.index) != null) {
 					skinbar.getBarlevel(dstBarLevel.index).setDestination(dstBarLevel, srcw, srch, dstw, dsth, false);
 				}
@@ -204,7 +204,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_LAMP") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarLamp dstBarLamp = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarLamp = LR2CommandParser.getInstance().parse(str);
 				int[] lamps = lampg[dstBarLamp.index];
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getLamp(lamps[i]) != null) {
@@ -235,7 +235,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_MY_LAMP") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarMyLamp dstBarMyLamp = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarMyLamp = LR2CommandParser.getInstance().parse(str);
 				int[] lamps = lampg[dstBarMyLamp.index];
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getPlayerLamp(lamps[i]) != null) {
@@ -266,7 +266,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_RIVAL_LAMP") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarRivalLamp dstBarRivalLamp = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarRivalLamp = LR2CommandParser.getInstance().parse(str);
 				int[] lamps = lampg[dstBarRivalLamp.index];
 				for (int i = 0; i < lamps.length; i++) {
 					if (skinbar.getRivalLamp(lamps[i]) != null) {
@@ -298,7 +298,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_TROPHY") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarTrophy dstBarTrophy = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarTrophy = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getTrophy(dstBarTrophy.index) != null) {
 					dstBarTrophy.region.flipNegativeLength();
 					skinbar.getTrophy(dstBarTrophy.index).setDestination(dstBarTrophy, srcw, srch, dstw, dsth, false);
@@ -326,7 +326,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_LABEL") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarLabel dstBarLabel = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarLabel = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getLabel(dstBarLabel.index) != null) {
 					dstBarLabel.region.flipNegativeLength();
 					skinbar.getLabel(dstBarLabel.index).setDestination(dstBarLabel, srcw, srch, dstw, dsth, false);
@@ -358,7 +358,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_GRAPH") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarGraph dstBarGraph = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarGraph = LR2CommandParser.getInstance().parse(str);
 				if (skinbar.getGraph() != null) {
 					dstBarGraph.region.flipNegativeLength();
 					skinbar.getGraph().setDestination(dstBarGraph, srcw, srch, dstw, dsth, false);
@@ -379,7 +379,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_NOTECHART") {
 			@Override
 			public void execute(String[] str) {
-				DestinationNoteChart1P dstNoteChart = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstNoteChart = LR2CommandParser.getInstance().parse(str);
 				gauge.x = dstNoteChart.x();
 				gauge.y = src.height - dstNoteChart.y();
 				skin.setDestination(noteobj, dstNoteChart.time, gauge.x, gauge.y, gauge.width, gauge.height,
@@ -402,7 +402,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BPMCHART") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBpmChart dstBpmChart = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBpmChart = LR2CommandParser.getInstance().parse(str);
 				gauge.x = dstBpmChart.x();
 				gauge.y = src.height - dstBpmChart.y();
 				skin.setDestination(bpmgraphobj, dstBpmChart.time, gauge.x, gauge.y, gauge.width, gauge.height,
@@ -437,7 +437,7 @@ public class LR2SelectSkinLoader extends LR2SkinCSVLoader<MusicSelectSkin> {
 		addCommandWord(new CommandWord("DST_BAR_TITLE") {
 			@Override
 			public void execute(String[] str) {
-				DestinationBarTitle dstBarTitle = LR2CommandParser.getInstance().parse(str);
+				StandardDestination dstBarTitle = LR2CommandParser.getInstance().parse(str);
 				skinbar.getText(dstBarTitle.index).setDestination(dstBarTitle, srcw, srch, dstw, dsth, false);
 			}
 		});

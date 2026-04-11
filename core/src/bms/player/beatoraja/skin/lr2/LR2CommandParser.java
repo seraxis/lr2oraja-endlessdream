@@ -2,6 +2,7 @@ package bms.player.beatoraja.skin.lr2;
 
 import bms.player.beatoraja.skin.lr2.commands.CSVField;
 import bms.player.beatoraja.skin.lr2.commands.LR2Command;
+import bms.player.beatoraja.skin.lr2.commands.StandardDestination;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class LR2CommandParser {
 	private <T> T parse(String commandName, String[] data) {
 		Class<?> clazz = typeClassMap.get(commandName);
 		if (clazz == null) {
-			throw new IllegalArgumentException("Unknown LR2Command: " + commandName);
+			clazz = StandardDestination.class;
 		}
 
 		try {
