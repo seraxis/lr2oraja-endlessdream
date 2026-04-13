@@ -98,7 +98,7 @@ public class SkinWidgetManager {
         }
         if (ImGui.beginTabBar("SkinWidgetsTabBar")) {
             if (ImGui.beginTabItem("Instances##SkinWidgetManager")) {
-                if (ImGui.button("undo")) {
+                if (ImGui.button("Undo##SkinWidgetManager")) {
                     eventHistory.undo();
                 }
                 ImGui.sameLine();
@@ -108,6 +108,13 @@ public class SkinWidgetManager {
                 ImGui.endTabItem();
             }
             if (ImGui.beginTabItem("History##SkinWidgetManager")) {
+                if (ImGui.button("Undo##SkinWidgetManager")) {
+                    eventHistory.undo();
+                }
+                ImGui.sameLine();
+                if (ImGui.button("Squash##SkinWidgetManager")) {
+                    eventHistory.squash();
+                }
                 renderHistoryTable();
                 ImGui.endTabItem();
             }
@@ -235,7 +242,7 @@ public class SkinWidgetManager {
                 }
 
                 ImGui.tableSetColumnIndex(colSize - 1);
-                if (ImGui.button("Toggle")) {
+                if (ImGui.button("Toggle##SkinWidgetManager")) {
                     widget.toggleVisible();
                 }
 
@@ -755,6 +762,7 @@ public class SkinWidgetManager {
      *     <li> Push one event </li>
      *     <li> Pop most recent events</li>
      *     <li> Query specified widget has specific event or not </li>
+     *     <li> Squash all stored events </li>
      * </ul>
      *
      * @apiNote Requires lock
@@ -824,6 +832,39 @@ public class SkinWidgetManager {
                 targetNameToEvents.putIfAbsent(event.getName(), new ArrayList<>());
                 targetNameToEvents.get(event.getName()).add(event);
             }
+        }
+
+        private void squash() {
+            List<Event<?>> hand = new ArrayList<>();
+            eventStack.forEach(event -> {
+                if (hand.isEmpty()) {
+                    hand.add(event);
+                    return ;
+                }
+
+                if (event instanceof ToggleVisibleEvent) {
+                    boolean isolated = true;
+                    for (Event<?> e_ : hand) {
+                        if (e_ instanceof ToggleVisibleEvent && e_.handle.equals(event.handle)) {
+                            hand.remove(e_);
+                            isolated = false;
+                            break;
+                        }
+                    }
+                    if (isolated) {
+                        hand.add(event);
+                    }
+                } else if (event instanceof ChangeSingleFieldEvent) {
+                    List<Event<?>> shouldBeRemoved = hand.stream().filter(e_ -> e_ instanceof ChangeSingleFieldEvent && e_.handle.equals(event.handle) && e_.type == event.type).toList();
+                    if (!shouldBeRemoved.isEmpty()) {
+                        hand.removeAll(shouldBeRemoved);
+                    }
+                    hand.add(event);
+                }
+            });
+
+            clear();
+            hand.forEach(this::pushEvent);
         }
     }
 }

@@ -57,7 +57,6 @@ public class SkinPropertyWatcher {
 		}
 		ImGui.sameLine();
 		if (ImGui.checkbox("Auto Refresh##SkinPropertyWatcher", autoRefresh)) {
-			// TODO: Implement me!
 			autoRefresh = !autoRefresh;
 		}
 		if (ImGui.beginPopup("Add Skin Property Watcher", ImGuiWindowFlags.AlwaysAutoResize)) {
