@@ -2,6 +2,8 @@ package bms.player.beatoraja.modmenu.skin.debugger;
 
 import bms.player.beatoraja.modmenu.FontAwesomeIcons;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
+import bms.player.beatoraja.modmenu.skin.debugger.events.ChangeSingleFieldEvent;
+import bms.player.beatoraja.modmenu.skin.debugger.events.ToggleVisibleEvent;
 import bms.player.beatoraja.play.SkinJudge;
 import bms.player.beatoraja.skin.Skin;
 import bms.player.beatoraja.skin.SkinObject;
@@ -9,6 +11,7 @@ import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.badlogic.gdx.math.Rectangle;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiListClipper;
@@ -21,10 +24,14 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 import imgui.type.ImString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.helpMarker;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
@@ -33,11 +40,14 @@ import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
  * Debug menu for controlling the widgets in current skin
  */
 public class SkinWidgetManager {
-    private static final double eps = 1e-5;
-    private static final EventHistory eventHistory = new EventHistory();
+    private static final Logger logger = LoggerFactory.getLogger(SkinWidgetManager.class);
+    private static final Map<String, EventHistory> eventHistories = new HashMap<>();
     private static final List<SkinWidget> widgets = new ArrayList<>();
     private static final List<WidgetTableColumn> WIDGET_TABLE_COLUMNS = new ArrayList<>();
     private static final List<Pair<String, String>> removedObjects = new ArrayList<>();
+
+    private static EventHistory eventHistory = new EventHistory();
+    private static String skinDirectory;
 
     static {
         WIDGET_TABLE_COLUMNS.add(new WidgetTableColumn("ID", new ImBoolean(true), true, null, null));
@@ -64,10 +74,12 @@ public class SkinWidgetManager {
 
     static void changeSkin(Skin skin) {
         widgets.clear();
-        eventHistory.clear();
+        String skinName = skin == null ? "NULL" : skin.header.getName();
+        eventHistory = eventHistories.getOrDefault(skinName, new EventHistory());
         if (skin == null) {
             return;
         }
+        skinDirectory = skin.header.getPath().getParent().toString();
         SkinObject[] allSkinObjects = skin.getAllSkinObjects();
         // NOTE: We're using skin object's name as id, we need to keep name is unique
         Map<String, Integer> duplicatedSkinObjectNameCount = new HashMap<>();
@@ -79,6 +91,40 @@ public class SkinWidgetManager {
             } else {
                 registerSkinObject(skinObject, duplicatedSkinObjectNameCount);
             }
+        }
+        // Apply the custom changes
+        if (skin.getCustomChanges() != null) {
+            List<Event<?>> customEvents = skin.getCustomChanges().getEvents().stream().map(PersistedEvent::load).collect(Collectors.toList());
+            // Before we "recover" the changes, we should filter out the events that no handle can be found
+            Set<String> names = new HashSet<>();
+            widgets.forEach(widget -> {
+                names.add(widget.name);
+                widget.destinations.forEach(dst -> names.add(dst.name));
+            });
+            List<Event<?>> validEvents = customEvents.stream().filter(e -> names.contains(e.getName())).toList();
+            eventHistory.setEvents(validEvents);
+
+            widgets.forEach(widget -> {
+                List<Event<?>> eventsOnWidget = eventHistory.getEvents(widget.name);
+                if (!eventsOnWidget.isEmpty()) {
+                    eventsOnWidget.forEach(e -> {
+                        if (e.handle instanceof SkinWidget) {
+                            ((Event<SkinWidget>) e).handle = widget;
+                        }
+                    });
+                }
+                widget.destinations.forEach(dst -> {
+                    List<Event<?>> eventsOnDst = eventHistory.getEvents(dst.name);
+                    if (!eventsOnDst.isEmpty()) {
+                        eventsOnDst.forEach(e -> {
+                            if (e.handle instanceof SkinWidgetDestination) {
+                                ((Event<SkinWidgetDestination>) e).handle = dst;
+                            }
+                        });
+                    }
+                });
+            });
+            eventHistory.getEvents().forEach(Event::redo);
         }
         widgets.sort(Comparator.comparing(widget -> widget.name));
     }
@@ -169,14 +215,14 @@ public class SkinWidgetManager {
         for (int i = 0; i < dsts.length; ++i) {
             String dstBaseName = skinObjectName == null ? "Unnamed Destination" : skinObjectName;
             String combinedName = dsts.length == 1 ? dstBaseName : String.format("%s(%d)", dstBaseName, i);
-            destinations.add(new SkinWidgetDestination(combinedName, dsts[i]));
+            destinations.add(new SkinWidgetDestination(combinedName, dsts[i], eventHistory::pushEvent));
         }
 
         String widgetBaseName = skinObjectName == null ? "Unnamed Widget" : skinObjectName;
         Integer count = duplicatedSkinObjectNameCount.getOrDefault(widgetBaseName, 0);
         duplicatedSkinObjectNameCount.compute(widgetBaseName, (pk, pv) -> pv == null ? 1 : pv + 1);
         String widgetName = count == 0 ? widgetBaseName : String.format("%s(%d)", widgetBaseName, count);
-        widgets.add(new SkinWidget(widgetName, skinObject, destinations));
+        widgets.add(new SkinWidget(widgetName, skinObject, destinations, eventHistory::pushEvent));
     }
 
     private static void renderFilterOptions() {
@@ -454,45 +500,21 @@ public class SkinWidgetManager {
     }
 
     /**
-     * Export all changes, currently it simply copies the change logs to clipboard
+     * Export all changes, currently it writes to a json file as 'custom.json' located as the same as the skin
      */
     private static void exportChanges() {
-        List<String> changes = new ArrayList<>();
-        widgets.forEach(widget -> {
-            widget.destinations.forEach(dst -> {
-                boolean hasChangedX = false, hasChangedY = false, hasChangedW = false, hasChangedH = false;
-                for (Event<?> event : eventHistory.getEvents(dst.name)) {
-                    switch (event.type) {
-                        case CHANGE_X -> hasChangedX = true;
-                        case CHANGE_Y -> hasChangedY = true;
-                        case CHANGE_W -> hasChangedW = true;
-                        case CHANGE_H -> hasChangedH = true;
-                    }
-                }
-                if (!(hasChangedX || hasChangedY || hasChangedW || hasChangedH)) {
-                    return;
-                }
-                StringBuilder sb = new StringBuilder("{dst=").append(dst.name);
-                if (hasChangedX) {
-                    sb.append(", x=").append(dst.getDstX());
-                }
-                if (hasChangedY) {
-                    sb.append(", y=").append(dst.getDstY());
-                }
-                if (hasChangedX) {
-                    sb.append(", w=").append(dst.getDstW());
-                }
-                if (hasChangedY) {
-                    sb.append(", h=").append(dst.getDstH());
-                }
-                sb.append("}");
-                changes.add(sb.toString());
-            });
-        });
-        String changeLogs = String.join("\n", changes);
-        Lwjgl3Clipboard clipboard = new Lwjgl3Clipboard();
-        clipboard.setContents(changeLogs);
-        ImGuiNotify.info("Copied changes to clipboard");
+        eventHistory.squash();
+        CustomChanges customChanges = new CustomChanges();
+        customChanges.setVersion("1");
+        customChanges.setEvents(eventHistory.getEvents().stream().map(Event::persist).toList());
+        ObjectMapper om = new ObjectMapper();
+        try {
+            om.writeValue(Paths.get(skinDirectory, "custom.json").toFile(), customChanges);
+            ImGuiNotify.success("Export successfully");
+        } catch (Exception e) {
+            logger.error("Failed to copy changes to clipboard: ", e);
+            ImGuiNotify.error("Failed to copy changes to clipboard " + e.getMessage());
+        }
     }
 
     /**
@@ -508,252 +530,6 @@ public class SkinWidgetManager {
      */
     private record WidgetTableColumn(String name, ImBoolean show, boolean persistent,
                                      Function<SkinWidgetDestination, Float> getter, Event.EventType changeEventType) {
-    }
-
-    /**
-     * A simple wrapper class of SkinObject
-     *
-     * @implNote setter functions must provide an extra argument to not trigger event system
-     */
-    private static class SkinWidget {
-        private final String name;
-        // DON'T ACCESS THESE FIELDS DIRECTLY, USE GETTER/SETTER INSTEAD
-        private final SkinObject skinObject;
-        private final List<SkinWidgetDestination> destinations;
-
-        public SkinWidget(String name, SkinObject skinObject, List<SkinWidgetDestination> destinations) {
-            this.name = name;
-            this.skinObject = skinObject;
-            this.destinations = destinations;
-        }
-
-        public boolean isDrawingOnScreen() {
-            return skinObject.draw && skinObject.visible;
-        }
-
-        public void toggleVisible() {
-            toggleVisible(true);
-        }
-
-        public void toggleVisible(boolean createEvent) {
-            boolean isVisibleBefore = skinObject.visible;
-            if (createEvent) {
-                eventHistory.pushEvent(new ToggleVisibleEvent(this, isVisibleBefore));
-            }
-            skinObject.visible = !isVisibleBefore;
-        }
-    }
-
-    /**
-     * A simple wrapper class of SkinObject.SkinObjectDestination
-     *
-     * @implNote setter functions must provide an extra argument to not trigger event system
-     */
-    private static class SkinWidgetDestination {
-        private final String name;
-        private final SkinObject.SkinObjectDestination destination;
-        private SkinObject.SkinObjectDestination beforeMove = null;
-        /**
-         * <ul>
-         *     <li>0: haven't started moving</li>
-         *     <li>1: user enabled the move feature, but hasn't move around</li>
-         *     <li>2: user has moved the widget</li>
-         * </ul>
-         */
-        private int movingState;
-
-        public SkinWidgetDestination(String name, SkinObject.SkinObjectDestination destination) {
-            this.name = name;
-            this.destination = destination;
-            this.movingState = 0;
-        }
-
-        public float getDstX() {
-            return destination.region.x;
-        }
-
-        public float getDstY() {
-            return destination.region.y;
-        }
-
-        public float getDstW() {
-            return destination.region.width;
-        }
-
-        public float getDstH() {
-            return destination.region.height;
-        }
-
-        public void setDstX(float x) {
-            setDstX(x, true);
-        }
-
-        public void setDstX(float x, boolean createEvent) {
-            float previous = this.getDstX();
-            if (createEvent && Math.abs(x - previous) > eps) {
-                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_X, this, previous, x));
-            }
-            destination.region.x = x;
-        }
-
-        public void setDstY(float y) {
-            setDstY(y, true);
-        }
-
-        public void setDstY(float y, boolean createEvent) {
-            float previous = this.getDstY();
-            if (createEvent && Math.abs(y - previous) > eps) {
-                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_Y, this, previous, y));
-            }
-            destination.region.y = y;
-        }
-
-        public void setDstW(float w) {
-            setDstW(w, true);
-        }
-
-        public void setDstW(float w, boolean createEvent) {
-            float previous = this.getDstW();
-            if (createEvent && Math.abs(w - previous) > eps) {
-                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_W, this, previous, w));
-            }
-            destination.region.width = w;
-        }
-
-        public void setDstH(float h) {
-            setDstH(h, true);
-        }
-
-        public void setDstH(float h, boolean createEvent) {
-            float previous = this.getDstH();
-            if (createEvent && Math.abs(h - previous) > eps) {
-                eventHistory.pushEvent(new ChangeSingleFieldEvent(Event.EventType.CHANGE_H, this, previous, h));
-            }
-            destination.region.height = h;
-        }
-
-        /**
-         * Submit the move result, producing the event
-         */
-        public void submitMovement() {
-            if (beforeMove == null) {
-                ImGuiNotify.error("Cannot submit the move result because there's no original position");
-                return;
-            }
-            float nextX = getDstX();
-            float nextY = getDstY();
-            float nextW = getDstW();
-            float nextH = getDstH();
-            // Reset the position, to mimic that we are never left the original position
-            setDstX(beforeMove.region.x, false);
-            setDstY(beforeMove.region.y, false);
-            setDstW(beforeMove.region.width, false);
-            setDstH(beforeMove.region.height, false);
-            // Truly move to the target position
-            setDstX(nextX);
-            setDstY(nextY);
-            setDstW(nextW);
-            setDstH(nextH);
-            beforeMove = null;
-        }
-    }
-
-    private abstract static class Event<T> {
-        protected EventType type;
-        protected T handle; // reference to the event object
-
-        // NOTE: This is kinda naive, but it works...
-        enum EventType {
-            // ChangeSingleFieldEvent
-            CHANGE_X,
-            CHANGE_Y,
-            CHANGE_W,
-            CHANGE_H,
-            // ToggleVisibleEvent
-            TOGGLE_VISIBLE
-        }
-
-        public Event(EventType type, T handle) {
-            this.type = type;
-            this.handle = handle;
-        }
-
-        public abstract void undo();
-
-        public abstract String getDescription();
-
-        public abstract String getName();
-    }
-
-    /**
-     * Records the event when changing a single field from a widget
-     */
-    private static class ChangeSingleFieldEvent extends Event<SkinWidgetDestination> {
-        private final float previous;
-        private final float current;
-
-        public ChangeSingleFieldEvent(EventType type, SkinWidgetDestination dst, float previous, float current) {
-            super(type, dst);
-            this.previous = previous;
-            this.current = current;
-        }
-
-        @Override
-        public void undo() {
-            switch (type) {
-                case CHANGE_X -> handle.setDstX(previous, false);
-                case CHANGE_Y -> handle.setDstY(previous, false);
-                case CHANGE_W -> handle.setDstW(previous, false);
-                case CHANGE_H -> handle.setDstH(previous, false);
-                default -> { /* Intentionally do nothing */ }
-            }
-        }
-
-        @Override
-        public String getDescription() {
-            String fieldName = switch (type) {
-                case CHANGE_X -> "x";
-                case CHANGE_Y -> "y";
-                case CHANGE_W -> "width";
-                case CHANGE_H -> "height";
-                default -> "[ERROR] Not a ChangeSingleFieldEvent";
-            };
-            return String.format("Changed %s's %s from %.4f to %.4f", handle.name, fieldName, previous, current);
-        }
-
-        @Override
-        public String getName() {
-            return handle.name;
-        }
-    }
-
-    /**
-     * Records the event when toggling the visibility of a widget
-     */
-    private static class ToggleVisibleEvent extends Event<SkinWidget> {
-        private final boolean isVisibleBefore;
-
-        public ToggleVisibleEvent(SkinWidget handle, boolean isVisibleBefore) {
-            super(EventType.TOGGLE_VISIBLE, handle);
-            this.isVisibleBefore = isVisibleBefore;
-        }
-
-        @Override
-        public void undo() {
-            handle.toggleVisible(false);
-        }
-
-        @Override
-        public String getDescription() {
-            return isVisibleBefore
-                    ? String.format("Make %s widget invisible", handle.name)
-                    : String.format("Make %s widget visible", handle.name);
-        }
-
-        @Override
-        public String getName() {
-            return handle.name;
-        }
     }
 
     /**
@@ -777,6 +553,10 @@ public class SkinWidgetManager {
             eventStack.clear();
         }
 
+        public boolean isEmpty() {
+            return eventStack.isEmpty();
+        }
+
         public boolean hasEvent(String widgetName, Event.EventType eventType) {
             if (!targetNameToEvents.containsKey(widgetName)) {
                 return false;
@@ -791,6 +571,16 @@ public class SkinWidgetManager {
 
         public List<Event<?>> getEvents(String name) {
             return targetNameToEvents.getOrDefault(name, new ArrayList<>());
+        }
+
+        public void setEvents(List<Event<?>> events) {
+            eventStack.clear();
+            eventStack.addAll(events);
+            targetNameToEvents.clear();
+            eventStack.forEach(e -> {
+                targetNameToEvents.putIfAbsent(e.getName(), new ArrayList<>());
+                targetNameToEvents.get(e.getName()).add(e);
+            });
         }
 
         private void pushEvent(Event<?> event) {

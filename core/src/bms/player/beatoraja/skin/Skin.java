@@ -5,6 +5,7 @@ import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.ShaderManager;
 import bms.player.beatoraja.SkinConfig.Offset;
+import bms.player.beatoraja.modmenu.skin.debugger.CustomChanges;
 import bms.player.beatoraja.skin.SkinObject.SkinOffset;
 import bms.player.beatoraja.skin.property.BooleanProperty;
 import bms.player.beatoraja.play.BMSPlayer;
@@ -89,6 +90,7 @@ public class Skin {
 
 	private final IntMap<CustomEvent> customEvents = new IntMap<CustomEvent>();
 	private final IntMap<CustomTimer> customTimers = new IntMap<CustomTimer>();
+	private CustomChanges customChanges = null;
 
 	/**
 	 * デバッグ用
@@ -402,7 +404,15 @@ public class Skin {
 	public double getScaleY() {
 		return dh;
 	}
-	
+
+	public CustomChanges getCustomChanges() {
+		return customChanges;
+	}
+
+	public void setCustomChanges(CustomChanges customChanges) {
+		this.customChanges = customChanges;
+	}
+
 	public static final class SkinObjectRenderer {
 		
 		private final SpriteBatch sprite;

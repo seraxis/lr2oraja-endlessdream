@@ -1,6 +1,7 @@
 package bms.player.beatoraja.skin;
 
 import bms.player.beatoraja.*;
+import bms.player.beatoraja.modmenu.skin.debugger.CustomChanges;
 import bms.player.beatoraja.skin.json.JSONSkinLoader;
 import bms.player.beatoraja.skin.lr2.LR2SkinCSVLoader;
 import bms.player.beatoraja.skin.lr2.LR2SkinHeaderLoader;
@@ -9,7 +10,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.nio.file.*;
 
@@ -19,6 +24,7 @@ import java.nio.file.*;
  * @author exch
  */
 public abstract class SkinLoader {
+    private static final Logger logger = LoggerFactory.getLogger(SkinLoader.class);
     /**
      * スキンイメージのリソースプール
      */
@@ -46,6 +52,20 @@ public abstract class SkinLoader {
             skinConfig.validate();
             skin = load(state, skinType, skinConfig);
         }
+
+        if (skin != null) {
+            File customChangesFile = Paths.get(skin.header.getPath().getParent().toString(), "custom.json").toFile();
+            if (customChangesFile.exists()) {
+                ObjectMapper om = new ObjectMapper();
+                try {
+                    CustomChanges customChanges = om.readValue(customChangesFile, CustomChanges.class);
+                    skin.setCustomChanges(customChanges);
+                } catch (Exception e) {
+                    logger.error("Error reading custom changes: ", e);
+                }
+            }
+        }
+
         return skin;
     }
 
