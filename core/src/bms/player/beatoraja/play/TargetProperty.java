@@ -74,7 +74,26 @@ public abstract class TargetProperty {
     }
 
     public abstract String getName(MainController main);
-    public abstract ScoreData getTarget(MainController main);    
+    public abstract ScoreData getTarget(MainController main);
+	public ScoreData getNowScoreData(MainController main) {
+		ScoreData scoreData = main.getPlayDataAccessor().readScoreData(
+				main.getPlayerResource().getBMSModel(),
+				main.getPlayerConfig().getLnmode()
+		);
+		if (scoreData == null) {
+			scoreData = new ScoreData();
+		}
+		return scoreData;
+	}
+
+    /**
+     * Convenience method to set option, PGREAT and GREAT notes on target score
+     */
+	protected void updateTargetScore(ScoreData newScore) {
+		targetScore.setEpg(newScore.getExscore() / 2);
+		targetScore.setEgr(newScore.getExscore() % 2);
+		targetScore.setOption(newScore.getOption());
+	}
 }
 
 /**
@@ -309,8 +328,7 @@ class NextRankTargetProperty extends TargetProperty {
 
     @Override
     public ScoreData getTarget(MainController main) {
-        ScoreData now = main.getPlayDataAccessor().readScoreData(main.getPlayerResource().getBMSModel()
-                , main.getPlayerConfig().getLnmode());
+        ScoreData now = getNowScoreData(main);
         final int nowscore = now != null ? now.getExscore() : 0;
         final int max = main.getPlayerResource().getBMSModel().getTotalNotes() * 2;
         int targetscore = max;
@@ -339,7 +357,7 @@ class InternetRankingTargetProperty extends TargetProperty {
     private final Target target;
     
     private final int value;
-    
+
     private InternetRankingTargetProperty(Target target, int value) {
     	super("IR_" + target.name() + "_" + value);
         this.target = target;
@@ -349,6 +367,8 @@ class InternetRankingTargetProperty extends TargetProperty {
 	@Override
 	public String getName(MainController main) {
     	switch(target) {
+		case PERSONAL_BEST:
+			return "PERSONAL BEST";
     	case NEXT:
     		return "IR NEXT " + value + "RANK";
     	case RANK:
@@ -362,27 +382,22 @@ class InternetRankingTargetProperty extends TargetProperty {
     @Override
     public ScoreData getTarget(MainController main) {
     	final RankingData ranking = main.getPlayerResource().getRankingData();
+		ScoreData nowScore = getNowScoreData(main);
     	if(ranking == null) {
-			targetScore.setPlayer("NO DATA");
+			String name = target == Target.PERSONAL_BEST ? "PB (LOCAL)" : "NO DATA";
+			targetScore.setPlayer(name);
 			targetScore.setOption(0);
-			return targetScore;    		
+			if (target == Target.PERSONAL_BEST) {
+				updateTargetScore(nowScore);
+			}
+			return targetScore;
     	}
-    	
+
     	if(ranking.getState() == RankingData.FINISH) {
-    		if(ranking.getTotalPlayer() > 0) {
-    			final int index = getTargetRank(main, ranking);
-    			final IRScoreData irScore = ranking.getScore(index);
-    			final int targetscore = irScore.getExscore();
-    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : "YOU");
-        		targetScore.setEpg(targetscore / 2);
-        		targetScore.setEgr(targetscore % 2);
-				targetScore.setOption(irScore.option);
-    		} else {
-    			targetScore.setPlayer("NO DATA");
-    			targetScore.setOption(0);
-    		}
+			setTargetScoreToIrScore(main, ranking, target);
     		return targetScore;
     	}
+
 		Thread irprocess = new Thread(() -> {
     		ranking.load(main.getCurrentState(), main.getPlayerResource().getSongdata());
 			while(ranking.getState() == RankingData.NONE  || ranking.getState() == RankingData.ACCESS) {
@@ -392,29 +407,39 @@ class InternetRankingTargetProperty extends TargetProperty {
 				}
 			}
 	    	if(ranking.getState() == RankingData.FINISH) {
-	    		if(ranking.getTotalPlayer() > 0) {
-	    			final int index = getTargetRank(main, ranking);
-	    			final IRScoreData irScore = ranking.getScore(index);
-	    			final int targetscore = irScore.getExscore();
-	    			targetScore.setPlayer(irScore.player.length() > 0 ? irScore.player : "YOU");
-	        		targetScore.setEpg(targetscore / 2);
-	        		targetScore.setEgr(targetscore % 2);
-	    			targetScore.setOption(irScore.option);
-	    		} else {
-	    			targetScore.setPlayer("NO DATA");
-	    			targetScore.setOption(0);
-	    		}
-	    		
+				setTargetScoreToIrScore(main, ranking, target);
 				main.getCurrentState().getScoreDataProperty().updateTargetScore(targetScore.getExscore());	    		
 	    	}
 		});
 		irprocess.start();
         return targetScore;
     }
+
+	private void setTargetScoreToIrScore(MainController main, RankingData ranking, Target target) {
+		final int index = getTargetRank(main, ranking);
+		final IRScoreData irScore = ranking.getScore(index);
+		if(ranking.getTotalPlayer() > 0 && irScore != null && index >= 0) {
+			targetScore.setPlayer(!(irScore.player == null || irScore.player.isEmpty()) ? irScore.player : "YOU");
+			updateTargetScore(irScore.convertToScoreData());
+		} else {
+			targetScore.setPlayer("NO DATA");
+			targetScore.setOption(0);
+		}
+
+		if (target == Target.PERSONAL_BEST) {
+			ScoreData nowScore = getNowScoreData(main);
+			if (irScore != null && index >= 0 && nowScore.getExscore() < irScore.getExscore()) {
+				targetScore.setPlayer("PB (IR)");
+				updateTargetScore(irScore.convertToScoreData());
+			} else {
+				targetScore.setPlayer("PB (LOCAL)");
+				updateTargetScore(nowScore);
+			}
+		}
+	}
     
     private int getTargetRank(MainController main, RankingData ranking) {
-        ScoreData now = main.getPlayDataAccessor().readScoreData(main.getPlayerResource().getBMSModel()
-                , main.getPlayerConfig().getLnmode());
+        ScoreData now = getNowScoreData(main);
         final int nowscore = now != null ? now.getExscore() : 0;
 		switch(target) {
 		case NEXT:
@@ -425,7 +450,8 @@ class InternetRankingTargetProperty extends TargetProperty {
 				}
 			}
 			return 0;
-			
+		case PERSONAL_BEST:
+			return ranking.getRank() - 1;
 		case RANK:
 			// n位のプレイヤー
 			return Math.min(ranking.getTotalPlayer(), value) - 1;
@@ -437,6 +463,9 @@ class InternetRankingTargetProperty extends TargetProperty {
     }
     
     public static TargetProperty getTargetProperty(String id) {
+		if (id.equals("IR_PERSONAL_BEST")) {
+			return new InternetRankingTargetProperty(Target.PERSONAL_BEST, 0);
+		}
     	if(id.startsWith("IR_NEXT_")) {
     		try {
         		int index = Integer.parseInt(id.substring(8));
@@ -471,7 +500,10 @@ class InternetRankingTargetProperty extends TargetProperty {
     }
     
     enum Target {
-    	NEXT, RANK, RANKRATE
+    	NEXT,
+		RANK,
+		RANKRATE,
+		PERSONAL_BEST
     }
 
 }
