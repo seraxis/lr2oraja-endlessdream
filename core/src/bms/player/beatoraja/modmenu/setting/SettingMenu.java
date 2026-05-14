@@ -5,7 +5,9 @@ import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.modmenu.setting.widget.Widget;
 import bms.player.beatoraja.modmenu.setting.window.*;
+import imgui.ImDrawList;
 import imgui.ImGui;
+import imgui.ImVec2;
 import imgui.flag.*;
 import imgui.type.ImBoolean;
 import imgui.type.ImInt;
@@ -101,35 +103,9 @@ public class SettingMenu {
 				ImGui.text("LR2Oraja ~endless dream~ Settings");
 			}
 			ImGui.endChild();
+			ImGui.dummy(0F, 4F);
 			if (ImGui.beginChild("Setting Menu##Sidebar", SIDEBAR_WIDTH + 8F, 0F, false, ImGuiWindowFlags.NoBackground)) {
-				if (ImGui.beginTable("Setting Menu##SideBar##buttons", 1, ImGuiTableFlags.None, SIDEBAR_WIDTH + 8F, SIDEBAR_HEIGHT)) {
-					for (int i = 0; i < windows.size(); i++) {
-						ImGui.tableNextRow();
-						ImGui.tableNextColumn();
-						ImGui.pushID(String.format("Setting Menu##SideBar##%d", i));
-
-						boolean selected = selectedTab == i;
-						if (selected) {
-//							ImGui.pushStyleColor(ImGuiCol.Button, buttonActiveBackground);
-//							ImGui.pushStyleColor(ImGuiCol.Border, buttonActiveBorder);
-						} else {
-//							ImGui.pushStyleColor(ImGuiCol.Button, buttonActiveBackground);
-//							ImGui.pushStyleColor(ImGuiCol.Border, buttonActiveBorder);
-						}
-
-						ImGui.pushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
-						ImGui.pushStyleVar(ImGuiStyleVar.CellPadding, 0, 0);
-						if (ImGui.button(windows.get(i).getName(), SIDEBAR_WIDTH + 8F, SIDEBAR_HEIGHT)) {
-							selectedTab = i;
-						}
-						ImGui.popStyleVar();
-						ImGui.popStyleVar();
-
-//						ImGui.popStyleColor(2);
-						ImGui.popID();
-					}
-					ImGui.endTable();
-				}
+				renderSideBar();
 			}
 			ImGui.endChild();
 
@@ -139,7 +115,7 @@ public class SettingMenu {
 //			ImGui.pushStyleColor(ImGuiCol.ChildBg, contentBackgroundColor);
 //			ImGui.pushStyleColor(ImGuiCol.Border, contentBorderColor);
 
-			ImGui.pushStyleColor(ImGuiCol.ChildBg, 0.3F, 0.3F, 0.3F, 0.8F);
+//			ImGui.pushStyleColor(ImGuiCol.ChildBg, 0.3F, 0.3F, 0.3F, 0.8F);
 			if (ImGui.beginChild("Setting Menu##Content", windowWidth - margin - 8F, 0F, true, ImGuiWindowFlags.NoResize)) {
 //				ImGui.popStyleColor(2);
 				windows.get(selectedTab).render();
@@ -147,11 +123,45 @@ public class SettingMenu {
 //				ImGui.popStyleColor(2);
 			}
 
-			ImGui.popStyleColor();
+//			ImGui.popStyleColor();
 
 			ImGui.endChild();
 		}
 		ImGui.end();
+	}
+
+	private static void renderSideBar() {
+		for (int i = 0; i < windows.size(); i++) {
+			float textHeight = ImGui.calcTextSizeY(windows.get(i).getName());
+			ImVec2 buttonSize = new ImVec2(SIDEBAR_WIDTH, SIDEBAR_HEIGHT);
+
+			ImGui.invisibleButton("##menu_button_" + i, buttonSize);
+
+			boolean isClicked = ImGui.isItemClicked();
+			boolean isHovered = ImGui.isItemHovered();
+			boolean isActive = ImGui.isItemActive();
+			boolean isSelected = selectedTab == i;
+			ImDrawList drawList = ImGui.getWindowDrawList();
+
+			if (isClicked) {
+				selectedTab = i;
+			}
+
+			ImVec2 min = ImGui.getItemRectMin();
+			ImVec2 max = ImGui.getItemRectMax();
+
+			if (isSelected) {
+				ImVec2 barMin = new ImVec2(min.x, min.y);
+				ImVec2 barMax = new ImVec2(min.x + 4F, max.y);
+				int barColor = ImGui.getColorU32(ImGuiCol.ButtonActive);
+				drawList.addRectFilled(barMin, barMax, barColor);
+			}
+
+			float textX = min.x + 8F;
+			float textY = min.y + (max.y - min.y - textHeight) / 2;
+			int textColor = ImGui.getColorU32(ImGuiCol.Text);
+			drawList.addText(textX, textY, textColor, windows.get(i).getName());
+		}
 	}
 
 	public static void refresh() {

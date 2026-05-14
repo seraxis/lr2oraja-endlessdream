@@ -67,7 +67,16 @@ public class ImGuiRenderer {
         ImGui.createContext();
         ImGuiIO io = ImGui.getIO();
         io.setIniFilename("layout.ini");
-        io.getFonts().addFontDefault();
+
+        // Use lato as the default font
+        final ImFontGlyphRangesBuilder mainFontRangesBuilder = new ImFontGlyphRangesBuilder();
+        mainFontRangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
+        mainFontRangesBuilder.addRanges(io.getFonts().getGlyphRangesChineseFull());
+        mainFontRangesBuilder.addRanges(io.getFonts().getGlyphRangesCyrillic());
+        mainFontRangesBuilder.addRanges(io.getFonts().getGlyphRangesJapanese());
+        final ImFontConfig mainFontConfig = new ImFontConfig();
+        io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/Lato-Regular.ttf"), 16, mainFontConfig, mainFontConfig.getGlyphRanges());
+        mainFontConfig.destroy();
 
         final ImFontGlyphRangesBuilder rangesBuilder = new ImFontGlyphRangesBuilder(); // Glyphs ranges provide
         rangesBuilder.addRanges(io.getFonts().getGlyphRangesDefault());
@@ -91,7 +100,10 @@ public class ImGuiRenderer {
         io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-regular-400.ttf"), 14, fontConfig, glyphRanges);
         io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/fa-solid-900.ttf"), 14, fontConfig, glyphRanges);
 
-        font24 = io.getFonts().addFontFromMemoryTTF(loadFromResources("skin/default/VL-Gothic-Regular.ttf"), 24, new ImFontConfig(), glyphRanges);
+        ImFontConfig font24Config = new ImFontConfig();
+        font24 = io.getFonts().addFontFromMemoryTTF(loadFromClassPath("resources/Lato-Regular.ttf"), 24, font24Config, glyphRanges);
+        font24Config.destroy();
+
         io.getFonts().build();
 
         fontConfig.destroy();
