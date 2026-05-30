@@ -1,6 +1,7 @@
 package bms.player.beatoraja.skin.lr2;
 
 import bms.player.beatoraja.skin.SkinManualEntry;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -209,6 +210,41 @@ public enum LR2TextDef {
 	@Nullable
 	public static LR2TextDef valueOf(int v) {
 		return Arrays.stream(LR2TextDef.values()).filter(def -> def.value == v).findAny().orElse(null);
+	}
+
+
+	public static int convert(int v) {
+		// HACK: st=1's definition is different between lr2 and beatoraja.
+		//  In lr2, it's target score or rival's name
+		//  In beatoraja, it's rival's name or empty string
+		// Beatoraja itself introduces another variant: st=3 which implements the similar behavior with lr2.
+		//  So we hijacked the value here to keep the compatibility
+		if (v == Rival.value) {
+			return 3;
+		}
+		// HACK: LR2 allows user edit the bms file's meta data directly in-game, which is a pretty useless
+		//  feature that nobody wants to modify the file unexpectedly. And these options are just an editable
+		//  variant of the other options. Therefore, we simply convert them into the uneditable version here
+		if (v == EditingCurrentSongTitle.value) {
+			return CurrentSongTitle.value;
+		} else if (v == EditingCurrentSongSubTitle.value) {
+			return CurrentSongSubTitle.value;
+		} else if (v == EditingCurrentSongFullTitle.value) {
+			return CurrentSongFullTitle.value;
+		} else if (v == EditingCurrentSongGenre.value) {
+			return CurrentSongGenre.value;
+		} else if (v == EditingCurrentSongArtist.value) {
+			return CurrentSongArtist.value;
+		} else if (v == EditingCurrentSongSubartist.value) {
+			return CurrentSongSubArtist.value;
+		} else if (v == EditingCurrentSongSearchQuery.value) {
+			return CurrentSongSearchText.value;
+		} else if (v == EditingCurrentSongPlayLevel.value) {
+			return CurrentSongPlayLevel.value;
+		} else if (v == EditingCurrentSongDifficultyNumber.value) {
+			return CurrentSongDifficultyNumber.value;
+		}
+		return v;
 	}
 
 	public SkinManualEntry<LR2TextDef> intoManualEntry() {

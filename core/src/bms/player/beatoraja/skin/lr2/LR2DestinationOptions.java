@@ -613,7 +613,11 @@ public enum LR2DestinationOptions {
 	 *  converted or don't know how.
 	 */
 	public static int convert(int v) {
-		return switch (v) {
+		boolean revertFlag = v < 0;
+		v = Math.abs(v);
+		return (revertFlag ? -1 : 1) * switch (v) {
+			// Seriously I don't know what's this intended for
+			case 4 -> OPTION_GRADEBAR;
 			case 106 -> OPTION_SELECT_BAR_EXHARD_CLEARED;
 			case 107 -> OPTION_SELECT_BAR_PERFECT_CLEARED;
 			case 108 -> OPTION_SELECT_BAR_MAX_CLEARED;
