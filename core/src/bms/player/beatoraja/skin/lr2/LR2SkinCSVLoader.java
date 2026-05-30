@@ -292,30 +292,11 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 			public void execute(String[] str) {
 				text = null;
 				int[] values = parseInt(str);
-				// HACK: st=1's definition is different between lr2 and beatoraja.
-				//  In lr2, it's target score or rival's name
-				//  In beatoraja, it's rival's name or empty string
-				// Beatoraja itself introduces another variant: st=3 which implements the similar behavior with lr2.
-				//  So we hijacked the value here to keep the compatibility
-				if (values[3] == 1) {
-					values[3] = 3;
-				}
-				// HACK: LR2 allows user edit the bms file's meta data directly in-game, which is a pretty useless
-				//  feature that nobody wants to modify the file unexpectedly. And these options are just an editable
-				//  variant of the other options. Therefore, we simply convert them into the uneditable version here
-				values[3] = switch (values[3]) {
-					case 20 -> 10;
-					case 21 -> 11;
-					case 22 -> 12;
-					case 23 -> 13;
-					case 24 -> 14;
-					case 25 -> 15;
-					case 26 -> 16;
-					case 27 -> 17;
-					case 28 -> 18;
-					// NOTE: 29 doesn't have related definition, 30 is a little bit different, see below
-					default -> values[3];
-				};
+				// We have to create the name before converting the values[3] here,
+				//  otherwise the name will be duplicated sometimes
+				LR2TextDef textDef = LR2TextDef.valueOf(values[3]);
+				String name = String.format("SRC_TEXT(%s[%d])", textDef != null ? textDef.getName() : "ERROR", values[3]);
+				values[3] = LR2TextDef.convert(values[3]);
 				if (values[3] == STRING_SEARCHWORD && !(skin instanceof MusicSelectSkin)) {
 					values[3] = STRING_TABLE_FULL;
 				}
@@ -331,8 +312,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 				text.setAlign(values[4]);
 				text.setEditable(values[5] != 0);
 				int panel = values[6];
-				LR2TextDef textDef = LR2TextDef.valueOf(values[3]);
-				text.setName(String.format("SRC_TEXT(%s[%d])", textDef != null ? textDef.getName() : "ERROR", values[3]));
+				text.setName(name);
 				skin.add(text);
 				if(text.isEditable() && values[3] == SkinProperty.STRING_SEARCHWORD && skin instanceof MusicSelectSkin) {
 					((MusicSelectSkin) skin).searchText = text;
