@@ -21,8 +21,11 @@ public class IRUtil {
      * @return スキップすべきであればtrue
      */
     public static boolean shouldSkipIR(String irName, boolean isDxMode) {
-        boolean rianIR = isRianIR(irName);
-        // rianIR かつ DX MODEオフ、または、rianIR以外 かつ DX MODEオン の場合にスキップ
-        return rianIR != isDxMode;
+        // rianIRの場合は常にスキップしない
+        if (isRianIR(irName)) {
+            return false;
+        }
+        // rianIR以外かつDX MODEオンの場合はスキップ
+        return isDxMode;
     }
 }

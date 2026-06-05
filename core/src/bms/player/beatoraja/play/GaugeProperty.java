@@ -130,11 +130,11 @@ public enum GaugeProperty {
         // 回復値(PG/GR/GD)は基礎倍率(1.0 または 0.5)を指定し、実際の回復量はTOTAL値に基づいて計算されます。
         
         // ASSIST EASY (DX MODEではEASYと同じ)
-        ASSIST_EASY_IIDX(IIDX, 2, 100, 20, 60, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),
+        ASSIST_EASY_IIDX(IIDX, 2, 100, 22, 60, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),
         // EASY: NORMALの80%減少。POOR -4.8%, BAD/空POOR -1.6%
-        EASY_IIDX       (IIDX, 2, 100, 20, 80, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),
+        EASY_IIDX       (IIDX, 2, 100, 22, 80, 0, new float[]{1.0f, 1.0f, 0.5f, -1.6f, -4.8f, -1.6f}, new float[][]{}),
         // NORMAL: POOR -6%, BAD/空POOR -2%
-        NORMAL_IIDX     (IIDX, 2, 100, 20, 80, 0, new float[]{1.0f, 1.0f, 0.5f, -2.0f, -6.0f, -2.0f}, new float[][]{}),
+        NORMAL_IIDX     (IIDX, 2, 100, 22, 80, 0, new float[]{1.0f, 1.0f, 0.5f, -2.0f, -6.0f, -2.0f}, new float[][]{}),
         // HARD: 回復量は0.16%固定(LIMIT_INCREMENTで処理)。減少量は BAD/空POOR -4.5%, POOR -9.0%
         // 30%以下補正はGrooveGauge側のロジックで適用されます。
         // GOOD回復量は0% (index 2)
