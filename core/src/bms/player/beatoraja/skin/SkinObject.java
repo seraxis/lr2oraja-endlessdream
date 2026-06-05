@@ -101,6 +101,7 @@ public abstract class SkinObject extends DisposableObject {
 	public boolean draw;
 	// Controlled by debugger instead of constraints defined by skin
 	public boolean visible = true;
+	public Exception error = null;
 	public Rectangle region = new Rectangle();
 	public Color color = new Color();
 	public int angle;
