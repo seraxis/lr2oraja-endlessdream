@@ -170,3 +170,6 @@ core/bin
 
 util/
 core/src/resources/build.properties
+
+# added by dj-kata
+jdk-17.0.19-full/*

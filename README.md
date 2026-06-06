@@ -1,5 +1,12 @@
 <div align="center" style="line-height: 1;">
 
+# dj-kata fork版の説明
+oraja_helper連携機能などを追加するために作成している。
+
+## ビルド環境作成
+libercaJDKからjdk-17.0.19の**x86 64, Full版**をダウンロードして解凍する。  
+
+
 # LR2oraja \~Endless Dream\~
 
 <!-- swap this between default and default-inverted to update the number -->
