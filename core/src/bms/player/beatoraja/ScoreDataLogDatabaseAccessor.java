@@ -14,7 +14,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
 
 /**
  * スコアデータログデータベースアクセサ
- * 
+ *
  * @author omi
  */
 public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
@@ -27,8 +27,8 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 
 	public ScoreDataLogDatabaseAccessor(String path) throws ClassNotFoundException {
 		super(	new Table("scoredatalog",
-						new Column("sha256", "TEXT", 1, 1),
-						new Column("mode", "INTEGER",0,1),
+						new Column("sha256", "TEXT", true, true),
+						new Column("mode", "INTEGER", false, true),
 						new Column("clear", "INTEGER"),
 						new Column("epg", "INTEGER"),
 						new Column("lpg", "INTEGER"),
@@ -45,7 +45,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 						new Column("notes", "INTEGER"),
 						new Column("combo", "INTEGER"),
 						new Column("minbp", "INTEGER"),
-						new Column("avgjudge", "INTEGER", 1, 0, String.valueOf(Integer.MAX_VALUE)),
+						new Column("avgjudge", "INTEGER", true, false, String.valueOf(Integer.MAX_VALUE)),
 						new Column("playcount", "INTEGER"),
 						new Column("clearcount", "INTEGER"),
 						new Column("trophy", "TEXT"),
@@ -66,7 +66,7 @@ public class ScoreDataLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + path);
 		qr = new QueryRunner(ds);
-		
+
 		try {
 			this.validate(qr);
 		} catch (SQLException e) {
