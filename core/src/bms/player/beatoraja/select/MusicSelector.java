@@ -18,6 +18,7 @@ import bms.model.Mode;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.Config.SongPreview;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
+import bms.player.beatoraja.external.OrajaHelperClient;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
 import bms.player.beatoraja.input.KeyCommand;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
@@ -635,6 +636,7 @@ public final class MusicSelector extends MainState {
 	public void selectedBarMoved() {
 		execute(MusicSelectCommand.RESET_REPLAY);
 		loadSelectedSongImages();
+		sendSelectedSongToOrajaHelper();
 
 		timer.setTimerOn(TIMER_SONGBAR_CHANGE);
 		if(preview.getSongData() != null && (!(manager.getSelected() instanceof SongBar) ||
@@ -672,6 +674,13 @@ public final class MusicSelector extends MainState {
 
 	public void selectSong(BMSPlayerMode mode) {
 		play = mode;
+	}
+
+	private void sendSelectedSongToOrajaHelper() {
+		final Bar current = manager.getSelected();
+		if (current instanceof SongBar songbar && songbar.existsSong()) {
+			OrajaHelperClient.sendSelect(main.getConfig(), songbar.getSongData());
+		}
 	}
 
 	public PlayConfig getSelectedBarPlayConfig() {

@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.FloatArray;
 import bms.model.*;
 import bms.model.Mode;
 import bms.player.beatoraja.*;
+import bms.player.beatoraja.external.OrajaHelperClient;
 import bms.player.beatoraja.MainController.IRStatus;
 import bms.player.beatoraja.MainController.IRSendStatus;
 import bms.player.beatoraja.input.BMSPlayerInputProcessor;
@@ -84,6 +85,8 @@ public class MusicResult extends AbstractResult {
 		}
 
 		updateScoreDatabase();
+		OrajaHelperClient.sendResult(main.getConfig(), resource.getSongdata(), resource.getReplayData(),
+				resource.getBMSModel().getMode(), resource.getScoreData());
 		// リプレイの自動保存
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.isFreqOn()) {
 			for (int i = 0; i < REPLAY_SIZE; i++) {
