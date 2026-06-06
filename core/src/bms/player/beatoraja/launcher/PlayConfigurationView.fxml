@@ -496,6 +496,11 @@
                 <fx:include fx:id="obs" source="ObsConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
             </AnchorPane>
         </Tab>
+        <Tab fx:id="orajaHelperTab" closable="false" text="%TAB_ORAJA_HELPER">
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                <fx:include fx:id="orajaHelper" source="OrajaHelperConfigurationView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            </AnchorPane>
+        </Tab>
         <!-- <Tab fx:id="trainerTab" closable="false" text="Trainer">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                 <fx:include fx:id="trainer" source="TrainerView.fxml" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />

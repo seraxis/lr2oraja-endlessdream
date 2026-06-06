@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import bms.player.beatoraja.launcher.NumericSpinner?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="bms.player.beatoraja.launcher.OrajaHelperConfigurationView"
+	spacing="15" maxWidth="500">
+	<padding>
+		<Insets left="20.0" top="20.0" right="20.0" bottom="20.0"/>
+	</padding>
+
+	<CheckBox fx:id="orajaHelperEnabled" mnemonicParsing="false" text="%ORAJA_HELPER_ENABLE"/>
+
+	<Separator/>
+
+	<GridPane hgap="15" vgap="12">
+		<columnConstraints>
+			<ColumnConstraints minWidth="80" prefWidth="100"/>
+			<ColumnConstraints hgrow="ALWAYS"/>
+		</columnConstraints>
+
+		<Label text="%ORAJA_HELPER_PORT" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+		<NumericSpinner fx:id="orajaHelperPort" editable="true" maxWidth="150"
+			GridPane.columnIndex="1" GridPane.rowIndex="0">
+			<valueFactory>
+				<SpinnerValueFactory.IntegerSpinnerValueFactory
+					amountToStepBy="1" initialValue="8787" max="65535" min="1"/>
+			</valueFactory>
+		</NumericSpinner>
+	</GridPane>
+</VBox>
