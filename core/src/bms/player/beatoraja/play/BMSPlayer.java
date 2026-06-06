@@ -455,7 +455,7 @@ public class BMSPlayer extends MainState {
 			config.getPlayConfig(model.getMode()).setPlayconfig(HSReplay.config);
 		}
 
-		OrajaHelperClient.sendPlay(main.getConfig(), resource.getSongdata(), playinfo, model.getMode());
+		OrajaHelperClient.sendPlay(resource.getSongdata(), playinfo, model.getMode());
 
 		logger.info("ゲージ設定");
 		if(replay != null) {

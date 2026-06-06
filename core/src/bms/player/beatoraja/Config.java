@@ -214,12 +214,6 @@ public class Config implements Validatable {
 	private HashMap<String, String> obsScenes = new HashMap<>();
 	private HashMap<String, String> obsActions = new HashMap<>();
 
-	/**
-	 * oraja_helper integration
-	 */
-	private boolean useOrajaHelper = false;
-	private int orajaHelperPort = 8787;
-
 	public enum ScreenShotFormat {
 		PNG, JPG
 	}
@@ -574,22 +568,6 @@ public class Config implements Validatable {
 
 	public void setUseObsWs(boolean useObsWs) {
 		this.useObsWs = useObsWs;
-	}
-
-	public boolean isUseOrajaHelper() {
-		return useOrajaHelper;
-	}
-
-	public void setUseOrajaHelper(boolean useOrajaHelper) {
-		this.useOrajaHelper = useOrajaHelper;
-	}
-
-	public int getOrajaHelperPort() {
-		return orajaHelperPort;
-	}
-
-	public void setOrajaHelperPort(int orajaHelperPort) {
-		this.orajaHelperPort = MathUtils.clamp(orajaHelperPort, 1, 65535);
 	}
 
 	public HashMap<String, String> getObsScenes() {

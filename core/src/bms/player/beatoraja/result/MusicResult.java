@@ -85,7 +85,7 @@ public class MusicResult extends AbstractResult {
 		}
 
 		updateScoreDatabase();
-		OrajaHelperClient.sendResult(main.getConfig(), resource.getSongdata(), resource.getReplayData(),
+		OrajaHelperClient.sendResult(resource.getSongdata(), resource.getReplayData(),
 				resource.getBMSModel().getMode(), resource.getScoreData());
 		// リプレイの自動保存
 		if (resource.getPlayMode().mode == BMSPlayerMode.Mode.PLAY && !resource.isFreqOn()) {

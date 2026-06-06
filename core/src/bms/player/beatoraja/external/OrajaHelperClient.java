@@ -1,32 +1,29 @@
 package bms.player.beatoraja.external;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
 import bms.model.Mode;
 import bms.player.beatoraja.ClearType;
-import bms.player.beatoraja.Config;
 import bms.player.beatoraja.ReplayData;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.pattern.Random;
 import bms.player.beatoraja.song.SongData;
+import bms.player.beatoraja.stream.NamedPipeSender;
 
 public final class OrajaHelperClient {
-	private static final Logger logger = LoggerFactory.getLogger(OrajaHelperClient.class);
-	private static final HttpClient CLIENT = HttpClient.newBuilder()
-			.connectTimeout(Duration.ofMillis(500))
-			.build();
+	private static final String PIPE_NAME = "oraja_helper";
+	private static final NamedPipeSender SENDER = new NamedPipeSender(PIPE_NAME);
+	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
+		Thread thread = new Thread(runnable, "oraja-helper-pipe-sender");
+		thread.setDaemon(true);
+		return thread;
+	});
 	private static final Json JSON = new Json();
 
 	static {
@@ -36,18 +33,18 @@ public final class OrajaHelperClient {
 	private OrajaHelperClient() {
 	}
 
-	public static void sendSelect(Config config, SongData song) {
+	public static void sendSelect(SongData song) {
 		Map<String, Object> payload = basePayload("song_select", "select", song);
-		send(config, payload);
+		send(payload);
 	}
 
-	public static void sendPlay(Config config, SongData song, ReplayData replay, Mode mode) {
+	public static void sendPlay(SongData song, ReplayData replay, Mode mode) {
 		Map<String, Object> payload = basePayload("song_play", "play", song);
 		addOption(payload, replay, mode);
-		send(config, payload);
+		send(payload);
 	}
 
-	public static void sendResult(Config config, SongData song, ReplayData replay, Mode mode, ScoreData score) {
+	public static void sendResult(SongData song, ReplayData replay, Mode mode, ScoreData score) {
 		if (score == null) {
 			return;
 		}
@@ -59,7 +56,7 @@ public final class OrajaHelperClient {
 		payload.put("clearLampId", score.getClear());
 		payload.put("missCount", score.getMinbp());
 		payload.put("judges", judgePayload(score));
-		send(config, payload);
+		send(payload);
 	}
 
 	private static Map<String, Object> basePayload(String event, String scene, SongData song) {
@@ -148,23 +145,8 @@ public final class OrajaHelperClient {
 		};
 	}
 
-	private static void send(Config config, Map<String, Object> payload) {
-		if (config == null || !config.isUseOrajaHelper()) {
-			return;
-		}
+	private static void send(Map<String, Object> payload) {
 		String body = JSON.toJson(payload);
-		HttpRequest request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + config.getOrajaHelperPort() + "/"))
-				.timeout(Duration.ofMillis(1000))
-				.header("Content-Type", "application/json; charset=UTF-8")
-				.POST(HttpRequest.BodyPublishers.ofString(body))
-				.build();
-		CLIENT.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-				.whenComplete((response, error) -> {
-					if (error != null) {
-						logger.debug("oraja_helper送信失敗: {}", error.getMessage());
-					} else if (response.statusCode() >= 400) {
-						logger.debug("oraja_helper送信失敗: HTTP {}", response.statusCode());
-					}
-				});
+		EXECUTOR.execute(() -> SENDER.sendLine(body));
 	}
 }

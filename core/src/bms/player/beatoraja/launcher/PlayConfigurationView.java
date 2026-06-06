@@ -98,8 +98,6 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private Tab obsTab;
 	@FXML
-	private Tab orajaHelperTab;
-	@FXML
 	private HBox controlPanel;
 
 	@FXML
@@ -298,8 +296,6 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private ObsConfigurationView obsController;
 	@FXML
-	private OrajaHelperConfigurationView orajaHelperController;
-	@FXML
 	private TrainerView trainerController;
 
 	private Config config;
@@ -364,7 +360,6 @@ public class PlayConfigurationView implements Initializable {
 		resourceController.init(this);
 		discordController.init(this);
 		obsController.init(this);
-		orajaHelperController.init(this);
 		screenshotFormat.getItems().setAll(ScreenShotFormat.values());
 
 		checkNewVersion();
@@ -482,7 +477,6 @@ public class PlayConfigurationView implements Initializable {
 		resourceController.update(config);
 		discordController.update(config);
 		obsController.update(config);
-		orajaHelperController.update(config);
 
 		skinController.update(config);
         // int b = Boolean.valueOf(config.getJKOC()).compareTo(false);
@@ -635,7 +629,6 @@ public class PlayConfigurationView implements Initializable {
 		resourceController.commit();
 		discordController.commit();
 		obsController.commit();
-		orajaHelperController.commit();
 
         // jkoc_hack is integer but *.setJKOC needs boolean type
 
@@ -819,7 +812,6 @@ public class PlayConfigurationView implements Initializable {
 		streamTab.setDisable(true);
 		discordTab.setDisable(true);
 		obsTab.setDisable(true);
-		orajaHelperTab.setDisable(true);
 		controlPanel.setDisable(true);
 
 		// Minimise the stage after start
