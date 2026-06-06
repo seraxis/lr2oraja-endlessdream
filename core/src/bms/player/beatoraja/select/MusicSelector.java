@@ -109,7 +109,6 @@ public final class MusicSelector extends MainState {
 	private SongData pendingOrajaHelperSong = null;
 	private long pendingOrajaHelperSongTime = -1;
 	private boolean pendingOrajaHelperSongSent = true;
-	private SongData lastOrajaHelperSelectedSong = null;
 
 	private PixmapResourcePool banners;
 
