@@ -109,6 +109,7 @@ public final class MusicSelector extends MainState {
 	private SongData pendingOrajaHelperSong = null;
 	private long pendingOrajaHelperSongTime = -1;
 	private boolean pendingOrajaHelperSongSent = true;
+	private SongData lastOrajaHelperSelectedSong = null;
 
 	private PixmapResourcePool banners;
 
@@ -220,6 +221,7 @@ public final class MusicSelector extends MainState {
 		// draw song information
 		resource.setSongdata(current instanceof SongBar ? ((SongBar) current).getSongData() : null);
 		resource.setCourseData(current instanceof GradeBar ? ((GradeBar) current).getCourseData() : null);
+		scheduleSelectedSongToOrajaHelper(current);
 		sendSelectedSongToOrajaHelper(current);
 
 		// preview music
@@ -682,11 +684,17 @@ public final class MusicSelector extends MainState {
 	}
 
 	private void scheduleSelectedSongToOrajaHelper() {
-		final Bar current = manager.getSelected();
+		scheduleSelectedSongToOrajaHelper(manager.getSelected());
+	}
+
+	private void scheduleSelectedSongToOrajaHelper(Bar current) {
 		if (current instanceof SongBar songbar && songbar.existsSong()) {
-			pendingOrajaHelperSong = songbar.getSongData();
-			pendingOrajaHelperSongTime = timer.getNowTime();
-			pendingOrajaHelperSongSent = false;
+			SongData selected = songbar.getSongData();
+			if (selected != pendingOrajaHelperSong && selected != lastOrajaHelperSelectedSong) {
+				pendingOrajaHelperSong = selected;
+				pendingOrajaHelperSongTime = timer.getNowTime();
+				pendingOrajaHelperSongSent = false;
+			}
 		} else {
 			pendingOrajaHelperSong = null;
 			pendingOrajaHelperSongTime = -1;
@@ -705,6 +713,7 @@ public final class MusicSelector extends MainState {
 			return;
 		}
 		OrajaHelperClient.sendSelect(pendingOrajaHelperSong);
+		lastOrajaHelperSelectedSong = pendingOrajaHelperSong;
 		pendingOrajaHelperSongSent = true;
 	}
 

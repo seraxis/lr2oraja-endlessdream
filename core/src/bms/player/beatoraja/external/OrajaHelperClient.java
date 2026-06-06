@@ -4,9 +4,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonWriter.OutputType;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 
 import bms.model.Mode;
 import bms.player.beatoraja.ClearType;
@@ -24,12 +26,6 @@ public final class OrajaHelperClient {
 		thread.setDaemon(true);
 		return thread;
 	});
-	private static final Json JSON = new Json();
-
-	static {
-		JSON.setOutputType(OutputType.json);
-	}
-
 	private OrajaHelperClient() {
 	}
 
@@ -146,7 +142,74 @@ public final class OrajaHelperClient {
 	}
 
 	private static void send(Map<String, Object> payload) {
-		String body = JSON.toJson(payload);
+		String body = toJson(payload);
+		dumpPayload(body);
 		EXECUTOR.execute(() -> SENDER.sendLine(body));
+	}
+
+	private static String toJson(Object value) {
+		if (value == null) {
+			return "null";
+		}
+		if (value instanceof String string) {
+			return "\"" + escapeJson(string) + "\"";
+		}
+		if (value instanceof Number || value instanceof Boolean) {
+			return String.valueOf(value);
+		}
+		if (value instanceof Map<?, ?> map) {
+			StringBuilder builder = new StringBuilder();
+			builder.append('{');
+			boolean first = true;
+			for (Map.Entry<?, ?> entry : map.entrySet()) {
+				if (!first) {
+					builder.append(',');
+				}
+				builder.append(toJson(String.valueOf(entry.getKey()))).append(':').append(toJson(entry.getValue()));
+				first = false;
+			}
+			builder.append('}');
+			return builder.toString();
+		}
+		return "\"" + escapeJson(String.valueOf(value)) + "\"";
+	}
+
+	private static void dumpPayload(String body) {
+		try {
+			Path logDir = Path.of("log");
+			Files.createDirectories(logDir);
+			String line = "{\"time\":\"" + escapeJson(LocalDateTime.now().toString()) + "\",\"payload\":\""
+					+ escapeJson(body) + "\"}\n";
+			Files.writeString(logDir.resolve("oraja_helper_payload.jsonl"), line, StandardCharsets.UTF_8,
+					StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+		} catch (Exception ignored) {
+		}
+	}
+
+	private static String escapeJson(String value) {
+		if (value == null) {
+			return "";
+		}
+		StringBuilder escaped = new StringBuilder();
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+			case '"' -> escaped.append("\\\"");
+			case '\\' -> escaped.append("\\\\");
+			case '\b' -> escaped.append("\\b");
+			case '\f' -> escaped.append("\\f");
+			case '\n' -> escaped.append("\\n");
+			case '\r' -> escaped.append("\\r");
+			case '\t' -> escaped.append("\\t");
+			default -> {
+				if (c < 0x20) {
+					escaped.append(String.format("\\u%04x", (int) c));
+				} else {
+					escaped.append(c);
+				}
+			}
+			}
+		}
+		return escaped.toString();
 	}
 }
