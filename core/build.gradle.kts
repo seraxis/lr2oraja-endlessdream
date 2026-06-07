@@ -88,9 +88,16 @@ tasks.test {
     useJUnitPlatform()
 }
 
-val gitHashProvider = providers.exec {
-    commandLine("git", "rev-parse", "--short", "HEAD")
-}.standardOutput.asText.map { it.trim() }.orElse("unknown")
+val gitHashProvider = providers.provider {
+    runCatching {
+        val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+            .directory(rootProject.projectDir)
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }.trim()
+        if (process.waitFor() == 0) output.ifEmpty { "unknown" } else "unknown"
+    }.getOrDefault("unknown")
+}
 
 // Generate current build's meta info: git commit hash, build time, etc
 tasks.register("generateBuildMetaInfo") {
