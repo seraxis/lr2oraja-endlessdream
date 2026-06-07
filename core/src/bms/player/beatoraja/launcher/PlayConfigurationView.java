@@ -1059,4 +1059,3 @@ public class PlayConfigurationView implements Initializable {
 		}
 	}
 }
-

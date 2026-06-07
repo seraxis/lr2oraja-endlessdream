@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.FloatArray;
 import bms.model.*;
 import bms.player.beatoraja.*;
 import bms.player.beatoraja.AudioConfig.FrequencyType;
+import bms.player.beatoraja.external.OrajaHelperClient;
 import bms.player.beatoraja.input.*;
 import bms.player.beatoraja.pattern.*;
 import bms.player.beatoraja.pattern.LaneShuffleModifier.*;
@@ -453,6 +454,8 @@ public class BMSPlayer extends MainState {
 			//保存されたHSオプションログからHSオプション再現
 			config.getPlayConfig(model.getMode()).setPlayconfig(HSReplay.config);
 		}
+
+		OrajaHelperClient.sendPlay(resource.getSongdata(), playinfo, model.getMode());
 
 		logger.info("ゲージ設定");
 		if(replay != null) {
