@@ -20,7 +20,7 @@ import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.ScoreData.SongTrophy;
 import bms.player.beatoraja.ScoreDatabaseAccessor.ScoreDataCollector;
 import bms.player.beatoraja.ScoreLogDatabaseAccessor.ScoreLog;
-import bms.player.beatoraja.ir.LR2IRConnection;
+import bms.player.beatoraja.ir.LR2IRAccessor;
 import bms.player.beatoraja.song.SongData;
 
 import com.badlogic.gdx.utils.Json;
@@ -75,7 +75,7 @@ public final class PlayDataAccessor {
 			scorelogdb = new ScoreLogDatabaseAccessor(playerpath + File.separatorChar + player + File.separatorChar + "scorelog.db");
 			scoredatalogdb = new ScoreDataLogDatabaseAccessor(playerpath + File.separatorChar + player + File.separatorChar + "scoredatalog.db");
 			// Share scoredb to LR2IR
-			LR2IRConnection.setScoreDatabaseAccessor(scoredb);
+			LR2IRAccessor.setScoreDatabaseAccessor(scoredb);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}

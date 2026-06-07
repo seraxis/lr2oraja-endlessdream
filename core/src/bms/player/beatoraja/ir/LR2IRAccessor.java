@@ -1,10 +1,8 @@
 package bms.player.beatoraja.ir;
 
-import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.ScoreData;
 import bms.player.beatoraja.ScoreDatabaseAccessor;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -36,14 +34,14 @@ import java.util.function.ToIntFunction;
  * @implNote This class is not a real IR connection, but the original repo is. It keeps the
  * original form to make things easier
  */
-public class LR2IRConnection {
+public class LR2IRAccessor {
 	private static final String IRUrl = "http://dream-pro.info/~lavalse/LR2IR/2";
 	private static ScoreDatabaseAccessor scoreDatabaseAccessor;
 
     private static Map<String, LeaderboardEntry[]> lr2IRRankingCache = new HashMap<>();
 
 	public static void setScoreDatabaseAccessor(ScoreDatabaseAccessor scoreDatabaseAccessor) {
-		LR2IRConnection.scoreDatabaseAccessor = scoreDatabaseAccessor;
+		LR2IRAccessor.scoreDatabaseAccessor = scoreDatabaseAccessor;
 	}
 
 	private static Object convertXMLToObject(String xml, Class c) {

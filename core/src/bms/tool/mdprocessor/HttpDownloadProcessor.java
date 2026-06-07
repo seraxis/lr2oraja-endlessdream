@@ -43,6 +43,9 @@ public class HttpDownloadProcessor {
     private String downloadDirectory;
 
     static {
+        // Ginger
+        HttpDownloadSourceMeta gingerDownloadSourceMeta = GingerDownloadSource.META;
+        DOWNLOAD_SOURCES.put(gingerDownloadSourceMeta.getName(), gingerDownloadSourceMeta);
         // Wriggle
         HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
         DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
@@ -69,7 +72,7 @@ public class HttpDownloadProcessor {
     }
 
     public static HttpDownloadSourceMeta getDefaultDownloadSource() {
-        return WriggleDownloadSource.META;
+        return GingerDownloadSource.META;
     }
 
     private Optional<DownloadTask> getTaskById(int taskId) {

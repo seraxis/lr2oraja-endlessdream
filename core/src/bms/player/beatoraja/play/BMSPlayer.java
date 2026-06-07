@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -705,13 +706,14 @@ public class BMSPlayer extends MainState {
 						}
 						PatternModifier.create(property.random2, 1, model.getMode(), config).modify(model);
 					}
-					PatternModifier.create(property.random, 0, model.getMode(), config).modify(model);
+					// We need to create a random pattern modifier for the below process because the PM doesn't have the ability to randomize patterns.
+					PatternModifier randomModifier = PatternModifier.create(property.random, 0, model.getMode(), config);
                     if (RandomTrainer.isActive() && model.getMode() == Mode.BEAT_7K && RandomTrainer.getRandomSeedMap() != null) {
                         HashMap<Integer, Long> seedmap = RandomTrainer.getRandomSeedMap();
                         logger.info("RandomTrainer: Enabled, modifying random seed");
-                        pm.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
+						randomModifier.setSeed(seedmap.get(Integer.parseInt(RandomTrainer.getLaneOrder())));
                     }
-                    pm.modify(model);
+					randomModifier.modify(model);
 
 					gauge = practice.getGauge(model);
 					model.setJudgerank(property.judgerank);
@@ -1039,6 +1041,7 @@ public class BMSPlayer extends MainState {
 		}
 		score.setClear(clear.id);
 		score.setGauge(gauge.isTypeChanged() ? -1 : gauge.getType());
+		score.setGaugelog(gaugelog);
 		score.setOption(playinfo.randomoption + (model.getMode().player == 2
 				? (playinfo.randomoption2 * 10 + playinfo.doubleoption * 100) : 0));
 		score.setSeed((model.getMode().player == 2 ? playinfo.randomoption2seed * 65536 * 256 : 0) + playinfo.randomoptionseed);

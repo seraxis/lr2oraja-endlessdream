@@ -1,26 +1,24 @@
 package bms.player.beatoraja.launcher;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.portaudio.DeviceInfo;
-
 import bms.player.beatoraja.AudioConfig;
 import bms.player.beatoraja.AudioConfig.DriverType;
 import bms.player.beatoraja.AudioConfig.FrequencyType;
-import bms.player.beatoraja.Config;
 import bms.player.beatoraja.audio.PortAudioDriver;
-import bms.player.beatoraja.launcher.PlayConfigurationView.OptionListCell;
+import com.portaudio.DeviceInfo;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
 
 public class AudioConfigurationView implements Initializable {
 	private static final Logger logger = LoggerFactory.getLogger(AudioConfigurationView.class);
@@ -35,12 +33,22 @@ public class AudioConfigurationView implements Initializable {
 	private Spinner<Integer> audiosim;
 	@FXML
 	private ComboBox<Integer> audiosamplerate;
+
 	@FXML
-	private Slider systemvolume;
+	private Slider systemVolumeSlider;
 	@FXML
-	private Slider keyvolume;
+	private Spinner<Double> systemVolumeSpinner;
+
 	@FXML
-	private Slider bgvolume;
+	private Slider keyVolumeSlider;
+	@FXML
+	private Spinner<Double> keyVolumeSpinner;
+
+	@FXML
+	private Slider bgVolumeSlider;
+	@FXML
+	private Spinner<Double> bgVolumeSpinner;
+
 	@FXML
 	private CheckBox normalizeVolume;
 	@FXML
@@ -51,29 +59,34 @@ public class AudioConfigurationView implements Initializable {
 	private CheckBox loopResultSound;
 	@FXML
 	private CheckBox loopCourseResultSound;
-	
+
 	private AudioConfig config;
 
+	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		audio.getItems().setAll(DriverType.OpenAL , DriverType.PortAudio);
 		audiosamplerate.getItems().setAll(null, 44100, 48000);
 
 		audioFreqOption.getItems().setAll(FrequencyType.UNPROCESSED , FrequencyType.FREQUENCY);
 		audioFastForward.getItems().setAll(FrequencyType.UNPROCESSED , FrequencyType.FREQUENCY);
+
+		bindSliderToSpinner(systemVolumeSlider, systemVolumeSpinner);
+		bindSliderToSpinner(keyVolumeSlider, keyVolumeSpinner);
+		bindSliderToSpinner(bgVolumeSlider, bgVolumeSpinner);
 	}
 
 	public void update(AudioConfig config) {
 		this.config = config;
-		
+
 		audio.setValue(config.getDriver());
 		audiobuffer.getValueFactory().setValue(config.getDeviceBufferSize());
 		audiosim.getValueFactory().setValue(config.getDeviceSimultaneousSources());
 		audiosamplerate.setValue(config.getSampleRate() > 0 ? config.getSampleRate() : null);
 		audioFreqOption.setValue(config.getFreqOption());
 		audioFastForward.setValue(config.getFastForward());
-		systemvolume.setValue((double)config.getSystemvolume());
-		keyvolume.setValue((double)config.getKeyvolume());
-		bgvolume.setValue((double)config.getBgvolume());
+		systemVolumeSlider.setValue(config.getSystemvolume());
+		keyVolumeSlider.setValue(config.getKeyvolume());
+		bgVolumeSlider.setValue(config.getBgvolume());
 		normalizeVolume.setSelected(config.isNormalizeVolume());
 		loopResultSound.setSelected(config.isLoopResultSound());
 		loopCourseResultSound.setSelected(config.isLoopCourseResultSound());
@@ -81,7 +94,7 @@ public class AudioConfigurationView implements Initializable {
 		updateAudioDriver();
 		updateNormalizeVolume();
 	}
-	
+
 	public void commit() {
 		config.setDriver(audio.getValue());
 		config.setDriverName(audioname.getValue());
@@ -90,19 +103,21 @@ public class AudioConfigurationView implements Initializable {
 		config.setSampleRate(audiosamplerate.getValue() != null ? audiosamplerate.getValue() : 0);
 		config.setFreqOption(audioFreqOption.getValue());
 		config.setFastForward(audioFastForward.getValue());
-		config.setSystemvolume((float) systemvolume.getValue());
-		config.setKeyvolume((float) keyvolume.getValue());
-		config.setBgvolume((float) bgvolume.getValue());
+		config.setSystemvolume((float) systemVolumeSlider.getValue());
+		config.setKeyvolume((float) keyVolumeSlider.getValue());
+		config.setBgvolume((float) bgVolumeSlider.getValue());
 		config.setNormalizeVolume(normalizeVolume.isSelected());
 		config.setLoopResultSound(loopResultSound.isSelected());
 		config.setLoopCourseResultSound(loopCourseResultSound.isSelected());
 	}
-	
+
 	@FXML
 	public void updateNormalizeVolume() {
 		boolean enabled = normalizeVolume.isSelected();
-		keyvolume.setDisable(enabled);
-		bgvolume.setDisable(enabled);
+		keyVolumeSlider.setDisable(enabled);
+		keyVolumeSpinner.setDisable(enabled);
+		bgVolumeSlider.setDisable(enabled);
+		bgVolumeSpinner.setDisable(enabled);
 	}
 
     @FXML
@@ -140,5 +155,12 @@ public class AudioConfigurationView implements Initializable {
 			}
 			break;
 		}
+	}
+
+	private void bindSliderToSpinner(Slider slider, Spinner<Double> spinner) {
+		Bindings.bindBidirectional(
+				slider.valueProperty().asObject(),
+				spinner.getValueFactory().valueProperty()
+		);
 	}
 }

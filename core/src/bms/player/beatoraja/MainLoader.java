@@ -262,7 +262,7 @@ public class MainLoader extends Application {
 
 				public void create() {
 					logger.info("Starting {}", Version.versionLong);
-					logger.info("[Build info] Build date: {}, Commit: {}", Version.getBuildDate(), Version.getGitCommitHash());
+					logger.info("[Build info] Commit: {}", Version.getGitCommitHash());
 					main.create();
 					if (displaymode == Config.DisplayMode.FULLSCREEN) {
 						Gdx.graphics.setFullscreenMode(finalGdxDisplayMode);

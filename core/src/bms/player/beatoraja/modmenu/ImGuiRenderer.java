@@ -161,7 +161,6 @@ public class ImGuiRenderer {
                 float axis;
 
                 ImGui.text("Commit hash: " + Version.getGitCommitHash());
-                ImGui.text("Build time: " + Version.getBuildDate());
                 ImGui.text("GLFW version: " + GLFW.glfwGetVersionString());
                 for (Controller con : manager.getControllers()) {
                     ImGui.text("Controller Name: " + con.getName());

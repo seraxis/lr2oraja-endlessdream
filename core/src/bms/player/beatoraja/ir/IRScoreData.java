@@ -110,6 +110,8 @@ public class IRScoreData {
 	public final BMSPlayerRule rule;
 	
 	public final String skin;
+
+	public IRGaugeHistory gaugeHistory;
 	
 	/**
 	 * リプレイデータ（打鍵ログを含む）
@@ -151,6 +153,7 @@ public class IRScoreData {
 		this.judgeAlgorithm = score.getJudgeAlgorithm();
 		this.rule = score.getRule();
 		this.skin = score.getSkin();
+		this.gaugeHistory = IRGaugeHistory.fromGaugeLog(score.getGaugelog());
 	}
 	
 	public int getExscore() {

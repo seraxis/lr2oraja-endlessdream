@@ -35,13 +35,13 @@ public class InputConfigurationView implements Initializable {
     @FXML
     private Spinner<Integer> inputduration;
     @FXML
-    private CheckBox jkoc_hack;
-    @FXML
     private TableView<ControllerConfigViewModel> controller_tableView;
     @FXML
     private TableColumn<ControllerConfigViewModel, String> playsideCol;
     @FXML
     private TableColumn<ControllerConfigViewModel, String> nameCol;
+    @FXML
+    private TableColumn<ControllerConfigViewModel, Boolean> isJkocCol;
     @FXML
     private TableColumn<ControllerConfigViewModel, Boolean> isAnalogCol;
     @FXML
@@ -60,11 +60,11 @@ public class InputConfigurationView implements Initializable {
     private PlayerConfig player;
 
     private PlayConfigurationView.PlayMode mode;
-    
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         inputconfig.getItems().setAll(PlayConfigurationView.PlayMode.values());
-        PlayConfigurationView.initComboBox(mouseScratchMode, new String[] { "Ver. 2 (Newest)", "Ver. 1 (~0.8.3)" });
+        PlayConfigurationView.initComboBox(mouseScratchMode, new String[]{"Ver. 2 (Newest)", "Ver. 1 (~0.8.3)"});
     }
 
     @FXML
@@ -85,73 +85,75 @@ public class InputConfigurationView implements Initializable {
     }
 
     public void updateMode(PlayConfigurationView.PlayMode mode) {
-	this.mode = mode;
-	PlayModeConfig conf = player.getPlayConfig(Mode.valueOf(mode.name()));
-	List<ControllerConfigViewModel> listControllerConfigViewModel = Arrays.asList(conf.getController()).stream()
-		.map(config -> new ControllerConfigViewModel(config)).collect(Collectors.toList());
-	
-	inputduration.getValueFactory().setValue(conf.getKeyboardConfig().getDuration());
-    mouseScratch.setSelected(conf.getKeyboardConfig().getMouseScratchConfig().isMouseScratchEnabled());
-    mouseScratchTimeThreshold.getValueFactory().setValue(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchTimeThreshold());
-    mouseScratchDistance.getValueFactory().setValue(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchDistance());
-    mouseScratchMode.getSelectionModel().select(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchMode());
+        this.mode = mode;
+        PlayModeConfig conf = player.getPlayConfig(Mode.valueOf(mode.name()));
+        List<ControllerConfigViewModel> listControllerConfigViewModel = Arrays.asList(conf.getController()).stream()
+                .map(config -> new ControllerConfigViewModel(config)).collect(Collectors.toList());
 
-	controller_tableView.setEditable(true);
-	playsideCol.setEditable(false);
-	nameCol.setEditable(false);
-	playsideCol.setSortable(false);
-	nameCol.setSortable(false);
-	isAnalogCol.setSortable(false);
-	analogThresholdCol.setSortable(false);
-	analogModeCol.setSortable(false);
+        inputduration.getValueFactory().setValue(conf.getKeyboardConfig().getDuration());
+        mouseScratch.setSelected(conf.getKeyboardConfig().getMouseScratchConfig().isMouseScratchEnabled());
+        mouseScratchTimeThreshold.getValueFactory().setValue(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchTimeThreshold());
+        mouseScratchDistance.getValueFactory().setValue(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchDistance());
+        mouseScratchMode.getSelectionModel().select(conf.getKeyboardConfig().getMouseScratchConfig().getMouseScratchMode());
 
-	// Display "1P" or "2P"
-	playsideCol.setCellValueFactory(col -> new SimpleStringProperty(col != null && col.getValue() != null
-		? Integer.toString(listControllerConfigViewModel.indexOf(col.getValue()) + 1) + "P"
-		: ""));
-	nameCol.setCellValueFactory(col -> col.getValue().getNameProperty());
-	isAnalogCol.setCellValueFactory(col -> col.getValue().getIsAnalogScratchProperty());
-	analogThresholdCol.setCellValueFactory(col -> col.getValue().getAnalogScratchThresholdProperty());
-	analogModeCol.setCellValueFactory(col -> col.getValue().getAnalogScratchModeProperty());
+        controller_tableView.setEditable(true);
+        playsideCol.setEditable(false);
+        nameCol.setEditable(false);
+        playsideCol.setSortable(false);
+        nameCol.setSortable(false);
+        isJkocCol.setSortable(false);
+        isAnalogCol.setSortable(false);
+        analogThresholdCol.setSortable(false);
+        analogModeCol.setSortable(false);
 
-	nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-	isAnalogCol.setCellFactory(CheckBoxTableCell.forTableColumn(isAnalogCol));
-	analogThresholdCol.setCellFactory(col -> new SpinnerCell(1, 1000, 100, 1));
-	analogModeCol.setCellFactory(ComboBoxTableCell.forTableColumn(new IntegerStringConverter() {
-	    private String v2String = "Ver. 2 (Newest)";
-	    private String v1String = "Ver. 1 (~0.6.9)";
-	    
-	    @Override
-	    public Integer fromString(String arg0) {
-		if (Objects.equals(arg0, v2String)) {
-		    return PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2;
-		} else {
-		    return PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_1;
-		}
-	    }
+        // Display "1P" or "2P"
+        playsideCol.setCellValueFactory(col -> new SimpleStringProperty(col != null && col.getValue() != null
+                ? Integer.toString(listControllerConfigViewModel.indexOf(col.getValue()) + 1) + "P"
+                : ""));
+        nameCol.setCellValueFactory(col -> col.getValue().getNameProperty());
+        isJkocCol.setCellValueFactory(col -> col.getValue().isJkocPropertyProperty());
+        isAnalogCol.setCellValueFactory(col -> col.getValue().getIsAnalogScratchProperty());
+        analogThresholdCol.setCellValueFactory(col -> col.getValue().getAnalogScratchThresholdProperty());
+        analogModeCol.setCellValueFactory(col -> col.getValue().getAnalogScratchModeProperty());
 
-	    @Override
-	    public String toString(Integer arg0) {
-		if (arg0 == PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2) {
-		    return v2String;
-		} else {
-		    return v1String;
-		}
-	    }
-	}, PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2, PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_1));
+        nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        isJkocCol.setCellFactory(CheckBoxTableCell.forTableColumn(isJkocCol));
+        isAnalogCol.setCellFactory(CheckBoxTableCell.forTableColumn(isAnalogCol));
+        analogThresholdCol.setCellFactory(col -> new SpinnerCell(1, 1000, 100, 1));
+        analogModeCol.setCellFactory(ComboBoxTableCell.forTableColumn(new IntegerStringConverter() {
+            private String v2String = "Ver. 2 (Newest)";
+            private String v1String = "Ver. 1 (~0.6.9)";
 
-	ObservableList<ControllerConfigViewModel> data = FXCollections
-		.observableArrayList(listControllerConfigViewModel);
+            @Override
+            public Integer fromString(String arg0) {
+                if (Objects.equals(arg0, v2String)) {
+                    return PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2;
+                } else {
+                    return PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_1;
+                }
+            }
 
-	controller_tableView.setItems(data);
+            @Override
+            public String toString(Integer arg0) {
+                if (arg0 == PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2) {
+                    return v2String;
+                } else {
+                    return v1String;
+                }
+            }
+        }, PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_2, PlayModeConfig.ControllerConfig.ANALOG_SCRATCH_VER_1));
 
-	for (PlayModeConfig.ControllerConfig controller : conf.getController()) {
-	    inputduration.getValueFactory().setValue(controller.getDuration());
-	    jkoc_hack.setSelected(controller.getJKOC());
-	}
+        ObservableList<ControllerConfigViewModel> data = FXCollections
+                .observableArrayList(listControllerConfigViewModel);
+
+        controller_tableView.setItems(data);
+
+        for (PlayModeConfig.ControllerConfig controller : conf.getController()) {
+            inputduration.getValueFactory().setValue(controller.getDuration());
+        }
 
     }
-    
+
     public void commitMode() {
         if (mode != null) {
             PlayModeConfig conf = player.getPlayConfig(Mode.valueOf(mode.name()));
@@ -160,11 +162,11 @@ public class InputConfigurationView implements Initializable {
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchTimeThreshold(mouseScratchTimeThreshold.getValue());
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchDistance(mouseScratchDistance.getValue());
             conf.getKeyboardConfig().getMouseScratchConfig().setMouseScratchMode(mouseScratchMode.getValue());
-            
-            for(ControllerConfigViewModel vm : this.controller_tableView.getItems()) {
-        	PlayModeConfig.ControllerConfig controller = vm.getConfig();
-        	controller.setDuration(inputduration.getValue());
-                controller.setJKOC(jkoc_hack.isSelected());
+
+            for (ControllerConfigViewModel vm : this.controller_tableView.getItems()) {
+                PlayModeConfig.ControllerConfig controller = vm.getConfig();
+                controller.setDuration(inputduration.getValue());
+                controller.setJKOC(vm.isIsJkocProperty());
                 controller.setAnalogScratch(vm.getIsAnalogScratchProperty().get());
                 controller.setAnalogScratchThreshold(vm.getAnalogScratchThreshold());
                 controller.setAnalogScratchMode(vm.getAnalogScratchMode());

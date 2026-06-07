@@ -3,6 +3,8 @@ package bms.player.beatoraja;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import bms.player.beatoraja.rivals.RivalDataAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -729,9 +731,7 @@ public class MainController {
             if (!getShowModMenu() && current instanceof BMSPlayer) {
                 Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
             } else {
-            	if(Gdx.input.isCursorCatched()) {
-            		Gdx.input.setCursorCatched(false);
-            	}
+            	Gdx.input.setCursorCatched(false);
             }
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {

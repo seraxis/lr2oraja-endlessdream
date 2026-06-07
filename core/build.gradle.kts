@@ -1,14 +1,9 @@
-import org.gradle.internal.classpath.Instrumented.systemProperty
-import java.io.ByteArrayOutputStream
 import java.nio.file.FileSystems
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.TimeZone
 
 plugins {
     id("java-library")
     id("application")
-    id("com.gradleup.shadow") version "8.3.9"
+    id("com.gradleup.shadow") version "9.3.2"
     id("org.endlessdream.extra.multiplatform-convention")
 }
 
@@ -26,18 +21,22 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    flatDir{
+    flatDir {
         dirs("../lib")
     }
-    maven(url = "https://jitpack.io" )
+    maven(url = "https://jitpack.io")
 }
 
 version = libs.versions.beatoraja.get()
 
 sourceSets {
     main {
-        java.srcDirs(listOf("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser"))
-        resources.srcDirs(listOf("src/"))
+        java.srcDirs("src/", "dependencies/jbms-parser/", "dependencies/jbmstable-parser")
+        resources.srcDirs("src/")
+    }
+    test {
+        java.srcDirs("test/")
+        resources.srcDirs("test/resources")
     }
 }
 
@@ -46,31 +45,34 @@ application {
 }
 
 tasks {
+    jar {
+        dependsOn("generateBuildMetaInfo")
+    }
+    compileTestJava {
+        dependsOn("generateBuildMetaInfo")
+    }
+
     // fat/uber-jar task provided by https://github.com/GradleUp/shadow
     shadowJar {
-        dependsOn("generateBuildMetaInfo")
-        val platformProp = System.getProperty("platform")
+        dependsOn("generateBuildMetaInfo", "test")
+
         val archProp = System.getProperty("arch")
-        val archVariant = when(archProp != null) {
-            true -> archProp.plus("-")
-            false -> ""
-        }
-        val classifierPlatform = when(platformProp != null)  {
-            true -> platformProp.plus("-").plus(archVariant).plus(libs.versions.endlessdream.get())
-            false -> "".plus(libs.versions.endlessdream.get())
-        }
+        val archVariant = archProp?.let { "$it-" } ?: ""
+        val platformProp = System.getProperty("platform")
+        val endlessDreamVersion = libs.versions.endlessdream.get()
+        val classifierPlatform = platformProp?.let { "$it-$archVariant$endlessDreamVersion"} ?: endlessDreamVersion
 
         destinationDirectory.set(projectDir.resolveSibling("dist"))
         archiveBaseName.set("lr2oraja")
         archiveClassifier.set(classifierPlatform)
-	    mergeServiceFiles()
+        mergeServiceFiles()
     }
 
     // shadow task that extends java `application` plugin JavaExec to cover fatjars
     // used to test builds, does not contain portaudio natives.
     runShadow {
         val runDirProp = System.getProperty("runDir")
-        val runDir = when(runDirProp != null)  {
+        val runDir = when (runDirProp != null) {
             true -> FileSystems.getDefault().getPath(runDirProp).normalize().toAbsolutePath().toFile()
             false -> projectDir.resolve("../assets")
         }
@@ -82,41 +84,38 @@ tasks {
     }
 }
 
-// Generate current build's meta info: git commit hash, commit time, etc
+tasks.test {
+    useJUnitPlatform()
+}
+
+val gitHashProvider = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+}.standardOutput.asText.map { it.trim() }.orElse("unknown")
+
+// Generate current build's meta info: git commit hash, build time, etc
 tasks.register("generateBuildMetaInfo") {
-    val gitHash: String by lazy {
-        try {
-            val stdout = ByteArrayOutputStream()
-            exec {
-                commandLine("git", "rev-parse", "--short", "HEAD")
-                standardOutput = stdout
-            }
-            stdout.toString().trim()
-        } catch (e: Exception) {
-            "unknown"
-        }
-    }
+    inputs.property("gitHash", gitHashProvider)
 
-    val buildTime: String by lazy {
-        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-        sdf.timeZone = TimeZone.getTimeZone("UTC")
-        sdf.format(Date())
-    }
+    val output = layout.buildDirectory.file("resources/main/resources/build.properties")
+    outputs.file(output)
 
-    var output = file("src/resources/build.properties")
-    output.writeText(
-        """
+    doLast {
+        val outputFile = output.get().asFile
+        outputFile.parentFile.mkdirs()
+        val gitHash = gitHashProvider.get()
+        outputFile.writeText(
+            """
             git_commit=${gitHash}
-            build_time=${buildTime} 
-        """.trimIndent()
-    )
+            """.trimIndent()
+        )
+    }
 }
 
 // versions and bundles defined in ../gradle/libs.versions.toml
 dependencies {
     implementation(libs.bundles.libgdx)
-    
-    implementation(libs.gdx.platform)  {
+
+    implementation(libs.gdx.platform) {
         artifact {
             classifier = "natives-desktop"
         }
@@ -166,4 +165,8 @@ dependencies {
     // non-gradle managed file dependencies. jportaudio not on maven. "custom" scares me.
     implementation(":jportaudio")
     implementation(":luaj-jse:3.0.2-custom")
+
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
