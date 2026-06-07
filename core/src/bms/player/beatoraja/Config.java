@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bms.player.beatoraja.system.RobustFile;
+import bms.player.beatoraja.obs.ObsControlCommand;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -213,6 +215,7 @@ public class Config implements Validatable {
 	private int obsWsRecMode = 0;
 	private HashMap<String, String> obsScenes = new HashMap<>();
 	private HashMap<String, String> obsActions = new HashMap<>();
+	private ArrayList<ObsControlCommand> obsCommands = new ArrayList<>();
 
 	public enum ScreenShotFormat {
 		PNG, JPG
@@ -584,6 +587,17 @@ public class Config implements Validatable {
 
 	public void setObsActions(HashMap<String, String> obsActions) {
 		this.obsActions = obsActions;
+	}
+
+	public ArrayList<ObsControlCommand> getObsCommands() {
+		if (obsCommands == null) {
+			obsCommands = new ArrayList<>();
+		}
+		return obsCommands;
+	}
+
+	public void setObsCommands(ArrayList<ObsControlCommand> obsCommands) {
+		this.obsCommands = obsCommands != null ? obsCommands : new ArrayList<>();
 	}
 
 	public boolean isSetClipboardWhenScreenshot() {
