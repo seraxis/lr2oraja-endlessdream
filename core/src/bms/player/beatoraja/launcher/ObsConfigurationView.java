@@ -120,6 +120,7 @@ public class ObsConfigurationView implements Initializable {
 		obsTargetColumn.setCellValueFactory(new PropertyValueFactory<>("targetDisplay"));
 		obsDetailColumn.setCellValueFactory(new PropertyValueFactory<>("detailDisplay"));
 		obsCommandTable.setItems(commands);
+		obsCommandTable.setPlaceholder(new Label("No registered OBS commands"));
 
 		obsActionBox.valueProperty().addListener((observable, oldValue, newValue) -> updateCommandInputState());
 		obsTargetSceneBox.valueProperty().addListener((observable, oldValue, newValue) -> refreshSourceItems(newValue));
