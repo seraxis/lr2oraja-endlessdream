@@ -1,5 +1,7 @@
 package bms.player.beatoraja.obs;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ public class ObsListener implements MainStateListener {
 	private MainStateType lastStateType;
 
 	private volatile ScheduledFuture<?> scheduledStopTask;
+	private volatile boolean mainStartTriggered = false;
 
 	public ObsListener(Config config) {
 		this.config = config;
@@ -36,6 +39,35 @@ public class ObsListener implements MainStateListener {
 
 	public ObsWsClient getObsClient() {
 		return obsClient;
+	}
+
+	public void triggerMainStarted() {
+		scheduleMainStartTrigger(0);
+	}
+
+	private void scheduleMainStartTrigger(final int retryCount) {
+		if (obsClient == null) {
+			return;
+		}
+		try {
+			obsClient.scheduler.schedule(() -> {
+				if (mainStartTriggered) {
+					return;
+				}
+				if (obsClient.isConnected() && obsClient.isIdentified()) {
+					mainStartTriggered = true;
+					triggerStateChange(ObsConfigurationView.TIMING_MAIN + ObsConfigurationView.TIMING_SUFFIX_START);
+				} else if (retryCount < 20) {
+					scheduleMainStartTrigger(retryCount + 1);
+				}
+			}, retryCount == 0 ? 0 : 500, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			logger.warn("Failed to schedule OBS main start trigger: {}", e.getMessage());
+		}
+	}
+
+	public synchronized void triggerMainEnded() {
+		triggerStateChange(ObsConfigurationView.TIMING_MAIN + ObsConfigurationView.TIMING_SUFFIX_END);
 	}
 
 	private void triggerReplay() {
@@ -60,20 +92,17 @@ public class ObsListener implements MainStateListener {
 	}
 
 	public synchronized void triggerPlayEnded() {
-		triggerStateChange("PLAY_ENDED");
+		triggerStateChange(MainStateType.PLAY.name() + ObsConfigurationView.TIMING_SUFFIX_END);
 	}
 
 	public synchronized void triggerStateChange(MainStateType stateType) {
-		triggerStateChange(stateType.name());
+		triggerStateChange(stateType.name() + ObsConfigurationView.TIMING_SUFFIX_START);
 	}
 
-	public synchronized void triggerStateChange(String stateName) {
+	public synchronized void triggerStateChange(String timing) {
 		if (obsClient == null || !obsClient.isConnected()) {
 			return;
 		}
-
-		final String scene = config.getObsScene(stateName);
-		final String action = config.getObsAction(stateName);
 
 		// If a StopRecord action was already scheduled, StopRecord immediately
 		boolean stopRecordNow = cancelScheduledStop();
@@ -86,34 +115,79 @@ public class ObsListener implements MainStateListener {
 		}
 
 		try {
-			if (scene != null && !scene.equals(ObsConfigurationView.SCENE_NONE)) {
-				obsClient.setScene(scene);
-			}
-			if (action != null && !action.equals(ObsConfigurationView.ACTION_NONE)) {
-				if (action.equals("StopRecord")) {
-					int delay = config.getObsWsRecStopWait();
-					// We already executed StopRecord above
-					if (stopRecordNow) {
-						return;
-					}
-					scheduledStopTask = obsClient.scheduler.schedule(() -> {
-						try {
-							obsClient.requestStopRecord();
-						} catch (Exception e) {
-							logger.warn("Failed to stop recording: {}", e.getMessage());
-						} finally {
-							synchronized (ObsListener.this) {
-								scheduledStopTask = null;
-							}
-						}
-					}, delay, TimeUnit.MILLISECONDS);
-				} else {
-					obsClient.sendRequest(action);
+			for (ObsControlCommand command : getConfiguredCommands()) {
+				if (!timing.equals(command.getTiming())) {
+					continue;
 				}
+				executeCommand(command, stopRecordNow);
+				stopRecordNow = false;
 			}
 		} catch (Exception e) {
 			logger.warn("Failed to send OBS request: {}", e.getMessage());
 		}
+	}
+
+	private List<ObsControlCommand> getConfiguredCommands() {
+		if (!config.getObsCommands().isEmpty()) {
+			return config.getObsCommands();
+		}
+
+		final List<ObsControlCommand> commands = new ArrayList<>();
+		for (final MainStateType state : MainStateType.values()) {
+			addLegacyCommands(commands, state.name());
+		}
+		addLegacyCommands(commands, "PLAY_ENDED");
+		return commands;
+	}
+
+	private void addLegacyCommands(final List<ObsControlCommand> commands, final String oldStateName) {
+		final String timing = oldStateName.equals("PLAY_ENDED") ? MainStateType.PLAY.name()
+				+ ObsConfigurationView.TIMING_SUFFIX_END : oldStateName + ObsConfigurationView.TIMING_SUFFIX_START;
+		final String scene = config.getObsScene(oldStateName);
+		if (scene != null && !scene.isEmpty()) {
+			commands.add(new ObsControlCommand(timing, ObsWsClient.ACTION_SET_SCENE, "", "", scene));
+		}
+		final String action = config.getObsAction(oldStateName);
+		if (action != null && !action.isEmpty()) {
+			commands.add(new ObsControlCommand(timing, action, "", "", ""));
+		}
+	}
+
+	private void executeCommand(ObsControlCommand command, boolean stopRecordNow) {
+		final String action = command.getAction();
+		if (ObsWsClient.ACTION_SET_SCENE.equals(action)) {
+			if (!command.getTransitionScene().isEmpty()) {
+				obsClient.setScene(command.getTransitionScene());
+			}
+		} else if (ObsWsClient.ACTION_SHOW_SOURCE.equals(action)) {
+			obsClient.setSourceVisible(command.getTargetScene(), command.getTargetSource(), true);
+		} else if (ObsWsClient.ACTION_HIDE_SOURCE.equals(action)) {
+			obsClient.setSourceVisible(command.getTargetScene(), command.getTargetSource(), false);
+		} else if (ObsWsClient.ACTION_STOP_RECORD.equals(action)) {
+			if (stopRecordNow) {
+				return;
+			}
+			scheduleStopRecord();
+		} else if (ObsWsClient.ACTION_START_RECORD.equals(action)) {
+			obsClient.requestStartRecord();
+		} else if (action != null && !action.isEmpty()) {
+			obsClient.sendRequest(action);
+		}
+	}
+
+	private void scheduleStopRecord() {
+		int delay = config.getObsWsRecStopWait();
+		scheduledStopTask = obsClient.scheduler.schedule(() -> {
+			try {
+				obsClient.requestStopRecord();
+			} catch (Exception e) {
+				logger.warn("Failed to stop recording: {}", e.getMessage());
+			} finally {
+				synchronized (ObsListener.this) {
+					scheduledStopTask = null;
+				}
+			}
+		}, delay, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -130,6 +204,9 @@ public class ObsListener implements MainStateListener {
 		if (currentStateType == MainStateType.PLAY && lastStateType == MainStateType.PLAY) {
 			triggerReplay();
 		} else if (currentStateType != lastStateType) {
+			if (lastStateType != null) {
+				triggerStateChange(lastStateType.name() + ObsConfigurationView.TIMING_SUFFIX_END);
+			}
 			triggerStateChange(currentStateType);
 		}
 
@@ -145,6 +222,13 @@ public class ObsListener implements MainStateListener {
 			}
 		}
 		if (obsClient != null) {
+			if (cancelScheduledStop()) {
+				try {
+					obsClient.requestStopRecord();
+				} catch (Exception e) {
+					logger.warn("Failed to stop recording before closing OBS client: {}", e.getMessage());
+				}
+			}
 			obsClient.close();
 		}
 	}
