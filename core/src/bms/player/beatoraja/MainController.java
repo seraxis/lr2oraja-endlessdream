@@ -215,6 +215,7 @@ public class MainController {
 			obsListener = new ObsListener(config);
 			obsClient = obsListener.getObsClient();
 			stateListener.add(obsListener);
+			obsListener.triggerMainStarted();
 		}
 	}
 
@@ -839,6 +840,10 @@ public class MainController {
 	}
 
 	public void dispose() {
+		if (obsListener != null) {
+			obsListener.triggerMainEnded();
+		}
+
 		saveConfig();
 
 		if (selector != null) {
@@ -872,6 +877,9 @@ public class MainController {
 		}
 		if (loudnessAnalyzer != null) {
 			loudnessAnalyzer.shutdown();
+		}
+		if (obsListener != null) {
+			obsListener.close();
 		}
 
 		logger.info("全リソース破棄完了");

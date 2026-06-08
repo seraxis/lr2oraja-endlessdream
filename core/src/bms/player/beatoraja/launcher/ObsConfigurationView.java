@@ -79,6 +79,7 @@ public class ObsConfigurationView implements Initializable {
 	public static final String SCENE_NONE = "(No Change)";
 	public static final String ACTION_NONE = "(Do Nothing)";
 
+	public static final String TIMING_MAIN = "MAIN";
 	public static final String TIMING_SUFFIX_START = "_START";
 	public static final String TIMING_SUFFIX_END = "_END";
 	public static final String ACTION_START_RECORD_LABEL = "Start Recording";
@@ -104,6 +105,8 @@ public class ObsConfigurationView implements Initializable {
 				resources.getString("OBSWS_REC_ONREPLAY"));
 
 		obsActionBox.getItems().addAll(ACTION_LABELS.keySet());
+		obsTimingBox.getItems().add(TIMING_MAIN + TIMING_SUFFIX_START);
+		obsTimingBox.getItems().add(TIMING_MAIN + TIMING_SUFFIX_END);
 		for (final MainStateType state : MainStateType.values()) {
 			obsTimingBox.getItems().add(state.name() + TIMING_SUFFIX_START);
 			obsTimingBox.getItems().add(state.name() + TIMING_SUFFIX_END);
