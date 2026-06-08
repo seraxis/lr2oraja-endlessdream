@@ -23,6 +23,7 @@ public class ObsListener implements MainStateListener {
 	private MainStateType lastStateType;
 
 	private volatile ScheduledFuture<?> scheduledStopTask;
+	private volatile boolean mainStartTriggered = false;
 
 	public ObsListener(Config config) {
 		this.config = config;
@@ -38,6 +39,35 @@ public class ObsListener implements MainStateListener {
 
 	public ObsWsClient getObsClient() {
 		return obsClient;
+	}
+
+	public void triggerMainStarted() {
+		scheduleMainStartTrigger(0);
+	}
+
+	private void scheduleMainStartTrigger(final int retryCount) {
+		if (obsClient == null) {
+			return;
+		}
+		try {
+			obsClient.scheduler.schedule(() -> {
+				if (mainStartTriggered) {
+					return;
+				}
+				if (obsClient.isConnected() && obsClient.isIdentified()) {
+					mainStartTriggered = true;
+					triggerStateChange(ObsConfigurationView.TIMING_MAIN + ObsConfigurationView.TIMING_SUFFIX_START);
+				} else if (retryCount < 20) {
+					scheduleMainStartTrigger(retryCount + 1);
+				}
+			}, retryCount == 0 ? 0 : 500, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			logger.warn("Failed to schedule OBS main start trigger: {}", e.getMessage());
+		}
+	}
+
+	public synchronized void triggerMainEnded() {
+		triggerStateChange(ObsConfigurationView.TIMING_MAIN + ObsConfigurationView.TIMING_SUFFIX_END);
 	}
 
 	private void triggerReplay() {
@@ -192,6 +222,13 @@ public class ObsListener implements MainStateListener {
 			}
 		}
 		if (obsClient != null) {
+			if (cancelScheduledStop()) {
+				try {
+					obsClient.requestStopRecord();
+				} catch (Exception e) {
+					logger.warn("Failed to stop recording before closing OBS client: {}", e.getMessage());
+				}
+			}
 			obsClient.close();
 		}
 	}
