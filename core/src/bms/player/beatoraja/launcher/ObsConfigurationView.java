@@ -108,6 +108,9 @@ public class ObsConfigurationView implements Initializable {
 		obsTimingBox.getItems().add(TIMING_MAIN + TIMING_SUFFIX_START);
 		obsTimingBox.getItems().add(TIMING_MAIN + TIMING_SUFFIX_END);
 		for (final MainStateType state : MainStateType.values()) {
+			if (state == MainStateType.CONFIG) {
+				continue;
+			}
 			obsTimingBox.getItems().add(state.name() + TIMING_SUFFIX_START);
 			obsTimingBox.getItems().add(state.name() + TIMING_SUFFIX_END);
 		}
@@ -151,6 +154,9 @@ public class ObsConfigurationView implements Initializable {
 		}
 
 		for (final MainStateType state : MainStateType.values()) {
+			if (state == MainStateType.CONFIG) {
+				continue;
+			}
 			addLegacyCommands(state.name());
 		}
 		addLegacyCommands("PLAY_ENDED");
