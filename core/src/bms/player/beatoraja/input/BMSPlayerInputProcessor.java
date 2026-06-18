@@ -13,73 +13,133 @@ import bms.player.beatoraja.input.BMSPlayerInputDevice.Type;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 
 import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.ControllerAdapter;
 import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.utils.Array;
+
+import bms.player.beatoraja.modmenu.ImGuiNotify;
 
 /**
  * キーボードやコントローラからの入力を管理するクラス
  *
  * @author exch
  */
-public class BMSPlayerInputProcessor {
+public class BMSPlayerInputProcessor extends ControllerAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(BMSPlayerInputProcessor.class);
 	
 	private boolean enable = true;
 
+	/**
+	 * Player config for restoring controller bindings.
+	 */
+	private final PlayerConfig player;
+
 	private KeyBoardInputProcesseor kbinput;
 
-	private BMControllerInputProcessor[] bminput;
+	private volatile BMControllerInputProcessor[] bminput;
+
+	private ControllerConfig[] currentControllerConfig;
 
 	private MidiInputProcessor midiinput;
 	
 	private KeyLogger keylog = new KeyLogger();
 
 	public BMSPlayerInputProcessor(Config config, PlayerConfig player) {
+		this.player = player;
 		Resolution resolution = config.getResolution();
 		kbinput = new KeyBoardInputProcesseor(this, player.getMode14().getKeyboardConfig(), resolution);
 		// Gdx.input.setInputProcessor(kbinput);
 		Controllers.preferredManager = "bms.player.beatoraja.controller.Lwjgl3ControllerManager";
 
-		Array<BMControllerInputProcessor> bminput = new Array<BMControllerInputProcessor>();
-		for (Controller controller : Controllers.getControllers()) {
-			logger.info("コントローラーを検出 : " + controller.getName());
-			// FIXME:前回終了時のModeからコントローラ設定を復元
-			ControllerConfig controllerConfig = Stream.of(player.getMode7().getController())
-				.filter(m -> {
-				    try {
-					return m.getName().equals(new String(controller.getName().getBytes("EUC_JP"), "UTF-8"));
-				    } catch (UnsupportedEncodingException e) {
-					return false;
-				    }
-				}).findFirst()
-				.orElse(new ControllerConfig());
-			// デバイス名のユニーク化
-			int index = 1;
-			String name = controller.getName();
-			for(BMControllerInputProcessor bm : bminput) {
-				if(bm.getName().equals(name)) {
-					index++;
-					name = controller.getName() + "-" + index;
-				}
-			}
-			BMControllerInputProcessor bm = new BMControllerInputProcessor(this, name, controller, controllerConfig);
-			// controller.addListener(bm);
-			bminput.add(bm);
-		}
-
-		this.bminput = bminput.toArray(BMControllerInputProcessor.class);
+		this.bminput = new BMControllerInputProcessor[0];
 		midiinput = new MidiInputProcessor(this);
 		midiinput.open();
 		midiinput.setConfig(new MidiConfig());
 
-		devices = new Array<BMSPlayerInputDevice>();
-		devices.add(kbinput);
-		for (BMControllerInputProcessor bm : bminput) {
-			devices.add(bm);
+		// Register controllers already connected at startup
+		for (Controller controller : Controllers.getControllers()) {
+			addController(controller);
 		}
-		devices.add(midiinput);
-		
+
+		// Attach this class to listen for connect/disconnect events
+		Controllers.addListener(this);
+
 		this.analogScroll = config.isAnalogScroll();
+	}
+
+	private void addController(Controller controller) {
+		logger.info("コントローラーを検出 : " + controller.getName());
+		// FIXME:前回終了時のModeからコントローラ設定を復元
+		ControllerConfig controllerConfig = Stream.of(player.getMode7().getController())
+			.filter(m -> {
+			    try {
+				return m.getName().equals(new String(controller.getName().getBytes("EUC_JP"), "UTF-8"));
+			    } catch (UnsupportedEncodingException e) {
+				return false;
+			    }
+			}).findFirst()
+			.orElse(new ControllerConfig());
+		// デバイス名のユニーク化
+		int index = 1;
+		String name = controller.getName();
+		for(BMControllerInputProcessor bm : bminput) {
+			if(bm.getName().equals(name)) {
+				index++;
+				name = controller.getName() + "-" + index;
+			}
+		}
+		BMControllerInputProcessor bm = new BMControllerInputProcessor(this, name, controller, controllerConfig);
+
+		final BMControllerInputProcessor[] updated = Arrays.copyOf(bminput, bminput.length + 1);
+		updated[bminput.length] = bm;
+		bminput = updated;
+	}
+
+	private void removeController(Controller controller) {
+		BMControllerInputProcessor target = null;
+		for (BMControllerInputProcessor bm : bminput) {
+			if (bm.getController() == controller) {
+				target = bm;
+				break;
+			}
+		}
+		if (target == null) {
+			return;
+		}
+
+		final BMControllerInputProcessor[] updated = new BMControllerInputProcessor[bminput.length - 1];
+		int j = 0;
+		for (BMControllerInputProcessor bm : bminput) {
+			if (bm != target) {
+				updated[j++] = bm;
+			}
+		}
+		bminput = updated;
+	}
+
+	/**
+	 * ControllerAdapter callbacks. Run on render thread at start of the frame with other postRunnables
+	 */
+	@Override
+	public void connected(Controller controller) {
+        String name = controller.getName();
+		addController(controller);
+		if (currentControllerConfig != null) {
+			setControllerConfig(currentControllerConfig);
+		}
+        logger.info("Controller connected: {}", name);
+		ImGuiNotify.info("Controller connected: " + name);
+	}
+
+	@Override
+	public void disconnected(Controller controller) {
+        String name = controller.getName();
+		removeController(controller);
+		if (currentControllerConfig != null) {
+			setControllerConfig(currentControllerConfig);
+		}
+        logger.info("Controller disconnected: {}", name);
+		ImGuiNotify.warning("Controller disconnected: " + name);
 	}
 
 	public  static final int KEYSTATE_SIZE = 256;
@@ -107,7 +167,6 @@ public class BMSPlayerInputProcessor {
 	private long[] analogLastResetTime = new long[KEYSTATE_SIZE];
 
 	private BMSPlayerInputDevice lastKeyDevice;
-	private Array<BMSPlayerInputDevice> devices;
 
 	private long starttime;
 	private long microMarginTime;
@@ -132,6 +191,7 @@ public class BMSPlayerInputProcessor {
 	}
 
 	public void setControllerConfig(ControllerConfig[] configs) {
+		this.currentControllerConfig = configs;
 		boolean[] b = new boolean[configs.length];
 		for (BMControllerInputProcessor controller : bminput) {
 			controller.setEnable(false);
@@ -309,9 +369,11 @@ public class BMSPlayerInputProcessor {
 		this.enable = enable;
 		if(!enable) {
 			resetAllKeyState();
-			for (BMSPlayerInputDevice device : devices) {
-				device.clear();
+			kbinput.clear();
+			for (BMControllerInputProcessor bm : bminput) {
+				bm.clear();
 			}
+			midiinput.clear();
 		}
 	}
 	
