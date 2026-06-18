@@ -136,6 +136,14 @@ public class KeyConfiguration extends MainState {
 		final float scaleX = (float) getSkin().getScaleX();
 		final float scaleY = (float) getSkin().getScaleY();
 
+		// enable any hotplugged devices, this runs every frame regardless of changed state
+        // and always after any postrunnable that would have picked up the controller being
+        // disconnected or reconnected
+		controllers = input.getBMInputProcessor();
+		for (BMControllerInputProcessor controller : controllers) {
+			controller.setEnable(true);
+		}
+
 		if (this.shape == null) {
 			Pixmap plainPixmap = new Pixmap(2,1, Pixmap.Format.RGBA8888);
 			plainPixmap.setColor(Color.WHITE);
