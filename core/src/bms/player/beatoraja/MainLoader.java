@@ -273,6 +273,7 @@ public class MainLoader extends Application {
 		} catch (Throwable e) {
 			logger.error("{} : {}", e.getClass().getName(), e.getMessage());
 			logger.error("Uncaught global exception: ", e);
+            System.exit(1);
 		}
 		System.exit(0);
 	}
