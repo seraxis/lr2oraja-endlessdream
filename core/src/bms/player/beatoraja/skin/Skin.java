@@ -251,16 +251,19 @@ public class Skin {
 
 	public void drawAllObjects(SpriteBatch sprite, MainState state) {
 		if(renderer == null) {
-			SkinOffset offsetAll = getOffsetAll(state);
-			Matrix4 transform = new Matrix4();
-			if(offsetAll != null) {
-				transform.set(width * offsetAll.x /100, height * offsetAll.y / 100, 0, 0, 0, 0, 0, (offsetAll.w + 100) / 100, (offsetAll.h + 100) / 100, 1);
-			} else {
-				transform.set(0, 0, 0, 0, 0, 0, 0, 1, 1, 1);
-			}
-			sprite.setTransformMatrix(transform);
 			renderer = new SkinObjectRenderer(sprite);
 		}
+
+		SkinOffset offsetAll = getOffsetAll(state);
+		Matrix4 offsetTransform = new Matrix4();
+		if(offsetAll != null) {
+			offsetTransform.set(width * offsetAll.x /100, height * offsetAll.y / 100, 0, 0, 0, 0, 0, (offsetAll.w + 100) / 100, (offsetAll.h + 100) / 100, 1);
+		} else {
+			offsetTransform.set(0, 0, 0, 0, 0, 0, 0, 1, 1, 1);
+		}
+		Matrix4 previousTransform = sprite.getTransformMatrix().cpy();
+		Matrix4 composedTransform = previousTransform.cpy().mul(offsetTransform);
+		sprite.setTransformMatrix(composedTransform);
 		
 		final long microtime = state.timer.getNowMicroTime();
 
@@ -314,6 +317,8 @@ public class Skin {
 				}
 			}
 		}
+
+		sprite.setTransformMatrix(previousTransform);
 	}
 
 	public void mousePressed(MainState state, int button, int x, int y) {
