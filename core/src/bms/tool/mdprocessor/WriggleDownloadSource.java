@@ -2,6 +2,11 @@ package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.Config;
 
+/**
+ * Wriggle download source is shutdown during the development of 0.4.0. It's not an usable download source
+ *  anymore. The code retained here is only for use of reference.
+ */
+@Deprecated
 public class WriggleDownloadSource implements HttpDownloadSource {
     public static final HttpDownloadSourceMeta META = new HttpDownloadSourceMeta(
             "wriggle",
