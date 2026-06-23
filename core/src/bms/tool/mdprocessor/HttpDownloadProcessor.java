@@ -1,8 +1,9 @@
 package bms.tool.mdprocessor;
 
+import bms.player.beatoraja.Config;
 import bms.player.beatoraja.MainController;
 import bms.player.beatoraja.modmenu.ImGuiNotify;
-import com.badlogic.gdx.graphics.Color;
+import bms.tool.util.Pair;
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
 import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 
@@ -13,15 +14,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * In-game download processor. In charge of:
@@ -61,14 +63,45 @@ public class HttpDownloadProcessor {
     // Multi-thread download thread pool
     private final ExecutorService executor = Executors.newFixedThreadPool(MAXIMUM_DOWNLOAD_COUNT);
     private final ExecutorService submitter = Executors.newSingleThreadExecutor();
-    // A reference to the main controller, only used for updating folder and rendering the message
-    private final MainController main;
+    /**
+     * A function hook that will be called after each time a package is successfully downloaded. The parameter passed
+     * in is pointing to the unarchived directory. E.g. client's configured download directory is /home/foo/bms,
+     * the parameter will be a path like /home/foo/bms/bar/.
+     * This hook is used to update song.db automatically.
+     */
+    private final Consumer<String> afterDownloadHook;
     private final HttpDownloadSource httpDownloadSource;
+    private final HttpDownloadErrorEventHandler errorEventHandler;
+    // Download source instances
+    private Map<String, HttpDownloadSource> downloadSources = new HashMap<>();
 
-    public HttpDownloadProcessor(MainController main, HttpDownloadSource httpDownloadSource, String downloadDirectory) {
-        this.main = main;
+    public static HttpDownloadProcessor create(MainController main, Config config) {
+        Consumer<String> updateSongDBHook = dir -> main.updateSong(dir, true);
+        Map<String, HttpDownloadSource> downloadSources = DOWNLOAD_SOURCES.entrySet()
+                .stream()
+                .map(entry -> Pair.of(entry.getKey(), entry.getValue().build(config)))
+                .collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+        String downloadDirectory = config.getDownloadDirectory();
+        HttpDownloadSource httpDownloadSource = downloadSources.containsKey(config.getDownloadSource())
+                ? downloadSources.get(config.getDownloadSource())
+                : downloadSources.get(getDefaultDownloadSource().getName());
+
+        return new HttpDownloadProcessor(
+                updateSongDBHook,
+                downloadDirectory,
+                httpDownloadSource,
+                downloadSources,
+                DefaultErrorEventHandler
+        );
+    }
+
+    public HttpDownloadProcessor(Consumer<String> afterDownloadHook, String downloadDirectory, HttpDownloadSource httpDownloadSource, Map<String, HttpDownloadSource> downloadSources, HttpDownloadErrorEventHandler handler) {
+        this.downloadSources = downloadSources;
+        this.afterDownloadHook = afterDownloadHook;
         this.httpDownloadSource = httpDownloadSource;
+
         this.downloadDirectory = downloadDirectory;
+        this.errorEventHandler = handler;
     }
 
     public static HttpDownloadSourceMeta getDefaultDownloadSource() {
@@ -190,7 +223,7 @@ public class HttpDownloadProcessor {
                 // I don't think this has any issue since user can always turn back to root directory
                 // and update the download directory manually
                 ImGuiNotify.info("Successfully downloaded & extracted. Trying to rebuild download directory");
-                main.updateSong(bmsDirectory, true);
+                afterDownloadHook.accept(bmsDirectory);
                 // If everything works well, trying to delete the downloaded archive
                 try {
                     Files.delete(result);
@@ -328,4 +361,12 @@ public class HttpDownloadProcessor {
         }
         return bmsDirectory;
     }
+
+    private static HttpDownloadErrorEventHandler DefaultErrorEventHandler = new HttpDownloadErrorEventHandler() {
+        @Override
+        public void handle(HttpDownloadErrorEvent event) {
+            logger.error(event.errorMessage());
+            ImGuiNotify.error(event.errorMessage());
+        }
+    };
 }
