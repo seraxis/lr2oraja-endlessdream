@@ -263,10 +263,6 @@ public class PlayConfigurationView implements Initializable {
 	private CheckBox enableHttp;
 	@FXML
 	private ComboBox<String> httpDownloadSource;
-	@FXML
-	private TextField defaultDownloadURL;
-	@FXML
-	private TextField overrideDownloadURL;
 
 	@FXML
 	private VBox skin;
@@ -483,8 +479,6 @@ public class PlayConfigurationView implements Initializable {
 
 		enableHttp.setSelected(config.isEnableHttp());
 		httpDownloadSource.setValue(config.getDownloadSource());
-		defaultDownloadURL.setText(config.getDefaultDownloadURL());
-		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
 		if(players.getItems().contains(config.getPlayername())) {
 			players.setValue(config.getPlayername());
@@ -631,7 +625,6 @@ public class PlayConfigurationView implements Initializable {
 
 		config.setEnableHttp(enableHttp.isSelected());
 		config.setDownloadSource(httpDownloadSource.getValue());
-		config.setOverrideDownloadURL(overrideDownloadURL.getText());
 
 		config.setClipboardWhenScreenshot(clipboardScreenshot.isSelected());
 
