@@ -25,7 +25,7 @@ jna = "5.13.0"
 websocket = "1.6.0"
 slf4j = "2.0.17"
 junit-bom = "6.0.3"
-jlr2arenaex = "0.4.0"
+jlr2arenaex = "0.4.1"
 
 
 [libraries]
