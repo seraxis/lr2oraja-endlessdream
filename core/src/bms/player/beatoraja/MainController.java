@@ -18,6 +18,8 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.StringBuilder;
@@ -100,6 +102,9 @@ public class MainController {
 
 	private RankingDataCache ircache = new RankingDataCache();
 
+	private FrameBuffer renderFbo;
+	private TextureRegion renderFboRegion;
+	private Matrix4 fboProjectionMatrix;
 	private SpriteBatch sprite;
 	/**
 	 * 1曲プレイで指定したBMSファイル
@@ -417,6 +422,16 @@ public class MainController {
 
 	public void create() {
 		final long t = System.currentTimeMillis();
+
+		Resolution renderResolution = config.getResolution();
+
+		renderFbo = new FrameBuffer(Pixmap.Format.RGB888, renderResolution.width, renderResolution.height, false);
+		renderFboRegion = new TextureRegion(renderFbo.getColorBufferTexture());
+		renderFboRegion.flip(false, true);
+
+		fboProjectionMatrix = new Matrix4();
+		fboProjectionMatrix.setToOrtho2D(0.0f, 0.0f, renderResolution.width, renderResolution.height);
+
 		sprite = SpriteBatchHelper.createSpriteBatch();
 		SkinLoader.initPixmapResourcePool(config.getSkinPixmapGen());
 
@@ -611,6 +626,13 @@ public class MainController {
 
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		Matrix4 oldProjectionMatrix = sprite.getProjectionMatrix().cpy();
+		sprite.setProjectionMatrix(fboProjectionMatrix);
+
+		renderFbo.begin();
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		current.render();
 		sprite.begin();
 		if (current.getSkin() != null) {
@@ -688,6 +710,27 @@ public class MainController {
 
 			sprite.end();
 		}
+
+		renderFbo.end();
+
+		Resolution renderResolution = config.getResolution();
+		float displayWidth = Gdx.graphics.getWidth();
+		float displayHeight = Gdx.graphics.getHeight();
+		float scaleX = displayWidth / (float) renderResolution.width;
+		float scaleY = displayHeight / (float) renderResolution.height;
+		float scale = Math.min(scaleX, scaleY);
+		float renderDisplayWidth = renderResolution.width * scale;
+		float renderDisplayHeight = renderResolution.height * scale;
+		float offsetX = (displayWidth - renderDisplayWidth) / 2;
+		float offsetY = (displayHeight - renderDisplayHeight) / 2;
+		Color oldColor = sprite.getColor().cpy();
+		sprite.setProjectionMatrix(oldProjectionMatrix);
+		sprite.setColor(Color.WHITE);
+		sprite.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		sprite.begin();
+		sprite.draw(renderFboRegion, offsetX, offsetY, renderDisplayWidth, renderDisplayHeight);
+		sprite.end();
+		sprite.setColor(oldColor);
 
         periodicConfigSave();
 
@@ -867,6 +910,9 @@ public class MainController {
 		}
 		if (loudnessAnalyzer != null) {
 			loudnessAnalyzer.shutdown();
+		}
+		if (renderFbo != null) {
+			renderFbo.dispose();
 		}
 
 		logger.info("全リソース破棄完了");
