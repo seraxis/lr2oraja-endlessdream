@@ -1,19 +1,21 @@
 package bms.player.beatoraja.audio;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.file.*;
-import java.util.Locale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import bms.player.beatoraja.Config;
+import bms.tool.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.files.FileHandleStream;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Locale;
 
 /**
  * libGDX Sound(OpenAL)サウンドドライバ
@@ -57,6 +59,11 @@ public class GdxSoundDriver extends AbstractAudioDriver<Sound> {
 		return null;		
 	}
 
+	@Override
+	protected Sound getKeySound(SevenZArchiveContext ctx, String fileName) {
+		return getKeySound(ArchiveHandleStream.create(ctx, fileName));
+	}
+
 	private Sound getKeySound(String name, String ext) {
 		switch (ext.toLowerCase(Locale.ROOT)) {
 			case ".wav":
@@ -74,7 +81,7 @@ public class GdxSoundDriver extends AbstractAudioDriver<Sound> {
 		try {
 			return Gdx.audio.newSound(handle);
 		} catch (GdxRuntimeException e) {
-			logger.warn("音源ファイル読み込み失敗" + e.getMessage());
+			logger.error("音源ファイル読み込み失敗: ", e);
 		}
 		return null;
 	}
@@ -280,6 +287,25 @@ public class GdxSoundDriver extends AbstractAudioDriver<Sound> {
 		@Override
 		public OutputStream write(boolean overwrite) {
 			return null;
+		}
+	}
+
+	private static class ArchiveHandleStream extends FileHandleStream {
+		private final InputStream inputStream;
+
+		private ArchiveHandleStream(String fileName, InputStream inputStream) {
+			super(fileName);
+			this.inputStream = inputStream;
+		}
+
+		public static ArchiveHandleStream create(SevenZArchiveContext ctx, String resourceName) {
+			Pair<String, InputStream> _p = ctx.getInputStream(resourceName);
+			return new ArchiveHandleStream(_p.getFirst(), _p.getSecond());
+		}
+
+		@Override
+		public InputStream read() {
+			return inputStream;
 		}
 	}
 	

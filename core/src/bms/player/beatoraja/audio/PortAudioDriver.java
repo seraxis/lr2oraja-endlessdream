@@ -90,6 +90,11 @@ public class PortAudioDriver extends AbstractAudioDriver<PCM> implements Runnabl
 	}
 
 	@Override
+	protected PCM getKeySound(SevenZArchiveContext ctx, String fileName) {
+		return PCM.load(ctx, fileName, this);
+	}
+
+	@Override
 	protected PCM getKeySound(PCM pcm) {
 		return pcm;
 	}
