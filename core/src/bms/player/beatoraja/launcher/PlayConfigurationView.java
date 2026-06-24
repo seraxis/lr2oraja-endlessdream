@@ -307,6 +307,9 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	public CheckBox clipboardScreenshot;
 
+	@FXML
+	private CheckBox keepSilentWhenRenderFailed;
+
 	static void initComboBox(ComboBox<Integer> combo, final String[] values) {
 		combo.setCellFactory((param) -> new OptionListCell(values));
 		combo.setButtonCell(new OptionListCell(values));
@@ -477,6 +480,7 @@ public class PlayConfigurationView implements Initializable {
 
         usecim.setSelected(config.isCacheSkinImage());
         clipboardScreenshot.setSelected(config.isSetClipboardWhenScreenshot());
+		keepSilentWhenRenderFailed.setSelected(config.isKeepSilentWhenRenderFailed());
 
 		enableIpfs.setSelected(config.isEnableIpfs());
 		ipfsurl.setText(config.getIpfsUrl());
@@ -625,6 +629,7 @@ public class PlayConfigurationView implements Initializable {
         // jkoc_hack is integer but *.setJKOC needs boolean type
 
         config.setCacheSkinImage(usecim.isSelected());
+		config.setKeepSilentWhenRenderFailed(keepSilentWhenRenderFailed.isSelected());
 
 		config.setEnableIpfs(enableIpfs.isSelected());
 		config.setIpfsUrl(ipfsurl.getText());
