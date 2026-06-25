@@ -666,14 +666,14 @@ public class BMSPlayer extends MainState {
 						}
 					}
 
-					bga.prepare(this);
-					final long mem = Runtime.getRuntime().freeMemory();
-					System.gc();
-					final long cmem = Runtime.getRuntime().freeMemory();
-					logger.info("current free memory : {}MB , disposed : {}MB", cmem / (1024 * 1024), (cmem - mem) / (1024 * 1024));
 					if (Client.connected.get()) {
 						state = STATE_WAIT;
 					} else {
+						bga.prepare(this);
+						final long mem = Runtime.getRuntime().freeMemory();
+						System.gc();
+						final long cmem = Runtime.getRuntime().freeMemory();
+						logger.info("current free memory : {}MB , disposed : {}MB", cmem / (1024 * 1024), (cmem - mem) / (1024 * 1024));
 						state = STATE_READY;
 						timer.setTimerOn(TIMER_READY);
 						play(PLAY_READY);
@@ -693,6 +693,7 @@ public class BMSPlayer extends MainState {
 					Client.acceptNextAllReady((allReady) -> this.allReady = allReady);
 				}
 				if (this.allReady) {
+					bga.prepare(this);
 					state = STATE_READY;
 					timer.setTimerOn(TIMER_READY);
 					play(PLAY_READY);
