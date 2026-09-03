@@ -1326,11 +1326,17 @@ public class IntegerPropertyFactory {
 		 */
 		private static IntegerProperty getAssignedLane(int key, boolean is2PSide){
 			return (state) -> {
-				if (!(state instanceof MusicResult)){
+				ReplayData rd;
+				if (state instanceof MusicResult) {
+					rd = state.resource.getReplayData();
+				}
+				else if (state instanceof BMSPlayer) {
+					rd = state.resource.getPlayInfo();
+				}
+				else {
 					return 0;
 				}
 
-				ReplayData rd = state.resource.getReplayData();
 				Mode mode = state.resource.getBMSModel().getMode();
 				Random type = Random.getRandom(is2PSide? rd.randomoption2: rd.randomoption, mode);
 
