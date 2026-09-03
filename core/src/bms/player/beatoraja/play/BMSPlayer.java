@@ -488,6 +488,8 @@ public class BMSPlayer extends MainState {
 		final int difficulty = resource.getSongdata() != null ? resource.getSongdata().getDifficulty() : 0;
 		resource.getSongdata().setBMSModel(model);
 		resource.getSongdata().setDifficulty(difficulty);
+
+		resource.setPlayInfo(playinfo);
 	}
 
 	public SkinType getSkinType() {
