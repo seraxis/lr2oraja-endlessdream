@@ -299,18 +299,24 @@ public class HttpDownloadProcessor {
      * @return the path to the directory just extracted
      */
     private String extractCompressedFile(File file, Path targetPath) {
-        Path resultDirectory = targetPath == null ? Path.of(downloadDirectory) : targetPath;
+        Path resultDirectory = (targetPath == null ? Path.of(downloadDirectory) : targetPath)
+                .toAbsolutePath().normalize();
         String bmsDirectory = null;
         try (SevenZFile sevenZFile = SevenZFile.builder().setFile(file).get()) {
             SevenZArchiveEntry entry;
             while ((entry = sevenZFile.getNextEntry()) != null) {
+                Path outputPath = resultDirectory.resolve(entry.getName()).normalize();
+                // Don't let downloaded zips escape the song folder.
+                if (!outputPath.startsWith(resultDirectory) || outputPath.equals(resultDirectory)) {
+                    throw new IOException("Unsafe archive entry: " + entry.getName());
+                }
                 if (entry.isDirectory()) {
                     if (bmsDirectory == null) {
-                        bmsDirectory = Paths.get(resultDirectory.toString(), entry.getName()).toAbsolutePath().toString();
+                        bmsDirectory = outputPath.toString();
                     }
                     continue;
                 }
-                File outputFile = new File(resultDirectory.toString(), entry.getName());
+                File outputFile = outputPath.toFile();
                 outputFile.getParentFile().mkdirs();
 
                 try (FileOutputStream fos = new FileOutputStream(outputFile);
