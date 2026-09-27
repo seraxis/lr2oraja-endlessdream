@@ -520,7 +520,10 @@ public final class MusicSelector extends MainState {
 					}
 				}
 			}
-			gradeBar.getCourseData().setSong(resource.getCourseBMSModels());
+			var courseModels = resource.getCourseBMSModels();
+			for (int i = 0; i < songs.length; i++) {
+				songs[i].setBMSModel(courseModels[i]);
+			}
 			resource.setCourseData(gradeBar.getCourseData());
 			resource.setBMSFile(songs[0], mode);
 			playedcourse = gradeBar.getCourseData();
