@@ -195,7 +195,8 @@ public enum MusicSelectCommand {
             // the context menu specific to difficulty table folders
             // checking for isEnableHttp because batch downloading is
             // currently the ontry entry in this menu
-            if (!alreadyInContextMenu && selector.main.getConfig().isEnableHttp()) {
+			if (!alreadyInContextMenu && !((TableBar) previous).isBackbeat()
+					&& selector.main.getConfig().isEnableHttp()) {
                 bar.updateBar(
                     new ContextMenuBar(selector, ((TableBar)previous), ((HashBar)current)));
                 selector.play(FOLDER_OPEN);

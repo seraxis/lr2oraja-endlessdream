@@ -1,12 +1,12 @@
 package bms.player.beatoraja;
 
-import java.nio.file.Path;
 import java.util.ArrayDeque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import bms.model.BMSModel;
 import bms.player.beatoraja.audio.AudioDriver;
+import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.play.bga.BGAProcessor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -65,13 +65,13 @@ public class BMSResource {
 		bga = new BGAProcessor(config, player);
 	}
 
-	public boolean setBMSFile(BMSModel model, final Path f, final Config config, BMSPlayerMode mode) {
+	public boolean setBMSFile(BMSModel model, final SongData song, final Config config, BMSPlayerMode mode) {
 		if(stagefile != null) {
 			stagefile.getTexture().dispose();
 			stagefile = null;
 		}
 		try {
-			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getStagefile()).toString());
+			Pixmap pix = song.resolveAsset(model.getStagefile()).map(PixmapResourcePool::loadPicture).orElse(null);
 			if(pix != null) {
 				stagefile = new TextureRegion(new Texture(pix));
 				pix.dispose();
@@ -85,7 +85,7 @@ public class BMSResource {
 			backbmp = null;
 		}
 		try {
-			Pixmap pix = PixmapResourcePool.loadPicture(f.getParent().resolve(model.getBackbmp()).toString());
+			Pixmap pix = song.resolveAsset(model.getBackbmp()).map(PixmapResourcePool::loadPicture).orElse(null);
 			if(pix != null) {
 				backbmp = new TextureRegion(new Texture(pix));
 				pix.dispose();
@@ -108,7 +108,7 @@ public class BMSResource {
 			Thread bgaloader = new Thread(() -> {
 				try {
 					bga.abort();
-					bga.setModel(bgamodel);
+					bga.setModel(bgamodel, song);
 					bgaon = bgamodel != null;
 				} catch (Throwable e) {
 					logger.error("{} : {}", e.getClass().getName(), e.getMessage());
@@ -120,7 +120,7 @@ public class BMSResource {
 			Thread audioloader = new Thread(() -> {
 				try {
 					audio.abort();
-					audio.setModel(model);
+					audio.setModel(model, song);
 				} catch (Throwable e) {
 					logger.error("{} : {}", e.getClass().getName(), e.getMessage());
 					e.printStackTrace();

@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
 import bms.player.beatoraja.TableData;
@@ -152,11 +151,12 @@ public class TableEditorView implements Initializable {
 
 			Button openFolderButton = new Button("Open Folder");
 			openFolderButton.setMaxWidth(Double.MAX_VALUE);
-			String songPath = song.getPath();
+			Path songPath = song.filesystemPath().orElse(null);
+			openFolderButton.setDisable(songPath == null);
 			openFolderButton.setOnAction((actionEvent) -> {
 				try {
-					if (Desktop.isDesktopSupported()) {
-						Desktop.getDesktop().open(Paths.get(songPath).getParent().toFile());
+					if (Desktop.isDesktopSupported() && songPath != null) {
+						Desktop.getDesktop().open(songPath.getParent().toFile());
 					}
 				} catch (IOException|IllegalArgumentException e) {
 					e.printStackTrace();

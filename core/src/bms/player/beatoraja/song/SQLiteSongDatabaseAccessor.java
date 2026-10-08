@@ -16,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import java.io.ByteArrayInputStream;
+import java.util.zip.GZIPInputStream;
+
 import bms.player.beatoraja.SQLiteDatabaseAccessor;
 import bms.player.beatoraja.Validatable;
 import javafx.util.Pair;
@@ -28,6 +31,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
 import org.sqlite.SQLiteDataSource;
 
 import bms.model.*;
+import bms.player.beatoraja.backbeat.BackbeatIntegration;
 
 /**
  * 楽曲データベースへのアクセスクラス
@@ -45,7 +49,6 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	private final ResultSetHandler<List<FolderData>> folderhandler = new BeanListHandler<FolderData>(FolderData.class);
 
 	private final QueryRunner qr;
-	
 	private List<SongDatabaseAccessorPlugin> plugins = new ArrayList();
 	/**
 	 * Used in updateSongDatas and it's variants. This design is based on an assumption that we cannot delete an
@@ -96,7 +99,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						new Column("favorite", "INTEGER"),
 						new Column("adddate", "INTEGER"),
 						new Column("notes", "INTEGER"),
-						new Column("charthash", "TEXT")
+						new Column("charthash", "TEXT"),
+						new Column("backbeatBundleId", "TEXT"),
+						new Column("backbeatFilename", "TEXT")
 						));
 		
 		Class.forName("org.sqlite.JDBC");
@@ -126,7 +131,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			if(qr.query("PRAGMA TABLE_INFO(song)", new MapListHandler()).stream().anyMatch(m -> m.get("name").equals("sha256") && (int)(m.get("pk")) == 1)) {
 				qr.update("ALTER TABLE [song] RENAME TO [old_song]");
 				validate(qr);
-				qr.update("INSERT INTO song SELECT "
+				qr.update("INSERT INTO song (md5, sha256, title, subtitle, genre, artist, subartist, tag, path,"
+						+ "folder, stagefile, banner, backbmp, preview, parent, level, difficulty,"
+						+ "maxbpm, minbpm, length, mode, judge, feature, content, date, favorite, notes, adddate, charthash) SELECT "
 						+ "md5, sha256, title, subtitle, genre, artist, subartist, tag, path,"
 						+ "folder, stagefile, banner, backbmp, preview, parent, level, difficulty,"
 						+ "maxbpm, minbpm, length, mode, judge, feature, content,"
@@ -151,7 +158,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	 */
 	public SongData[] getSongDatas(String key, String value) {
 		try {
-			final List<SongData> m = qr.query("SELECT * FROM song WHERE " + key + " = ?", songhandler, value);
+			final List<SongData> m = qr.query("SELECT * FROM song WHERE " + key + " = ?",
+					songhandler, value);
 			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -184,8 +192,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					md5str.append('\'').append(hash).append('\'');
 				}
 			}
-			List<SongData> m = qr.query("SELECT * FROM song WHERE md5 IN (" + md5str.toString() + ") OR sha256 IN ("
-					+ sha256str.toString() + ")", songhandler);
+			List<SongData> m = qr.query("SELECT * FROM song WHERE md5 IN (" + md5str + ") OR sha256 IN ("
+					+ sha256str + ")", songhandler);
 			
 			// 検索並び順保持
 			List<SongData> sorted = m.stream().sorted((a, b) -> {
@@ -221,17 +229,17 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                 if(info != null) {
                     stmt.execute("ATTACH DATABASE '" + info + "' as infodb");
                     String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
-                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
+                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash,backbeatBundleId,backbeatFilename"
                             + " FROM song INNER JOIN (information LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON information.sha256 = score.sha256) "
-                            + "ON song.sha256 = information.sha256 WHERE " + sql;
+							+ "ON song.sha256 = information.sha256 WHERE " + sql;
                     ResultSet rs = stmt.executeQuery(s);
                     m = songhandler.handle(rs);
     				// System.out.println(s + " -> result : " + m.size());
                     stmt.execute("DETACH DATABASE infodb");
                 } else {
                     String s = "SELECT DISTINCT md5, song.sha256 AS sha256, title, subtitle, genre, artist, subartist,path,folder,stagefile,banner,backbmp,parent,level,difficulty,"
-                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash"
-                            + " FROM song LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = scorelog.sha256) ON song.sha256 = score.sha256 WHERE " + sql;
+                            + "maxbpm,minbpm,song.mode AS mode, judge, feature, content, song.date AS date, favorite, song.notes AS notes, adddate, preview, length, charthash,backbeatBundleId,backbeatFilename"
+							+ " FROM song LEFT OUTER JOIN (score LEFT OUTER JOIN scorelog ON score.sha256 = score.sha256) ON song.sha256 = score.sha256 WHERE " + sql;
                     ResultSet rs = stmt.executeQuery(s);
                     m = songhandler.handle(rs);
                 }
@@ -252,8 +260,8 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	public SongData[] getSongDatasByText(String text) {
 		try {
 			List<SongData> m = qr.query(
-					"SELECT * FROM song WHERE rtrim(title||' '||subtitle||' '||artist||' '||subartist||' '||genre) LIKE ?"
-							+ " GROUP BY sha256",songhandler, "%" + text + "%");
+					"SELECT * FROM song WHERE rtrim(title||' '||subtitle||' '||artist||' '||subartist||' '||genre) LIKE ? GROUP BY sha256",
+					songhandler, "%" + text + "%");
 			return Validatable.removeInvalidElements(m).toArray(new SongData[0]);
 		} catch (Exception e) {
 			logger.error("song.db更新時の例外:{}", e.getMessage());
@@ -299,6 +307,127 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		} catch (Exception e) {
 			logger.error("song.db更新時の例外:{}", e.getMessage());
 		}
+	}
+
+	public boolean pullFromBackbeat(BackbeatIntegration backbeat, SongInformationAccessor info) {
+		List<BMSModel> parsedModels = new ArrayList<>();
+		int updated;
+		try (Connection conn = ds.getConnection(); Statement statement = conn.createStatement()) {
+			statement.execute(backbeat.sqliteAttachCommand());
+			try {
+				conn.setAutoCommit(false);
+				List<BackbeatIntegration.CatalogChart> charts = readChangedBackbeatCatalog(conn);
+				updated = synchronizeBackbeatCharts(conn, charts, parsedModels);
+				removeStaleBackbeatCharts(conn);
+				conn.commit();
+			} catch (Exception error) {
+				conn.rollback();
+				throw error;
+			} finally {
+				conn.setAutoCommit(true);
+				statement.execute(backbeat.sqliteDetachCommand());
+			}
+		} catch (Exception error) {
+			logger.warn("Backbeat catalog synchronization failed: {}", error.getMessage());
+			return false;
+		}
+
+		if (info != null && !parsedModels.isEmpty()) {
+			info.startUpdate();
+			try {
+				parsedModels.forEach(info::update);
+			} finally {
+				info.endUpdate();
+			}
+		}
+		logger.info("Backbeat catalog synchronized: {} charts updated", updated);
+		return true;
+	}
+
+	private List<BackbeatIntegration.CatalogChart> readChangedBackbeatCatalog(Connection conn)
+			throws SQLException, IOException {
+		List<BackbeatIntegration.CatalogChart> charts = new ArrayList<>();
+		String query = "SELECT b.id, b.filename, b.chart_sha256, cd.gzip_data AS data, "
+				+ "(SELECT am.path FROM backbeat.asset_map am WHERE am.combined_assets_id = b.combined_assets_id "
+				+ "AND (lower(am.path) GLOB 'preview*.wav' OR lower(am.path) GLOB 'preview*.flac' "
+				+ "OR lower(am.path) GLOB 'preview*.ogg' OR lower(am.path) GLOB 'preview*.mp3') "
+				+ "ORDER BY lower(am.path) GLOB 'preview_auto_generator*', am.path LIMIT 1) AS preview "
+				+ "FROM backbeat.bundle b JOIN backbeat.chart_data cd ON cd.sha256 = b.chart_sha256 "
+				+ "LEFT JOIN main.song s ON s.backbeatBundleId = b.id "
+				+ "WHERE lower(b.extension) IN ('bms','bme','bml','pms','bmson') "
+				+ "AND (s.backbeatBundleId IS NULL OR s.sha256 IS NOT b.chart_sha256) "
+				+ "ORDER BY b.chart_sha256, b.id";
+		try (Statement statement = conn.createStatement(); ResultSet result = statement.executeQuery(query)) {
+			while (result.next()) {
+				byte[] chart;
+				try (GZIPInputStream gzip = new GZIPInputStream(
+						new ByteArrayInputStream(result.getBytes("data")))) {
+					chart = gzip.readAllBytes();
+				}
+				charts.add(new BackbeatIntegration.CatalogChart(
+						result.getString("id"), result.getString("filename"),
+						result.getString("chart_sha256"), result.getString("preview"), chart));
+			}
+		}
+		return charts;
+	}
+
+	private int synchronizeBackbeatCharts(Connection conn, List<BackbeatIntegration.CatalogChart> charts,
+			List<BMSModel> parsedModels) throws SQLException {
+		if (charts.isEmpty()) return 0;
+
+		Map<String, String> tags = new HashMap<>();
+		Map<String, Integer> favorites = new HashMap<>();
+		for (SongData song : qr.query(conn, "SELECT sha256, tag, favorite FROM song", songhandler)) {
+			if (song.getTag() != null && !song.getTag().isBlank()) tags.put(song.getSha256(), song.getTag());
+			if (song.getFavorite() > 0) favorites.put(song.getSha256(), song.getFavorite());
+		}
+
+		int updated = 0;
+		for (BackbeatIntegration.CatalogChart chart : charts) {
+			String bundleId = chart.bundleId();
+			String filename = chart.filename();
+			String sha256 = chart.sha256();
+			ChartDecoder decoder = ChartDecoder.getDecoder(Path.of(filename));
+			BMSModel model = null;
+			if (decoder instanceof BMSDecoder bms) {
+				model = bms.decode(chart.data(), filename.toLowerCase().endsWith(".pms"), null);
+			} else if (decoder instanceof BMSONDecoder bmson) {
+				model = bmson.decode(chart.data(), null);
+			} else if (decoder instanceof OSUDecoder osu) {
+				model = osu.decode(chart.data(), null);
+			}
+			if (model == null || !sha256.equalsIgnoreCase(model.getSHA256())) {
+				logger.warn("Backbeat chart could not be decoded: {}", bundleId);
+				qr.update(conn, "DELETE FROM song WHERE backbeatBundleId = ?", bundleId);
+				continue;
+			}
+
+			SongData song = new SongData(model, false);
+			if ((song.getPreview() == null || song.getPreview().isBlank()) && chart.preview() != null) {
+				song.setPreview(chart.preview());
+			}
+			song.setPath("backbeat:" + bundleId);
+			song.setBackbeatBundleId(bundleId);
+			song.setBackbeatFilename(filename);
+			song.setFolder("backbeat");
+			song.setParent("backbeat");
+			song.setAdddate((int) (System.currentTimeMillis() / 1000));
+			song.setTag(tags.getOrDefault(sha256, song.getTag()));
+			song.setFavorite(favorites.getOrDefault(sha256, song.getFavorite()));
+			insert(qr, conn, "song", song);
+			parsedModels.add(model);
+			updated++;
+		}
+		return updated;
+	}
+
+	private void removeStaleBackbeatCharts(Connection conn) throws SQLException {
+		String sql = "DELETE FROM main.song WHERE backbeatBundleId IS NOT NULL "
+				+ "AND NOT EXISTS (SELECT 1 FROM backbeat.bundle b "
+				+ "WHERE b.id = main.song.backbeatBundleId "
+				+ "AND lower(b.extension) IN ('bms','bme','bml','pms','bmson'))";
+		qr.update(conn, sql);
 	}
 
 	/**
@@ -388,14 +517,15 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					qr.update(conn, "DELETE FROM song");
 				} else {
 					// ルートディレクトリに含まれないフォルダの削除
-					StringBuilder dsql = new StringBuilder();
+					//
+					// n.b. the "backbeat:%" bit here is a hack - this reload preserves stuff
+					// in your song folders, but `backbeat:` isn't normally in your list of
+					// song folders. nevertheless, we want to preserve it, so...
+					StringBuilder dsql = new StringBuilder("path NOT LIKE 'backbeat:%'");
 					Object[] param = new String[bmsroot.length];
 					for (int i = 0; i < bmsroot.length; i++) {
-						dsql.append("path NOT LIKE ?");
+						dsql.append(" AND path NOT LIKE ?");
 						param[i] = bmsroot[i] + "%";
-						if (i < bmsroot.length - 1) {
-							dsql.append(" AND ");
-						}
 					}
 					
 					qr.update(conn,

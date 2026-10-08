@@ -43,6 +43,8 @@ import bms.player.beatoraja.song.SQLiteSongDatabaseAccessor;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.song.SongDatabaseAccessor;
 import bms.player.beatoraja.song.SongUtils;
+import bms.player.beatoraja.song.SongInformationAccessor;
+import bms.player.beatoraja.backbeat.BackbeatIntegration;
 import org.slf4j.jul.JULServiceProvider;
 
 /**
@@ -56,6 +58,7 @@ public class MainLoader extends Application {
 	private static final boolean ALLOWS_32BIT_JAVA = false;
 
 	private static SongDatabaseAccessor songdb;
+	private static BackbeatIntegration backbeat;
 
 	private static final Set<String> illegalSongs = new HashSet<String>();
 
@@ -258,6 +261,7 @@ public class MainLoader extends Application {
 
 				public void dispose() {
 					main.dispose();
+					closeBackbeat();
 				}
 
 				public void create() {
@@ -292,11 +296,36 @@ public class MainLoader extends Application {
 				Config config = Config.read();
 				Class.forName("org.sqlite.JDBC");
 				songdb = new SQLiteSongDatabaseAccessor(config.getSongpath(), config.getBmsroot());
+				((SQLiteSongDatabaseAccessor) songdb).pullFromBackbeat(getBackbeatIntegration(), null);
 			} catch (ClassNotFoundException | PlayerConfigException e) {
 				logger.error("Failed to access score database: {}", e.getLocalizedMessage());
 			}
         }
 		return songdb;
+	}
+
+	public static synchronized BackbeatIntegration getBackbeatIntegration() {
+		if (backbeat == null) backbeat = BackbeatIntegration.open();
+		return backbeat;
+	}
+
+	/**
+	 * Look at the user's charts installed via backbeat, and integrate them into
+	 * the raja db.
+	 *
+	 * More specifically, this is like treating your backbeat store as a "source"
+	 * of content to read, not unlike adding a new folder to read charts from,
+	 * only this folder is a sqlite store.
+	 */
+	public static void pullFromBackbeat(SongInformationAccessor info) {
+		if (songdb instanceof SQLiteSongDatabaseAccessor sqlite) {
+			sqlite.pullFromBackbeat(getBackbeatIntegration(), info);
+		}
+	}
+
+	private static synchronized void closeBackbeat() {
+		if (backbeat != null) backbeat.close();
+		backbeat = null;
 	}
 
 	public static VersionChecker getVersionChecker() {
@@ -418,5 +447,4 @@ public class MainLoader extends Application {
 		public String html_url;
 		public String name;
 	}
-
 }

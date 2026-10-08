@@ -2,6 +2,8 @@ package bms.player.beatoraja.audio;
 
 import bms.model.BMSModel;
 import bms.model.Note;
+import bms.player.beatoraja.song.Resource;
+import bms.player.beatoraja.song.SongData;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +29,10 @@ public interface AudioDriver extends Disposable {
 	 *            ループ再生するかどうか
 	 */
 	public void play(String path, float volume, boolean loop);
+
+	default void play(Resource resource, float volume, boolean loop) {
+		resource.path().ifPresent(path -> play(path.toString(), volume, loop));
+	}
 	
 	/**
 	 * 指定したパスの音源のボリュームを設定する
@@ -36,6 +42,10 @@ public interface AudioDriver extends Disposable {
 	 *            ボリューム
 	 */
 	public void setVolume(String path, float volume);
+
+	default void setVolume(Resource resource, float volume) {
+		setVolume(resource.key(), volume);
+	}
 	
 	/**
 	 * 指定したパスの音源がなっている場合はtrueを返す
@@ -44,6 +54,10 @@ public interface AudioDriver extends Disposable {
 	 *            音源のファイルパス
 	 */
 	public boolean isPlaying(String path);
+
+	default boolean isPlaying(Resource resource) {
+		return isPlaying(resource.key());
+	}
 	
 	/**
 	 * 指定したパスの音源がなっている場合は止める
@@ -53,6 +67,10 @@ public interface AudioDriver extends Disposable {
 	 */
 	public void stop(String path);
 
+	default void stop(Resource resource) {
+		stop(resource.key());
+	}
+
 	/**
 	 * 指定したパスの音源を開放する
 	 * 
@@ -61,6 +79,10 @@ public interface AudioDriver extends Disposable {
 	 */
 	public void dispose(String path);
 
+	default void dispose(Resource resource) {
+		dispose(resource.key());
+	}
+
 	/**
 	 * BMSの音源データを読み込む
 	 * 
@@ -68,6 +90,10 @@ public interface AudioDriver extends Disposable {
 	 *            BMSモデル
 	 */
 	public void setModel(BMSModel model);
+
+	default void setModel(BMSModel model, SongData song) {
+		setModel(model);
+	}
 	
 	/**
 	 * 判定に対応した追加キー音を定義する

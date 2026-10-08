@@ -2,12 +2,17 @@ package bms.player.beatoraja.song;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import bms.model.*;
+import bms.player.beatoraja.MainLoader;
 import bms.player.beatoraja.Validatable;
 import bms.player.beatoraja.play.BMSPlayerRule;
 import bms.tool.mdprocessor.IpfsInformation;
@@ -119,6 +124,8 @@ public class SongData implements Validatable, IpfsInformation {
 	private SongInformation info;
 
 	private String charthash;
+	private String backbeatBundleId;
+	private String backbeatFilename;
 	private List<String> org_md5;
 
 	public SongData() {
@@ -229,6 +236,15 @@ public class SongData implements Validatable, IpfsInformation {
 		}
 		return null;
 	}
+
+	public Optional<Path> filesystemPath() {
+		if(isBackbeat() || getPath() == null) return Optional.empty();
+		try {
+			return Optional.of(Path.of(getPath()));
+		} catch(RuntimeException error) {
+			return Optional.empty();
+		}
+	}
 	
 	public void setPath(String path) {
 		if(this.path.size() == 0) {
@@ -236,6 +252,97 @@ public class SongData implements Validatable, IpfsInformation {
 		} else {
 			this.path.set(0, path);			
 		}
+	}
+
+	public String getBackbeatBundleId() {
+		return backbeatBundleId;
+	}
+
+	public void setBackbeatBundleId(String backbeatBundleId) {
+		this.backbeatBundleId = backbeatBundleId;
+	}
+
+	public String getBackbeatFilename() {
+		return backbeatFilename;
+	}
+
+	public void setBackbeatFilename(String backbeatFilename) {
+		this.backbeatFilename = backbeatFilename;
+	}
+
+	public boolean isBackbeat() {
+		return backbeatBundleId != null && !backbeatBundleId.isBlank();
+	}
+
+	public Optional<byte[]> chartData() {
+		if(isBackbeat()) {
+			return MainLoader.getBackbeatIntegration().chartData(this);
+		}
+		try {
+			Path path = filesystemPath().orElse(null);
+			return path == null ? Optional.empty() : Optional.of(Files.readAllBytes(path));
+		} catch(IOException error) {
+			return Optional.empty();
+		}
+	}
+
+	public String chartFilename() {
+		if (isBackbeat()) {
+			return backbeatFilename;
+		}
+		return filesystemPath().map(Path::getFileName).map(Path::toString).orElse(null);
+	}
+
+	public Optional<Resource> resolveAsset(String relativePath) {
+		if (relativePath == null || relativePath.isBlank()) {
+			return Optional.empty();
+		}
+		relativePath = relativePath.replace('\\', '/');
+		if (isBackbeat()) {
+			return MainLoader.getBackbeatIntegration().resolveAsset(this, relativePath);
+		}
+
+		try {
+			Path path = filesystemPath().orElse(null);
+			if (path == null) {
+				return Optional.empty();
+			}
+
+			Path directory = path.toAbsolutePath().normalize().getParent();
+			if (directory == null) {
+				return Optional.empty();
+			}
+
+			Path resolved = directory.resolve(relativePath).normalize();
+			if (!Files.isRegularFile(resolved)) {
+				return Optional.empty();
+			}
+			return Optional.of(Resource.file(resolved));
+		} catch (RuntimeException error) {
+			return Optional.empty();
+		}
+	}
+
+	public Optional<Resource> resolveAssetWithExtensions(String relativePath, String... extensions) {
+		if (relativePath == null || relativePath.isBlank()) {
+			return Optional.empty();
+		}
+
+		Optional<Resource> exact = resolveAsset(relativePath);
+		if (exact.isPresent()) {
+			return exact;
+		}
+
+		int dot = relativePath.lastIndexOf('.');
+		int separator = Math.max(relativePath.lastIndexOf('/'), relativePath.lastIndexOf('\\'));
+		String stem = dot > separator ? relativePath.substring(0, dot) : relativePath;
+		for (String extension : extensions) {
+			Optional<Resource> candidate = resolveAsset(stem + extension);
+			if (candidate.isPresent()) {
+				return candidate;
+			}
+		}
+		return Optional.empty();
 	}
 	
 	public void addAnotherPath(String path) {
