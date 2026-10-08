@@ -1,0 +1,127 @@
+package bms.player.beatoraja.modmenu;
+
+import bms.player.beatoraja.MainController;
+import bms.player.beatoraja.arena.client.ArenaBar;
+import bms.player.beatoraja.arena.client.Client;
+import bms.player.beatoraja.arena.lobby.Lobby;
+import bms.player.beatoraja.arena.server.ArenaServer;
+import bms.player.beatoraja.select.MusicSelector;
+import bms.player.beatoraja.song.SongData;
+import imgui.ImGui;
+import imgui.flag.ImGuiFocusedFlags;
+import imgui.flag.ImGuiTreeNodeFlags;
+import imgui.flag.ImGuiWindowFlags;
+import imgui.type.ImBoolean;
+
+public class ArenaMenu {
+    public static boolean isFocused = false;
+    public static boolean isShow = false;
+    private static MusicSelector selector;
+
+    static {
+        MainController.registerBeforeRenderTask((main) -> {
+            if (Client.state.getAutoSelectFlag()) {
+                selectCurrentLobbySong();
+                Client.state.setAutoSelectFlag(false);
+            }
+        });
+    }
+
+    public static void init(String username, MusicSelector selector) {
+        Client.userName.set(username);
+        ArenaMenu.selector = selector;
+    }
+
+    public static void show(ImBoolean showArenaMenu) {
+        ImGui.begin("EndlessDream ArenaEX", showArenaMenu, ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoBringToFrontOnFocus);
+        {
+            isFocused = ImGui.isWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+            if (ImGui.beginTabBar("TabBar")) {
+                if (ImGui.beginTabItem("Client")) {
+                    if (ImGui.collapsingHeader("Connect", ImGuiTreeNodeFlags.DefaultOpen)) {
+                        ImGui.inputText("Username", Client.userName);
+                        ImGui.inputText("Server", Client.host);
+
+                        ImGui.beginDisabled(Client.host.isEmpty() || Client.userName.isEmpty());
+                        if (ImGui.button("Connect##Button")) {
+                            Client.connect(Client.host.get(), Client.userName.get());
+                        }
+                        ImGui.endDisabled();
+
+                        ImGui.sameLine();
+
+                        ImGui.beginDisabled(!Client.connected.get());
+                        if (ImGui.button("Disconnect")) {
+                            Client.disconnect();
+                        }
+                        ImGui.endDisabled();
+                    }
+                    ImGui.endTabItem();
+                    if (Client.connected.get()) {
+                        ImGui.separator();
+                        Lobby.render();
+                    }
+                }
+
+                if (ImGui.beginTabItem("Server")) {
+                    ImGui.text("Server");
+                    ImGui.separator();
+
+                    ImGui.beginDisabled(ArenaServer.serverStarted.get());
+                    if (ImGui.button("Start")) {
+                        try {
+                            ArenaServer.start();
+                        } catch (Exception e) {
+                            ImGuiNotify.error(String.format("Failed to start server: %s", e.getMessage()));
+                        }
+                    }
+                    ImGui.endDisabled();
+
+                    ImGui.beginDisabled(!ArenaServer.serverStarted.get());
+                    if (ImGui.button("Stop")) {
+                        try {
+                            ArenaServer.stop();
+                        } catch (Exception e) {
+                            ImGuiNotify.error(String.format("Failed to start server: %s", e.getMessage()));
+                        }
+                    }
+                    ImGui.endDisabled();
+                    if (ImGui.checkbox("Auto-rotate host after each song", ArenaServer.getServerAutoRotate())) {
+                        ArenaServer.setServerAutoRotate(!ArenaServer.getServerAutoRotate());
+                    }
+                    ImGui.endTabItem();
+                }
+                ImGui.endTabBar();
+            }
+            ImGui.end();
+        }
+    }
+
+    /**
+     * Auto select the current chosen song in lobby
+     *
+     * @implSpec This function must be called in game's main thread, otherwise the game crashes immediately
+     *  because we cannot dispose a texture outside of glfw context
+     */
+    public static void selectCurrentLobbySong() {
+        SongData songData = Client.state.getCurrentSongData();
+        if (songData != null) {
+            ArenaBar bar = new ArenaBar(selector, songData);
+            selector.getBarManager().replaceArenaSelection(bar);
+            selector.getBarManager().updateBar();
+            selector.getBarManager().setSelected(bar);
+            // This line might break something if we're not currently at music select scene
+            selector.getBarManager().updateBar(bar);
+        }
+    }
+
+    public static void refreshMissingChartState() {
+        MainController.pushOneShotAfterRenderTask(main -> {
+            String md5 = Client.state.getSelectedSongRemote().getMd5();
+            SongData[] songDatas = main.getSongDatabase().getSongDatas(new String[]{md5});
+            if (songDatas != null && songDatas.length > 0) {
+                Client.state.setLobbySongData(songDatas[0]);
+            }
+        });
+    }
+}
