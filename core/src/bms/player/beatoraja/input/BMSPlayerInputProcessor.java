@@ -614,6 +614,7 @@ public class BMSPlayerInputProcessor extends ControllerAdapter {
 		 */
 		public void clear() {
 			keylog.clear();
+			poolindex = 0;
 			for(int i = 0;i < logpool.length;i++) {
 				logpool[i] = new KeyInputLog();
 			}
