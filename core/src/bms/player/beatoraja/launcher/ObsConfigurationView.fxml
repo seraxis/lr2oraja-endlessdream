@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1"
 	fx:controller="bms.player.beatoraja.launcher.ObsConfigurationView"
-	spacing="15" maxWidth="500">
+	spacing="15" maxWidth="900">
 	<padding>
 		<Insets left="20.0" top="20.0" right="20.0" bottom="20.0"/>
 	</padding>
@@ -70,6 +70,55 @@
     <Label fx:id="obsWsConnectLabel" text=""/>
   </HBox>
 
-	<VBox fx:id="listContainer" spacing="5"/>
-</VBox>
+	<TitledPane text="%OBSWS_ADD_COMMAND" expanded="true" collapsible="false">
+		<GridPane hgap="12" vgap="10">
+			<padding>
+				<Insets left="10.0" top="10.0" right="10.0" bottom="10.0"/>
+			</padding>
+			<columnConstraints>
+				<ColumnConstraints minWidth="120" prefWidth="140"/>
+				<ColumnConstraints minWidth="120" prefWidth="160"/>
+				<ColumnConstraints minWidth="120" prefWidth="160"/>
+				<ColumnConstraints minWidth="120" prefWidth="160"/>
+				<ColumnConstraints minWidth="120" prefWidth="160"/>
+			</columnConstraints>
 
+			<Label text="%OBSWS_ACTION" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+			<Label text="%OBSWS_TIMING" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+			<Label text="%OBSWS_TARGET_SCENE" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+			<Label text="%OBSWS_TARGET_SOURCE" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+			<Label text="%OBSWS_TRANSITION_SCENE" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+
+			<ComboBox fx:id="obsActionBox" prefWidth="160" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+			<ComboBox fx:id="obsTimingBox" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+			<ComboBox fx:id="obsTargetSceneBox" prefWidth="160" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+			<ComboBox fx:id="obsTargetSourceBox" prefWidth="160" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+			<ComboBox fx:id="obsTransitionSceneBox" prefWidth="160" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
+
+			<Button fx:id="obsAddCommandButton" text="%OBSWS_ADD_COMMAND_BUTTON"
+				onAction="#addCommand" prefWidth="140"
+				GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="5" GridPane.halignment="CENTER"/>
+		</GridPane>
+	</TitledPane>
+
+	<TitledPane text="%OBSWS_COMMAND_LIST" expanded="true" collapsible="false">
+		<VBox spacing="8">
+			<padding>
+				<Insets left="10.0" top="10.0" right="10.0" bottom="10.0"/>
+			</padding>
+			<HBox spacing="8" alignment="CENTER_RIGHT">
+				<Button fx:id="obsRemoveCommandButton" text="%OBSWS_REMOVE_COMMAND_BUTTON"
+					onAction="#removeSelectedCommand"/>
+				<Button text="%OBSWS_CLEAR_COMMANDS_BUTTON" onAction="#clearCommands"/>
+			</HBox>
+			<TableView fx:id="obsCommandTable" prefHeight="220">
+				<columns>
+					<TableColumn fx:id="obsTimingColumn" text="%OBSWS_TIMING" prefWidth="160"/>
+					<TableColumn fx:id="obsActionColumn" text="%OBSWS_ACTION" prefWidth="160"/>
+					<TableColumn fx:id="obsTargetColumn" text="%OBSWS_TARGET" prefWidth="220"/>
+					<TableColumn fx:id="obsDetailColumn" text="%OBSWS_DETAIL" prefWidth="300"/>
+				</columns>
+			</TableView>
+		</VBox>
+	</TitledPane>
+</VBox>

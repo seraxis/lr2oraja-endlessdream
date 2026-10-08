@@ -8,8 +8,10 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -50,8 +52,11 @@ public class ObsWsClient {
 	private Consumer<Exception> onErrorHandler;
 	private Consumer<ObsVersionInfo> onVersionReceived;
 	private Consumer<List<String>> onScenesReceived;
+	private Consumer<Map<String, List<String>>> onSceneSourcesReceived;
 	private Consumer<String> onRecordStateChanged;
 	private Consumer<String> customMessageHandler;
+	private final Map<String, PendingSourceVisibility> pendingSourceVisibility = new ConcurrentHashMap<>();
+	private final Map<String, List<String>> sceneSources = new ConcurrentHashMap<>();
 
 	public final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 	private ScheduledFuture<?> reconnectTask;
@@ -93,6 +98,12 @@ public class ObsWsClient {
 	public static final Map<String, String> OBS_ACTIONS = Map.of(
 			"Stop Recording", "StopRecord",
 			"Start Recording", "StartRecord");
+
+	public static final String ACTION_START_RECORD = "StartRecord";
+	public static final String ACTION_STOP_RECORD = "StopRecord";
+	public static final String ACTION_SHOW_SOURCE = "ShowSource";
+	public static final String ACTION_HIDE_SOURCE = "HideSource";
+	public static final String ACTION_SET_SCENE = "SetScene";
 
 	public ObsWsClient(Config config) throws URISyntaxException {
 		this.serverUri = new URI("ws://" + config.getObsWsHost() + ":" + config.getObsWsPort());
@@ -343,6 +354,13 @@ public class ObsWsClient {
 					if (onScenesReceived != null) {
 						onScenesReceived.accept(sceneNames);
 					}
+					requestSceneItems(sceneNames);
+					break;
+				case "GetSceneItemList":
+					handleSceneItemListResponse(d, responseData);
+					break;
+				case "GetSceneItemId":
+					handleSceneItemIdResponse(d, responseData);
 					break;
 				case "GetRecordStatus":
 					if (responseData.has("outputActive")) {
@@ -353,6 +371,40 @@ public class ObsWsClient {
 		} catch (Exception e) {
 			logger.warn("Error handling request response: {}", e.getMessage());
 		}
+	}
+
+	private void handleSceneItemListResponse(JsonNode d, JsonNode responseData) {
+		String requestId = d.path("requestId").asText();
+		final String prefix = "get-scene-items-";
+		if (!requestId.startsWith(prefix)) {
+			return;
+		}
+		String sceneName = requestId.substring(prefix.length());
+		JsonNode itemsNode = responseData.path("sceneItems");
+		List<String> sources = new ArrayList<>();
+		if (itemsNode.isArray()) {
+			for (JsonNode itemNode : itemsNode) {
+				if (itemNode.has("sourceName")) {
+					String sourceName = itemNode.get("sourceName").asText();
+					if (!sources.contains(sourceName)) {
+						sources.add(sourceName);
+					}
+				}
+			}
+		}
+		sceneSources.put(sceneName, sources);
+		if (onSceneSourcesReceived != null) {
+			onSceneSourcesReceived.accept(new HashMap<>(sceneSources));
+		}
+	}
+
+	private void handleSceneItemIdResponse(JsonNode d, JsonNode responseData) {
+		String requestId = d.path("requestId").asText();
+		PendingSourceVisibility pending = pendingSourceVisibility.remove(requestId);
+		if (pending == null || !responseData.has("sceneItemId")) {
+			return;
+		}
+		setSceneItemEnabled(pending.sceneName, responseData.get("sceneItemId").asInt(), pending.enabled);
 	}
 
 	private void scheduleReconnect() {
@@ -453,19 +505,49 @@ public class ObsWsClient {
 		try {
 			ObjectNode requestData = objectMapper.createObjectNode();
 			requestData.put("sceneName", sceneName);
-
-			ObjectNode d = objectMapper.createObjectNode();
-			d.put("requestType", "SetCurrentProgramScene");
-			d.put("requestId", "set-scene-" + requestIdCounter.incrementAndGet());
-			d.set("requestData", requestData);
-
-			ObjectNode request = objectMapper.createObjectNode();
-			request.put("op", 6);
-			request.set("d", d);
-
-			send(objectMapper.writeValueAsString(request));
+			sendRequest("SetCurrentProgramScene", "set-scene-" + requestIdCounter.incrementAndGet(), requestData);
 		} catch (Exception e) {
 			logger.warn("Error setting scene: {}", e.getMessage());
+		}
+	}
+
+	public void setSourceVisible(String sceneName, String sourceName, boolean visible) {
+		if (!canSendRequest()) {
+			return;
+		}
+		try {
+			ObjectNode requestData = objectMapper.createObjectNode();
+			requestData.put("sceneName", sceneName);
+			requestData.put("sourceName", sourceName);
+			String requestId = "get-scene-item-id-" + requestIdCounter.incrementAndGet();
+			pendingSourceVisibility.put(requestId, new PendingSourceVisibility(sceneName, visible));
+			sendRequest("GetSceneItemId", requestId, requestData);
+		} catch (Exception e) {
+			logger.warn("Error setting source visibility: {}", e.getMessage());
+		}
+	}
+
+	private void setSceneItemEnabled(String sceneName, int sceneItemId, boolean enabled) {
+		try {
+			ObjectNode requestData = objectMapper.createObjectNode();
+			requestData.put("sceneName", sceneName);
+			requestData.put("sceneItemId", sceneItemId);
+			requestData.put("sceneItemEnabled", enabled);
+			sendRequest("SetSceneItemEnabled", "set-scene-item-enabled-" + requestIdCounter.incrementAndGet(), requestData);
+		} catch (Exception e) {
+			logger.warn("Error setting scene item enabled: {}", e.getMessage());
+		}
+	}
+
+	private void requestSceneItems(List<String> sceneNames) {
+		for (String sceneName : sceneNames) {
+			try {
+				ObjectNode requestData = objectMapper.createObjectNode();
+				requestData.put("sceneName", sceneName);
+				sendRequest("GetSceneItemList", "get-scene-items-" + sceneName, requestData);
+			} catch (Exception e) {
+				logger.warn("Error requesting scene items: {}", e.getMessage());
+			}
 		}
 	}
 
@@ -473,10 +555,20 @@ public class ObsWsClient {
 		if (!canSendRequest()) {
 			return;
 		}
+		sendRequest(requestType, requestType.toLowerCase() + "-" + requestIdCounter.incrementAndGet(), null);
+	}
+
+	private void sendRequest(String requestType, String requestId, ObjectNode requestData) {
+		if (!canSendRequest()) {
+			return;
+		}
 		try {
 			ObjectNode d = objectMapper.createObjectNode();
 			d.put("requestType", requestType);
-			d.put("requestId", requestType.toLowerCase() + "-" + requestIdCounter.incrementAndGet());
+			d.put("requestId", requestId);
+			if (requestData != null) {
+				d.set("requestData", requestData);
+			}
 
 			ObjectNode request = objectMapper.createObjectNode();
 			request.put("op", 6);
@@ -571,8 +663,22 @@ public class ObsWsClient {
 		this.onScenesReceived = handler;
 	}
 
+	public void setOnSceneSourcesReceived(Consumer<Map<String, List<String>>> handler) {
+		this.onSceneSourcesReceived = handler;
+	}
+
 	public void setCustomMessageHandler(Consumer<String> handler) {
 		this.customMessageHandler = handler;
+	}
+
+	private static class PendingSourceVisibility {
+		private final String sceneName;
+		private final boolean enabled;
+
+		private PendingSourceVisibility(String sceneName, boolean enabled) {
+			this.sceneName = sceneName;
+			this.enabled = enabled;
+		}
 	}
 
 	public static class ObsVersionInfo {
