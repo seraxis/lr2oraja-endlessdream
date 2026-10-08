@@ -5,9 +5,12 @@ import java.util.Map.Entry;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ShaderManager {
 
+	private static final Logger logger = LoggerFactory.getLogger(ShaderManager.class);
 	private static HashMap<String, ShaderProgram> shaders = new HashMap();
 
 	public static ShaderProgram getShader(String name) {
@@ -17,6 +20,9 @@ public class ShaderManager {
 			if(shader.isCompiled()) {
 				shaders.put(name, shader);
 				return shader;				
+			} else {
+				logger.error(shader.getLog());
+				return null;
 			}
 		}
 		return shaders.get(name);

@@ -462,14 +462,14 @@ public class Skin {
 
 		public void draw(Texture image, float x, float y, float w, float h) {
 			setFilter(image);
-			preDraw();
+			preDraw(createBilinearSizeSetter(image));
 			sprite.draw(image, x, y, w, h);
 			postDraw();
 		}
 
 		public void draw(TextureRegion image, float x, float y, float w, float h) {
 			setFilter(image);
-			preDraw();
+			preDraw(createBilinearSizeSetter(image.getTexture()));
 			// x,yが*.5の際に(Windowsのみ)TextureRegionがずれるため、暫定対処
 			sprite.draw(image,  x + 0.01f, y + 0.01f, w, h);
 			postDraw();
@@ -477,10 +477,17 @@ public class Skin {
 
 		public void draw(TextureRegion image, float x, float y, float w, float h, float cx, float cy, float angle) {
 			setFilter(image);
-			preDraw();
+			preDraw(createBilinearSizeSetter(image.getTexture()));
 			// x,yが*.5の際に(Windowsのみ)TextureRegionがずれるため、暫定対処
 			sprite.draw(image, x + 0.01f, y + 0.01f, cx * w, cy * h, w, h, 1, 1, angle);
 			postDraw();
+		}
+
+		private Consumer<ShaderProgram> createBilinearSizeSetter(Texture image) {
+			if(type != TYPE_BILINEAR) {
+				return null;
+			}
+			return shader -> shader.setUniformf("u_textureSize", image.getWidth(), image.getHeight());
 		}
 
 		private void setFilter(TextureRegion image) {
