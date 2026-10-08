@@ -51,6 +51,7 @@ public class BMSPlayer extends MainState {
 	private GrooveGauge gauge;
 
 	private int playtime;
+	private int freq = 100;
 
 	/**
 	 * キー入力用スレッド
@@ -247,7 +248,7 @@ public class BMSPlayer extends MainState {
 		resource.setFreqOn(false);
 		resource.setFreqString("");
 		if(FreqTrainerMenu.isFreqTrainerEnabled() && autoplay.mode == BMSPlayerMode.Mode.PLAY && resource.getCourseBMSModels() == null) {
-			int freq = FreqTrainerMenu.getFreq();
+			freq = FreqTrainerMenu.getFreq();
 
 			playtime = (model.getLastNoteTime() + 1000) * 100 / freq + TIME_MARGIN;
 
@@ -683,6 +684,7 @@ public class BMSPlayer extends MainState {
 				if (input.getKeyState(0) && resource.mediaLoadFinished() &&  micronow > (skin.getLoadstart() + skin.getLoadend()) * 1000
 						&& micronow - startpressedtime > 1000000) {
 					PracticeProperty property = practice.getPracticeProperty();
+					freq = property.freq;
 					control.setEnableControl(true);
 					control.setEnableCursor(true);
 					if (property.freq != 100) {
@@ -951,6 +953,10 @@ public class BMSPlayer extends MainState {
 
 	public int getPlaySpeed() {
 		return playspeed;
+	}
+
+	public int getPlayFreqPercent() {
+		return freq;
 	}
 
 	public void input() {
