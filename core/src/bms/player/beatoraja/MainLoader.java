@@ -207,15 +207,18 @@ public class MainLoader extends Application {
 					gdxDisplayMode = targetMonitor == null ? Lwjgl3ApplicationConfiguration.getDisplayMode() : Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
 				}
             } else {
+                Graphics.DisplayMode d = targetMonitor == null
+						? Lwjgl3ApplicationConfiguration.getDisplayMode()
+						: Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
                 if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
                     gdxConfig.setDecorated(false);
                     //System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
+					gdxConfig.setWindowedMode(d.width, d.height);
                 } else {
 					gdxConfig.setDecorated(true);
+					gdxConfig.setWindowedMode(w, h);
 				}
-                gdxConfig.setWindowedMode(w, h);
                 if (targetMonitor != null) {
-                    Graphics.DisplayMode d = Lwjgl3ApplicationConfiguration.getDisplayMode(targetMonitor);
 					if (config.getDisplaymode() == Config.DisplayMode.BORDERLESS) {
 						int posX = targetMonitor.virtualX;
 						int posY = targetMonitor.virtualY;
@@ -223,7 +226,7 @@ public class MainLoader extends Application {
 					}
 					gdxDisplayMode = d;
                 } else {
-					gdxDisplayMode = Lwjgl3ApplicationConfiguration.getDisplayMode();
+					gdxDisplayMode = d;
                 }
             }
             // vSync
