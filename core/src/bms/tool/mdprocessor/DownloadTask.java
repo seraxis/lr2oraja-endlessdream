@@ -5,20 +5,18 @@ import java.nio.file.Path;
 public class DownloadTask {
     final private int id;
     final private String url;
-    final private String name;
-    final private String hash;
 
+    private DownloadRequest request;
     private DownloadTaskStatus downloadTaskStatus;
     private long downloadSize;
     private long contentLength;
     private String errorMessage;
     private volatile long timeFinished;
 
-    public DownloadTask(int id, String url, String name, String hash) {
+    public DownloadTask(int id, String url, DownloadRequest request) {
         this.id = id;
         this.url = url;
-        this.name = name;
-        this.hash = hash;
+        this.request = request;
         this.downloadTaskStatus = DownloadTaskStatus.Prepare;
     }
 
@@ -31,7 +29,7 @@ public class DownloadTask {
     }
 
     public String getHash() {
-        return hash;
+        return request.getMd5();
     }
 
     public DownloadTaskStatus getDownloadTaskStatus() {
@@ -70,7 +68,7 @@ public class DownloadTask {
     }
 
     public String getName() {
-        return name;
+        return request.getName();
     }
 
     public long getTimeFinished() {

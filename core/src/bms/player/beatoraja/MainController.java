@@ -508,8 +508,7 @@ public class MainController {
 		}
 
 		if (config.isEnableHttp()) {
-			HttpDownloadSource httpDownloadSource = HttpDownloadProcessor.DOWNLOAD_SOURCES.get(config.getDownloadSource()).build(config);
-			httpDownloadProcessor = new HttpDownloadProcessor(this, httpDownloadSource, config.getDownloadDirectory());
+			httpDownloadProcessor = new HttpDownloadProcessor(this, config);
 			DownloadTaskState.initialize(httpDownloadProcessor);
 			DownloadTaskMenu.setProcessor(httpDownloadProcessor);
 		}
