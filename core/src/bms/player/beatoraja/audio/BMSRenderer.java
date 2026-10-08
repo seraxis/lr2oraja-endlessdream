@@ -7,6 +7,9 @@ import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,6 +278,11 @@ public class BMSRenderer {
 		@Override
 		protected PCM getKeySound(Path p) {
 			return PCM.load(p, this);
+		}
+
+		@Override
+		protected PCM getKeySound(SevenZArchiveContext ctx, String fileName) {
+			return PCM.load(ctx, fileName, this);
 		}
 
 		@Override
