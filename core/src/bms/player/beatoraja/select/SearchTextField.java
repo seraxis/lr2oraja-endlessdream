@@ -1,10 +1,17 @@
 package bms.player.beatoraja.select;
 
+import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.SpriteBatchHelper;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.SearchWordBar;
 
+import bms.player.beatoraja.skin.Skin;
+import bms.player.beatoraja.skin.SkinText;
+import bms.player.beatoraja.skin.SkinTextImage;
+import bms.player.beatoraja.skin.lr2.LR2BitmapFontConverter;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,18 +39,20 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 public class SearchTextField extends Stage {
 	private static final Logger logger = LoggerFactory.getLogger(SearchTextField.class);
 	
-	// TOTO ユーザー定義のBitmapFontも使えるようにしたい
-	
 	/**
 	 * フォント生成用クラス
 	 */
 	private FreeTypeFontGenerator generator;
-	/**
-	 * フォント
-	 */
+
 	private BitmapFont searchfont;
 
 	private TextField search;
+
+	/**
+	 * A reference to the skin who creates this search text field, only used to check if the skin has disposed or not
+	 */
+	private Skin skin;
+
 	/**
 	 * 画面クリック感知用Actor
 	 */
@@ -52,14 +61,16 @@ public class SearchTextField extends Stage {
 	public SearchTextField(MusicSelector selector, Resolution resolution) {
 		super(new FitViewport(resolution.width, resolution.height), SpriteBatchHelper.createSpriteBatch());
 
+		skin = selector.getSkin();
+
 		final Rectangle r = ((MusicSelectSkin) selector.getSkin()).getSearchTextRegion();
 
 		try {
-			generator = new FreeTypeFontGenerator(Gdx.files.internal(selector.main.getConfig().getSystemfontpath()));
-			FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-			parameter.size = (int) r.height;
-			parameter.incremental = true;
-			searchfont = generator.generateFont(parameter);
+			searchfont = createSkinFont(selector, r);
+
+			if (searchfont == null) {
+				searchfont = createDefaultFont(selector, r);
+			}
 
 			final TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle(); // background
 			textFieldStyle.font = searchfont;
@@ -85,6 +96,11 @@ public class SearchTextField extends Stage {
 			search.setTextFieldListener(new TextFieldListener() {
 
 				public void keyTyped(TextField textField, char key) {
+					// Emergency exit to avoid npe
+					if (searchfont == null) {
+						return ;
+					}
+
 					if (key == '\n' || key == 13) {
 						if (textField.getText().length() > 0) {
 							SearchWordBar swb = new SearchWordBar(selector, textField.getText());
@@ -107,7 +123,11 @@ public class SearchTextField extends Stage {
 						textField.getOnscreenKeyboard().show(false);
 						setKeyboardFocus(null);
 					}
-					if (!searchfont.getData().hasGlyph(key)) {
+					BitmapFont.Glyph glyph = searchfont.getData().getGlyph(key);
+					if (key >= 32 && key != 127 && glyph == null) {
+						if (generator == null) {
+							generator = createDefaultFontGenerator(selector);
+						}
 						FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 						parameter.size = (int) r.height;
 						parameter.characters += textField.getText() + key;
@@ -118,9 +138,7 @@ public class SearchTextField extends Stage {
 						searchfont = newsearchfont;
 						textField.appendText(String.valueOf(key));
 					}
-
 				}
-
 			});
 			search.setBounds(r.x, r.y, r.width, r.height);
 			search.setMaxLength(50);
@@ -165,17 +183,76 @@ public class SearchTextField extends Stage {
 
 	public void dispose() {
 //		super.dispose();
-		if(generator != null) {
+		if (generator != null) {
 			generator.dispose();
 			generator = null;
 		}
-		if(searchfont != null) {
+		if (searchfont != null) {
 			searchfont.dispose();
 			searchfont = null;
+		}
+
+		if (search != null) {
+			disposeTextureRegionDrawable(search.getStyle().cursor);
+			disposeTextureRegionDrawable(search.getStyle().selection);
+		}
+
+		if (getBatch() != null) {
+			getBatch().dispose();
 		}
 	}
 
 	public Rectangle getSearchBounds() {
 		return search != null ? new Rectangle(search.getX(), search.getY(), search.getWidth(), search.getHeight()) : null;
+	}
+
+	public Skin getSkin() {
+		return skin;
+	}
+
+	private FreeTypeFontGenerator createDefaultFontGenerator(MusicSelector selector) {
+		return new FreeTypeFontGenerator(Gdx.files.internal(selector.main.getConfig().getSystemfontpath()));
+	}
+
+	private BitmapFont createDefaultFont(MusicSelector selector, Rectangle r) {
+		if (generator == null) {
+			generator = createDefaultFontGenerator(selector);
+		}
+		FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+		parameter.size = (int) r.height;
+		parameter.incremental = true;
+		return generator.generateFont(parameter);
+	}
+
+	/**
+	 * Create the bitmap font object from skin's definition
+	 */
+	private BitmapFont createSkinFont(MusicSelector selector, Rectangle r) {
+		SkinText st = ((MusicSelectSkin) selector.getSkin()).searchText;
+		if (!(st instanceof SkinTextImage)) {
+			return null;
+		}
+
+		SkinTextImage.SkinTextImageSource src = ((SkinTextImage) st).getSource();
+		if (src == null) {
+			return null;
+		}
+
+		try {
+			return LR2BitmapFontConverter.create(src, r.height);
+		} catch (Exception e) {
+			logger.error("Failed to convert LR2's font into bitmap font: ", e);
+			return null;
+		}
+	}
+
+	private void disposeTextureRegionDrawable(Drawable drawable) {
+		if (!(drawable instanceof TextureRegionDrawable)) {
+			return ;
+		}
+		TextureRegion region = ((TextureRegionDrawable) drawable).getRegion();
+		if (region != null && region.getTexture() != null) {
+			region.getTexture().dispose();
+		}
 	}
 }

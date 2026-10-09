@@ -135,11 +135,11 @@ public abstract class MainState {
 		}
 	}
 
-	private void beforeSetSkin() {
+	protected void beforeSetSkin() {
 		SkinDebugger.listenBeforeSetSkin();
 	}
 
-	private void afterSetSkin(Skin skin) {
+	protected void afterSetSkin(Skin skin) {
 		SkinDebugger.listenAfterSetSkin(skin);
 	}
 

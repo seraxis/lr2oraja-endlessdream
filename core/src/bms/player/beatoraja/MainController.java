@@ -338,7 +338,11 @@ public class MainController {
 		if (newState != null && current != newState) {
 			changeState(newState);
 		}
-		if (current.getStage() != null) {
+		refreshStageInputProcessor();
+	}
+
+	public void refreshStageInputProcessor() {
+		if (current != null && current.getStage() != null) {
 			Gdx.input.setInputProcessor(new InputMultiplexer(current.getStage(), input.getKeyBoardInputProcesseor()));
 		} else {
 			Gdx.input.setInputProcessor(input.getKeyBoardInputProcesseor());

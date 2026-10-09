@@ -4,6 +4,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
+
+import bms.player.beatoraja.skin.Skin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
@@ -183,16 +185,30 @@ public final class MusicSelector extends MainState {
 		manager.updateBar();
 
         loadSkin(SkinType.MUSIC_SELECT);
+	}
 
-		// search text field
-		Rectangle searchRegion = ((MusicSelectSkin) getSkin()).getSearchTextRegion();
-		if (searchRegion != null && (getStage() == null ||
-				(search != null && !searchRegion.equals(search.getSearchBounds())))) {
+	@Override
+	protected void afterSetSkin(Skin skin) {
+		Rectangle searchRegion = ((MusicSelectSkin) skin).getSearchTextRegion();
+		// If the new skin doesn't have the search region, we'll have to clean the old one manually here
+		if (searchRegion == null) {
+			if (search != null) {
+				search.dispose();
+			}
+			search = null;
+			main.refreshStageInputProcessor();
+			return ;
+		}
+		boolean searchChangedRegion = search != null && !searchRegion.equals(search.getSearchBounds());
+		boolean searchChangedSkin = search != null && getSkin() != search.getSkin();
+		boolean shouldCreateSearch = searchRegion != null && (getStage() == null || searchChangedRegion || searchChangedSkin);
+		if (shouldCreateSearch) {
 			if(search != null) {
 				search.dispose();
 			}
 			search = new SearchTextField(this, resource.getConfig().getResolution());
 			setStage(search);
+			main.refreshStageInputProcessor();
 		}
 	}
 

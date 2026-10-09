@@ -62,13 +62,7 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 
 		try (Stream<String> lines = Files.lines(f, Charset.forName("MS932"))) {
 			Context ctx = new Context(op);
-			lines.forEach(line -> {
-				try {
-					processLine(ctx, line, state);
-				} catch(Throwable e) {
-					logger.error("Failed to load LR2 skin", e);
-				}
-			});
+			lines.forEach(line -> processLine(ctx, line, state));
 		} catch (UncheckedIOException e) {
 			logger.error("Failed loading LR2 skin with charset MS932", e);
 			logger.info("Trying to reload LR2 skin at {} without charset", f);
@@ -79,13 +73,9 @@ public class LR2SkinHeaderLoader extends LR2SkinLoader {
 			header.setPath(f);
 			Context ctx = new Context(op);
 			try (Stream<String> lines = Files.lines(f)) {
-				lines.forEach(line -> {
-					try {
-						processLine(ctx, line, state);
-					} catch (Throwable ex) {
-						logger.error("Failed to load LR2 skin", ex);
-					}
-				});
+				lines.forEach(line -> processLine(ctx, line, state));
+			} catch (Exception ex) {
+				logger.error("Failed loading LR2 skin without charset too", ex);
 			}
 		}
 		header.setCustomOptions(options.toArray(CustomOption.class));

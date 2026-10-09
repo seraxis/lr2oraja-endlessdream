@@ -109,6 +109,10 @@ public class SkinTextImage extends SkinText {
 		}
 	}
 
+	public SkinTextImageSource getSource() {
+		return source;
+	}
+
 	public void dispose() {
 		source.dispose();
 	}
@@ -188,6 +192,10 @@ public class SkinTextImage extends SkinText {
 			SkinTextImageSourceElement element = new SkinTextImageSourceElement();
 			element.path = p;
 			elements.put(index, element);
+		}
+
+		public IntMap.Keys getCodes() {
+			return regions.keys();
 		}
 
 		@Override
