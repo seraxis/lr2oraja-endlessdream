@@ -321,6 +321,13 @@ public class IntegerPropertyFactory {
 				}
 				return Integer.MIN_VALUE;
 			};
+		case NUMBER_COMBO:
+			return state -> {
+				if (state instanceof BMSPlayer player) {
+					return player.getJudgeManager().getCombo();
+				}
+				return Integer.MIN_VALUE;
+			};
 		case NUMBER_MAXCOMBO:
 		case NUMBER_MAXCOMBO2:
 			return (state) -> {
@@ -394,18 +401,24 @@ public class IntegerPropertyFactory {
 			return (state) -> {
 				if (state instanceof AbstractResult) {
 					final ScoreData score = ((AbstractResult) state).getOldScore();
-					return score.getCombo() > 0 ? score.getCombo() : Integer.MIN_VALUE;
+					return Math.max(score.getCombo(), 0);
 				}
-				return Integer.MIN_VALUE;
+				return 0;
+			};
+		case NUMBER_MAXCOMBO3:
+			return state -> {
+				if (state instanceof AbstractResult result) {
+					return result.getNewScore().getCombo();
+				}
+				return 0;
 			};
 		case NUMBER_DIFF_MAXCOMBO:
 			return (state) -> {
-				if (state instanceof AbstractResult) {
-					final ScoreData score = ((AbstractResult) state).getOldScore();
-					return score.getCombo() > 0 ? ((AbstractResult) state).getNewScore().getCombo() - score.getCombo()
-							: Integer.MIN_VALUE;
+				if (state instanceof AbstractResult result) {
+					int old = Math.max(result.getOldScore().getCombo(), 0);
+					return result.getNewScore().getCombo() - old;
 				}
-				return Integer.MIN_VALUE;
+				return 0;
 			};
 		case NUMBER_MISSCOUNT:
 		case NUMBER_MISSCOUNT2:
@@ -527,6 +540,10 @@ public class IntegerPropertyFactory {
 				return (int) (Math.max((((BMSPlayer) state).getPlaytime()
 						- (int) (state.timer.isTimerOn(TIMER_PLAY) ? state.timer.getNowTime(TIMER_PLAY) : 0) + 1000),
 						0) / 60000);
+			} else if (state instanceof MusicSelector){
+				return (state.resource.getSongdata() != null
+						? (state.resource.getSongdata().getLength() / 60000) % 60
+						: Integer.MIN_VALUE);
 			}
 			return Integer.MIN_VALUE;
 		}),
@@ -535,6 +552,10 @@ public class IntegerPropertyFactory {
 				return (Math.max((((BMSPlayer) state).getPlaytime()
 						- (int) (state.timer.isTimerOn(TIMER_PLAY) ? state.timer.getNowTime(TIMER_PLAY) : 0) + 1000),
 						0) / 1000) % 60;
+			} else if (state instanceof MusicSelector) {
+				return (state.resource.getSongdata() != null
+						? (state.resource.getSongdata().getLength() / 1000) % 60
+						: Integer.MIN_VALUE);
 			}
 			return Integer.MIN_VALUE;
 		}),

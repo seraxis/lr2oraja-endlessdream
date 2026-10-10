@@ -2,9 +2,12 @@ package bms.player.beatoraja.skin;
 
 import bms.player.beatoraja.DisposableObject;
 import bms.player.beatoraja.MainState;
+import bms.player.beatoraja.modmenu.skin.debugger.SkinWidgetManager;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
+import bms.player.beatoraja.skin.lr2.commands.StandardDestination;
 import bms.player.beatoraja.skin.property.*;
 
+import bms.tool.util.Pair;
 import com.badlogic.gdx.graphics.Color;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -99,6 +102,7 @@ public abstract class SkinObject extends DisposableObject {
 	private long endtime;
 
 	public boolean draw;
+	private boolean registeredRemovedReason = false;
 	// Controlled by debugger instead of constraints defined by skin
 	public boolean visible = true;
 	public Rectangle region = new Rectangle();
@@ -235,6 +239,22 @@ public abstract class SkinObject extends DisposableObject {
 		endtime = dst[dst.length - 1].time;
 	}
 
+	public void setDestination(StandardDestination dst, float srcw, float srch, float dstw, float dsth) {
+		setDestination(dst, srcw, srch, dstw, dsth, true);
+	}
+
+	public void setDestination(StandardDestination dst, float srcw, float srch, float dstw, float dsth, boolean revertYAxis) {
+		float y = -(dst.y() + dst.h()) * dsth / srch;
+		if (revertYAxis) {
+			y += dsth;
+		}
+		setDestination(dst.time, dst.x() * dstw / srcw, y,
+				dst.w() * dstw / srcw, dst.h() * dsth / srch, dst.acc,
+				dst.a(), dst.r(), dst.g(), dst.b(),
+				dst.blend, dst.filter, dst.angle(), dst.center, dst.loop,
+				dst.timer, dst.op1(), dst.op2(), dst.op3(), dst.op4());
+	}
+
 	public BooleanProperty[] getDrawCondition() {
 		return dstdraw;
 	}
@@ -305,7 +325,7 @@ public abstract class SkinObject extends DisposableObject {
 
 		if (timer != null) {
 			if (timer.isOff(state)) {
-				draw = false;
+				undraw("Timer is passed");
 				return;
 			}
 			time -= timer.get(state);
@@ -314,7 +334,7 @@ public abstract class SkinObject extends DisposableObject {
 		final long lasttime = endtime;
 		if( dstloop == -1) {
 			if(time > endtime) {
-				time = -1;
+				time = Integer.MIN_VALUE;
 			}
 		} else if (lasttime > 0 && time > dstloop) {
 			if (lasttime == dstloop) {
@@ -323,8 +343,18 @@ public abstract class SkinObject extends DisposableObject {
 				time = (time - dstloop) % (lasttime - dstloop) + dstloop;
 			}
 		}
+		// Some LR2 skins used a combination of single dst with non-zero time parameter, which causes
+		//  starttime is equals to endtime and the object will never being rendered.
+		// The reason why could be calculated by a simple math:
+		//  1) dstloop 0 and lasttime = endtime, which is a non-zero value, so apparently they won't be equaled
+		//  2) based on (1) time is calculated by time = time % lasttime, where lasttime = endtime
+		//  3) therefore, time is a value modded by endtime, which is always strictly less than endtime
+		//  4) and starttime is equals to endtime, so starttime is always strictly larger than time
+		//  5) apparently, this object will never be drawn on screen
+		// If we found such a wrong definition, we'll try to manipulated its starttime & endtime as they were 0 to
+		//  force this object being drawn. It's equalized to modify its time to 0 in skin files.
 		if (starttime > time) {
-			draw = false;
+			undraw("Loop is ended");
 			return;
 		}
 		nowtime = time;
@@ -487,6 +517,10 @@ public abstract class SkinObject extends DisposableObject {
 		this.rate = 0;
 		this.index = 0;
 	}
+
+	public int[] getDstop() {
+		return dstop;
+	}
 	
 	public boolean validate() {
 		return getAllDestination().length > 0;
@@ -505,7 +539,7 @@ public abstract class SkinObject extends DisposableObject {
 	public void prepare(long time, MainState state, float offsetX, float offsetY) {
 		for (BooleanProperty draw : dstdraw) {
 			if(!draw.get(state)) {
-				this.draw = false;
+				undraw("Draw condition is not met");
 				return;
 			}
 		}
@@ -515,7 +549,7 @@ public abstract class SkinObject extends DisposableObject {
 		region.y += offsetY;
 		if (mouseRect != null && !mouseRect.contains(state.main.getInputProcessor().getMouseX() -region.x,
 				state.main.getInputProcessor().getMouseY() - region.y)) {
-			draw = false;
+			undraw("Mouse input area is not met");
 			return;
 		}
 
@@ -638,6 +672,14 @@ public abstract class SkinObject extends DisposableObject {
 
 	public void setRelative(boolean relative) {
 		this.relative = relative;
+	}
+
+	protected void undraw(String reason) {
+		this.draw = false;
+		if (!this.registeredRemovedReason) {
+			this.registeredRemovedReason = true;
+			SkinWidgetManager.registerRemovedObject(this.name, reason);
+		}
 	}
 
 	/**

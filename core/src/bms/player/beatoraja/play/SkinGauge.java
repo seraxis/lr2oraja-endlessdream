@@ -59,6 +59,10 @@ public class SkinGauge extends SkinObject {
 	 * ゲージの粒の数
 	 */
 	private int parts = 50;
+	/**
+	 * Draw the gauge bar vertically if true. Defaults to false since upstream doesn't have this feature
+	 */
+	private boolean vertical;
 
 	private int animation;
 	private long atime;
@@ -104,7 +108,7 @@ public class SkinGauge extends SkinObject {
 			gauge = state.resource.getGrooveGauge();
 		}
 		if (gauge == null) {
-			draw = false;
+			undraw("Gauge is null");
 			return;
 		}
 
@@ -190,33 +194,43 @@ public class SkinGauge extends SkinObject {
 		case ANIMATION_DECLEASE:
 			for (int i = 1; i <= parts; i++) {
 				final float border = i * max / parts;
-				sprite.draw(
+				drawGaugePart(
+						sprite,
 						images[exgauge + (notes == i ? 4 : (notes - animation > i ? 0 : 2))
 								+ (border < this.border ? 1 : 0)],
-						region.x + region.width * (i - 1) / parts, region.y, region.width / parts, region.height);
+						i);
 
 			}		
 			break;
 		case ANIMATION_FLICKERING:
 			for (int i = 1; i <= parts; i++) {
 				final float border = i * max / parts;
-				sprite.draw(
-						images[exgauge + (notes >= i ? 0 : 2)
-								+ (border < this.border ? 1 : 0)],
-						region.x + region.width * (i - 1) / parts, region.y, region.width / parts, region.height);
+				drawGaugePart(
+						sprite,
+						images[exgauge + (notes >= i ? 0 : 2) + (border < this.border ? 1 : 0)],
+						i
+				);
 
 				if(i == notes) {
 					final Color orgColor = sprite.getColor();
 					flickerColor.set(orgColor.r, orgColor.g, orgColor.b, orgColor.a * (animation < duration / 2 ? animation / ((float) duration / 2 - 1) : ((duration - 1) - animation) / ((float) duration / 2 - 1)));
 					sprite.setColor(flickerColor);
 //					System.out.println(animation + "  " + duration + "  " + flickerColor.toString());
-					sprite.draw(
-							images[exgauge + 4 + (border < this.border ? 1 : 0)],
-							region.x + region.width * (i - 1) / parts, region.y, region.width / parts, region.height);
+					drawGaugePart(sprite, images[exgauge + 4 + (border < this.border ? 1 : 0)], i);
 					sprite.setColor(orgColor);
 				}
 			}		
 			break;
+		}
+	}
+
+	private void drawGaugePart(SkinObjectRenderer sprite, TextureRegion image, int index) {
+		if (vertical) {
+			sprite.draw(image, region.x, region.y + region.height * (parts - index) / parts,
+					region.width, region.height / parts);
+		} else {
+			sprite.draw(image, region.x + region.width * (index - 1) / parts, region.y,
+					region.width / parts, region.height);
 		}
 	}
 
@@ -262,6 +276,14 @@ public class SkinGauge extends SkinObject {
 
 	public void setEndtime(int endtime) {
 		this.endtime = endtime;
+	}
+
+	public boolean isVertical() {
+		return vertical;
+	}
+
+	public void setVertical(boolean vertical) {
+		this.vertical = vertical;
 	}
 
 	@Override

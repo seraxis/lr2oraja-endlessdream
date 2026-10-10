@@ -179,7 +179,7 @@ public class Skin {
 			if(!obj.validate()) {
 				removes.add(obj);
 			} else {
-				Array<BooleanProperty> bp = new Array<BooleanProperty>();
+				Array<BooleanProperty> bp = new Array<>();
 				for(BooleanProperty op : obj.getDrawCondition()) {
 					if(op.isStatic(state)) {
 						if(!op.get(state)) {

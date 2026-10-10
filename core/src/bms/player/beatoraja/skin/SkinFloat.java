@@ -148,13 +148,13 @@ final public class SkinFloat extends SkinObject {
 		var v = value * gain;
 		if (value == Float.MIN_VALUE || value == Float.MAX_VALUE || Float.isInfinite(v) || Float.isNaN(v) || v == Float.MIN_VALUE || v == Float.MAX_VALUE || this.keta == 0) {
 			length = 0;
-			draw = false;
+			undraw("Value is -INF or +INF");
 			return;
 		}
 		final SkinSourceSet images = (mimage == null || v >= 0.0f) ? this.image : mimage;
 		if (images == null) {
 			length = 0;
-			draw = false;
+			undraw("No image");
 			return;
 		}
 		super.prepare(time, state, offsetX, offsetY);
@@ -165,7 +165,7 @@ final public class SkinFloat extends SkinObject {
 		TextureRegion[] image = images.getImages(time, state);
 		if(image == null) {
 			length = 0;
-			draw = false;
+			undraw("No image");
 			return;
 		}
 
