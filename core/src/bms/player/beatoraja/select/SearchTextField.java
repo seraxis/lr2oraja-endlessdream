@@ -47,6 +47,7 @@ public class SearchTextField extends Stage {
 	private FreeTypeFontGenerator generator;
 
 	private BitmapFont searchfont;
+	private Color messageFontColor = Color.GRAY;
 
 	private TextField search;
 
@@ -98,7 +99,9 @@ public class SearchTextField extends Stage {
 			int align = SkinText.ALIGN_LEFT;
 			if (searchFontConf.isPresent()) {
 				search.getStyle().fontColor = searchFontConf.get().fontColor;
-				search.getStyle().messageFontColor = searchFontConf.get().messageFontColor;
+				Color messageFontColor = searchFontConf.get().messageFontColor();
+				search.getStyle().messageFontColor = messageFontColor;
+				this.messageFontColor = messageFontColor;
 				align = searchFontConf.get().align;
 			}
 			search.setTextFieldListener(new TextFieldListener() {
@@ -197,7 +200,7 @@ public class SearchTextField extends Stage {
 		if(search != null) {
 			search.setText("");
 			search.setMessageText("search song");
-			search.getStyle().messageFontColor = Color.GRAY;
+			search.getStyle().messageFontColor = messageFontColor;
 			search.getOnscreenKeyboard().show(false);			
 		}
 		setKeyboardFocus(null);
