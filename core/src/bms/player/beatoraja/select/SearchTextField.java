@@ -1,20 +1,14 @@
 package bms.player.beatoraja.select;
 
-import bms.player.beatoraja.MainState;
 import bms.player.beatoraja.Resolution;
 import bms.player.beatoraja.SpriteBatchHelper;
 import bms.player.beatoraja.input.KeyBoardInputProcesseor.ControlKeys;
 import bms.player.beatoraja.select.bar.SearchWordBar;
-
 import bms.player.beatoraja.skin.Skin;
+import bms.player.beatoraja.skin.SkinObject;
 import bms.player.beatoraja.skin.SkinText;
 import bms.player.beatoraja.skin.SkinTextImage;
 import bms.player.beatoraja.skin.lr2.LR2BitmapFontConverter;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -23,13 +17,21 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  * 楽曲検索用テキストフィールド
@@ -47,6 +49,8 @@ public class SearchTextField extends Stage {
 	private BitmapFont searchfont;
 
 	private TextField search;
+
+	private Rectangle skinBounds;
 
 	/**
 	 * A reference to the skin who creates this search text field, only used to check if the skin has disposed or not
@@ -66,11 +70,9 @@ public class SearchTextField extends Stage {
 		final Rectangle r = ((MusicSelectSkin) selector.getSkin()).getSearchTextRegion();
 
 		try {
-			searchfont = createSkinFont(selector, r);
-
-			if (searchfont == null) {
-				searchfont = createDefaultFont(selector, r);
-			}
+			Optional<BitmapFontConfig> searchFontConf = createSkinFont(selector, r);
+			searchfont = searchFontConf.map(it -> it.bitmapFont)
+					.orElse(createDefaultFont(selector, r));
 
 			final TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle(); // background
 			textFieldStyle.font = searchfont;
@@ -93,6 +95,12 @@ public class SearchTextField extends Stage {
 
 			search = new TextField("", textFieldStyle);
 			search.setMessageText("search song");
+			int align = SkinText.ALIGN_LEFT;
+			if (searchFontConf.isPresent()) {
+				search.getStyle().fontColor = searchFontConf.get().fontColor;
+				search.getStyle().messageFontColor = searchFontConf.get().messageFontColor;
+				align = searchFontConf.get().align;
+			}
 			search.setTextFieldListener(new TextFieldListener() {
 
 				public void keyTyped(TextField textField, char key) {
@@ -140,9 +148,24 @@ public class SearchTextField extends Stage {
 					}
 				}
 			});
-			search.setBounds(r.x, r.y, r.width, r.height);
+			float boundX = align == SkinText.ALIGN_CENTER ? r.x - r.width / 2F
+					: align == SkinText.ALIGN_RIGHT ? r.x - r.width
+					: r.x;
+			Rectangle actualSearchBound = new Rectangle(
+					boundX,
+					r.y,
+					r.width,
+					r.height
+			);
+			skinBounds = r;
+			search.setBounds(boundX, r.y, r.width, r.height);
 			search.setMaxLength(50);
 			search.setFocusTraversal(false);
+			search.setAlignment(
+					align == SkinText.ALIGN_CENTER ? Align.center
+					: align == SkinText.ALIGN_LEFT ? Align.left
+					: Align.right
+			);
 
 			search.setVisible(true);
 			search.addListener((e) -> {
@@ -157,7 +180,7 @@ public class SearchTextField extends Stage {
 			screen.setBounds(0, 0, resolution.width, resolution.height);
 			screen.addListener(new ClickListener() {
 				public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-					if (getKeyboardFocus() != null && !r.contains(x, y)) {
+					if (getKeyboardFocus() != null && !actualSearchBound.contains(x, y)) {
 						unfocus(selector);
 					}
 					return false;
@@ -196,18 +219,14 @@ public class SearchTextField extends Stage {
 			disposeTextureRegionDrawable(search.getStyle().cursor);
 			disposeTextureRegionDrawable(search.getStyle().selection);
 		}
-
-		if (getBatch() != null) {
-			getBatch().dispose();
-		}
-	}
-
-	public Rectangle getSearchBounds() {
-		return search != null ? new Rectangle(search.getX(), search.getY(), search.getWidth(), search.getHeight()) : null;
 	}
 
 	public Skin getSkin() {
 		return skin;
+	}
+
+	public Rectangle getSkinBounds() {
+		return skinBounds;
 	}
 
 	private FreeTypeFontGenerator createDefaultFontGenerator(MusicSelector selector) {
@@ -227,24 +246,50 @@ public class SearchTextField extends Stage {
 	/**
 	 * Create the bitmap font object from skin's definition
 	 */
-	private BitmapFont createSkinFont(MusicSelector selector, Rectangle r) {
+	private Optional<BitmapFontConfig> createSkinFont(MusicSelector selector, Rectangle r) {
 		SkinText st = ((MusicSelectSkin) selector.getSkin()).searchText;
 		if (!(st instanceof SkinTextImage)) {
-			return null;
+			return Optional.empty();
 		}
 
 		SkinTextImage.SkinTextImageSource src = ((SkinTextImage) st).getSource();
 		if (src == null) {
-			return null;
+			return Optional.empty();
 		}
 
+		Color color = null;
+		for (SkinObject.SkinObjectDestination dst : st.getAllDestination()) {
+			if (dst != null && dst.color != null && (color == null || dst.color.a > color.a)) {
+				color = dst.color;
+			}
+		}
+
+		if (color == null || color.a == 0.0F) {
+			color = Color.WHITE;
+		}
+
+		int align = st.getAlign();
+
 		try {
-			return LR2BitmapFontConverter.create(src, r.height);
+			BitmapFont font = LR2BitmapFontConverter.create(src, r.height);
+			return Optional.of(new BitmapFontConfig(
+					font,
+					color,
+					new Color(color.r, color.g, color.b, color.a * 0.6F),
+					align
+			));
 		} catch (Exception e) {
 			logger.error("Failed to convert LR2's font into bitmap font: ", e);
-			return null;
+			return Optional.empty();
 		}
 	}
+
+	private record BitmapFontConfig(
+		BitmapFont bitmapFont,
+		Color fontColor,
+		Color messageFontColor,
+		int align
+	) {}
 
 	private void disposeTextureRegionDrawable(Drawable drawable) {
 		if (!(drawable instanceof TextureRegionDrawable)) {

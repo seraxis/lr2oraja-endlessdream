@@ -199,9 +199,9 @@ public final class MusicSelector extends MainState {
 			main.refreshStageInputProcessor();
 			return ;
 		}
-		boolean searchChangedRegion = search != null && !searchRegion.equals(search.getSearchBounds());
+		boolean searchChangedRegion = search != null && !searchRegion.equals(search.getSkinBounds());
 		boolean searchChangedSkin = search != null && getSkin() != search.getSkin();
-		boolean shouldCreateSearch = searchRegion != null && (getStage() == null || searchChangedRegion || searchChangedSkin);
+		boolean shouldCreateSearch = getStage() == null || searchChangedRegion || searchChangedSkin;
 		if (shouldCreateSearch) {
 			if(search != null) {
 				search.dispose();
