@@ -609,6 +609,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						} else {
 							gauger = new SkinGauge(gauge, values[10], values[9], values[13], values[14], values[15], values[16]);
 						}
+						gauger.setVertical(values[11] == 0 && values[12] != 0);
 
 						gauger.setStarttime(values[17]);
 						gauger.setEndtime(values[18]);
@@ -695,6 +696,7 @@ public abstract class LR2SkinCSVLoader<S extends Skin> extends LR2SkinLoader {
 						} else {
 							gauger = new SkinGauge(gauge, values[10], values[9], values[13], values[14], values[15], values[16]);
 						}
+						gauger.setVertical(values[11] == 0 && values[12] != 0);
 
 						gauger.setStarttime(values[17]);
 						gauger.setEndtime(values[18]);
