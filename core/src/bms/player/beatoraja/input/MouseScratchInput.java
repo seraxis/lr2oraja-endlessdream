@@ -4,7 +4,7 @@ import bms.player.beatoraja.PlayModeConfig.KeyboardConfig;
 import bms.player.beatoraja.PlayModeConfig.MouseScratchConfig;
 import com.badlogic.gdx.Gdx;
 
-import java.util.Arrays;
+import static bms.player.beatoraja.modmenu.ImGuiRenderer.getShowModMenu;
 
 public class MouseScratchInput {
     private final BMSPlayerInputProcessor bmsPlayerInputProcessor;
@@ -54,8 +54,9 @@ public class MouseScratchInput {
 
     public void poll(final long microtime) {
 		final long presstime = microtime / 1000;
+        boolean isModMenuOpen = getShowModMenu();
         // MOUSEの更新
-        if (mouseScratchEnabled) {
+        if (!isModMenuOpen && mouseScratchEnabled) {
             mouseToAnalog.update();
             for (int i=0; i<mouseScratchAlgorithm.length; i++) {
                 mouseScratchAlgorithm[i].update(presstime);

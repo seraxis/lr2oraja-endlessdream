@@ -723,11 +723,7 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-            if (!getShowModMenu() && current instanceof BMSPlayer) {
-                Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
-            } else {
-            	Gdx.input.setCursorCatched(false);
-            }
+			setCursorCatched(time);
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
@@ -831,6 +827,20 @@ public class MainController {
 				updateSong = null;
 			}
         }
+	}
+
+	private void setCursorCatched(long time) {
+		PlayModeConfig.MouseScratchConfig config = player.getPlayConfig(player.getMode())
+				.getKeyboardConfig()
+				.getMouseScratchConfig();
+        if (config.isMouseScratchEnabled()) {
+			Gdx.input.setCursorCatched(!getShowModMenu());
+		}
+		else if (!getShowModMenu() && current instanceof BMSPlayer) {
+			Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
+		} else {
+			Gdx.input.setCursorCatched(false);
+		}
 	}
 
 	public void dispose() {
