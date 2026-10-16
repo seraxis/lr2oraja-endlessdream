@@ -2,6 +2,10 @@ package bms.player.beatoraja.modmenu;
 
 import bms.model.Mode;
 import bms.player.beatoraja.play.BMSPlayerRule;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JudgeTrainer {
     public static final String[] JUDGE_OPTIONS = new String[]{
@@ -9,6 +13,8 @@ public class JudgeTrainer {
     };
     private static boolean active;
     private static int judgeRank = 0;
+    // NOTE: judgeCountTracker must have an initialized value to allow mod menu draw the table
+    private static volatile JudgeCountTracker judgeCountTracker = new JudgeCountTracker(Mode.BEAT_7K);
 
     public static boolean isActive() {
         return active;
@@ -36,6 +42,14 @@ public class JudgeTrainer {
         // We can observe that the sum is always 3
         BMSPlayerRule rule = BMSPlayerRule.getBMSPlayerRule(mode);
         return rule.judge.windowrule.judgerank[3 - judgeRank];
+    }
+
+    public static void setJudgeCountTracker(JudgeCountTracker judgeCountTracker) {
+        JudgeTrainer.judgeCountTracker = judgeCountTracker;
+    }
+
+    public static JudgeCountTracker getJudgeCountTracker() {
+        return judgeCountTracker;
     }
 }
 
