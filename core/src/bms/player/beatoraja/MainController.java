@@ -830,33 +830,16 @@ public class MainController {
 	}
 
 	private void setCursorCatched(long time) {
-		PlayModeConfig.MouseScratchConfig config;
-        switch (player.getMode()) {
-            case BEAT_5K:
-            case POPN_5K:
-                config = player.getMode5().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case BEAT_10K:
-                config = player.getMode10().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case BEAT_14K:
-                config = player.getMode14().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case POPN_9K:
-                config = player.getMode9().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case KEYBOARD_24K:
-                config = player.getMode24().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case KEYBOARD_24K_DOUBLE:
-                config = player.getMode24double().getKeyboardConfig().getMouseScratchConfig();
-                break;
-            case BEAT_7K:
-            default:
-                config = player.getMode7().getKeyboardConfig().getMouseScratchConfig();
-                break;
-        }
-		if (config.isMouseScratchEnabled()) {
+		PlayModeConfig.MouseScratchConfig config = switch (player.getMode()) {
+            case BEAT_5K, POPN_5K -> player.getMode5().getKeyboardConfig().getMouseScratchConfig();
+            case BEAT_10K -> player.getMode10().getKeyboardConfig().getMouseScratchConfig();
+            case BEAT_14K -> player.getMode14().getKeyboardConfig().getMouseScratchConfig();
+            case POPN_9K -> player.getMode9().getKeyboardConfig().getMouseScratchConfig();
+            case KEYBOARD_24K -> player.getMode24().getKeyboardConfig().getMouseScratchConfig();
+            case KEYBOARD_24K_DOUBLE -> player.getMode24double().getKeyboardConfig().getMouseScratchConfig();
+            default -> player.getMode7().getKeyboardConfig().getMouseScratchConfig();
+        };
+        if (config.isMouseScratchEnabled()) {
 			Gdx.input.setCursorCatched(!getShowModMenu());
 		}
 		else if (!getShowModMenu()) {
