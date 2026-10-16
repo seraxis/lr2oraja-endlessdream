@@ -4,6 +4,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import static bms.player.beatoraja.SystemSoundManager.SoundType.*;
 
 import java.nio.file.*;
+
+import bms.player.beatoraja.skin.Skin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.stream.IntStream;
@@ -108,6 +110,8 @@ public final class MusicSelector extends MainState {
 
 	private PixmapResourcePool stagefiles;
 
+	private boolean noResetPanel = false;
+
 	public MusicSelector(MainController main, boolean songUpdated) {
 		super(main);
 		this.config = main.getPlayerResource().getPlayerConfig();
@@ -181,16 +185,30 @@ public final class MusicSelector extends MainState {
 		manager.updateBar();
 
         loadSkin(SkinType.MUSIC_SELECT);
+	}
 
-		// search text field
-		Rectangle searchRegion = ((MusicSelectSkin) getSkin()).getSearchTextRegion();
-		if (searchRegion != null && (getStage() == null ||
-				(search != null && !searchRegion.equals(search.getSearchBounds())))) {
+	@Override
+	protected void afterSetSkin(Skin skin) {
+		Rectangle searchRegion = ((MusicSelectSkin) skin).getSearchTextRegion();
+		// If the new skin doesn't have the search region, we'll have to clean the old one manually here
+		if (searchRegion == null) {
+			if (search != null) {
+				search.dispose();
+			}
+			search = null;
+			main.refreshStageInputProcessor();
+			return ;
+		}
+		boolean searchChangedRegion = search != null && !searchRegion.equals(search.getSkinBounds());
+		boolean searchChangedSkin = search != null && getSkin() != search.getSkin();
+		boolean shouldCreateSearch = getStage() == null || searchChangedRegion || searchChangedSkin;
+		if (shouldCreateSearch) {
 			if(search != null) {
 				search.dispose();
 			}
 			search = new SearchTextField(this, resource.getConfig().getResolution());
 			setStage(search);
+			main.refreshStageInputProcessor();
 		}
 	}
 
@@ -571,18 +589,18 @@ public final class MusicSelector extends MainState {
 		return panelstate;
 	}
 
-	public void setPanelState(int panelstate) {
-		if (this.panelstate != panelstate) {
-			if (this.panelstate != 0) {
-				timer.setTimerOn(TIMER_PANEL1_OFF + this.panelstate - 1);
-				timer.setTimerOff(TIMER_PANEL1_ON + this.panelstate - 1);
-			}
+	public void setPanelState(int newState) {
+		if (panelstate != newState) {
 			if (panelstate != 0) {
-				timer.setTimerOn(TIMER_PANEL1_ON + panelstate - 1);
-				timer.setTimerOff(TIMER_PANEL1_OFF + panelstate - 1);
+				timer.setTimerOn(TIMER_PANEL1_OFF + panelstate - 1);
+				timer.setTimerOff(TIMER_PANEL1_ON + panelstate - 1);
+			}
+			if (newState != 0) {
+				timer.setTimerOn(TIMER_PANEL1_ON + newState - 1);
+				timer.setTimerOff(TIMER_PANEL1_OFF + newState - 1);
 			}
 		}
-		this.panelstate = panelstate;
+		panelstate = newState;
 	}
 
 	public SongDatabaseAccessor getSongDatabase() {
@@ -714,6 +732,14 @@ public final class MusicSelector extends MainState {
 			final int rankingMax = currentir != null ? Math.max(1, currentir.getTotalPlayer()) : 1;
 			rankingOffset = (int) (rankingMax * value);
 		}
+	}
+
+	public boolean isNoResetPanel() {
+		return noResetPanel;
+	}
+
+	public void setNoResetPanel(boolean noResetPanel) {
+		this.noResetPanel = noResetPanel;
 	}
 
 	public enum ChartReplicationMode {

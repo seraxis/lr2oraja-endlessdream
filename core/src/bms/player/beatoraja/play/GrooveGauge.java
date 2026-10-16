@@ -95,7 +95,11 @@ public final class GrooveGauge {
 	public void setType(int type) {
 		this.type = type;
 	}
-	
+
+	public String getName() {
+		return GrooveGauge.getGaugeName(this.type);
+	}
+
 	public boolean isTypeChanged() {
 		return typeorg != type;
 	}
@@ -118,6 +122,21 @@ public final class GrooveGauge {
 	
 	public Gauge getGauge(int type) {
 		return gauges[type];
+	}
+
+	public static String getGaugeName(int type) {
+		return switch (type) {
+			case ASSISTEASY -> "Assist Easy";
+			case EASY -> "Easy";
+			case NORMAL -> "Normal";
+			case HARD -> "Hard";
+			case EXHARD -> "EX Hard";
+			case HAZARD -> "Hazard";
+			case CLASS -> "Class";
+			case EXCLASS -> "EX Class";
+			case EXHARDCLASS -> "EX Hard Class";
+			default -> "NONE";
+		};
 	}
 	
 	public static GrooveGauge create(BMSModel model, int type, PlayerResource resource) {

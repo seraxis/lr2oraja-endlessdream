@@ -60,7 +60,7 @@ public class SkinTimingDistributionGraph extends SkinObject {
 
 	public void prepare(long time, MainState state) {
 		if(!(state instanceof MusicResult)) {
-			draw = false;
+			undraw("Current scene is not result scene");
 			return;
 		}
 		this.state = (MusicResult) state;

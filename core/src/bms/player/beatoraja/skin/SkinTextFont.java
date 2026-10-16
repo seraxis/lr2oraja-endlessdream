@@ -98,7 +98,7 @@ public class SkinTextFont extends SkinText {
 	
 	@Override
     public void draw(SkinObjectRenderer sprite, float offsetX, float offsetY) {
-        if(font != null) {
+        if (font != null && Math.abs(region.height / parameter.size) != 0) {
             font.getData().setScale(region.height / parameter.size);
             
             sprite.setType(getFilter() != 0 ? SkinObjectRenderer.TYPE_LINEAR : SkinObjectRenderer.TYPE_NORMAL);

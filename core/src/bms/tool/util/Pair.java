@@ -81,7 +81,7 @@ public final class Pair<K, V> {
 		return condition.test(this.first, this.second);
 	}
 
-	public <T extends Comparable<T>, U extends Comparable<U>> Comparator<Pair<T, U>> DEFAULT_COMPARATOR() {
+	public static <T extends Comparable<T>, U extends Comparable<U>> Comparator<Pair<T, U>> DEFAULT_COMPARATOR() {
 		return (o1, o2) -> o1.first.equals(o2.first)
 				? o1.second.compareTo(o2.second)
 				: o1.first.compareTo(o2.first);
