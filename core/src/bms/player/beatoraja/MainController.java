@@ -842,7 +842,7 @@ public class MainController {
         if (config.isMouseScratchEnabled()) {
 			Gdx.input.setCursorCatched(!getShowModMenu());
 		}
-		else if (!getShowModMenu()) {
+		else if (!getShowModMenu() && current instanceof BMSPlayer) {
 			Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
 		} else {
 			Gdx.input.setCursorCatched(false);
