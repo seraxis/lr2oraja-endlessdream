@@ -723,11 +723,7 @@ public class MainController {
             	input.setMouseMoved(false);
             	mouseMovedTime = time;
 			}
-            if (!getShowModMenu() && current instanceof BMSPlayer) {
-                Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
-            } else {
-            	Gdx.input.setCursorCatched(false);
-            }
+			setCursorCatched(time);
 			// FPS表示切替
             if (input.isActivated(KeyCommand.SHOW_FPS)) {
                 showfps = !showfps;
@@ -831,6 +827,43 @@ public class MainController {
 				updateSong = null;
 			}
         }
+	}
+
+	private void setCursorCatched(long time) {
+		PlayModeConfig.MouseScratchConfig config;
+        switch (player.getMode()) {
+            case BEAT_5K:
+            case POPN_5K:
+                config = player.getMode5().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case BEAT_10K:
+                config = player.getMode10().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case BEAT_14K:
+                config = player.getMode14().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case POPN_9K:
+                config = player.getMode9().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case KEYBOARD_24K:
+                config = player.getMode24().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case KEYBOARD_24K_DOUBLE:
+                config = player.getMode24double().getKeyboardConfig().getMouseScratchConfig();
+                break;
+            case BEAT_7K:
+            default:
+                config = player.getMode7().getKeyboardConfig().getMouseScratchConfig();
+                break;
+        }
+		if (config.isMouseScratchEnabled()) {
+			Gdx.input.setCursorCatched(!getShowModMenu());
+		}
+		else if (!getShowModMenu()) {
+			Gdx.input.setCursorCatched(time > mouseMovedTime + 2000);
+		} else {
+			Gdx.input.setCursorCatched(false);
+		}
 	}
 
 	public void dispose() {
