@@ -830,15 +830,9 @@ public class MainController {
 	}
 
 	private void setCursorCatched(long time) {
-		PlayModeConfig.MouseScratchConfig config = switch (player.getMode()) {
-            case BEAT_5K, POPN_5K -> player.getMode5().getKeyboardConfig().getMouseScratchConfig();
-            case BEAT_10K -> player.getMode10().getKeyboardConfig().getMouseScratchConfig();
-            case BEAT_14K -> player.getMode14().getKeyboardConfig().getMouseScratchConfig();
-            case POPN_9K -> player.getMode9().getKeyboardConfig().getMouseScratchConfig();
-            case KEYBOARD_24K -> player.getMode24().getKeyboardConfig().getMouseScratchConfig();
-            case KEYBOARD_24K_DOUBLE -> player.getMode24double().getKeyboardConfig().getMouseScratchConfig();
-            default -> player.getMode7().getKeyboardConfig().getMouseScratchConfig();
-        };
+		PlayModeConfig.MouseScratchConfig config = player.getPlayConfig(player.getMode())
+				.getKeyboardConfig()
+				.getMouseScratchConfig();
         if (config.isMouseScratchEnabled()) {
 			Gdx.input.setCursorCatched(!getShowModMenu());
 		}
