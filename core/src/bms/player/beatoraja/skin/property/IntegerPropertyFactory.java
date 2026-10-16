@@ -125,6 +125,10 @@ public class IntegerPropertyFactory {
 		if (result == null) {
 			result = getIntegerProperty0(optionid);
 		}
+
+		if (result == null) {
+			result = EndlessDreamPropertyFactory.getIntegerProperty(optionid);
+		}
 		
 		vcache[optionid] = result;
 		return result;
@@ -822,6 +826,10 @@ public class IntegerPropertyFactory {
 		private ValueType(int id, IntegerProperty property) {
 			this.id = id;
 			this.property = property;
+		}
+
+		public int getId() {
+			return id;
 		}
 
 		private static IntegerProperty createFolderClearCountProperty(final int clearType) {

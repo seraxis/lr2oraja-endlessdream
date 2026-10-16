@@ -14,6 +14,11 @@ import bms.player.beatoraja.select.bar.GradeBar;
 import bms.player.beatoraja.select.bar.SongBar;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.result.AbstractResult;
+import com.badlogic.gdx.utils.IntMap;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * FloatProperty/FloatWriterのFactoryクラス
@@ -22,8 +27,8 @@ import bms.player.beatoraja.result.AbstractResult;
  */
 public class FloatPropertyFactory {
 	
-	private static RateType[] RateTypeValues = RateType.values();
-	private static FloatType[] FloatTypeValues = FloatType.values();
+	public static RateType[] RateTypeValues = RateType.values();
+	public static FloatType[] FloatTypeValues = FloatType.values();
 
 	private static final int PG = 0;
 	private static final int GR = 1;
@@ -108,7 +113,7 @@ public class FloatPropertyFactory {
 				return r.property;
 			}
 		}
-		return null;
+		return EndlessDreamPropertyFactory.getFloatProperty(optionid);
 	}
 
 	/**
@@ -129,7 +134,7 @@ public class FloatPropertyFactory {
 				return r.property;
 			}
 		}
-		return null;
+		return EndlessDreamPropertyFactory.getFloatProperty(name);
 	}
 
 	private static FloatProperty createMusicProgress() {
@@ -493,6 +498,9 @@ public class FloatPropertyFactory {
 			this.property = property;
 		}
 
+		public int getId() {
+			return id;
+		}
 	}
 
 	private static FloatProperty createIRClearRateProperty(int clearType) {
