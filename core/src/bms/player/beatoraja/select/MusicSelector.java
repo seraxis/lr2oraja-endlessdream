@@ -224,8 +224,7 @@ public final class MusicSelector extends MainState {
 			if (current instanceof SongBar && ((SongBar) current).existsSong()) {
 				SongData song = resource.getSongdata();
 				new Thread(() ->  {
-					song.setBMSModel(resource.loadBMSModel(Paths.get(((SongBar) current).getSongData().getPath()),
-							config.getLnmode()));
+					song.setBMSModel(resource.loadBMSModel(song, config.getLnmode()));
 				}).start();;
 			}
 			showNoteGraph = true;
@@ -286,12 +285,12 @@ public final class MusicSelector extends MainState {
 				readRandomCourse(play);
 			} else if (current instanceof DirectoryBar) {
 				if(play.mode == BMSPlayerMode.Mode.AUTOPLAY) {
-					final Path[] paths = Stream.of(((DirectoryBar) current).getChildren())
+					final SongData[] songs = Stream.of(((DirectoryBar) current).getChildren())
 						.filter(bar -> (bar instanceof SongBar && ((SongBar) bar).getSongData() != null && ((SongBar) bar).getSongData().getPath() != null))
-						.map(bar -> Paths.get(((SongBar) bar).getSongData().getPath())).toArray(Path[]::new);
-					if(paths.length > 0) {
+						.map(bar -> ((SongBar) bar).getSongData()).toArray(SongData[]::new);
+					if(songs.length > 0) {
 						resource.clear();
-						resource.setAutoPlaySongs(paths, false);
+						resource.setAutoPlaySongs(songs, false);
 						if(resource.nextSong()) {
 							main.changeState(MainStateType.DECIDE);
 						}
@@ -351,7 +350,7 @@ public final class MusicSelector extends MainState {
 
 	public void readChart(SongData song, Bar current) {
 		resource.clear();
-		if (resource.setBMSFile(Paths.get(song.getPath()), play)) {
+		if (resource.setBMSFile(song, play)) {
 			// TODO 表名、フォルダ名をPlayerResource上でも重複実施している
 			final Queue<DirectoryBar> dir = manager.getDirectory();
 			if(dir.size > 0 && !(dir.last() instanceof SameFolderBar)) {
@@ -361,7 +360,7 @@ public final class MusicSelector extends MainState {
 				for (DirectoryBar bar : dir) {
 					if (bar instanceof TableBar) {
 						String currenturl = ((TableBar) bar).getUrl();
-						if (currenturl != null && urls.contains(currenturl, false)) {
+						if (currenturl != null && (urls.contains(currenturl, false) || ((TableBar) bar).isBackbeat())) {
 							isdtable = true;
 							resource.setTablename(bar.getTitle());
 						}
@@ -480,8 +479,7 @@ public final class MusicSelector extends MainState {
 	private boolean _readCourse(BMSPlayerMode mode, GradeBar gradeBar) {
 		resource.clear();
 		final SongData[] songs = gradeBar.getSongDatas();
-		final Path[] files = Stream.of(songs).map(song -> Paths.get(song.getPath())).toArray(Path[]::new);
-		if (resource.setCourseBMSFiles(files)) {
+		if (resource.setCourseBMSFiles(songs)) {
 			if (mode.mode == BMSPlayerMode.Mode.PLAY || mode.mode == BMSPlayerMode.Mode.AUTOPLAY) {
 				for (CourseData.CourseDataConstraint constraint : gradeBar.getCourseData().getConstraint()) {
 					switch (constraint) {
@@ -522,9 +520,12 @@ public final class MusicSelector extends MainState {
 					}
 				}
 			}
-			gradeBar.getCourseData().setSong(resource.getCourseBMSModels());
+			var courseModels = resource.getCourseBMSModels();
+			for (int i = 0; i < songs.length; i++) {
+				songs[i].setBMSModel(courseModels[i]);
+			}
 			resource.setCourseData(gradeBar.getCourseData());
-			resource.setBMSFile(files[0], mode);
+			resource.setBMSFile(songs[0], mode);
 			playedcourse = gradeBar.getCourseData();
 
 			if(main.getIRStatus().length > 0 && currentir == null) {
