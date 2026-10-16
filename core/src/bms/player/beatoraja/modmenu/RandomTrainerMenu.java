@@ -5,6 +5,11 @@ import imgui.ImGui;
 import imgui.flag.*;
 import imgui.type.ImBoolean;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +76,22 @@ public class RandomTrainerMenu {
             ImGui.sameLine();
             if (ImGui.button("Shift Right")) {
                 shiftRightLaneOrder();
+            }
+            ImGui.sameLine();
+            if (ImGui.button("Use Clipboard")) {
+                String clipboard = readClipboard();
+                if (clipboard != null && clipboard.length() == 7) {
+                    boolean valid = true;
+                    for (int n = 1; n <= 7; n++) {
+                        if (clipboard.indexOf((char)('0' + n)) < 0) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (valid) {
+                        changeLaneOrder(clipboard);
+                    }
+                }
             }
 
             RandomTrainer.setActive(RANDOM_TRAINER_ENABLED.get());
@@ -176,6 +197,16 @@ public class RandomTrainerMenu {
             }
             ImGui.popID();
 
+        }
+    }
+
+    private static final Clipboard CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    private static String readClipboard() {
+        try {
+            return (String) CLIPBOARD.getData(DataFlavor.stringFlavor);
+        } catch (UnsupportedFlavorException | IOException e) {
+            return null;
         }
     }
 
