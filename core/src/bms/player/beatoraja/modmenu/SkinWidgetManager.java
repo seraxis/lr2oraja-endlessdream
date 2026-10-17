@@ -16,8 +16,10 @@ import imgui.flag.ImGuiWindowFlags;
 import imgui.type.ImBoolean;
 import imgui.type.ImFloat;
 
+import java.awt.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -162,7 +164,15 @@ public class SkinWidgetManager {
                 if (!isWidgetDrawingOnScreen) {
                     ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(128, 128, 128));
                 }
+                Exception error = widget.getError();
+                if (error != null) {
+                    ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgb(Color.RED));
+                }
                 boolean isOpen = ImGui.treeNodeEx(widget.name);
+                if (error != null) {
+                    ImGui.setItemTooltip(error.getMessage());
+                    ImGui.popStyleColor();
+                }
                 if (!isWidgetDrawingOnScreen) {
                     ImGui.popStyleColor();
                 }
@@ -422,6 +432,10 @@ public class SkinWidgetManager {
 
         public boolean isDrawingOnScreen() {
             return skinObject.draw && skinObject.visible;
+        }
+
+        public Exception getError() {
+            return skinObject.error;
         }
 
         public void toggleVisible() {
