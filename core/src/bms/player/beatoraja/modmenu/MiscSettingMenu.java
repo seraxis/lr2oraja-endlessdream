@@ -31,6 +31,7 @@ public class MiscSettingMenu {
     // This is the true play mode value, PLAY_MODE_VALUE is for rendering
     private static Mode CURRENT_PLAY_MODE = null;
 
+    private static final ImBoolean ENABLE_NOTIFICATION = new ImBoolean(true);
     private static final ImInt NOTIFICATION_POSITION = new ImInt(0);
     private static final ImBoolean ENABLE_LIFT = new ImBoolean(false);
     private static final ImInt LIFT_VALUE = new ImInt(0);
@@ -60,6 +61,10 @@ public class MiscSettingMenu {
         ImGui.setNextWindowPos(relativeX, relativeY, ImGuiCond.FirstUseEver);
 
         if (ImGui.begin("Misc Settings", showMiscSetting, ImGuiWindowFlags.AlwaysAutoResize)) {
+            if (ImGui.checkbox("Enable Notification", ENABLE_NOTIFICATION)) {
+                ImGuiNotify.setEnabled(ENABLE_NOTIFICATION.get());
+            }
+
             if (ImGui.combo("Notification Positions", NOTIFICATION_POSITION, ImGuiNotify.NOTIFICATION_POSITIONS)) {
                 ImGuiNotify.setNotificationPosition(NOTIFICATION_POSITION.get());
             }
