@@ -17,27 +17,27 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
 
 /**
  * スコアデータベースアクセサ
- * 
+ *
  * @author exch
  */
 public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 	private static final Logger logger = LoggerFactory.getLogger(ScoreDatabaseAccessor.class);
 
 	private final QueryRunner qr;
-	
+
 	private final ResultSetHandler<List<PlayerInformation>> infoHandler = new BeanListHandler<PlayerInformation>(PlayerInformation.class);
 	private final ResultSetHandler<List<ScoreData>> scoreHandler = new BeanListHandler<ScoreData>(ScoreData.class);
 	private final ResultSetHandler<List<PlayerData>> playerHandler = new BeanListHandler<PlayerData>(PlayerData.class);
 	private static final int LOAD_CHUNK_SIZE = 1000;
 
 	public ScoreDatabaseAccessor(String path) throws ClassNotFoundException {
-		super(new Table("info", 
-				new Column("id", "TEXT",1,1),
-				new Column("name", "TEXT",1,0),
+		super(new Table("info",
+				new Column("id", "TEXT", true, true),
+				new Column("name", "TEXT", true, false),
 				new Column("rank", "TEXT")
 				),
-				new Table("player", 
-						new Column("date", "INTEGER",0,1),
+				new Table("player",
+						new Column("date", "INTEGER", false, true),
 						new Column("playcount", "INTEGER"),
 						new Column("clear", "INTEGER"),
 						new Column("epg", "INTEGER"),
@@ -56,8 +56,8 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 						new Column("maxcombo", "INTEGER")
 						),
 				new Table("score",
-						new Column("sha256", "TEXT", 1, 1),
-						new Column("mode", "INTEGER",0,1),
+						new Column("sha256", "TEXT", true, true),
+						new Column("mode", "INTEGER", false, true),
 						new Column("clear", "INTEGER"),
 						new Column("epg", "INTEGER"),
 						new Column("lpg", "INTEGER"),
@@ -74,7 +74,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 						new Column("notes", "INTEGER"),
 						new Column("combo", "INTEGER"),
 						new Column("minbp", "INTEGER"),
-						new Column("avgjudge", "INTEGER", 1, 0, String.valueOf(Integer.MAX_VALUE)),
+						new Column("avgjudge", "INTEGER", true, false, String.valueOf(Integer.MAX_VALUE)),
 						new Column("playcount", "INTEGER"),
 						new Column("clearcount", "INTEGER"),
 						new Column("trophy", "TEXT"),
@@ -106,7 +106,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			logger.error("スコアデータベース初期化中の例外:{}", e.getMessage());
 		}
 	}
-	
+
 	public PlayerInformation getInformation() {
 		try {
 			List<PlayerInformation> info =  qr.query("SELECT * FROM info", infoHandler);
@@ -118,7 +118,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 		}
 		return null;
 	}
-	
+
 	public void setInformation(PlayerInformation info) {
 		try {
 			qr.update("DELETE FROM info");
@@ -157,7 +157,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 		str.setLength(0);
 		getScoreDatas(collector, songs, 0, str, false);
 	}
-	
+
 	private void getScoreDatas(ScoreDataCollector collector, SongData[] songs, int mode, StringBuilder str, boolean hasln) {
 		try {
 			int songLength = songs.length;
@@ -199,7 +199,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			}
 		} catch (Exception e) {
 			logger.error("スコア取得時の例外:{}", e.getMessage());
-		}		
+		}
 	}
 
 	public List<ScoreData> getScoreDatas(String sql) {
@@ -260,7 +260,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 
 	/**
 	 * プレイヤーデータを取得する
-	 * 
+	 *
 	 * @return プレイヤーデータ
 	 */
 	public PlayerData getPlayerData() {
@@ -285,7 +285,7 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 
 	/**
 	 * プレイヤーデータを設定する
-	 * 
+	 *
 	 * @param pd プレイヤーデータ
 	 */
 	public void setPlayerData(PlayerData pd) {
@@ -304,9 +304,9 @@ public class ScoreDatabaseAccessor extends SQLiteDatabaseAccessor {
 			logger.error("スコア更新時の例外:{}", e.getMessage());
 		}
 	}
-	
+
 	public interface ScoreDataCollector {
-		
+
 		public void collect(SongData hash, ScoreData score);
 	}
 }
