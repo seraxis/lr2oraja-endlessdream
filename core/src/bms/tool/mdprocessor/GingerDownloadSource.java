@@ -20,10 +20,7 @@ public class GingerDownloadSource implements HttpDownloadSource {
 	private final ObjectMapper om = new ObjectMapper();
 
 	public GingerDownloadSource(Config config) {
-		String overrideDownloadURL = config.getOverrideDownloadURL();
-		this.downloadQueryURL = overrideDownloadURL != null && !overrideDownloadURL.isEmpty()
-				? overrideDownloadURL
-				: META.getDefaultURL();
+		this.downloadQueryURL = META.getDefaultURL();
 	}
 
 	@Override

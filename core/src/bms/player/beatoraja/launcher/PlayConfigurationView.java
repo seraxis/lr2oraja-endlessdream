@@ -8,6 +8,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.tool.mdprocessor.CustomDownloadSource;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
@@ -264,7 +269,7 @@ public class PlayConfigurationView implements Initializable {
 	@FXML
 	private ComboBox<String> httpDownloadSource;
 	@FXML
-	private TextField defaultDownloadURL;
+	private Node showCustomDownloadURL;
 	@FXML
 	private TextField overrideDownloadURL;
 
@@ -355,6 +360,12 @@ public class PlayConfigurationView implements Initializable {
 		resourceController.init(this);
 		discordController.init(this);
 		obsController.init(this);
+
+		httpDownloadSource.valueProperty().addListener((obs, old, next) -> {
+			boolean show = next.equals(CustomDownloadSource.META.getName());
+			showCustomDownloadURL.setVisible(show);
+			showCustomDownloadURL.setManaged(show);
+		});
 
 		checkNewVersion();
 		logger.info("初期化時間(ms) : " + (System.currentTimeMillis() - t));
@@ -483,7 +494,6 @@ public class PlayConfigurationView implements Initializable {
 
 		enableHttp.setSelected(config.isEnableHttp());
 		httpDownloadSource.setValue(config.getDownloadSource());
-		defaultDownloadURL.setText(config.getDefaultDownloadURL());
 		overrideDownloadURL.setText(config.getOverrideDownloadURL());
 
 		if(players.getItems().contains(config.getPlayername())) {
