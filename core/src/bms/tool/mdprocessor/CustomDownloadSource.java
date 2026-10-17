@@ -2,18 +2,29 @@ package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.Config;
 
-public class WriggleDownloadSource implements HttpDownloadSource {
+/**
+ * Custom download source is a special source that must be configured with override URL and without meta-query api. It's
+ *  derived from the old design of wriggle, which connects the client and a download service as minimal as possible:
+ *  server side provides a download URL pattern and user pastes it into the client, done.
+ * There're two disadvantages: first, without a meta-query endpoint, client cannot tell whether two download links are
+ *  actually pointing to a same file when they have different URLs. For example, two different sabun's md5 hash in a
+ *  package, which will lead to different 2 urls. Second, the user must change the download url themselves.
+ */
+public class CustomDownloadSource implements HttpDownloadSource {
     public static final HttpDownloadSourceMeta META = new HttpDownloadSourceMeta(
-            "wriggle",
-            "https://bms.wrigglebug.xyz/download/package/%s",
-            WriggleDownloadSource::new
+            "Custom",
+            "",
+            CustomDownloadSource::new
     );
 
     private final String downloadURL;
 
-    public WriggleDownloadSource(Config config) {
+    public CustomDownloadSource(Config config) {
+        this(config.getOverrideDownloadURL());
+    }
+
+    public CustomDownloadSource(String overrideDownloadURL) {
         // override download url if user ask to do so
-        String overrideDownloadURL = config.getOverrideDownloadURL();
         this.downloadURL = overrideDownloadURL != null && !overrideDownloadURL.isEmpty()
                 ? overrideDownloadURL
                 : META.getDefaultURL();

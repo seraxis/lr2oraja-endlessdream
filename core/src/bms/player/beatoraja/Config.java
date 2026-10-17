@@ -863,6 +863,9 @@ public class Config implements Validatable {
 		if (ipfsurl == null) {
 			ipfsurl = "https://gateway.ipfs.io/";
 		}
+		if (!HttpDownloadProcessor.DOWNLOAD_SOURCES.containsKey(downloadSource)) {
+			downloadSource = HttpDownloadProcessor.getDefaultDownloadSource().getName();
+		}
 
 		songpath = songpath != null ? songpath : SONGPATH_DEFAULT;
 		songinfopath = songinfopath != null ? songinfopath : SONGINFOPATH_DEFAULT;
