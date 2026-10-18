@@ -310,14 +310,12 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	}
 
 	public boolean pullFromBackbeat(BackbeatIntegration backbeat, SongInformationAccessor info) {
-		List<BMSModel> parsedModels = new ArrayList<>();
 		int updated;
 		try (Connection conn = ds.getConnection(); Statement statement = conn.createStatement()) {
 			statement.execute(backbeat.sqliteAttachCommand());
 			try {
 				conn.setAutoCommit(false);
-				List<BackbeatIntegration.CatalogChart> charts = readChangedBackbeatCatalog(conn);
-				updated = synchronizeBackbeatCharts(conn, charts, parsedModels);
+				updated = synchroniseBackbeatCharts(conn, info);
 				removeStaleBackbeatCharts(conn);
 				conn.commit();
 			} catch (Exception error) {
@@ -332,92 +330,97 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			return false;
 		}
 
-		if (info != null && !parsedModels.isEmpty()) {
-			info.startUpdate();
-			try {
-				parsedModels.forEach(info::update);
-			} finally {
-				info.endUpdate();
-			}
-		}
 		logger.info("Backbeat catalog synchronized: {} charts updated", updated);
 		return true;
 	}
 
-	private List<BackbeatIntegration.CatalogChart> readChangedBackbeatCatalog(Connection conn)
+	private int synchroniseBackbeatCharts(Connection conn, SongInformationAccessor info)
 			throws SQLException, IOException {
-		List<BackbeatIntegration.CatalogChart> charts = new ArrayList<>();
-		String query = "SELECT b.id, b.filename, b.chart_sha256, cd.gzip_data AS data, "
-				+ "(SELECT am.path FROM backbeat.asset_map am WHERE am.combined_assets_id = b.combined_assets_id "
-				+ "AND (lower(am.path) GLOB 'preview*.wav' OR lower(am.path) GLOB 'preview*.flac' "
-				+ "OR lower(am.path) GLOB 'preview*.ogg' OR lower(am.path) GLOB 'preview*.mp3') "
-				+ "ORDER BY lower(am.path) GLOB 'preview_auto_generator*', am.path LIMIT 1) AS preview "
-				+ "FROM backbeat.bundle b JOIN backbeat.chart_data cd ON cd.sha256 = b.chart_sha256 "
-				+ "LEFT JOIN main.song s ON s.backbeatBundleId = b.id "
-				+ "WHERE lower(b.extension) IN ('bms','bme','bml','pms','bmson') "
-				+ "AND (s.backbeatBundleId IS NULL OR s.sha256 IS NOT b.chart_sha256) "
-				+ "ORDER BY b.chart_sha256, b.id";
+		String query = """
+				SELECT
+					bundle.id,
+					bundle.filename,
+					bundle.chart_sha256,
+					chart_data.gzip_data,
+					(
+					SELECT
+						backbeat.asset_map.path
+					FROM
+						backbeat.asset_map
+					WHERE
+						asset_map.combined_assets_id = bundle.combined_assets_id
+						AND (
+							lower(asset_map.path) GLOB 'preview*.wav'
+							OR lower(asset_map.path) GLOB 'preview*.flac'
+							OR lower(asset_map.path) GLOB 'preview*.ogg'
+							OR lower(asset_map.path) GLOB 'preview*.mp3'
+						)
+					ORDER BY
+						lower(asset_map.path) GLOB 'preview_auto_generator*', asset_map.path
+					LIMIT
+						1
+					) AS preview
+				FROM
+					backbeat.bundle
+				JOIN
+					backbeat.chart_data ON chart_data.sha256 = bundle.chart_sha256
+				LEFT JOIN
+					main.song ON main.song.backbeatBundleId = bundle.id
+				WHERE
+					lower(bundle.extension) IN ('bms','bme','bml','pms','bmson')
+					AND
+					song.backbeatBundleId IS NULL
+				ORDER BY
+					bundle.chart_sha256, bundle.id
+				""";
+
+				int updated = 0;
 		try (Statement statement = conn.createStatement(); ResultSet result = statement.executeQuery(query)) {
 			while (result.next()) {
-				byte[] chart;
+				byte[] chartData;
 				try (GZIPInputStream gzip = new GZIPInputStream(
-						new ByteArrayInputStream(result.getBytes("data")))) {
-					chart = gzip.readAllBytes();
+						new ByteArrayInputStream(result.getBytes("gzip_data")))) {
+					chartData = gzip.readAllBytes();
 				}
-				charts.add(new BackbeatIntegration.CatalogChart(
-						result.getString("id"), result.getString("filename"),
-						result.getString("chart_sha256"), result.getString("preview"), chart));
-			}
-		}
-		return charts;
-	}
 
-	private int synchronizeBackbeatCharts(Connection conn, List<BackbeatIntegration.CatalogChart> charts,
-			List<BMSModel> parsedModels) throws SQLException {
-		if (charts.isEmpty()) return 0;
+				String bundleId = result.getString("id");
+				String filename = result.getString("filename");
+				String sha256 = result.getString("chart_sha256");
+				String preview = result.getString("preview");
+				ChartDecoder decoder = ChartDecoder.getDecoder(Path.of(filename));
+				BMSModel model = null;
+				if (decoder instanceof BMSDecoder bms) {
+					model = bms.decode(chartData, filename.toLowerCase().endsWith(".pms"), null);
+				} else if (decoder instanceof BMSONDecoder bmson) {
+					model = bmson.decode(chartData, null);
+				} else if (decoder instanceof OSUDecoder osu) {
+					model = osu.decode(chartData, null);
+				}
 
-		Map<String, String> tags = new HashMap<>();
-		Map<String, Integer> favorites = new HashMap<>();
-		for (SongData song : qr.query(conn, "SELECT sha256, tag, favorite FROM song", songhandler)) {
-			if (song.getTag() != null && !song.getTag().isBlank()) tags.put(song.getSha256(), song.getTag());
-			if (song.getFavorite() > 0) favorites.put(song.getSha256(), song.getFavorite());
-		}
+				if (model == null) {
+					logger.warn("Backbeat chart could not be decoded: {}", bundleId);
+					qr.update(conn, "DELETE FROM song WHERE backbeatBundleId = ?", bundleId);
+					continue;
+				}
+	
+				SongData song = new SongData(model, false);
+				if ((song.getPreview() == null || song.getPreview().isBlank()) && preview != null) {
+					song.setPreview(preview);
+				}
+				song.setPath("backbeat:" + bundleId);
+				song.setBackbeatBundleId(bundleId);
+				song.setBackbeatFilename(filename);
+				song.setFolder("backbeat");
+				song.setParent("backbeat");
+				song.setAdddate((int) (System.currentTimeMillis() / 1000));
+				insert(qr, conn, "song", song);
 
-		int updated = 0;
-		for (BackbeatIntegration.CatalogChart chart : charts) {
-			String bundleId = chart.bundleId();
-			String filename = chart.filename();
-			String sha256 = chart.sha256();
-			ChartDecoder decoder = ChartDecoder.getDecoder(Path.of(filename));
-			BMSModel model = null;
-			if (decoder instanceof BMSDecoder bms) {
-				model = bms.decode(chart.data(), filename.toLowerCase().endsWith(".pms"), null);
-			} else if (decoder instanceof BMSONDecoder bmson) {
-				model = bmson.decode(chart.data(), null);
-			} else if (decoder instanceof OSUDecoder osu) {
-				model = osu.decode(chart.data(), null);
-			}
-			if (model == null || !sha256.equalsIgnoreCase(model.getSHA256())) {
-				logger.warn("Backbeat chart could not be decoded: {}", bundleId);
-				qr.update(conn, "DELETE FROM song WHERE backbeatBundleId = ?", bundleId);
-				continue;
-			}
+				if (info != null) {
+					info.update(model);
+				}
 
-			SongData song = new SongData(model, false);
-			if ((song.getPreview() == null || song.getPreview().isBlank()) && chart.preview() != null) {
-				song.setPreview(chart.preview());
+				updated++;
 			}
-			song.setPath("backbeat:" + bundleId);
-			song.setBackbeatBundleId(bundleId);
-			song.setBackbeatFilename(filename);
-			song.setFolder("backbeat");
-			song.setParent("backbeat");
-			song.setAdddate((int) (System.currentTimeMillis() / 1000));
-			song.setTag(tags.getOrDefault(sha256, song.getTag()));
-			song.setFavorite(favorites.getOrDefault(sha256, song.getFavorite()));
-			insert(qr, conn, "song", song);
-			parsedModels.add(model);
-			updated++;
 		}
 		return updated;
 	}
