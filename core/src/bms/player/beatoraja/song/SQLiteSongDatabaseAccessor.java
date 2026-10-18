@@ -310,14 +310,43 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	}
 
 	public boolean pullFromBackbeat(BackbeatIntegration backbeat, SongInformationAccessor info) {
-		List<BMSModel> parsedModels = new ArrayList<>();
-		int updated;
+		final int batchSize = 100;
+		int updated = 0;
 		try (Connection conn = ds.getConnection(); Statement statement = conn.createStatement()) {
 			statement.execute(backbeat.sqliteAttachCommand());
 			try {
+				statement.execute("CREATE TEMP TABLE backbeat_attempted_bundle (id TEXT PRIMARY KEY)");
 				conn.setAutoCommit(false);
-				List<BackbeatIntegration.CatalogChart> charts = readChangedBackbeatCatalog(conn);
-				updated = synchronizeBackbeatCharts(conn, charts, parsedModels);
+				while (true) {
+					List<BackbeatIntegration.CatalogChart> charts = readChangedBackbeatCatalog(conn, batchSize);
+					if (charts.isEmpty()) break;
+
+					// Mark this batch before decoding so charts that fail to decode are not retried forever.
+					try (PreparedStatement attempted = conn.prepareStatement(
+							"INSERT OR IGNORE INTO temp.backbeat_attempted_bundle (id) VALUES (?)")) {
+						for (BackbeatIntegration.CatalogChart chart : charts) {
+							attempted.setString(1, chart.bundleId());
+							attempted.addBatch();
+						}
+						attempted.executeBatch();
+					}
+
+					List<BMSModel> parsedModels = new ArrayList<>(charts.size());
+					updated += synchronizeBackbeatCharts(conn, charts, parsedModels);
+					conn.commit();
+
+					// Release decoded models after each batch instead of retaining the entire catalog in heap.
+					if (info != null && !parsedModels.isEmpty()) {
+						info.startUpdate();
+						try {
+							parsedModels.forEach(info::update);
+						} finally {
+							info.endUpdate();
+						}
+					}
+					logger.info("Backbeat catalog batch processed: {} charts; {} updated", charts.size(), updated);
+					conn.setAutoCommit(false);
+				}
 				removeStaleBackbeatCharts(conn);
 				conn.commit();
 			} catch (Exception error) {
@@ -325,28 +354,23 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				throw error;
 			} finally {
 				conn.setAutoCommit(true);
-				statement.execute(backbeat.sqliteDetachCommand());
+				try {
+					statement.execute("DROP TABLE IF EXISTS temp.backbeat_attempted_bundle");
+				} finally {
+					statement.execute(backbeat.sqliteDetachCommand());
+				}
 			}
 		} catch (Exception error) {
 			logger.warn("Backbeat catalog synchronization failed: {}", error.getMessage());
 			return false;
 		}
-
-		if (info != null && !parsedModels.isEmpty()) {
-			info.startUpdate();
-			try {
-				parsedModels.forEach(info::update);
-			} finally {
-				info.endUpdate();
-			}
-		}
 		logger.info("Backbeat catalog synchronized: {} charts updated", updated);
 		return true;
 	}
 
-	private List<BackbeatIntegration.CatalogChart> readChangedBackbeatCatalog(Connection conn)
+	private List<BackbeatIntegration.CatalogChart> readChangedBackbeatCatalog(Connection conn, int limit)
 			throws SQLException, IOException {
-		List<BackbeatIntegration.CatalogChart> charts = new ArrayList<>();
+		List<BackbeatIntegration.CatalogChart> charts = new ArrayList<>(limit);
 		String query = "SELECT b.id, b.filename, b.chart_sha256, cd.gzip_data AS data, "
 				+ "(SELECT am.path FROM backbeat.asset_map am WHERE am.combined_assets_id = b.combined_assets_id "
 				+ "AND (lower(am.path) GLOB 'preview*.wav' OR lower(am.path) GLOB 'preview*.flac' "
@@ -354,9 +378,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				+ "ORDER BY lower(am.path) GLOB 'preview_auto_generator*', am.path LIMIT 1) AS preview "
 				+ "FROM backbeat.bundle b JOIN backbeat.chart_data cd ON cd.sha256 = b.chart_sha256 "
 				+ "LEFT JOIN main.song s ON s.backbeatBundleId = b.id "
+				+ "LEFT JOIN temp.backbeat_attempted_bundle a ON a.id = b.id "
 				+ "WHERE lower(b.extension) IN ('bms','bme','bml','pms','bmson') "
 				+ "AND (s.backbeatBundleId IS NULL OR s.sha256 IS NOT b.chart_sha256) "
-				+ "ORDER BY b.chart_sha256, b.id";
+				+ "AND a.id IS NULL "
+				+ "ORDER BY b.chart_sha256, b.id LIMIT " + limit;
 		try (Statement statement = conn.createStatement(); ResultSet result = statement.executeQuery(query)) {
 			while (result.next()) {
 				byte[] chart;
@@ -388,6 +414,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			String bundleId = chart.bundleId();
 			String filename = chart.filename();
 			String sha256 = chart.sha256();
+			logger.debug("Decoding Backbeat chart {} ({})", bundleId, filename);
 			ChartDecoder decoder = ChartDecoder.getDecoder(Path.of(filename));
 			BMSModel model = null;
 			if (decoder instanceof BMSDecoder bms) {
@@ -398,7 +425,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				model = osu.decode(chart.data(), null);
 			}
 			if (model == null || !sha256.equalsIgnoreCase(model.getSHA256())) {
-				logger.warn("Backbeat chart could not be decoded: {}", bundleId);
+				logger.warn("Backbeat chart could not be decoded: {} ({})", bundleId, filename);
 				qr.update(conn, "DELETE FROM song WHERE backbeatBundleId = ?", bundleId);
 				continue;
 			}
