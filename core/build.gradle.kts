@@ -1,4 +1,6 @@
 import java.nio.file.FileSystems
+import java.security.MessageDigest
+import java.util.HexFormat
 
 plugins {
     id("java-library")
@@ -6,6 +8,9 @@ plugins {
     id("com.gradleup.shadow") version "9.3.2"
     id("org.endlessdream.extra.multiplatform-convention")
 }
+
+val backbeatSdkVersion = "0.5.0"
+val backbeatReleaseUrl = "https://github.com/zkldi/backbeat/releases/download/v$backbeatSdkVersion"
 
 java {
     toolchain {
@@ -21,6 +26,18 @@ repositories {
         dirs("../lib")
     }
     maven(url = "https://jitpack.io")
+    exclusiveContent {
+        forRepository {
+            ivy {
+                url = uri(backbeatReleaseUrl)
+                patternLayout {
+                    artifact("[artifact]-[revision](-[classifier]).[ext]")
+                }
+                metadataSources { artifact() }
+            }
+        }
+        filter { includeGroup("ac.backbeat.release") }
+    }
 }
 
 version = libs.versions.beatoraja.get()
@@ -107,6 +124,15 @@ tasks.register("generateBuildMetaInfo") {
     }
 }
 
+val backbeatClassifier = "${System.getProperty("platform") ?: "windows"}-${System.getProperty("arch") ?: "x86-64"}"
+val backbeatNativeSha256 = mapOf(
+    "windows-x86-64" to "534d4788220119debf89a7228d4057cbb17e8593396054cb633583c70faae147",
+    "macos-x86-64" to "d279b7dfb0f2f8248fa3ade19fe51d89b568946833d78867dec35158abea1858",
+    "macos-aarch64" to "e30e8923c073964bfe957503081e47228bc02f9f2a1a04c45a0040005e3a307a",
+    "linux-x86-64" to "c5643449d979a142ae08c26ff07166cf9c316f558dbf24c39a559c1e10166a97",
+    "linux-aarch64" to "d17a700154fee57d00a0a1c5385b8f21b8cc8fb993f7c6c2e6b2f7930a4bbdf2",
+)[backbeatClassifier] ?: throw GradleException("Backbeat SDK 0.5.0 does not support $backbeatClassifier")
+
 // versions and bundles defined in ../gradle/libs.versions.toml
 dependencies {
     implementation(libs.bundles.libgdx)
@@ -142,6 +168,9 @@ dependencies {
 
     implementation(libs.bundles.jna)
 
+    implementation("ac.backbeat.release:backbeat-java-sdk:$backbeatSdkVersion")
+    runtimeOnly("ac.backbeat.release:backbeat-java-sdk:$backbeatSdkVersion:$backbeatClassifier")
+
     implementation(libs.sqlite)
     implementation(libs.commons.compress)
     implementation(libs.commons.csv)
@@ -165,4 +194,32 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+val verifyBackbeatSdk by tasks.registering {
+    val expected = mapOf(
+        "backbeat-java-sdk-$backbeatSdkVersion.jar" to
+            "7d7cc1d4e0f08fc23b097e6f2e20f3992681aee4e61ccc6e9d1e54824ccd3a06",
+        "backbeat-java-sdk-$backbeatSdkVersion-$backbeatClassifier.jar" to backbeatNativeSha256,
+    )
+    inputs.files(configurations.named("runtimeClasspath"))
+
+    doLast {
+        val artifacts = configurations.getByName("runtimeClasspath").files.associateBy { it.name }
+        expected.forEach { (name, expectedSha256) ->
+            val artifact = artifacts[name] ?: throw GradleException("Backbeat SDK artifact is missing: $name")
+            val actualSha256 = HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(artifact.readBytes())
+            )
+            if (actualSha256 != expectedSha256) {
+                throw GradleException(
+                    "SHA-256 mismatch for $name: expected $expectedSha256, got $actualSha256"
+                )
+            }
+        }
+    }
+}
+
+tasks.compileJava {
+    dependsOn(verifyBackbeatSdk)
 }

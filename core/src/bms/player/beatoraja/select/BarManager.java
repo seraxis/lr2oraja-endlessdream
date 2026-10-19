@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import bms.model.Mode;
 import bms.player.beatoraja.*;
+import bms.player.beatoraja.backbeat.BackbeatIntegration;
+import bms.player.beatoraja.backbeat.BackbeatTableAdapter;
 import bms.player.beatoraja.CourseData.CourseDataConstraint;
 import bms.player.beatoraja.CourseData.TrophyData;
 import bms.player.beatoraja.external.BMSSearchAccessor;
@@ -46,6 +48,8 @@ public class BarManager {
 	 * 難易度表バー一覧
 	 */
 	private TableBar[] tables = new TableBar[0];
+	private ContainerBar[] backbeatPacks = new ContainerBar[0];
+	private GradeBar[] backbeatCourses = new GradeBar[0];
 
 	private Bar[] commands;
 	
@@ -127,6 +131,115 @@ public class BarManager {
 						new TableDataAccessor.DifficultyTableAccessor(select.resource.getConfig().getTablepath(), td.getUrl()));
 			}			
 		}).forEach(table::add);;
+
+		BackbeatIntegration integration = MainLoader.getBackbeatIntegration();
+		try {
+			for (var source : integration.installedTables()) {
+				TableData td = BackbeatTableAdapter.toTableData(source);
+				if (td.validate()) {
+					for (int i = table.size - 1; i >= 0; i--) {
+						if (source.url().equals(table.get(i).getUrl())) {
+							table.removeIndex(i);
+						}
+					}
+					table.add(new TableBar(select, td, new BackbeatTableAdapter(integration, source.url())));
+				}
+			}
+		} catch (RuntimeException error) {
+			logger.warn("Backbeat table load failed: {}", error.getMessage());
+		}
+
+		Map<String, SongData> songsByBundle = new HashMap<>();
+		for (SongData song : select.getSongDatabase().getSongDatas("parent", "backbeat")) {
+			if (song.getBackbeatBundleId() != null) songsByBundle.put(song.getBackbeatBundleId(), song);
+		}
+		try {
+			backbeatPacks = integration.installedPacks().stream().map(pack -> {
+				SongBar[] songs = pack.bundles().stream()
+						.map(bundle -> songsByBundle.get(bundle.id()))
+						.filter(Objects::nonNull)
+						.map(SongBar::new)
+						.toArray(SongBar[]::new);
+				return songs.length > 0 ? new ContainerBar("Pack: " + pack.name(), songs) : null;
+			}).filter(Objects::nonNull).toArray(ContainerBar[]::new);
+		} catch (RuntimeException error) {
+			logger.warn("Backbeat pack load failed: {}", error.getMessage());
+		}
+
+		try {
+			backbeatCourses = integration.installedCourses().stream().map(course -> {
+				CourseData data = new CourseData();
+				data.setName("Course: " + course.name());
+
+				// read tags on the course to add constraints
+				List<CourseDataConstraint> constraints = new ArrayList<>();
+				for (var tag : course.tags()) {
+					switch (tag.key()) {
+						case "bms/allowed-lane-mods" -> {
+							CourseDataConstraint constraint = switch (tag.value()) {
+								case "none" -> CourseDataConstraint.CLASS;
+								case "mirror" -> CourseDataConstraint.MIRROR;
+								case "random" -> CourseDataConstraint.RANDOM;
+								default -> null;
+							};
+							if (constraint == null) {
+								logger.warn("Invalid bms/allowed-lane-mods value on Backbeat course {}: {}",
+										course.name(), tag.value());
+							} else {
+								constraints.add(constraint);
+							}
+						}
+						case "bms/gauge" -> {
+							CourseDataConstraint constraint = switch (tag.value()) {
+								case "lr2" -> CourseDataConstraint.GAUGE_LR2;
+								case "beatoraja" -> switch (course.gamemode()) {
+									case "bms-5k", "bms-10k" -> CourseDataConstraint.GAUGE_5KEYS;
+									case "bms-7k", "bms-14k" -> CourseDataConstraint.GAUGE_7KEYS;
+									case "pms-5b", "pms-9b" -> CourseDataConstraint.GAUGE_9KEYS;
+									case "kms-24k", "kms-48k" -> CourseDataConstraint.GAUGE_24KEYS;
+									default -> null;
+								};
+								default -> null;
+							};
+							if (constraint == null) {
+								logger.warn("Invalid bms/gauge value on Backbeat course {}: {}",
+										course.name(), tag.value());
+							} else {
+								constraints.add(constraint);
+							}
+						}
+					}
+				}
+				data.setConstraint(constraints.toArray(CourseDataConstraint[]::new));
+
+				data.setSong(course.charts().stream().map(chart -> {
+					SongData installed = chart.bundleId().map(songsByBundle::get).orElse(null);
+					if (installed != null) return installed;
+
+					SongData song = new SongData();
+					if (chart.id().startsWith("md5/")) {
+						song.setMd5(chart.id().substring("md5/".length()));
+					} else if (chart.id().startsWith("sha256/")) {
+						song.setSha256(chart.id().substring("sha256/".length()));
+					}
+					song.setTitle(chart.desc().isBlank() ? chart.id() : chart.desc());
+					return song;
+				}).toArray(SongData[]::new));
+				if (!data.validate()) {
+					return null;
+				}
+				String[] hashes = Stream.of(data.getSong())
+						.filter(song -> song.getPath() == null)
+						.map(song -> song.getSha256().isEmpty() ? song.getMd5() : song.getSha256())
+						.toArray(String[]::new);
+				if (hashes.length > 0) {
+					data.resolveSongs(select.getSongDatabase().getSongDatas(hashes));
+				}
+				return new GradeBar(data);
+			}).filter(Objects::nonNull).toArray(GradeBar[]::new);
+		} catch (RuntimeException error) {
+			logger.warn("Backbeat course load failed: {}", error.getMessage());
+		}
 
 		if(select.main.getIRStatus().length > 0) {
 			IRResponse<IRTableData[]> response = select.main.getIRStatus()[0].connection.getTableDatas();
@@ -294,6 +407,12 @@ public class BarManager {
 			dir.clear();
 			sourcebars.clear();
 			l.addAll(new FolderBar(select, null, "e2977170").getChildren());
+			SongData[] backbeatSongs = select.getSongDatabase().getSongDatas("parent", "backbeat");
+			if (backbeatSongs.length > 0) {
+				l.add(new ContainerBar("All Backbeat Installed Charts", SongBar.toSongBarArray(backbeatSongs)));
+			}
+			l.addAll(backbeatPacks);
+			l.addAll(backbeatCourses);
 			l.add(courses);
 			l.addAll(favorites);
 			appendFolders.keySet().forEach((key) -> {
@@ -815,19 +934,15 @@ public class BarManager {
 					final SongBar songbar = (SongBar) bar;
 					SongData song = songbar.getSongData();
 					try {
-						Path bannerfile = Paths.get(song.getPath()).getParent().resolve(song.getBanner());
-						// System.out.println(bannerfile.getPath());
-						if (song.getBanner().length() > 0 && Files.exists(bannerfile)) {
-							songbar.setBanner(select.getBannerResource().get(bannerfile.toString()));
+						if (song.getBanner().length() > 0) {
+							song.resolveAsset(song.getBanner()).ifPresent(resource -> songbar.setBanner(select.getBannerResource().get(resource)));
 						}
 					} catch (Exception e) {
 						logger.warn("banner読み込み失敗 : {}", song.getBanner());
 					}
 					try {
-						Path stagefilefile = Paths.get(song.getPath()).getParent().resolve(song.getStagefile());
-						// System.out.println(stagefilefile.getPath());
-						if (song.getStagefile().length() > 0 && Files.exists(stagefilefile)) {
-							songbar.setStagefile(select.getStagefileResource().get(stagefilefile.toString()));
+						if (song.getStagefile().length() > 0) {
+							song.resolveAsset(song.getStagefile()).ifPresent(resource -> songbar.setStagefile(select.getStagefileResource().get(resource)));
 						}
 					} catch (Exception e) {
 						logger.warn("stagefile読み込み失敗 : {}", song.getStagefile());

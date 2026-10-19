@@ -52,6 +52,23 @@ public class CourseData implements Validatable {
     public void setSong(SongData[] hash) {
         this.hash = hash;
     }
+
+    public void resolveSongs(SongData[] songs) {
+        for (int i = 0; i < hash.length; i++) {
+            SongData entry = hash[i];
+            if (entry.getPath() != null) {
+                continue;
+            }
+            for (SongData song : songs) {
+                if ((!entry.getMd5().isEmpty() && entry.getMd5().equals(song.getMd5()))
+                        || (!entry.getSha256().isEmpty() && entry.getSha256().equals(song.getSha256()))) {
+                    song.merge(entry);
+                    hash[i] = song;
+                    break;
+                }
+            }
+        }
+    }
     
     public void setSong(BMSModel[] models) {
         if(models == null || models.length == 0) {

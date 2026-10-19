@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +86,7 @@ public final class PlayerResource {
 	private ReplayData chartOption;
 
 	private Path[] bmsPaths;
+	private SongData[] autoPlaySongs;
 	private boolean loop;
 	
 	/**
@@ -94,9 +94,9 @@ public final class PlayerResource {
 	 */
 	private CourseData coursedata;
 	/**
-	 * コースのBMSモデル
+	 * 読み込み済みのコース
 	 */
-	private BMSModel[] course;
+	private LoadedCourse course;
 	/**
 	 * コース何曲目
 	 */
@@ -161,17 +161,26 @@ public final class PlayerResource {
 		combo = 0;
 		maxcombo = 0;
 		bmsPaths = null;
+		autoPlaySongs = null;
 		setTablename("");
 		setTablelevel("");
 	}
 
 	public boolean setBMSFile(final Path f, BMSPlayerMode mode) {
+		SongData song = new SongData();
+		song.setPath(f.toString());
+		return setBMSFile(song, mode);
+	}
+
+	public boolean setBMSFile(SongData song, BMSPlayerMode mode) {
+		this.songdata = song;
+		if(song == null) return false;
 		// TODO play mode, リプレイデータでの読み込み分岐をここで行う
 		this.mode = mode;
 		replay = new ReplayData();
-		model = loadBMSModel(f, pconfig.getLnmode());
+		model = loadBMSModel(song, pconfig.getLnmode(), null);
 		if (model == null) {
-			logger.warn("楽曲が存在しないか、解析時にエラーが発生しました:{}", f.toString());
+			logger.warn("楽曲が存在しないか、解析時にエラーが発生しました:{}", song.chartFilename());
 			return false;
 		}
 		if (model.getAllTimeLines().length == 0) {
@@ -179,17 +188,14 @@ public final class PlayerResource {
 		}
 
 		orgmode = model.getMode();
-		bmsresource.setBMSFile(model, f, config, mode);
-		if(songdata != null) {
-			songdata.setBMSModel(model);
-		} else {
-			songdata = new SongData(model, false);			
-		}
+		songdata.setBMSModel(model);
+		bmsresource.setBMSFile(model, songdata, config, mode);
 		// TODO 選曲の時点で表名、フォルダ名を補完しておきたい
 		if(tablename.length() == 0 || courseindex != 0){
 			setTableinfo();
 		}
-		if (config.getAudioConfig().isNormalizeVolume() && loudnessAnalyzer != null && loudnessAnalyzer.isAvailable()) {
+		if (songdata.filesystemPath().isPresent() && config.getAudioConfig().isNormalizeVolume()
+				&& loudnessAnalyzer != null && loudnessAnalyzer.isAvailable()) {
 			analysisTask = loudnessAnalyzer.analyzeAsync(model);
 		} else {
 			analysisTask = null;
@@ -201,12 +207,40 @@ public final class PlayerResource {
 		return loadBMSModel(new ChartInformation(f, lnmode, null));
 	}
 
-	public BMSModel loadBMSModel(int[] selectedRandom) {
-		if(model != null) {
-			ChartInformation info = model.getChartInformation();
-			return loadBMSModel(new ChartInformation(info.path, info.lntype, selectedRandom));			
+	public BMSModel loadBMSModel(SongData song, int lnmode) {
+		return loadBMSModel(song, lnmode, null);
+	}
+
+	public BMSModel loadBMSModel(SongData song, int lnmode, int[] selectedRandom) {
+		if(song == null) return null;
+		Path path = song.filesystemPath().orElse(null);
+		if(path != null) return loadBMSModel(new ChartInformation(path, lnmode, selectedRandom));
+		String filename = song.chartFilename();
+		if(filename == null) return null;
+		ChartDecoder decoder = ChartDecoder.getDecoder(Path.of(filename));
+		if (decoder == null) return null;
+		try {
+			byte[] data = song.chartData().orElse(null);
+			if (data == null) return null;
+			BMSModel model;
+			if (decoder instanceof BMSDecoder bms) {
+				model = bms.decode(data, filename.toLowerCase().endsWith(".pms"), selectedRandom);
+			} else if (decoder instanceof BMSONDecoder bmson) {
+				model = bmson.decode(data, selectedRandom);
+			} else if (decoder instanceof OSUDecoder osu) {
+				model = osu.decode(data, selectedRandom);
+			} else {
+				return null;
+			}
+			return prepareModel(model, decoder);
+		} catch (Exception error) {
+			logger.warn("Failed to decode {}: {}", filename, error.getMessage());
+			return null;
 		}
-		return null;
+	}
+
+	public BMSModel loadBMSModel(int[] selectedRandom) {
+		return loadBMSModel(songdata, pconfig.getLnmode(), selectedRandom);
 	}
 
 	public BMSModel loadBMSModel(ChartInformation info) {
@@ -215,6 +249,10 @@ public final class PlayerResource {
 			return null;
 		}
 		BMSModel model = decoder.decode(info);
+		return prepareModel(model, decoder);
+	}
+
+	private BMSModel prepareModel(BMSModel model, ChartDecoder decoder) {
 		if (model == null) {
 			return null;
 		}
@@ -307,43 +345,63 @@ public final class PlayerResource {
 	}
 	
 	public boolean setCourseBMSFiles(Path[] files) {
-		Array<BMSModel> models = new Array();
-		for (Path f : files) {
-			BMSModel model = loadBMSModel(f, pconfig.getLnmode());
-			if (model == null) {
-				return false;
-			}
-			models.add(model);
+		SongData[] songs = new SongData[files.length];
+		for (int i = 0; i < files.length; i++) {
+			songs[i] = new SongData();
+			songs[i].setPath(files[i].toString());
 		}
-		course = models.toArray(BMSModel.class);
+		return setCourseBMSFiles(songs);
+	}
+
+	public boolean setCourseBMSFiles(SongData[] songs) {
+		CourseEntry[] entries = new CourseEntry[songs.length];
+		for (int i = 0; i < songs.length; i++) {
+			BMSModel courseModel = loadBMSModel(songs[i], pconfig.getLnmode(), null);
+			if (courseModel == null) return false;
+			entries[i] = new CourseEntry(songs[i], courseModel);
+		}
+		course = new LoadedCourse(entries);
 		updateCourseScore = true;
 		return true;
 	}
 
 	public BMSModel[] getCourseBMSModels() {
-		return course;
+		return course != null ? course.models : null;
 	}
 
 	public void setAutoPlaySongs(Path[] paths, boolean loop) {
 		this.bmsPaths = paths;
+		this.autoPlaySongs = null;
+		this.loop = loop;
+	}
+
+	public void setAutoPlaySongs(SongData[] songs, boolean loop) {
+		this.autoPlaySongs = songs.clone();
+		this.bmsPaths = null;
 		this.loop = loop;
 	}
 	
 	public boolean nextSong() {
-		if(bmsPaths == null) {
+		if(bmsPaths == null && autoPlaySongs == null) {
 			return false;
 		}
+		int songCount = autoPlaySongs != null ? autoPlaySongs.length : bmsPaths.length;
 		final int orgindex = courseindex;
 		do {
-			if(courseindex == bmsPaths.length) {
+			if(courseindex == songCount) {
 				if(loop) {
 					courseindex = 0;
 				} else {
 					return false;
 				}
 			}
-			songdata = null;
-			if(setBMSFile(bmsPaths[courseindex++], BMSPlayerMode.AUTOPLAY)) {
+			SongData next = autoPlaySongs != null ? autoPlaySongs[courseindex] : null;
+			songdata = next;
+			boolean loaded = next != null
+					? setBMSFile(next, BMSPlayerMode.AUTOPLAY)
+					: setBMSFile(bmsPaths[courseindex], BMSPlayerMode.AUTOPLAY);
+			courseindex++;
+			if(loaded) {
 				return true;
 			};
 		} while(orgindex != courseindex);
@@ -352,11 +410,10 @@ public final class PlayerResource {
 	
 	public boolean nextCourse() {
 		courseindex++;
-		if (courseindex == course.length) {
+		if (courseindex == course.entries.length) {
 			return false;
 		} else {
-			songdata = null;
-			setBMSFile(Paths.get(course[courseindex].getPath()), mode);
+			setBMSFile(course.entries[courseindex].song(), mode);
 			return true;
 		}
 	}
@@ -366,9 +423,7 @@ public final class PlayerResource {
 	}
 
 	public void reloadBMSFile() {
-		if (model != null) {
-			model = loadBMSModel(Paths.get(model.getPath()), pconfig.getLnmode());
-		}
+		if (model != null) model = loadBMSModel(model.getRandom());
 		final String name = tablename;
 		final String lev = tablelevel;
 		clear();
@@ -497,6 +552,19 @@ public final class PlayerResource {
 
 	public void setOrgGaugeOption(int orgGaugeOption) {
 		this.orgGaugeOption = orgGaugeOption;
+	}
+
+	private record CourseEntry(SongData song, BMSModel model) {}
+
+	private static final class LoadedCourse {
+		private final CourseEntry[] entries;
+		private final BMSModel[] models;
+
+		private LoadedCourse(CourseEntry[] entries) {
+			this.entries = entries;
+			this.models = new BMSModel[entries.length];
+			for (int i = 0; i < entries.length; i++) models[i] = entries[i].model();
+		}
 	}
 
 	public int getAssist() {
