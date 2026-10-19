@@ -3,6 +3,7 @@ package bms.tool.mdprocessor;
 import bms.player.beatoraja.Config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.FileNotFoundException;
@@ -18,7 +19,7 @@ public class KonmaiDownloadSource implements HttpDownloadSource {
     public static final String SUCCESS_RESULT = "success";
 
     private final String downloadQueryURL;
-    private final ObjectMapper om = new ObjectMapper();
+    private final ObjectMapper om = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     public KonmaiDownloadSource(Config config) {
         // override download url if user ask to do so
