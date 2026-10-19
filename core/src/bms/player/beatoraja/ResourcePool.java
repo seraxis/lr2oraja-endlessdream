@@ -1,6 +1,7 @@
 package bms.player.beatoraja;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -46,9 +47,13 @@ public abstract class ResourcePool<K, V> implements Disposable {
 	 * @return リソース。読めなかった場合はnullを返す
 	 */
  	public V get(K key) {
+		return get(key, () -> load(key));
+	}
+
+	protected V get(K key, Supplier<V> loader) {
  		ResourceCacheElement<V> ie = resourceMap.get(key);
 		if(ie == null) {
-			V resource = load(key);
+			V resource = loader.get();
 			if(resource != null) {
 				ie = new ResourceCacheElement<V>(resource);
 				resourceMap.put(key, ie);

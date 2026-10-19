@@ -1,7 +1,7 @@
 package bms.player.beatoraja.play.bga;
 
-import java.nio.file.*;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +10,8 @@ import bms.model.*;
 import bms.player.beatoraja.Config;
 import bms.player.beatoraja.PlayerConfig;
 import bms.player.beatoraja.ResourcePool;
+import bms.player.beatoraja.song.Resource;
+import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.play.BMSPlayer;
 import bms.player.beatoraja.play.SkinBGA;
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
@@ -36,6 +38,7 @@ public class BGAProcessor {
 	private MovieProcessor[] movies = new MovieProcessor[0]; 
 	
 	private final ResourcePool<String, MovieProcessor> mpgresource;
+	private final ConcurrentHashMap<String, Resource> movieResources = new ConcurrentHashMap<>();
 
 	public static final String[] mov_extension = { "mp4", "wmv", "m4v", "webm", "mpg", "mpeg", "m1v", "m2v", "avi"};
 
@@ -85,7 +88,9 @@ public class BGAProcessor {
 			@Override
 			protected MovieProcessor load(String key) {
 				FFmpegProcessor mm = new FFmpegProcessor(config.getFrameskip());
-				mm.create(key);
+				Resource resource = movieResources.get(key);
+				if (resource == null) return null;
+				mm.create(resource);
 				return mm;
 			}
 
@@ -99,6 +104,10 @@ public class BGAProcessor {
 	}
 
 	public synchronized void setModel(BMSModel model) {
+		setModel(model, model == null ? null : new SongData(model, false));
+	}
+
+	public synchronized void setModel(BMSModel model, SongData song) {
 		progress = 0;
 
 		cache.clear();
@@ -115,91 +124,35 @@ public class BGAProcessor {
 				}
 			}
 
-			// BMS格納ディレクトリ
-			Path dpath = Paths.get(model.getPath()).getParent();
-
 			movies = new MovieProcessor[model.getBgaList().length];
 			for (String name : model.getBgaList()) {
 				if (progress == 1) {
 					break;
 				}
-				Path f = null;
+				Resource resource = null;
 				try {
-					if (Files.exists(dpath.resolve(name))) {
-						final int index = name.lastIndexOf('.');
-						String fex = null;
-						if (index != -1) {
-							fex = name.substring(index + 1).toLowerCase();
-						}
-						if (fex != null) {
-							if (Arrays.asList(mov_extension).contains(fex)){
-								name = name.substring(0, index);
-								for (String mov : mov_extension) {
-									final Path mpgfile = dpath.resolve(name + "." + mov);
-									if (Files.exists(mpgfile)) {
-										f = mpgfile;
-										break;
-									}
-								}
-							}else if (Arrays.asList(BGImageProcessor.pic_extension).contains(fex)){
-								name = name.substring(0, index);
-								for (String pic : BGImageProcessor.pic_extension) {
-									final Path picfile = dpath.resolve(name + "." + pic);
-									if (Files.exists(picfile)) {
-										f = picfile;
-										break;
-									}
-								}
-							}else{
-								f = dpath.resolve(name);
-							}
-						}
-					}
-					if (f == null) {
-						final int index = name.lastIndexOf('.');
-						if (index != -1) {
-							name = name.substring(0, index);
-						}
-						for (String mov : mov_extension) {
-							final Path mpgfile = dpath.resolve(name + "." + mov);
-							if (Files.exists(mpgfile)) {
-								f = mpgfile;
-								break;
-							}
-						}
-						if (f == null) {
-							for (String mov : BGImageProcessor.pic_extension) {
-								final Path picfile = dpath.resolve(name + "." + mov);
-								if (Files.exists(picfile)) {
-									f = picfile;
-									break;
-								}
-							}
-						}
-					}
-				} catch (InvalidPathException e) {
+					String[] extensions = new String[mov_extension.length + BGImageProcessor.pic_extension.length];
+					int extensionIndex = 0;
+					for (String extension : mov_extension) extensions[extensionIndex++] = "." + extension;
+					for (String extension : BGImageProcessor.pic_extension) extensions[extensionIndex++] = "." + extension;
+					resource = song.resolveAssetWithExtensions(name, extensions).orElse(null);
+				} catch (RuntimeException e) {
 					logger.warn(e.getMessage());
 				}
 
-				if (f != null) {
-					boolean isMovie = false;
-					for (String mov : mov_extension) {
-						if (f.getFileName().toString().toLowerCase().endsWith(mov)) {
-							try {
-								MovieProcessor mm = mpgresource.get(f.toString());
-								movies[id] = mm;
-								isMovie = true;
-								break;
-							} catch (Throwable e) {
-								logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
-								e.printStackTrace();
-							}
+				if (resource != null) {
+					String filename = resource.filename().toLowerCase();
+					boolean isMovie = Arrays.stream(mov_extension).anyMatch(extension -> filename.endsWith("." + extension));
+					if (isMovie) {
+						try {
+							movieResources.put(resource.key(), resource);
+							movies[id] = mpgresource.get(resource.key());
+						} catch (Throwable e) {
+							logger.warn("BGAファイル読み込み失敗。{}", e.getMessage());
+						} finally {
+							movieResources.remove(resource.key());
 						}
-					}
-					if(isMovie) {
-					} else {
-						cache.put(id, f);
-					}
+					} else cache.put(id, resource);
 				}
 
 				progress += 1f / model.getBgaList().length;

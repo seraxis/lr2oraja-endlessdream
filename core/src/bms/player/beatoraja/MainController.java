@@ -1106,6 +1106,7 @@ public class MainController {
 		public void run() {
 			ImGuiNotify.info(this.message);
 			getSongDatabase().updateSongDatas(path, config.getBmsroot(), false, updateParentWhenMissing, getInfoDatabase());
+			MainLoader.pullFromBackbeat(getInfoDatabase());
 		}
 	}
 
@@ -1125,6 +1126,9 @@ public class MainController {
 
 		public void run() {
 			ImGuiNotify.info(this.message);
+			if (accessor.isBackbeat()) {
+				MainLoader.pullFromBackbeat(getInfoDatabase());
+			}
 			TableData td = accessor.getAccessor().read();
 			if (td != null) {
 				accessor.getAccessor().write(td);

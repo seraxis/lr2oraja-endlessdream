@@ -1,9 +1,10 @@
 package bms.player.beatoraja.audio;
 
+import bms.player.beatoraja.song.Resource;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +63,13 @@ public abstract class PCM<T> {
 	}
 
 	public static PCM load(Path p, AudioDriver driver) {
+		return load(Resource.file(p), driver);
+	}
+
+	public static PCM load(Resource resource, AudioDriver driver) {
 		try {
 			PCMLoader loader = new PCMLoader(driver);
-			loader.loadPCM(p);
+			loader.loadPCM(resource);
 			
 			PCM pcm = null;
 			if(loader.bitsPerSample > 16) {
@@ -93,7 +98,7 @@ public abstract class PCM<T> {
 			if(pcm.validate()) {
 				return pcm;
 			} else {
-				logger.warn("音源の読み込みに失敗しました - file : {}", p);
+				logger.warn("音源の読み込みに失敗しました - file : {}", resource.key());
 				return null;
 			}
 		} catch (IOException e) {
@@ -172,14 +177,18 @@ public abstract class PCM<T> {
 		};
 		
 		public void loadPCM(Path p) throws IOException {
+			loadPCM(Resource.file(p));
+		}
+
+		public void loadPCM(Resource resource) throws IOException {
 			// TODO prefferedSampleRate, prefferedChannelsを使って逐次変換し、メモリ確保のコストを減らす
 			// final long time = System.nanoTime();
 			pcm = null;
 
-			final String name = p.toString().toLowerCase();
+			final String name = resource.filename().toLowerCase();
 			//WAVFile wavfile = WAVFile.fromFile(p);
 			if (name.endsWith(".wav")) {
-				try (WavInputStream input = new WavInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
+				try (WavInputStream input = new WavInputStream(new BufferedInputStream(resource.openStream()))) {
 					switch(input.type) {
 					case 1:
                     case 3:
@@ -218,7 +227,7 @@ public abstract class PCM<T> {
 						pcm = decoder.decode(inputByteBuffer);
 
 
-						logger.info("Filename: {}", p);
+						logger.info("Filename: {}", resource.key());
 						break;
 					}
 
@@ -261,14 +270,14 @@ public abstract class PCM<T> {
 						break;					
 					}
 					default:
-						throw new IOException(p.toString() + " unsupported WAV format ID : " + input.type);					
+						throw new IOException(resource.key() + " unsupported WAV format ID : " + input.type);
 					}
 				} catch (Throwable e) {
-					logger.warn("WAV処理中の例外 - file : {} error : {}{}", p, e.getMessage(), e.toString());
+					logger.warn("WAV処理中の例外 - file : {} error : {}{}", resource.key(), e.getMessage(), e.toString());
 				}
 			} else if (name.endsWith(".ogg")) {
 				// ogg
-				try (OggInputStream input = new OggInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
+				try (OggInputStream input = new OggInputStream(new BufferedInputStream(resource.openStream()))) {
 					// final long time = System.nanoTime();
 					// OptimizedByteArrayOutputStream output = new
 					// OptimizedByteArrayOutputStream(4096);
@@ -292,7 +301,7 @@ public abstract class PCM<T> {
 			} else if (name.endsWith(".mp3")) {
 				// mp3
 				try {
-					Bitstream bitstream = new Bitstream(new BufferedInputStream(Files.newInputStream(p)));
+					Bitstream bitstream = new Bitstream(new BufferedInputStream(resource.openStream()));
 					ByteArrayOutputStream output = new ByteArrayOutputStream(4096);
 					MP3Decoder decoder = new MP3Decoder();
 					OutputBuffer outputBuffer = null;
@@ -325,7 +334,7 @@ public abstract class PCM<T> {
 			} else if (name.endsWith(".flac")) {
 				// flac
 				try {
-					FLACDecoder input = new FLACDecoder(new BufferedInputStream(Files.newInputStream(p)));
+					FLACDecoder input = new FLACDecoder(new BufferedInputStream(resource.openStream()));
 					input.readMetadata();
 					StreamInfo info = input.getStreamInfo();
 					
@@ -350,7 +359,7 @@ public abstract class PCM<T> {
 			}
 
 			if(pcm == null) {
-				throw new IOException(p.toString() + " : can't convert to PCM");			
+				throw new IOException(resource.key() + " : can't convert to PCM");
 			}
 			
 			int bytes = pcm.limit();
@@ -371,10 +380,10 @@ public abstract class PCM<T> {
 //				logger.info("終端の無音データ除外 - " + p.getFileName().toString() + " : " + (orgbytes - bytes) + " bytes");
 //			}
 			if(bytes < channels * bitsPerSample / 8) {
-				throw new IOException(p.toString() + " : 0 samples");			
+				throw new IOException(resource.key() + " : 0 samples");
 			}
 			if(sampleRate == 0) {
-				throw new IOException(p.toString() + " : 0 sample rate");			
+				throw new IOException(resource.key() + " : 0 sample rate");
 			}
 			pcm.limit(bytes);
 			
