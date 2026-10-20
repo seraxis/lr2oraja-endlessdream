@@ -845,6 +845,7 @@ public class MainController {
 
 	public void dispose() {
 		saveConfig();
+		input.disableMouseScratch();
 
 		if (selector != null) {
 			selector.dispose();
