@@ -53,10 +53,13 @@ public class MouseScratchInput {
     }
 
     public void poll(final long microtime) {
+        if (!mouseScratchEnabled) {
+            return;
+        }
 		final long presstime = microtime / 1000;
         boolean isModMenuOpen = getShowModMenu();
         // MOUSEの更新
-        if (!isModMenuOpen && mouseScratchEnabled) {
+        if (!isModMenuOpen) {
             mouseToAnalog.update();
             for (int i=0; i<mouseScratchAlgorithm.length; i++) {
                 mouseScratchAlgorithm[i].update(presstime);
@@ -135,6 +138,10 @@ public class MouseScratchInput {
             }
         }
         lastMouseScratch = -1;
+    }
+
+    public void setMouseScratchEnabled(boolean mouseScratchEnabled) {
+        this.mouseScratchEnabled = mouseScratchEnabled;
     }
 
     private float getMouseAnalogValue(int mouseInput) {
