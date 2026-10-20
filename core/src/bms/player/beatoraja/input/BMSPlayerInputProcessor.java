@@ -571,6 +571,10 @@ public class BMSPlayerInputProcessor extends ControllerAdapter {
 		}
 	}
 
+	public void disableMouseScratch() {
+		this.getKeyBoardInputProcesseor().getMouseScratchInput().setMouseScratchEnabled(false);
+	};
+
 	public void dispose() {
 		midiinput.close();
 	}
