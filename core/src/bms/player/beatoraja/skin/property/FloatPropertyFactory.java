@@ -12,6 +12,7 @@ import bms.player.beatoraja.select.MusicSelector;
 import bms.player.beatoraja.select.bar.Bar;
 import bms.player.beatoraja.select.bar.GradeBar;
 import bms.player.beatoraja.select.bar.SongBar;
+import bms.player.beatoraja.skin.SkinManualEntry;
 import bms.player.beatoraja.song.SongData;
 import bms.player.beatoraja.result.AbstractResult;
 
@@ -22,9 +23,6 @@ import bms.player.beatoraja.result.AbstractResult;
  */
 public class FloatPropertyFactory {
 	
-	private static RateType[] RateTypeValues = RateType.values();
-	private static FloatType[] FloatTypeValues = FloatType.values();
-
 	private static final int PG = 0;
 	private static final int GR = 1;
 	private static final int GD = 2;
@@ -37,7 +35,7 @@ public class FloatPropertyFactory {
 	 * @return 対応するFloatProperty
 	 */
 	public static FloatProperty getRateProperty(int optionid) {
-		for(RateType t : RateTypeValues) {
+		for(RateType t : RateType.values()) {
 			if(t.id == optionid) {
 				return t.property;
 			}
@@ -52,7 +50,7 @@ public class FloatPropertyFactory {
 	 * @return 対応するFloatProperty
 	 */
 	public static FloatProperty getRateProperty(String name) {
-		for(RateType t : RateTypeValues) {
+		for(RateType t : RateType.values()) {
 			if(t.name().equals(name)) {
 				return t.property;
 			}
@@ -67,7 +65,7 @@ public class FloatPropertyFactory {
 	 * @return 対応するFloatWriter
 	 */
 	public static FloatWriter getRateWriter(int id) {
-		for(RateType t : RateTypeValues) {
+		for(RateType t : RateType.values()) {
 			if(t.id == id) {
 				return t.writer;
 			}
@@ -82,7 +80,7 @@ public class FloatPropertyFactory {
 	 * @return 対応するFloatWriter
 	 */
 	public static FloatWriter getRateWriter(String name) {
-		for(RateType t : RateTypeValues) {
+		for(RateType t : RateType.values()) {
 			if(t.name().equals(name)) {
 				return t.writer;
 			}
@@ -94,16 +92,16 @@ public class FloatPropertyFactory {
 	 * FloatType IDに対応するFloatPropertyを返す
 	 * なければRateType IDに対応するFloatPropertyを返す
 	 * 
-	 * @param id property ID
+	 * @param optionid property ID
 	 * @return 対応するFloatProperty
 	 */
 	public static FloatProperty getFloatProperty(int optionid) {
-		for(FloatType t : FloatTypeValues) {
+		for(FloatType t : FloatType.values()) {
 			if(t.id == optionid) {
 				return t.property;
 			}
 		}
-		for(RateType r : RateTypeValues) {
+		for(RateType r : RateType.values()) {
 			if(r.id == optionid) {
 				return r.property;
 			}
@@ -119,12 +117,12 @@ public class FloatPropertyFactory {
 	 * @return 対応するFloatProperty
 	 */
 	public static FloatProperty getFloatProperty(String name) {
-		for(FloatType t : FloatTypeValues) {
+		for(FloatType t : FloatType.values()) {
 			if(t.name().equals(name)) {
 				return t.property;
 			}
 		}
-		for(RateType r : RateTypeValues) {
+		for(RateType r : RateType.values()) {
 			if(r.name().equals(name)) {
 				return r.property;
 			}
@@ -493,6 +491,9 @@ public class FloatPropertyFactory {
 			this.property = property;
 		}
 
+		public SkinManualEntry<FloatType> intoManualEntry() {
+			return new SkinManualEntry<>(this, this.name(), this.id);
+		}
 	}
 
 	private static FloatProperty createIRClearRateProperty(int clearType) {

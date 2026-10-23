@@ -70,7 +70,7 @@ public class SkinHidden extends SkinObject {
 	@Override
 	public void prepare(long time, MainState state) {
 		if(originalImages == null) {
-			draw = false;
+			undraw("No original images");
 			return;
 		}
 		if(this.state != state) {

@@ -347,6 +347,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
+						judge[0].setJudgeHeight(values[6]);
 						judge[0].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
@@ -399,6 +400,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
+						judge[1].setJudgeHeight(values[6]);
 						judge[1].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
@@ -450,6 +452,7 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 							values[4] += values[6];
 							values[6] = -values[6];
 						}
+						judge[2].setJudgeHeight(values[6]);
 						judge[2].getJudge(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], values[3] * dstw / srcw,
 								dsth - (values[4] + values[6]) * dsth / srch, values[5] * dstw / srcw,
 								values[6] * dsth / srch, values[7], values[8], values[9], values[10], values[11],
@@ -774,12 +777,13 @@ public class LR2PlaySkinLoader extends LR2SkinCSVLoader<PlaySkin> {
 		final SkinJudge sj = judge[index];
 		if (sj != null && sj.getJudgeCount(Integer.parseInt(str[1]) <= 5 ? (5 - Integer.parseInt(str[1])) : Integer.parseInt(str[1])) != null) {
 			int[] values = parseInt(str);
-			sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).setRelative(true);
+			int comboIndex = values[1] <= 5 ? (5 - values[1]) : values[1];
+			sj.getJudgeCount(comboIndex).setRelative(true);
 			float x = values[3];
-			if(sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).align == 2) {
-				x -= sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).getKeta() * values[5] / 2;
+			if(sj.getJudgeCount(comboIndex).align == 2) {
+				x -= sj.getJudgeCount(comboIndex).getKeta() * values[5] / 2;
 			}
-			sj.getJudgeCount(values[1] <= 5  ? (5 - values[1]) : values[1]).setDestination(values[2], x * dstw / srcw,
+			sj.getJudgeCount(comboIndex).setDestination(values[2], x * dstw / srcw,
 					-values[4] * dsth / srch, values[5] * dstw / srcw, values[6] * dsth / srch, values[7],
 					values[8], values[9], values[10], values[11], values[12], values[13], values[14],
 					values[15], values[16], values[17], values[18], values[19], values[20], offset);

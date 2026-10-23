@@ -2,6 +2,8 @@ package bms.player.beatoraja.skin;
 
 import bms.player.beatoraja.skin.Skin.SkinObjectRenderer;
 
+import bms.player.beatoraja.skin.property.StringProperty;
+import bms.player.beatoraja.skin.property.StringPropertyFactory;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
@@ -30,11 +32,11 @@ public class SkinTextImage extends SkinText {
 	private float textwidth;
 
 	public SkinTextImage(SkinTextImageSource source) {
-		this(source, -1);
+		this(source, StringPropertyFactory.getStringProperty(-1));
 	}
 
-	public SkinTextImage(SkinTextImageSource source, int id) {
-		super(id);
+	public SkinTextImage(SkinTextImageSource source, StringProperty property) {
+		super(property);
 		this.source = source;
 	}
 
@@ -105,6 +107,10 @@ public class SkinTextImage extends SkinText {
 			draw(sprite, ch, x + dx + offsetX, region.y + offsetY, tw, region.height, color, 0);
 			dx += tw + source.getMargin() * scale;
 		}
+	}
+
+	public SkinTextImageSource getSource() {
+		return source;
 	}
 
 	public void dispose() {
@@ -186,6 +192,10 @@ public class SkinTextImage extends SkinText {
 			SkinTextImageSourceElement element = new SkinTextImageSourceElement();
 			element.path = p;
 			elements.put(index, element);
+		}
+
+		public IntMap.Keys getCodes() {
+			return regions.keys();
 		}
 
 		@Override

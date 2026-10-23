@@ -8,6 +8,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+
+import bms.player.beatoraja.constants.DPOptions;
+import bms.player.beatoraja.constants.HiSpeedFix;
+import bms.player.beatoraja.constants.LaneOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.function.Supplier;
@@ -323,16 +327,15 @@ public class PlayConfigurationView implements Initializable {
 		lr2configurationassist.setVgap(4);
 
 
-		String[] scoreOptions = new String[] { "OFF", "MIRROR", "RANDOM", "R-RANDOM", "S-RANDOM", "SPIRAL", "H-RANDOM",
-				"ALL-SCR", "RANDOM-EX", "S-RANDOM-EX" };
+		String[] scoreOptions = LaneOptions.names();
 		initComboBox(scoreop, scoreOptions);
 		initComboBox(scoreop2, scoreOptions);
-		initComboBox(doubleop, new String[] { "OFF", "FLIP", "BATTLE", "BATTLE AS" });
+		initComboBox(doubleop, DPOptions.names());
 		initComboBox(seventoninepattern, new String[] { "OFF", "SC1KEY2~8", "SC1KEY3~9", "SC2KEY3~9", "SC8KEY1~7", "SC9KEY1~7", "SC9KEY2~8" });
 		String[] seventoninestring = new String[]{arg1.getString("SEVEN_TO_NINE_OFF"),arg1.getString("SEVEN_TO_NINE_NO_MASHING"),arg1.getString("SEVEN_TO_NINE_ALTERNATION")};
 		initComboBox(seventoninetype, seventoninestring);
 		initComboBox(gaugeop, new String[] { "ASSIST EASY", "EASY", "NORMAL", "HARD", "EX-HARD", "HAZARD" });
-		initComboBox(fixhispeed, new String[] { "OFF", "START BPM", "MAX BPM", "MAIN BPM", "MIN BPM" });
+		initComboBox(fixhispeed, HiSpeedFix.names());
 		playconfig.getItems().setAll(PlayMode.values());
 		initComboBox(lntype, new String[] { "LONG NOTE", "CHARGE NOTE", "HELL CHARGE NOTE" });
 		initComboBox(gaugeautoshift, new String[] { "NONE", "CONTINUE", "SURVIVAL TO GROOVE","BEST CLEAR","SELECT TO UNDER" });

@@ -84,7 +84,7 @@ public abstract class SkinText extends SkinObject {
     	super.prepare(time, state);
         currentText = ref != null ? ref.get(state) : (constantText != null ? constantText : null);
         if(currentText == null || currentText.length() == 0) {
-        	draw = false;
+            undraw("No text provided");
             return;
         }
     }
