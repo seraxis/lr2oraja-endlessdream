@@ -141,11 +141,6 @@ public class FFmpegProcessor implements MovieProcessor {
 		public void run() {
 			try {
 				grabber = new FFmpegFrameGrabber(filepath);
-				// HACK: frame caught by ffmpeg's color order is wrong on macos only
-				// Expected to be RGB, got BGR
-				if (UIUtils.isMac) {
-					grabber.setPixelFormat(AV_PIX_FMT_RGB24);
-				}
 				grabber.start();
 
 				while (grabber.getVideoBitrate() < 10) {
