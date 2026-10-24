@@ -9,7 +9,7 @@ import org.sqlite.SQLiteConfig.SynchronousMode;
 
 /**
  * スコアログデータベースアクセサ
- * 
+ *
  * @author exch
  */
 public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
@@ -20,7 +20,7 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 
 	public ScoreLogDatabaseAccessor(String path) throws ClassNotFoundException {
 		super(	new Table("scorelog",
-						new Column("sha256", "TEXT", 1, 0),
+						new Column("sha256", "TEXT", true, false),
 						new Column("mode", "INTEGER"),
 						new Column("clear", "INTEGER"),
 						new Column("oldclear", "INTEGER"),
@@ -41,7 +41,7 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		ds = new SQLiteDataSource(conf);
 		ds.setUrl("jdbc:sqlite:" + path);
 		qr = new QueryRunner(ds);
-		
+
 		try {
 			this.validate(qr);
 		} catch (SQLException e) {
@@ -56,10 +56,10 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * スコアログ
-	 * 
+	 *
 	 * @author exch
 	 */
 	public static class ScoreLog implements Validatable {
@@ -83,23 +83,23 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		/**
 		 * 新スコア
 		 */
-		private int score;		
+		private int score;
 		/**
 		 * 旧スコア
 		 */
-		private int oldscore;		
+		private int oldscore;
 		/**
 		 * 新コンボ
 		 */
-		private int combo;		
+		private int combo;
 		/**
 		 * 旧コンボ
 		 */
-		private int oldcombo;		
+		private int oldcombo;
 		/**
 		 * 新ミスカウント
 		 */
-		private int minbp;		
+		private int minbp;
 		/**
 		 * 旧ミスカウント
 		 */
@@ -108,91 +108,91 @@ public class ScoreLogDatabaseAccessor extends SQLiteDatabaseAccessor {
 		 * スコア最終更新日時(unixtime, 秒単位)
 		 */
 		private long date;
-		
+
 		public String getSha256() {
 			return sha256;
 		}
-		
+
 		public void setSha256(String sha256) {
 			this.sha256 = sha256;
 		}
-		
+
 		public int getMode() {
 			return mode;
 		}
-		
+
 		public void setMode(int mode) {
 			this.mode = mode;
 		}
-		
+
 		public int getClear() {
 			return clear;
 		}
-		
+
 		public void setClear(int clear) {
 			this.clear = clear;
 		}
-		
+
 		public int getOldclear() {
 			return oldclear;
 		}
-		
+
 		public void setOldclear(int oldclear) {
 			this.oldclear = oldclear;
 		}
-		
+
 		public int getScore() {
 			return score;
 		}
-		
+
 		public void setScore(int score) {
 			this.score = score;
 		}
-		
+
 		public int getOldscore() {
 			return oldscore;
 		}
-		
+
 		public void setOldscore(int oldscore) {
 			this.oldscore = oldscore;
 		}
-		
+
 		public int getCombo() {
 			return combo;
 		}
-		
+
 		public void setCombo(int combo) {
 			this.combo = combo;
 		}
-		
+
 		public int getOldcombo() {
 			return oldcombo;
 		}
-		
+
 		public void setOldcombo(int oldcombo) {
 			this.oldcombo = oldcombo;
 		}
-		
+
 		public int getMinbp() {
 			return minbp;
 		}
-		
+
 		public void setMinbp(int minbp) {
 			this.minbp = minbp;
 		}
-		
+
 		public int getOldminbp() {
 			return oldminbp;
 		}
-		
+
 		public void setOldminbp(int oldminbp) {
 			this.oldminbp = oldminbp;
 		}
-		
+
 		public long getDate() {
 			return date;
 		}
-		
+
 		public void setDate(long date) {
 			this.date = date;
 		}
