@@ -71,11 +71,17 @@ public final class PlayerConfig {
 	 */
 	private String targetid = "MAX";
 	
-	private String[] targetlist = new String[] {"RATE_A-","RATE_A", "RATE_A+","RATE_AA-","RATE_AA", "RATE_AA+", "RATE_AAA-", "RATE_AAA", "RATE_AAA+", "RATE_MAX-", "MAX"
-			,"RANK_NEXT", "IR_NEXT_1", "IR_NEXT_2", "IR_NEXT_3", "IR_NEXT_4", "IR_NEXT_5", "IR_NEXT_10"
+	private static final String[] DEFAULT_TARGET_LIST = new String[] {"RATE_A-","RATE_A", "RATE_A+","RATE_AA-","RATE_AA", "RATE_AA+", "RATE_AAA-", "RATE_AAA", "RATE_AAA+", "RATE_MAX-", "MAX"
+			,"RANK_NEXT", "IR_PERSONAL_BEST", "IR_NEXT_1", "IR_NEXT_2", "IR_NEXT_3", "IR_NEXT_4", "IR_NEXT_5", "IR_NEXT_10"
 			, "IR_RANK_1", "IR_RANK_5", "IR_RANK_10", "IR_RANK_20", "IR_RANK_30", "IR_RANK_40", "IR_RANK_50"
 			, "IR_RANKRATE_5", "IR_RANKRATE_10", "IR_RANKRATE_15", "IR_RANKRATE_20", "IR_RANKRATE_25", "IR_RANKRATE_30", "IR_RANKRATE_35", "IR_RANKRATE_40", "IR_RANKRATE_45","IR_RANKRATE_50"
 			,"RIVAL_RANK_1","RIVAL_RANK_2","RIVAL_RANK_3","RIVAL_NEXT_1","RIVAL_NEXT_2","RIVAL_NEXT_3"};
+
+	/**
+	 * List of pacemaker targets - not final as more targets may be added for rivals in MainController.java
+	 */
+	private String[] targetlist = DEFAULT_TARGET_LIST;
+
 	/**
 	 * 判定タイミング
 	 */
@@ -564,11 +570,9 @@ public final class PlayerConfig {
 	}
 
 	public String[] getTargetlist() {
-		return targetlist;
-	}
-
-	public void setTargetlist(String[] targetlist) {
-		this.targetlist = targetlist;
+		Set<String> targetSet = new HashSet<>(Set.of(DEFAULT_TARGET_LIST));
+        targetSet.addAll(Arrays.asList(targetlist));
+		return targetSet.stream().sorted().toArray(String[]::new);
 	}
 
 	public int getMisslayerDuration() {
@@ -857,7 +861,7 @@ public final class PlayerConfig {
 		doubleoption = MathUtils.clamp(doubleoption, 0, 3);
 		chartReplicationMode = chartReplicationMode != null ? chartReplicationMode : "NONE";
 		targetid = targetid!= null ? targetid : "MAX";
-		targetlist = targetlist != null ? targetlist : new String[0];
+		targetlist = targetlist != null ? targetlist : DEFAULT_TARGET_LIST;
 		judgetiming = MathUtils.clamp(judgetiming, JUDGETIMING_MIN, JUDGETIMING_MAX);
 		misslayerDuration = MathUtils.clamp(misslayerDuration, 0, 5000);
 		lnmode = MathUtils.clamp(lnmode, 0, 2);
@@ -895,7 +899,7 @@ public final class PlayerConfig {
 				irconfig[i].setIrname(irnames[i]);
 			}
 		}
-		
+
 		for(int i = 0;i < irconfig.length;i++) {
 			if(irconfig[i] == null || irconfig[i].getIrname() == null) {
 				continue;
