@@ -22,8 +22,11 @@ public class KonmaiDownloadSource implements HttpDownloadSource {
     private final ObjectMapper om = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     public KonmaiDownloadSource(Config config) {
+        this(config.getOverrideDownloadURL());
+    }
+
+    public KonmaiDownloadSource(String overrideDownloadURL) {
         // override download url if user ask to do so
-        String overrideDownloadURL = config.getOverrideDownloadURL();
         this.downloadQueryURL = overrideDownloadURL != null && !overrideDownloadURL.isEmpty()
                 ? overrideDownloadURL
                 : META.getDefaultURL();

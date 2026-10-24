@@ -25,9 +25,15 @@ public interface HttpDownloadSource {
 
     // For further implementations
 
-    boolean isAllowDownloadThroughMd5();
+    default boolean isAllowDownloadThroughMd5() {
+        return false;
+    }
 
-    boolean isAllowDownloadThroughSha256();
+    default boolean isAllowDownloadThroughSha256() {
+        return false;
+    }
 
-    boolean isAllowMetaQuery();
+    default boolean isAllowMetaQuery() {
+        return false;
+    }
 }
