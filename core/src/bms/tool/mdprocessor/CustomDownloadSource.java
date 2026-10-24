@@ -2,17 +2,16 @@ package bms.tool.mdprocessor;
 
 import bms.player.beatoraja.Config;
 
-public class WriggleDownloadSource implements HttpDownloadSource {
+public class CustomDownloadSource implements HttpDownloadSource {
     public static final HttpDownloadSourceMeta META = new HttpDownloadSourceMeta(
-            "wriggle",
-            "https://bms.wrigglebug.xyz/download/package/%s",
-            WriggleDownloadSource::new
+            "Custom",
+            "",
+            CustomDownloadSource::new
     );
 
     private final String downloadURL;
 
-    public WriggleDownloadSource(Config config) {
-        // override download url if user ask to do so
+    public CustomDownloadSource(Config config) {
         String overrideDownloadURL = config.getOverrideDownloadURL();
         this.downloadURL = overrideDownloadURL != null && !overrideDownloadURL.isEmpty()
                 ? overrideDownloadURL

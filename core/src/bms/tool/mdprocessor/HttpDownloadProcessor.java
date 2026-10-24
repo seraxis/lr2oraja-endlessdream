@@ -8,6 +8,8 @@ import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +22,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.print.URIException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,12 +47,12 @@ public class HttpDownloadProcessor {
     private String downloadDirectory;
 
     static {
+        // Custom
+        HttpDownloadSourceMeta customDownloadSourceMeta = CustomDownloadSource.META;
+        DOWNLOAD_SOURCES.put(customDownloadSourceMeta.getName(), customDownloadSourceMeta);
         // Ginger
         HttpDownloadSourceMeta gingerDownloadSourceMeta = GingerDownloadSource.META;
         DOWNLOAD_SOURCES.put(gingerDownloadSourceMeta.getName(), gingerDownloadSourceMeta);
-        // Wriggle
-        HttpDownloadSourceMeta wriggleDownloadSourceMeta = WriggleDownloadSource.META;
-        DOWNLOAD_SOURCES.put(wriggleDownloadSourceMeta.getName(), wriggleDownloadSourceMeta);
         // Konmai
         HttpDownloadSourceMeta konmaiDownloadSourceMeta = KonmaiDownloadSource.META;
         DOWNLOAD_SOURCES.put(konmaiDownloadSourceMeta.getName(), konmaiDownloadSourceMeta);
@@ -105,6 +109,14 @@ public class HttpDownloadProcessor {
             logger.error("[HttpDownloadProcessor] Cannot get download url from remote server[{}] due to unexpected exception: {}", sourceName, e.getMessage());
 			ImGuiNotify.error(String.format("%s returns a severe error: %s", sourceName, e.getMessage()));
             return;
+        }
+
+        try {
+            verifyHTTPURL(downloadURL);
+        } catch (Exception e) {
+            logger.error("[HttpDownloadProcessor] Invalid http download url", e);
+            ImGuiNotify.error(String.format("Download url is not a valid http URL, please check your config!"));
+            return ;
         }
 
         // NOTE: The reason of using executor instead of using 'synchronized' on tasks directly is forcing
@@ -333,5 +345,41 @@ public class HttpDownloadProcessor {
             throw new RuntimeException(e.getMessage());
         }
         return bmsDirectory;
+    }
+
+    private void verifyHTTPURL(String input) {
+        if (input == null) {
+            throw new IllegalArgumentException("url can't be empty");
+        }
+
+        String url = input.trim();
+        if (input.isEmpty()) {
+            throw new IllegalArgumentException("url can't be empty");
+        }
+
+        try {
+            URI uri = new URI(url);
+
+            if (!uri.isAbsolute() || uri.isOpaque()) {
+                throw new IllegalArgumentException("url is opaque or not absolute");
+            }
+
+            String scheme = uri.getScheme();
+            if ((!"http".equals(scheme) && !"https".equals(scheme))) {
+                throw new IllegalArgumentException("not http(s) scheme");
+            }
+
+            String host = uri.getHost();
+            if (host == null || host.isEmpty()) {
+                throw new IllegalArgumentException("no host provided");
+            }
+
+            int port = uri.getPort();
+            if (port < -1 || port > 65536) {
+                throw new IllegalArgumentException("invalid port");
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("invalid uri syntax");
+        }
     }
 }
