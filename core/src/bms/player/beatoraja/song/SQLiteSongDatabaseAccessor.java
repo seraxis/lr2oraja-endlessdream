@@ -31,7 +31,7 @@ import bms.model.*;
 
 /**
  * 楽曲データベースへのアクセスクラス
- * 
+ *
  * @author exch
  */
 public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implements SongDatabaseAccessor {
@@ -45,7 +45,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	private final ResultSetHandler<List<FolderData>> folderhandler = new BeanListHandler<FolderData>(FolderData.class);
 
 	private final QueryRunner qr;
-	
+
 	private List<SongDatabaseAccessorPlugin> plugins = new ArrayList();
 	/**
 	 * Used in updateSongDatas and it's variants. This design is based on an assumption that we cannot delete an
@@ -53,13 +53,13 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 	 * have to query it every time we updating the inner directory
 	 */
 	private Set<String> checkedParent = new HashSet<>();
-	
+
 	public SQLiteSongDatabaseAccessor(String filepath, String[] bmsroot) throws ClassNotFoundException {
-		super(new Table("folder", 
+		super(new Table("folder",
 				new Column("title", "TEXT"),
 				new Column("subtitle", "TEXT"),
 				new Column("command", "TEXT"),
-				new Column("path", "TEXT", 0, 1),
+				new Column("path", "TEXT", false, true),
 				new Column("banner", "TEXT"),
 				new Column("parent", "TEXT"),
 				new Column("type", "INTEGER"),
@@ -68,15 +68,15 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 				new Column("max", "INTEGER")
 				),
 				new Table("song",
-						new Column("md5", "TEXT", 1, 0),
-						new Column("sha256", "TEXT", 1, 0),
+						new Column("md5", "TEXT", true, false),
+						new Column("sha256", "TEXT", true, false),
 						new Column("title", "TEXT"),
 						new Column("subtitle", "TEXT"),
 						new Column("genre", "TEXT"),
 						new Column("artist", "TEXT"),
 						new Column("subartist", "TEXT"),
 						new Column("tag", "TEXT"),
-						new Column("path", "TEXT", 0, 1),
+						new Column("path", "TEXT", false, true),
 						new Column("folder", "TEXT"),
 						new Column("stagefile", "TEXT"),
 						new Column("banner", "TEXT"),
@@ -98,7 +98,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						new Column("notes", "INTEGER"),
 						new Column("charthash", "TEXT")
 						));
-		
+
 		Class.forName("org.sqlite.JDBC");
 		SQLiteConfig conf = new SQLiteConfig();
 		conf.setSharedCache(true);
@@ -110,11 +110,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		root = Paths.get(".");
 		createTable();
 	}
-		
+
 	public void addPlugin(SongDatabaseAccessorPlugin plugin) {
 		plugins.add(plugin);
 	}
-	
+
 	/**
 	 * 楽曲データベースを初期テーブルを作成する。 すでに初期テーブルを作成している場合は何もしない。
 	 */
@@ -122,7 +122,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		try {
 			// songテーブル作成(存在しない場合)
 			validate(qr);
-			
+
 			if(qr.query("PRAGMA TABLE_INFO(song)", new MapListHandler()).stream().anyMatch(m -> m.get("name").equals("sha256") && (int)(m.get("pk")) == 1)) {
 				qr.update("ALTER TABLE [song] RENAME TO [old_song]");
 				validate(qr);
@@ -139,10 +139,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		}
 	}
 
-	
+
 	/**
 	 * 楽曲を取得する
-	 * 
+	 *
 	 * @param key
 	 *            属性
 	 * @param value
@@ -162,7 +162,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 	/**
 	 * MD5/SHA256で指定した楽曲をまとめて取得する
-	 * 
+	 *
 	 * @param hashes
 	 *            楽曲のMD5/SHA256
 	 * @return 取得した楽曲
@@ -186,7 +186,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			}
 			List<SongData> m = qr.query("SELECT * FROM song WHERE md5 IN (" + md5str.toString() + ") OR sha256 IN ("
 					+ sha256str.toString() + ")", songhandler);
-			
+
 			// 検索並び順保持
 			List<SongData> sorted = m.stream().sorted((a, b) -> {
 				int aIndexSha256 = -1,aIndexMd5 = -1,bIndexSha256 = -1,bIndexMd5 = -1;
@@ -242,7 +242,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
                 e.printStackTrace();
             }
 		} catch(Throwable e) {
-			e.printStackTrace();			
+			e.printStackTrace();
 		}
 
 		return SongData.EMPTY;
@@ -261,10 +261,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 		return SongData.EMPTY;
 	}
-	
+
 	/**
 	 * 楽曲を取得する
-	 * 
+	 *
 	 * @param key
 	 *            属性
 	 * @param value
@@ -284,7 +284,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 	/**
 	 * 楽曲を更新する
-	 * 
+	 *
 	 * @param songs 更新する楽曲
 	 */
 	public void setSongDatas(SongData[] songs) {
@@ -303,7 +303,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 	/**
 	 * データベースを更新する
-	 * 
+	 *
 	 * @param path
 	 *            LR2のルートパス
 	 */
@@ -340,10 +340,10 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		SongDatabaseUpdater updater = new SongDatabaseUpdater(updateAll, bmsroot, info);
 		updater.updateSongDatas(path == null ? Stream.of(bmsroot).map(p -> Paths.get(p)) : Stream.of(Paths.get(path)), listener);
 	}
-	
+
 	/**
 	 * song database更新用クラス
-	 * 
+	 *
 	 * @author exch
 	 */
 	class SongDatabaseUpdater {
@@ -361,7 +361,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 
 		/**
 		 * データベースを更新する
-		 * 
+		 *
 		 * @param paths
 		 *            更新するディレクトリ(ルートディレクトリでなくても可)
 		 */
@@ -384,7 +384,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 					}
 				}
 				if(updateAll) {
-					qr.update(conn, "DELETE FROM folder");					
+					qr.update(conn, "DELETE FROM folder");
 					qr.update(conn, "DELETE FROM song");
 				} else {
 					// ルートディレクトリに含まれないフォルダの削除
@@ -397,11 +397,11 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 							dsql.append(" AND ");
 						}
 					}
-					
+
 					qr.update(conn,
 							"DELETE FROM folder WHERE path NOT LIKE 'LR2files%' AND path NOT LIKE '%.lr2folder' AND "
 									+ dsql.toString(), param);
-					qr.update(conn, "DELETE FROM song WHERE " + dsql.toString(), param);					
+					qr.update(conn, "DELETE FROM song WHERE " + dsql.toString(), param);
 				}
 
 				paths.parallel().forEach((p) -> {
@@ -426,9 +426,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 		}
 
 	}
-	
+
 	private class BMSFolder {
-		
+
 		public final Path path;
 		public boolean updateFolder = true;
 		private boolean txt = false;
@@ -441,7 +441,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			this.path = path;
 			this.bmsroot = bmsroot;
 		}
-		
+
 		private void processDirectory(SongDatabaseUpdaterProperty property)
 				throws IOException, SQLException, ReflectiveOperationException, IllegalArgumentException, InvocationTargetException, IntrospectionException {
 			final List<SongData> records = qr.query(property.conn, "SELECT path,date FROM song WHERE folder = ?", songhandler,
@@ -467,7 +467,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 															s.endsWith(".ogg") ||
 															s.endsWith(".mp3") ||
 															s.endsWith(".flac"))) {
-								
+
 								// Hand-made previews and auto-generated previews with this tool (https://github.com/MikiraSora/BmsPreviewAudioGenerator)
 								// can clash. We will try picking auto-generated ones as the last resort (indicated by the specific default name).
 								if (s.startsWith("preview_auto_generator")) {
@@ -529,7 +529,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 						bf.processDirectory(property);
 					} catch (IOException | SQLException | IllegalArgumentException | ReflectiveOperationException | IntrospectionException e) {
 						logger.error("楽曲データベース更新時の例外:{}", e.getMessage());
-					}					
+					}
 				});
 			}
 
@@ -721,7 +721,7 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			return new Pair<>(skipCount, newCount);
 		}
 	}
-	
+
 	private static class SongDatabaseUpdaterProperty {
 		private final Map<String, String> tags = new HashMap<String, String>();
 		private final Map<String, Integer> favorites = new HashMap<String, Integer>();
@@ -736,9 +736,9 @@ public class SQLiteSongDatabaseAccessor extends SQLiteDatabaseAccessor implement
 			this.listener = listener;
 		}
 	}
-	
+
 	public static interface SongDatabaseAccessorPlugin {
-		
+
 		public void update(BMSModel model, SongData song);
 	}
 }
