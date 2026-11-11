@@ -5,6 +5,8 @@ import static bms.player.beatoraja.skin.SkinProperty.*;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
+import bms.player.beatoraja.modmenu.JudgeCountTracker;
+import bms.player.beatoraja.modmenu.JudgeTrainer;
 import com.badlogic.gdx.utils.FloatArray;
 
 import bms.model.*;
@@ -35,6 +37,7 @@ public class JudgeManager {
      * 現在の判定カウント内訳
      */
     private ScoreData score = new ScoreData();
+    private JudgeCountTracker judgeCountTracker;
 
     /**
      * 現在のコンボ数
@@ -146,6 +149,8 @@ public class JudgeManager {
         score = new ScoreData(orgmode);
         score.setNotes(model.getTotalNotes());
         score.setSha256(model.getSHA256());
+        judgeCountTracker = new JudgeCountTracker(orgmode);
+        JudgeTrainer.setJudgeCountTracker(judgeCountTracker);
         ghost = new int[model.getTotalNotes()];
         for (int i=0; i<ghost.length; i++) {
             ghost[i] = 4;
@@ -706,6 +711,7 @@ public class JudgeManager {
         }
         n.setMicroPlayTime(mfast);
         score.addJudgeCount(judge, mfast >= 0, 1);
+        judgeCountTracker.track(state.lane, judge, mfast >= 0, 1);
 
         if (judge < 4) {
             recentJudgesIndex = (recentJudgesIndex + 1) % recentJudges.length;
