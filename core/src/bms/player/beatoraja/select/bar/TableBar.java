@@ -3,6 +3,7 @@ package bms.player.beatoraja.select.bar;
 import bms.player.beatoraja.CourseData;
 import bms.player.beatoraja.TableData;
 import bms.player.beatoraja.TableDataAccessor;
+import bms.player.beatoraja.backbeat.BackbeatTableAdapter;
 import bms.player.beatoraja.select.*;
 import bms.player.beatoraja.song.SongData;
 
@@ -54,6 +55,10 @@ public class TableBar extends DirectoryBar {
     	return tr;
     }
 
+	public boolean isBackbeat() {
+		return tr instanceof BackbeatTableAdapter;
+	}
+
     public void setTableData(TableData td) {
     	this.td = td;
 		levels = Stream.of(td.getFolder()).map(folder -> new HashBar(selector, folder.getName(), folder.getSong())).toArray(HashBar[]::new);
@@ -63,17 +68,7 @@ public class TableBar extends DirectoryBar {
 		final SongData[] songs = selector.getSongDatabase().getSongDatas(hashset.toArray(new String[hashset.size()]));
 
 		grades = Stream.of(courses).map(course -> {
-			SongData[] songlist = course.getSong();
-			for (int j = 0;j < songlist.length;j++) {
-				final SongData hash = songlist[j];
-				for (SongData sd : songs) {
-					if ((hash.getMd5().length() > 0 && hash.getMd5().equals(sd.getMd5())) || (hash.getSha256().length() > 0 && hash.getSha256().equals(sd.getSha256()))) {
-						sd.merge(hash);
-						songlist[j] = sd;
-						break;
-					}
-				}
-			}
+			course.resolveSongs(songs);
 			return new GradeBar(course);
 		}).toArray(GradeBar[]::new);
 

@@ -1,5 +1,8 @@
 package bms.player.beatoraja.play.bga;
 
+import bms.player.beatoraja.song.Resource;
+
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.Buffer;
@@ -59,7 +62,11 @@ public class FFmpegProcessor implements MovieProcessor {
 	}
 
 	public void create(String filepath) {
-		movieseek = new MovieSeekThread(filepath);
+		create(Resource.file(java.nio.file.Paths.get(filepath)));
+	}
+
+	public void create(Resource resource) {
+		movieseek = new MovieSeekThread(resource);
 		movieseek.start();
 	}
 
@@ -129,18 +136,24 @@ public class FFmpegProcessor implements MovieProcessor {
 
 		private Pixmap pixmap;
 
-		private String filepath;
+		private final Resource resource;
+		private InputStream input;
 		
 		private long offset;
 		private long framecount;
 
-		public MovieSeekThread(String filepath) {
-			this.filepath = filepath;
+		public MovieSeekThread(Resource resource) {
+			this.resource = resource;
 		}
 
 		public void run() {
 			try {
-				grabber = new FFmpegFrameGrabber(filepath);
+				if (resource.path().isPresent()) {
+					grabber = new FFmpegFrameGrabber(resource.path().get().toString());
+				} else {
+					input = resource.openStream();
+					grabber = new FFmpegFrameGrabber(input);
+				}
 				// HACK: frame caught by ffmpeg's color order is wrong on macos only
 				// Expected to be RGB, got BGR
 				if (UIUtils.isMac) {
@@ -254,9 +267,15 @@ public class FFmpegProcessor implements MovieProcessor {
 				try {
 					grabber.stop();
 					grabber.close();
-					logger.info("動画リソースの開放 : {}", filepath);
+					logger.info("動画リソースの開放 : {}", resource.key());
 				} catch (Throwable e) {
 					e.printStackTrace();
+				} finally {
+					if (input != null) {
+						try {
+							input.close();
+						} catch (java.io.IOException ignored) {}
+					}
 				}
 			}
 		}

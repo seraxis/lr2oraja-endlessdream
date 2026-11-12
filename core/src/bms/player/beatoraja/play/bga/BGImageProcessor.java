@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import bms.model.TimeLine;
 import bms.player.beatoraja.PixmapResourcePool;
+import bms.player.beatoraja.song.Resource;
 
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -65,7 +66,11 @@ public class BGImageProcessor {
 	}
 
 	public void put(int id, Path path) {
-		Pixmap pixmap = cache.get(path.toString());
+		put(id, Resource.file(path));
+	}
+
+	public void put(int id, Resource resource) {
+		Pixmap pixmap = cache.get(resource);
 		if(id >= bgamap.length) {
 			bgamap = Arrays.copyOf(bgamap, id + 1);
 		}

@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
+import bms.player.beatoraja.song.Resource;
 
 /**
  * Pixmapリソースプール
@@ -88,5 +89,23 @@ public class PixmapResourcePool extends ResourcePool<String, Pixmap> {
 		}
 
 		return tex;
+	}
+
+	public Pixmap get(Resource resource) {
+		return get(resource.key(), () -> {
+			Pixmap pixmap = loadPicture(resource);
+			return pixmap != null ? convert(pixmap) : null;
+		});
+	}
+
+	public static Pixmap loadPicture(Resource resource) {
+		try {
+			if (resource.path().isPresent()) return loadPicture(resource.path().get().toString());
+			byte[] data = resource.readAllBytes();
+			return new Pixmap(data, 0, data.length);
+		} catch (Throwable error) {
+			logger.warn("BGA resource load failed: {}", resource.filename());
+			return null;
+		}
 	}
 }

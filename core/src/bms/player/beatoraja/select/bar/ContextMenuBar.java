@@ -133,7 +133,7 @@ public class ContextMenuBar extends DirectoryBar {
         }, "Related", STYLE_TABLE);
         SongData[] songs = selector.getSongDatabase().getSongDatas("folder", song.getFolder());
         related.setLamps(calculateLamps(selector, songs));
-        options.add(related);
+        if (!song.isBackbeat()) options.add(related);
 
         var folder = new FunctionBar(null, "Open Song Folder", STYLE_FOLDER);
         folder.setFunction((selector, self) -> {
@@ -142,7 +142,7 @@ public class ContextMenuBar extends DirectoryBar {
             selector.getBarManager().setSelected(folder);
             selector.play(FOLDER_OPEN);
         });
-        options.add(folder);
+        if (!song.isBackbeat()) options.add(folder);
 
         var url = new FunctionBar((selector, self) -> {
             boolean success = ContextMenuBar.browserOpen(song.getUrl());
@@ -305,7 +305,7 @@ public class ContextMenuBar extends DirectoryBar {
             if (song.getTitle() != null) { options.add(title); }
             if (song.getMd5() != null) { options.add(md5); }
             if (song.getSha256() != null) { options.add(sha256); }
-            if (song.getPath() != null) { options.add(path); }
+            if (song.getFilesystemPath().isPresent()) { options.add(path); }
             if (song.getUrl() != null) { options.add(urltext); }
             if (song.getAppendurl() != null && !song.getAppendurl().equals(song.getUrl())) {
                 options.add(appendUrltext);
@@ -411,7 +411,7 @@ public class ContextMenuBar extends DirectoryBar {
                 Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
             }
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
-        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
+		if (!table.isBackbeat() && selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
 
         return options.toArray(new Bar[0]);
     }
@@ -430,7 +430,7 @@ public class ContextMenuBar extends DirectoryBar {
                 Logger.getGlobal().info("Nothing to fill, it's anything went wrong?");
             }
         }, "Fill Missing Charts", STYLE_SPECIAL, STYLE_TEXT_NEW);
-        if (selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
+		if (!table.isBackbeat() && selector.main.getConfig().isEnableHttp()) { options.add(fillMissingCharts); }
 
         return options.toArray(new Bar[0]);
     }
