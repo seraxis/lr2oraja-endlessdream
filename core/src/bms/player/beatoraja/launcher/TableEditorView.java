@@ -151,7 +151,7 @@ public class TableEditorView implements Initializable {
 
 			Button openFolderButton = new Button("Open Folder");
 			openFolderButton.setMaxWidth(Double.MAX_VALUE);
-			Path songPath = song.filesystemPath().orElse(null);
+			Path songPath = song.getFilesystemPath().orElse(null);
 			openFolderButton.setDisable(songPath == null);
 			openFolderButton.setOnAction((actionEvent) -> {
 				try {

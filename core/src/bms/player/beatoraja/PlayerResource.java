@@ -194,7 +194,7 @@ public final class PlayerResource {
 		if(tablename.length() == 0 || courseindex != 0){
 			setTableinfo();
 		}
-		if (songdata.filesystemPath().isPresent() && config.getAudioConfig().isNormalizeVolume()
+		if (songdata.getFilesystemPath().isPresent() && config.getAudioConfig().isNormalizeVolume()
 				&& loudnessAnalyzer != null && loudnessAnalyzer.isAvailable()) {
 			analysisTask = loudnessAnalyzer.analyzeAsync(model);
 		} else {
@@ -213,7 +213,7 @@ public final class PlayerResource {
 
 	public BMSModel loadBMSModel(SongData song, int lnmode, int[] selectedRandom) {
 		if(song == null) return null;
-		Path path = song.filesystemPath().orElse(null);
+		Path path = song.getFilesystemPath().orElse(null);
 		if(path != null) return loadBMSModel(new ChartInformation(path, lnmode, selectedRandom));
 		String filename = song.chartFilename();
 		if(filename == null) return null;

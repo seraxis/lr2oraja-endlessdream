@@ -237,7 +237,7 @@ public class SongData implements Validatable, IpfsInformation {
 		return null;
 	}
 
-	public Optional<Path> filesystemPath() {
+	public Optional<Path> getFilesystemPath() {
 		if(isBackbeat() || getPath() == null) return Optional.empty();
 		try {
 			return Optional.of(Path.of(getPath()));
@@ -279,7 +279,7 @@ public class SongData implements Validatable, IpfsInformation {
 			return MainLoader.getBackbeatIntegration().chartData(this);
 		}
 		try {
-			Path path = filesystemPath().orElse(null);
+			Path path = getFilesystemPath().orElse(null);
 			return path == null ? Optional.empty() : Optional.of(Files.readAllBytes(path));
 		} catch(IOException error) {
 			return Optional.empty();
@@ -290,7 +290,7 @@ public class SongData implements Validatable, IpfsInformation {
 		if (isBackbeat()) {
 			return backbeatFilename;
 		}
-		return filesystemPath().map(Path::getFileName).map(Path::toString).orElse(null);
+		return getFilesystemPath().map(Path::getFileName).map(Path::toString).orElse(null);
 	}
 
 	public Optional<Resource> resolveAsset(String relativePath) {
@@ -303,7 +303,7 @@ public class SongData implements Validatable, IpfsInformation {
 		}
 
 		try {
-			Path path = filesystemPath().orElse(null);
+			Path path = getFilesystemPath().orElse(null);
 			if (path == null) {
 				return Optional.empty();
 			}

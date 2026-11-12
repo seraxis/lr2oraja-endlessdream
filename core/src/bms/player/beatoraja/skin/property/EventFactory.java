@@ -149,7 +149,7 @@ public class EventFactory {
 			}
 			if(state instanceof MusicSelector selector && selector.getBarManager().getSelected() instanceof SongBar songbar
 					&& songbar.existsSong()) {
-				Path directory = songbar.getSongData().filesystemPath().map(Path::getParent).orElse(null);
+				Path directory = songbar.getSongData().getFilesystemPath().map(Path::getParent).orElse(null);
 				if(directory == null) return;
 				try (Stream<Path> paths = Files.list(directory)) {
 					paths.filter(p -> !Files.isDirectory(p) && p.toString().toLowerCase().endsWith(".txt")).forEach(p -> {
@@ -302,7 +302,7 @@ public class EventFactory {
 					selector.main.updateTable((TableBar) selected);
 				} else if (selected instanceof SongBar) {
 					SongData song = ((SongBar) selected).getSongData();
-					song.filesystemPath().map(Path::getParent)
+					song.getFilesystemPath().map(Path::getParent)
 							.ifPresent(directory -> selector.main.updateSong(directory.toString()));
 				}				
 			}
@@ -316,7 +316,7 @@ public class EventFactory {
 				try {
 					if (Desktop.isDesktopSupported()) {
 						if (current instanceof SongBar songbar) {
-							Path directory = songbar.getSongData().filesystemPath().map(Path::getParent).orElse(null);
+							Path directory = songbar.getSongData().getFilesystemPath().map(Path::getParent).orElse(null);
 							if (songbar.existsSong() && directory != null) {
 								Desktop.getDesktop().open(directory.toFile());
 							} else if (songbar.getSongData() != null && songbar.getSongData().getOrg_md5() != null) {
@@ -324,7 +324,7 @@ public class EventFactory {
 										.toArray(new String[songbar.getSongData().getOrg_md5().size()]);
 								SongData[] songdata = selector.getSongDatabase().getSongDatas(md5);
 								for (SongData sd : songdata) {
-									Path candidate = sd.filesystemPath().map(Path::getParent).orElse(null);
+									Path candidate = sd.getFilesystemPath().map(Path::getParent).orElse(null);
 									if (candidate != null) {
 										Desktop.getDesktop().open(candidate.toFile());
 										break;
@@ -335,7 +335,7 @@ public class EventFactory {
 								if (m.find()) {
 									SongData[] songdata = selector.getSongDatabase().getSongDatasByText(m.group());
 									for (SongData sd : songdata) {
-										Path candidate = sd.filesystemPath().map(Path::getParent).orElse(null);
+										Path candidate = sd.getFilesystemPath().map(Path::getParent).orElse(null);
 										if (candidate != null) {
 											Desktop.getDesktop().open(candidate.toFile());
 											break;
