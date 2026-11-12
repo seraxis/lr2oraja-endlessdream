@@ -41,6 +41,9 @@ public enum BMSPlayerRule {
     }
 
     public static BMSPlayerRule getBMSPlayerRule(Mode mode) {
+        if (mode == Mode.POPN_5K || mode == Mode.POPN_9K) {
+            return Beatoraja_9;
+        }
         for(BMSPlayerRule bmsrule : BMSPlayerRuleSet.LR2.ruleset) {
         	if(bmsrule.mode.length == 0) {
     			return bmsrule; 
@@ -86,6 +89,11 @@ public enum BMSPlayerRule {
     }
     
 	private static double calculateDefaultTotal(Mode mode, int totalnotes) {
+		// PMS uses the beatoraja rules, not lr2 - see below for the commented out block
+		// that I yanked this from.
+        if (getBMSPlayerRule(mode) == Beatoraja_9) {
+            return Math.max(260.0, 7.605 * totalnotes / (0.01 * totalnotes + 6.5));
+        }
         return 160.0 + (totalnotes + Math.min(Math.max(totalnotes-400, 0), 200))*0.16;
         /*
 		switch (mode) {

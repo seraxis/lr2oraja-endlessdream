@@ -147,6 +147,10 @@ public final class GrooveGauge {
 				}
 			}
 		}
+		if (gauges == null && resource.getOriginalMode() != null) {
+			// Mode conversion changes the lanes, not the original chart's gauge rules.
+			gauges = BMSPlayerRule.getBMSPlayerRule(resource.getOriginalMode()).gauge;
+		}
 		GrooveGauge gauge = create(model, type, coursetype, gauges);
 		FloatArray[] f = resource.getGauge();
 		if (f != null) {
