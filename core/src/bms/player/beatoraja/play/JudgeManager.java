@@ -100,6 +100,7 @@ public class JudgeManager {
     private boolean[] combocond;
 
     private MissCondition miss;
+    private boolean useBeatorajaRules;
     /**
      * 各判定毎のノートの判定を消失するかどうか。PG, GR, GD, BD, PR, MSの順
      */
@@ -162,6 +163,7 @@ public class JudgeManager {
         combocond = rule.combo;
         miss = rule.miss;
         judgeVanish = rule.judgeVanish;
+        useBeatorajaRules = rule != JudgeProperty.LR2;
 
         keyassign = main.getLaneProperty().getKeyLaneAssign();
         sckey = new int[model.getMode().scratchKey.length];
@@ -220,6 +222,7 @@ public class JudgeManager {
         Arrays.fill(recentJudges, Long.MIN_VALUE);
         this.recentJudgesIndex = 0;
         multiBadCollector = new MultiBadCollector();
+        multiBadCollector.setEnabled(!useBeatorajaRules);
     }
     
     private float getKeyVolume() {
@@ -432,7 +435,7 @@ public class JudgeManager {
                                             && (dmtime > mjudge[2][1] || dmtime < mjudge[2][0]))))) {
                                 if (judgenote.getState() != 0) {
                                     judge = (dmtime >= mjudge[4][0] && dmtime <= mjudge[4][1]) ? 5 : 6;
-                                } else if (judgenote instanceof LongNote && dmtime < mjudge[2][0]) {
+                                } else if (!useBeatorajaRules && judgenote instanceof LongNote && dmtime < mjudge[2][0]) {
                                     //LR2oraja: Remove late bad for LN
                                     judge = 6;
                                 } else {
@@ -583,7 +586,20 @@ public class JudgeManager {
                             if (Math.abs(state.lnstartDuration) > Math.abs(dmtime)) {
                                 dmtime = state.lnstartDuration;
                             }
-                            if(judge >= 3 && dmtime > 0) {
+                            // holds in beatoraja rules (i.e. for pms) are handled differently,
+                            // this logic is copied from beatoraja
+                            if (useBeatorajaRules) {
+                                if (dmtime > 0) {
+                                    state.releasetime = pmtime;
+                                    state.lnendJudge = Math.min(judge, 3);
+                                } else {
+                                    this.updateMicro(state, state.processing.getPair(), mtime, judge, dmtime, true);
+                                    keysound.play(state.processing, getKeyVolume(), 0);
+                                    state.processing = null;
+                                    state.releasetime = Long.MIN_VALUE;
+                                    state.lnendJudge = Integer.MIN_VALUE;
+                                }
+                            } else if(judge >= 3 && dmtime > 0) {
                                 state.releasetime = mtime;                              
                                 state.lnendJudge = 3;
                             } else {
