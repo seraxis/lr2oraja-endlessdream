@@ -77,10 +77,12 @@ public class SkinTextBitmap extends SkinText {
 			sprite.setType(SkinObjectRenderer.TYPE_BILINEAR);
 			if (!getShadowOffset().isZero()) {
 				setLayout(new Color(color.r / 2, color.g / 2, color.b / 2, color.a), region);
-				sprite.draw(font, layout, x + getShadowOffset().x + offsetX, region.y - getShadowOffset().y + offsetY + region.getHeight());
+				sprite.draw(font, layout, x + getShadowOffset().x + offsetX, region.y - getShadowOffset().y + offsetY + region.getHeight(),
+						shader -> shader.setUniformf("u_textureSize", source.getPageWidth(), source.getPageHeight()));
 			}
 			setLayout(color, region);
-			sprite.draw(font, layout, x + offsetX, region.y + offsetY + region.getHeight());
+			sprite.draw(font, layout, x + offsetX, region.y + offsetY + region.getHeight(),
+					shader -> shader.setUniformf("u_textureSize", source.getPageWidth(), source.getPageHeight()));
 		}
 		font.getData().setScale(1);
 	}
