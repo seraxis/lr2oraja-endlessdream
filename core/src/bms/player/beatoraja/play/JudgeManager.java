@@ -435,11 +435,9 @@ public class JudgeManager {
                                             && (dmtime > mjudge[2][1] || dmtime < mjudge[2][0]))))) {
                                 if (judgenote.getState() != 0) {
                                     judge = (dmtime >= mjudge[4][0] && dmtime <= mjudge[4][1]) ? 5 : 6;
-                                } else if (judgenote instanceof LongNote && dmtime < mjudge[2][0]) {
+                                } else if (!useBeatorajaRules && judgenote instanceof LongNote && dmtime < mjudge[2][0]) {
                                     //LR2oraja: Remove late bad for LN
-                                    if (!useBeatorajaRules) {
-                                    	judge = 6;
-                                    }
+                                    judge = 6;
                                 } else {
                                     for (judge = 0; judge < mjudge.length
                                             && !(dmtime >= mjudge[judge][0] && dmtime <= mjudge[judge][1]); judge++) {
