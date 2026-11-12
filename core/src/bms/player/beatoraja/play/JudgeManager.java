@@ -601,8 +601,7 @@ public class JudgeManager {
                                     state.releasetime = Long.MIN_VALUE;
                                     state.lnendJudge = Integer.MIN_VALUE;
                                 }
-                            } else 
-                            if(judge >= 3 && dmtime > 0) {
+                            } else if(judge >= 3 && dmtime > 0) {
                                 state.releasetime = mtime;                              
                                 state.lnendJudge = 3;
                             } else {
