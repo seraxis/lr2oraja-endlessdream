@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import bms.tool.util.Pair;
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,41 +69,60 @@ public abstract class PCM<T> {
 		try {
 			PCMLoader loader = new PCMLoader(driver);
 			loader.loadPCM(p);
-			
-			PCM pcm = null;
-			if(loader.bitsPerSample > 16) {
-//				System.out.println("FLOAT");
-				pcm = FloatPCM.loadPCM(loader);				
-			} else if(loader.bitsPerSample == 16) {
-				if(loader.pcm.isDirect()) {
-					pcm = ShortDirectPCM.loadPCM(loader);
-				} else {
-					pcm = ShortPCM.loadPCM(loader);					
-				}
-			} else {
-				// TODO BytePCMのバグが解消されたら切替
-//				pcm = BytePCM.loadPCM(loader);					
-				pcm = ShortPCM.loadPCM(loader);					
-			}
-			
-			// TODO PCMLoader側での逐次変換が実装されたら削除
-			if(pcm != null && ((AbstractAudioDriver)driver).channels != 0 && pcm.channels != ((AbstractAudioDriver)driver).channels) {
-				pcm = pcm.changeChannels(((AbstractAudioDriver)driver).channels);
-			}
-			if(pcm != null && ((AbstractAudioDriver)driver).getSampleRate() != 0 && pcm.sampleRate != ((AbstractAudioDriver)driver).getSampleRate()) {
-				pcm = pcm.changeSampleRate(((AbstractAudioDriver)driver).getSampleRate());
-			}
-			
-			if(pcm.validate()) {
-				return pcm;
-			} else {
-				logger.warn("音源の読み込みに失敗しました - file : {}", p);
-				return null;
-			}
+			return doLoad(loader, driver);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
+		return null;
+	}
+
+	public static PCM load(SevenZArchiveContext ctx, String fileName, AudioDriver driver) {
+		try {
+			PCMLoader loader = new PCMLoader(driver);
+			loader.loadPCM(ctx, fileName);
+			return doLoad(loader, driver);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static PCM doLoad(PCMLoader loader, AudioDriver driver) throws IOException {
+		try {
+			PCM pcm = null;
+			if (loader.bitsPerSample > 16) {
+//				System.out.println("FLOAT");
+				pcm = FloatPCM.loadPCM(loader);
+			} else if (loader.bitsPerSample == 16) {
+				if (loader.pcm.isDirect()) {
+					pcm = ShortDirectPCM.loadPCM(loader);
+				} else {
+					pcm = ShortPCM.loadPCM(loader);
+				}
+			} else {
+				// TODO BytePCMのバグが解消されたら切替
+//				pcm = BytePCM.loadPCM(loader);
+				pcm = ShortPCM.loadPCM(loader);
+			}
+
+			// TODO PCMLoader側での逐次変換が実装されたら削除
+			if (pcm != null && ((AbstractAudioDriver) driver).channels != 0 && pcm.channels != ((AbstractAudioDriver) driver).channels) {
+				pcm = pcm.changeChannels(((AbstractAudioDriver) driver).channels);
+			}
+			if (pcm != null && ((AbstractAudioDriver) driver).getSampleRate() != 0 && pcm.sampleRate != ((AbstractAudioDriver) driver).getSampleRate()) {
+				pcm = pcm.changeSampleRate(((AbstractAudioDriver) driver).getSampleRate());
+			}
+
+			if (pcm.validate()) {
+				return pcm;
+			} else {
+				// TODO: We lost the audio file path here, does it matter?
+				logger.warn("音源の読み込みに失敗しました");
+			}
+		} catch (IOException e) {
+			logger.error("doLoad failed: ", e);
+		}
 		return null;
 	}
 	
@@ -112,7 +135,7 @@ public abstract class PCM<T> {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * サンプリングレートを変更したPCMを返す
 	 * 
@@ -169,17 +192,30 @@ public abstract class PCM<T> {
 		
 		public PCMLoader(AudioDriver driver) {
 			this.driver = driver;
-		};
-		
+		}
+
 		public void loadPCM(Path p) throws IOException {
+			// TODO: The silly code here is keeping the same behaviour :|
+			try (InputStream is = Files.newInputStream(p)) {
+				loadPCM(is, p.toString().toLowerCase(), p.toString());
+			}
+		}
+
+		public void loadPCM(SevenZArchiveContext ctx, String fileName) throws IOException {
+			if (ctx.hasEntry(fileName)) {
+				Pair<String, InputStream> _p = ctx.getInputStream(fileName);
+				loadPCM(_p.getSecond(), _p.getFirst(), _p.getFirst());
+			}
+		}
+
+		public void loadPCM(InputStream is, String name, String filePath) throws IOException {
 			// TODO prefferedSampleRate, prefferedChannelsを使って逐次変換し、メモリ確保のコストを減らす
 			// final long time = System.nanoTime();
 			pcm = null;
 
-			final String name = p.toString().toLowerCase();
 			//WAVFile wavfile = WAVFile.fromFile(p);
 			if (name.endsWith(".wav")) {
-				try (WavInputStream input = new WavInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
+				try (WavInputStream input = new WavInputStream(new BufferedInputStream(is))) {
 					switch(input.type) {
 					case 1:
                     case 3:
@@ -218,7 +254,7 @@ public abstract class PCM<T> {
 						pcm = decoder.decode(inputByteBuffer);
 
 
-						logger.info("Filename: {}", p);
+						logger.info("Filename: {}", filePath);
 						break;
 					}
 
@@ -261,14 +297,14 @@ public abstract class PCM<T> {
 						break;					
 					}
 					default:
-						throw new IOException(p.toString() + " unsupported WAV format ID : " + input.type);					
+						throw new IOException(filePath + " unsupported WAV format ID : " + input.type);
 					}
 				} catch (Throwable e) {
-					logger.warn("WAV処理中の例外 - file : {} error : {}{}", p, e.getMessage(), e.toString());
+					logger.warn("WAV処理中の例外 - file : {} error : {}{}", filePath, e.getMessage(), e.toString());
 				}
 			} else if (name.endsWith(".ogg")) {
 				// ogg
-				try (OggInputStream input = new OggInputStream(new BufferedInputStream(Files.newInputStream(p)))) {
+				try (OggInputStream input = new OggInputStream(new BufferedInputStream(is))) {
 					// final long time = System.nanoTime();
 					// OptimizedByteArrayOutputStream output = new
 					// OptimizedByteArrayOutputStream(4096);
@@ -292,7 +328,7 @@ public abstract class PCM<T> {
 			} else if (name.endsWith(".mp3")) {
 				// mp3
 				try {
-					Bitstream bitstream = new Bitstream(new BufferedInputStream(Files.newInputStream(p)));
+					Bitstream bitstream = new Bitstream(new BufferedInputStream(is));
 					ByteArrayOutputStream output = new ByteArrayOutputStream(4096);
 					MP3Decoder decoder = new MP3Decoder();
 					OutputBuffer outputBuffer = null;
@@ -325,7 +361,7 @@ public abstract class PCM<T> {
 			} else if (name.endsWith(".flac")) {
 				// flac
 				try {
-					FLACDecoder input = new FLACDecoder(new BufferedInputStream(Files.newInputStream(p)));
+					FLACDecoder input = new FLACDecoder(new BufferedInputStream(is));
 					input.readMetadata();
 					StreamInfo info = input.getStreamInfo();
 					
@@ -350,7 +386,7 @@ public abstract class PCM<T> {
 			}
 
 			if(pcm == null) {
-				throw new IOException(p.toString() + " : can't convert to PCM");			
+				throw new IOException(filePath + " : can't convert to PCM");
 			}
 			
 			int bytes = pcm.limit();
@@ -371,10 +407,10 @@ public abstract class PCM<T> {
 //				logger.info("終端の無音データ除外 - " + p.getFileName().toString() + " : " + (orgbytes - bytes) + " bytes");
 //			}
 			if(bytes < channels * bitsPerSample / 8) {
-				throw new IOException(p.toString() + " : 0 samples");			
+				throw new IOException(filePath + " : 0 samples");
 			}
 			if(sampleRate == 0) {
-				throw new IOException(p.toString() + " : 0 sample rate");			
+				throw new IOException(filePath + " : 0 sample rate");
 			}
 			pcm.limit(bytes);
 			
