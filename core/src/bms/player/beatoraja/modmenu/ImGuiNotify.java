@@ -3,6 +3,8 @@ package bms.player.beatoraja.modmenu;
 import imgui.ImGui;
 import imgui.flag.ImGuiWindowFlags;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowHeight;
 import static bms.player.beatoraja.modmenu.ImGuiRenderer.windowWidth;
 
 public class ImGuiNotify {
+    private static final Logger logger = LoggerFactory.getLogger(ImGuiNotify.class);
 
     public static final float NOTIFY_PADDING_X = 20.0f;
     public static final float NOTIFY_PADDING_Y = 20.0f;
@@ -31,6 +34,7 @@ public class ImGuiNotify {
     };
 
     private static ToastPos DEFAULT_TOAST_POS = ToastPos.TopLeft;
+    private static boolean NOTIFY_ENABLED = true;
 
     public enum ToastType {
         None,
@@ -225,7 +229,8 @@ public class ImGuiNotify {
     private static final List<Toast> notifications = new ArrayList<>();
 
     public static void insertNotification(Toast toast) {
-        notifications.add(toast);
+        if (NOTIFY_ENABLED) notifications.add(toast);
+        else logger.info("Toast({}): {}", toast.type.name(), toast.getContent());
     }
 
     public static void removeNotification(int index) {
@@ -399,5 +404,9 @@ public class ImGuiNotify {
 
     public static void setNotificationPosition(int index) {
         DEFAULT_TOAST_POS = ToastPos.valueOf(NOTIFICATION_POSITIONS[index]);
+    }
+
+    public static void setEnabled(boolean enabled) {
+        NOTIFY_ENABLED = enabled;
     }
 }
