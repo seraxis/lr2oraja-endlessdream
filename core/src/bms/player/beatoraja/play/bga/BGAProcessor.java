@@ -59,6 +59,7 @@ public class BGAProcessor {
 	private Layer misslayer = null;
 
 	private long time;
+	private int playFreqPercent = 100;
 
 	private BGImageProcessor cache;
 
@@ -227,6 +228,7 @@ public class BGAProcessor {
 	 */
 	public void prepare(BMSPlayer player) {
 		pos = 0;
+		playFreqPercent = player.getPlayFreqPercent();
 		if(cache != null) {
 			cache.prepare(timelines);			
 		}
@@ -252,12 +254,17 @@ public class BGAProcessor {
 		}
 
 		if(movies[id] != null) {
+			final long movieTime = scaleMovieTime(time, playFreqPercent);
 			if (!cont) {
-				movies[id].play(time, false);
+				movies[id].play(movieTime, false);
 			}
-			return movies[id].getFrame(time);
+			return movies[id].getFrame(movieTime);
 		}
 		return cache != null ? cache.getTexture(id) : null;
+	}
+
+	static long scaleMovieTime(long time, int playFreqPercent) {
+		return Math.round(time * playFreqPercent / 100.0);
 	}
 	
 	public void prepareBGA(long time) {
